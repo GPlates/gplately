@@ -23,6 +23,7 @@ working with point data, and calculating plate velocities at specific geological
 # pyright: reportMissingTypeStubs=true
 
 import logging
+import numbers
 import warnings
 from typing import Union
 
@@ -2441,10 +2442,12 @@ class PlateReconstruction(object):
             Anchor plate ID. Defaults to the current anchor plate ID (:py:attr:`anchor_plate_id` attribute).
         return_times : bool, default=False
             Choose whether to return the times in ``time_array`` that are older than the reconstruction time
-            (ie, where ``time_array[i] >= to_time``).
+            (ie, where ``time_array[i] > to_time``). This includes the reconstruction time (``to_time``)
+            unless it is outside the time range of ``time_array``.
         return_rate_of_motion : bool, default=False
             Choose whether to return the rate of plate motion through time for each time step between the times in ``time_array``
-            that are older than the reconstruction time (ie, where ``time_array[i] >= to_time``).
+            that are older than the reconstruction time (ie, where ``time_array[i] > to_time``). This includes the reconstruction time
+            (``to_time``) unless it is outside the time range of ``time_array``.
 
         Returns
         -------
@@ -2599,7 +2602,7 @@ class PlateReconstruction(object):
                     # This generally shouldn't happen if the topologies have global coverage.
                     point_plate_ids[point_index] = anchor_plate_id
 
-        # Need to reconstruct the first motion path before we can size the return arrays.
+        # Need to query the first reconstructed motion path before we can size the return arrays.
         created_return_arrays = False
         # To avoid Pylance warning.
         rlons = rlats = rtimes = rate_of_motion = np.array([])
@@ -2636,7 +2639,14 @@ class PlateReconstruction(object):
                 #
                 # Return arrays with zero columns (ie, no history).
                 rlons = rlats = rtimes = rate_of_motion = np.zeros((num_points, 0))
-                break
+
+                # Return early.
+                return_tuple = rlons, rlats
+                if return_times:
+                    return_tuple += (rtimes,)
+                if return_rate_of_motion:
+                    return_tuple += (rate_of_motion,)
+                return return_tuple
 
             # There should be only one reconstructed motion path since it was created from only one seed point.
             reconstructed_motion_path = reconstructed_motion_paths[0]
@@ -2688,7 +2698,7 @@ class PlateReconstruction(object):
             rlons[point_index] = trail_lat_lon[:, 1]
             rlats[point_index] = trail_lat_lon[:, 0]
 
-            # Obtain step-plot coordinates for rate of motion
+            # Calculate rate of motion (if requested).
             if return_rate_of_motion:
                 # Iterate over each segment in the reconstructed motion path, get the distance travelled by the moving
                 # plate relative to the fixed plate in each time step
@@ -2704,7 +2714,7 @@ class PlateReconstruction(object):
                 # So, to match our 'times' array, we flip the order.
                 distance = np.flipud(distance)
 
-                # Get rate of motion as cm/yr (from metres/Myr).
+                # Get rate of motion as cm/yr (from metres/Myr by multiplying with 1e-4).
                 rate_of_motion[point_index] = (distance / np.diff(rtimes)) * 1e-4
 
         return_tuple = rlons, rlats
@@ -2722,163 +2732,319 @@ class PlateReconstruction(object):
         lons,
         lats,
         time_array,
-        left_plate_ID,
-        right_plate_ID,
+        left_plate_id,
+        right_plate_id,
+        *,
+        from_time=0,
+        to_time=None,
+        anchor_plate_id=None,
+        return_times=False,
         return_rate_of_motion=False,
     ):
         """Create a path of points to track plate motion away from spreading ridges over time using half-stage rotations.
 
+        One flowline is created for each point using the left and right plate IDs.
+        Each flowline is reconstructed to ``to_time`` (defaults to ``from_time`` which defaults to present day).
+
         Parameters
         ----------
-        lons : arr
-            An array of longitudes of points along spreading ridges.
-        lats : arr
-            An array of latitudes of points along spreading ridges.
-        time_array : arr
-            A list of times to obtain seed point locations at.
-        left_plate_ID : int
-            The plate ID of the polygon to the left of the spreading
-            ridge.
-        right_plate_ID : int
-            The plate ID of the polygon to the right of the spreading
-            ridge.
-        return_rate_of_motion : bool, default False
-            Choose whether to return a step time and step rate array
-            for a step plot of motion.
+        lons : float or 1D array
+            A single longitude or an array of longitudes of seed points of the flowlines.
+        lats : float or 1D array
+            A single latitude or an array of latitudes of seed points of the flowlines.
+        time_array : float or 1D array
+            An array of reconstruction times at which to track spreading of the seed points.
+            For example:
+
+            .. code-block:: python
+                :linenos:
+
+                import numpy as np
+                min_time = 30
+                max_time = 100
+                time_step = 2.5
+                time_array = np.arange(min_time, max_time + time_step, time_step)
+
+            Note that the time array will be sorted in ascending order (if it is not already).
+
+        left_plate_id : int
+            The plate ID of the plate to the left of the spreading ridge.
+        right_plate_id : int
+            The plate ID of the plate to the right of the spreading ridge.
+        from_time : float, default=0
+            The initial time (Ma) of the seed points.
+            The ``lons`` and ``lats`` are the initial coordinates of the seed points at this time.
+            Defaults to present day (0 Ma).
+        to_time : float, optional
+            The reconstruction time (Ma) to reconstruct the flowline to.
+            Defaults to ``from_time`` (which itself defaults to present day).
+        anchor_plate_id : int, optional
+            Anchor plate ID. Defaults to the current anchor plate ID (:py:attr:`anchor_plate_id` attribute).
+        return_times : bool, default=False
+            Choose whether to return the times in ``time_array`` that are older than the reconstruction time
+            (ie, where ``time_array[i] > to_time``). This includes the reconstruction time (``to_time``)
+            unless it is outside the time range of ``time_array``.
+        return_rate_of_motion : bool, default=False
+            Choose whether to return the full spreading rate through time for each time step between the times in ``time_array``
+            that are older than the reconstruction time (ie, where ``time_array[i] > to_time``). This includes the reconstruction time
+            (``to_time``) unless it is outside the time range of ``time_array``.
 
         Returns
         -------
-        left_lon : ndarray
-            The longitudes of the left flowline for n seed points.
-            There are n columns for n seed points, and m rows
-            for m time steps in time_array.
-        left_lat : ndarray
-            The latitudes of the left flowline of n seed points.
-            There are n columns for n seed points, and m rows
-            for m time steps in time_array.
-        right_lon : ndarray
-            The longitudes of the right flowline of n seed points.
-            There are n columns for n seed points, and m rows
-            for m time steps in time_array.
-        right_lat : ndarray
-            The latitudes of the right flowline of n seed points.
-            There are n columns for n seed points, and m rows
-            for m time steps in time_array.
+        left_rlons : 2D array
+            A 2D array with each row containing the **left** plate spreading history of longitudes of a seed point
+            at each time in ``time_array`` that is older than the reconstruction time (ie, where ``time_array[i] >= to_time``).
+            There are n rows for n seed points.
+        left_rlats : 2D array
+            A 2D array with each row containing the **left** plate spreading history of latitudes of a seed point
+            at each time in ``time_array`` that is older than the reconstruction time (ie, where ``time_array[i] >= to_time``).
+            There are n rows for n seed points.
+        right_rlons : 2D array
+            A 2D array with each row containing the **right** plate spreading history of longitudes of a seed point
+            at each time in ``time_array`` that is older than the reconstruction time (ie, where ``time_array[i] >= to_time``).
+            There are n rows for n seed points.
+        right_rlats : 2D array
+            A 2D array with each row containing the **right** plate spreading history of latitudes of a seed point
+            at each time in ``time_array`` that is older than the reconstruction time (ie, where ``time_array[i] >= to_time``).
+            There are n rows for n seed points.
+        rtimes : 1D array
+            Only provided if ``return_times`` is True.
+            A 1D array with the times in ``time_array`` that are older than the reconstruction time (ie, where ``time_array[i] >= to_time``).
+            The size of this array is the same as the number of columns in ``left_rlons`, ``left_rlats``, ``right_rlons` and ``right_rlats``.
+        rate_of_motion : 2D array
+            Only provided if ``return_rate_of_motion`` is True.
+            The full spreading rate (in cm/yr) for each time step between the times in ``time_array`` that are older than the
+            reconstruction time (ie, where ``time_array[i] >= to_time``).
+            The number of columns is one less than the number of columns in ``left_rlons`, ``left_rlats``, ``right_rlons` and ``right_rlats``.
+            There are n rows for n seed points.
+
+        .. note::
+
+            If ``max(time_array) <= time`` then there will be no history in the returned arrays
+            (ie, the number of columns will be zero for each returned array, including ``rtimes`` and ``rate_of_motion`` if requested).
+
+        .. note::
+
+            If ``from_time`` is non-zero (ie, not present day) then ``lons`` and ``lats`` are assumed to be the **reconstructed**
+            seed point locations at ``from_time``.
 
         Examples
         --------
-        To access the i\\ :sup:`th` seed point's left and right latitudes and
-        longitudes:
+        To access the latitudes and longitudes of each point's flowline:
 
         .. code-block:: python
             :linenos:
 
-            for i in np.arange(0,len(seed_points)):
-                left_flowline_longitudes = left_lon[:,i]
-                left_flowline_latitudes = left_lat[:,i]
-                right_flowline_longitudes = right_lon[:,i]
-                right_flowline_latitudes = right_lat[:,i]
+            lons = [...]
+            lats = [...]
+            gpts = gplately.Points(model, lons, lats)
+
+            time_array = [0, 10, 20, 30, 40, 50]
+            left_plate_ID=201
+            right_plate_ID=701
+            left_rlons, left_rlats, right_rlons, right_rlats = gpts.flowline(time_array, left_plate_ID, right_plate_ID)
+
+            # Left flowline.
+            for i in range(len(left_rlons)):
+                current_left_lons = left_rlons[i]
+                current_left_lats = left_rlats[i]
+
+            # Right flowline.
+            for i in range(len(right_rlons)):
+                current_right_lons = right_rlons[i]
+                current_right_lats = right_rlats[i]
         """
-        lats = np.atleast_1d(lats)
-        lons = np.atleast_1d(lons)
-        time_array = np.atleast_1d(time_array)
+        # The left/right plate IDs should be integers.
+        if not isinstance(left_plate_id, numbers.Integral) or not isinstance(
+            right_plate_id, numbers.Integral
+        ):
+            raise ValueError("'left_plate_id' and 'right_plate_id' should be integers")
 
-        seed_points = list(zip(lats, lons))
-        multi_point = pygplates.MultiPointOnSphere(seed_points)
+        # If the anchor plate is None then use default anchor plate.
+        if anchor_plate_id is None:
+            anchor_plate_id = self.anchor_plate_id
 
-        start = 0
-        if time_array[0] != 0:
-            start = 1
-            time_array = np.hstack([[0], time_array])
+        # The reconstruction time ('to_time') defaults to the
+        # initial time ('from_time') of the seed point locations.
+        if to_time is None:
+            to_time = from_time
 
-        # Create the flowline feature
-        flowline_feature = pygplates.Feature.create_flowline(
-            multi_point,
-            time_array.tolist(),
-            valid_time=(time_array.max(), time_array.min()),
-            left_plate=left_plate_ID,
-            right_plate=right_plate_ID,
+        # Make sure time array is ascending.
+        time_array = np.sort(np.atleast_1d(time_array))
+        # If the reconstruction time ('to_time') is younger than the youngest time in the input time array
+        # then it'll still get included in the reconstructed flowline. Since we only want to see flowline points
+        # within the time array we will need to ignore it in the reconstructed left/right flowlines.
+        # This is not a problem for motion paths though.
+        if to_time < time_array[0]:
+            ignore_youngest_time_sample = True
+        else:
+            ignore_youngest_time_sample = False
+        # Unfortunately a flowline will not get reconstructed properly unless present day is included in the input time array.
+        # So insert 'to_time' into 'time_array' if present day is not included.
+        if time_array[0] > 0:
+            time_array = np.insert(time_array, 0, 0.0)
+
+        # Most common case first: both lons and lats are sequences.
+        if not np.isscalar(lons) and not np.isscalar(lats):
+            # Make sure numpy arrays (if not already).
+            lons = np.asarray(lons)
+            lats = np.asarray(lats)
+            if len(lons) != len(lats):
+                raise ValueError(
+                    "'lons' and 'lats' must be of equal length ({} != {})".format(
+                        len(lons), len(lats)
+                    )
+                )
+        elif np.isscalar(lons) and np.isscalar(lats):
+            # Both are scalars. Convert to arrays with one element.
+            lons = np.atleast_1d(lons)
+            lats = np.atleast_1d(lats)
+        else:
+            raise ValueError(
+                "Both 'lats' and 'lons' must both be a sequence or both a scalar"
+            )
+
+        points = pygplates.MultiPointOnSphere(
+            [(lat, lon) for lon, lat in zip(lons, lats)]
         )
 
-        # reconstruct the flowline in present-day coordinates
+        num_points = len(points)
+
+        # Create the flowline feature from *all* the seed points (because they all have the same parameters).
+        flowline_feature = pygplates.Feature.create_flowline(
+            points,
+            time_array,
+            # We want the flowline to get reconstructed all the way to present day, even if the
+            # time array doesn't include present day. The flowline should only disappear when
+            # reconstructed further back in time than the oldest time in the time array...
+            valid_time=(time_array[-1], 0.0),  # max(time_array), present-day
+            left_plate=left_plate_id,
+            right_plate=right_plate_id,
+        )
+
+        # Reconstruct the flowline feature.
+        #
+        # This involves *reverse* reconstructing it from 'from_time' to present day
+        # (since all pygplates.Feature must have present day coordinates) and then
+        # reconstructing the flowline feature from present day to 'to_time'.
         reconstructed_flowlines = self.reconstruct(
             flowline_feature,
-            to_time=0,
+            to_time=to_time,  # reconstruct to 'to_time'
+            from_time=from_time,  # initial seed point locations correspond to 'from_time'
+            anchor_plate_id=anchor_plate_id,
             reconstruct_type=pygplates.ReconstructType.flowline,
         )
 
-        # Wrap things to the dateline, to avoid plotting artefacts.
-        date_line_wrapper = pygplates.DateLineWrapper()
+        if not reconstructed_flowlines:
+            # If we get here then there are not enough points to form a polyline (needs 2 points) for
+            # the left/right sides of the reconstructed flowlines.
+            #
+            # This can be because 'time_array.max() <= to_time' and hence there's only zero or one point
+            # in each left/right flowline.
+            #
+            # Return arrays with zero columns (ie, no history).
+            left_rlons = left_rlats = np.zeros((num_points, 0))
+            right_rlons = right_rlats = np.zeros((num_points, 0))
+            rtimes = rate_of_motion = np.zeros((num_points, 0))
 
-        # Create lat-lon ndarrays to store the left and right lats and lons of flowlines
-        left_lon = np.empty((len(time_array), len(lons)))
-        left_lat = np.empty((len(time_array), len(lons)))
-        right_lon = np.empty((len(time_array), len(lons)))
-        right_lat = np.empty((len(time_array), len(lons)))
-        step_times = np.empty(((len(time_array) - 1) * 2, len(lons)))
-        step_rates = np.empty(((len(time_array) - 1) * 2, len(lons)))
+            # Return early.
+            return_tuple = left_rlons, left_rlats, right_rlons, right_rlats
+            if return_times:
+                return_tuple += (rtimes,)
+            if return_rate_of_motion:
+                return_tuple += (rate_of_motion,)
+            return return_tuple
 
-        # Iterate over the reconstructed flowlines. Each seed point results in a 'left' and 'right' flowline
-        for i, reconstructed_flowline in enumerate(reconstructed_flowlines):
-            # Get the points for the left flowline only
-            left_latlon = reconstructed_flowline.get_left_flowline().to_lat_lon_array()
-            left_lon[:, i] = left_latlon[:, 1]
-            left_lat[:, i] = left_latlon[:, 0]
+        # Need to query the reconstructed flowline of the first seed point before we can size the return arrays.
+        created_return_arrays = False
+        # To avoid Pylance warning.
+        left_rlons = left_rlats = np.array([])
+        right_rlons = right_rlats = np.array([])
+        rtimes = rate_of_motion = np.array([])
 
-            # Repeat for the right flowline points
-            right_latlon = (
+        for point_index, reconstructed_flowline in enumerate(reconstructed_flowlines):
+            # Turn the left flowline in to lat-lon coordinates.
+            left_trail_lat_lon = (
+                reconstructed_flowline.get_left_flowline().to_lat_lon_array()
+            )
+            # Turn the right flowline in to lat-lon coordinates.
+            right_trail_lat_lon = (
                 reconstructed_flowline.get_right_flowline().to_lat_lon_array()
             )
-            right_lon[:, i] = right_latlon[:, 1]
-            right_lat[:, i] = right_latlon[:, 0]
+
+            # If we the youngest point (first point) then do so.
+            if ignore_youngest_time_sample:
+                left_trail_lat_lon = left_trail_lat_lon[1:]
+                right_trail_lat_lon = right_trail_lat_lon[1:]
+
+            # Create the return arrays (if haven't already).
+            if not created_return_arrays:
+                # All flowline will have the same times in the left/right flowline because they were all created
+                # with the same time array and left/right plate IDs (and same begin/end valid time).
+                #
+                # So we can assume all flowline (one per seed point) will have the same size.
+                num_rtimes = len(left_trail_lat_lon)
+                if return_times or return_rate_of_motion:
+                    # These are the *last* 'num_rtimes' times in the time array.
+                    #
+                    # Note: We only need one array for *all* the flowlines
+                    #       (unlike the rate-of-motion that requires one left and right array *per* flowline).
+                    rtimes = time_array[-num_rtimes:]
+                    # Also change the youngest time to the reconstruction time (unless we've already ignored it).
+                    #
+                    # This is a subtle point that unfortunately we need to handle.
+                    # It would be better for pygplates.ReconstructedFlowline to add a method that returns these times.
+                    if not ignore_youngest_time_sample:
+                        rtimes[0] = to_time
+
+                # To be filled with reconstructed points of the left/right flowline of each seed point.
+                left_rlons = np.empty((num_points, num_rtimes))
+                left_rlats = np.empty((num_points, num_rtimes))
+                right_rlons = np.empty((num_points, num_rtimes))
+                right_rlats = np.empty((num_points, num_rtimes))
+
+                # To be filled with the spreading rates between reconstructed points of the flowline
+                # of each seed point (if requested).
+                if return_rate_of_motion:
+                    rate_of_motion = np.empty((num_points, num_rtimes - 1))
+
+                created_return_arrays = True
+
+            left_rlons[point_index] = left_trail_lat_lon[:, 1]
+            left_rlats[point_index] = left_trail_lat_lon[:, 0]
+            right_rlons[point_index] = right_trail_lat_lon[:, 1]
+            right_rlats[point_index] = right_trail_lat_lon[:, 0]
+
+            # Calculate spreading rate (if requested).
+            if return_rate_of_motion:
+                # Iterate over each segment in the either the left or right reconstructed flowline,
+                # get the distance travelled by the moving plate relative to the fixed plate in each time step
+                segments = reconstructed_flowline.get_left_flowline().get_segments()
+
+                # If we the youngest segment (first segment) then do so.
+                if ignore_youngest_time_sample:
+                    segments = segments[1:]
+
+                distance = [
+                    segment.get_arc_length()
+                    * _tools.geocentric_radius(
+                        segment.get_start_point().to_lat_lon()[0]
+                    )
+                    for segment in segments
+                ]
+
+                # Get spreading rate as cm/yr (from metres/Myr by multiplying with 1e-4).
+                #
+                # Note: Need to multiply rate by 2 since flowlines give us half-spreading rate and
+                #       we want the full spreading rate (assuming symmetric spreading for flowlines).
+                rate_of_motion[point_index] = 2 * (distance / np.diff(rtimes)) * 1e-4
+
+        return_tuple = left_rlons, left_rlats, right_rlons, right_rlats
+
+        if return_times:
+            return_tuple += (rtimes,)
 
         if return_rate_of_motion:
-            for i, reconstructed_motion_path in enumerate(reconstructed_flowlines):
-                distance = []
-                for (
-                    segment
-                ) in reconstructed_motion_path.get_left_flowline().get_segments():
-                    distance.append(
-                        segment.get_arc_length()
-                        * _tools.geocentric_radius(
-                            segment.get_start_point().to_lat_lon()[0]
-                        )
-                        / 1e3
-                    )
+            return_tuple += (rate_of_motion,)
 
-                # Get rate of motion as distance per Myr
-                # Need to multiply rate by 2, since flowlines give us half-spreading rate
-                time_step = time_array[1] - time_array[0]
-                Rate = (
-                    np.asarray(distance) / time_step
-                ) * 2  # since we created the flowline at X increment
-
-                # Manipulate arrays to get a step plot
-                StepRate = np.zeros(len(Rate) * 2)
-                StepRate[::2] = Rate
-                StepRate[1::2] = Rate
-
-                StepTime = np.zeros(len(Rate) * 2)
-                StepTime[::2] = time_array[:-1]
-                StepTime[1::2] = time_array[1:]
-
-                # Append the nth point's step time and step rate coordinates to the ndarray
-                step_times[:, i] = StepTime
-                step_rates[:, i] = StepRate * 0.1  # cm/yr
-
-            return (
-                left_lon[start:],
-                left_lat[start:],
-                right_lon[start:],
-                right_lat[start:],
-                step_times,
-                step_rates,
-            )
-
-        else:
-            return (
-                left_lon[start:],
-                left_lat[start:],
-                right_lon[start:],
-                right_lat[start:],
-            )
+        return return_tuple
