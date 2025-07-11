@@ -3,7 +3,11 @@ gplately.egg-info
 build
 __pycache__
 .ipynb_checkpoints
-
 output
-
 *.log
+requirements.txt
+typings/
+api/
+sphinx-doc/source/generated/
+Notebooks/source_data/
+notebook-html/
