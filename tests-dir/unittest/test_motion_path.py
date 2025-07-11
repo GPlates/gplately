@@ -41,8 +41,8 @@ def main(show=True):
 
     # *****************************************do the first plot***************************
 
-    lats = np.array([19])
-    lons = np.array([-155])
+    lat = 19
+    lon = -155
 
     # Create the time array for the motion path - must be float
     start_reconstruction_time = 0.0
@@ -53,12 +53,12 @@ def main(show=True):
     )
 
     # Creating the motion path and obtaining rate plot arrays using the gplately Points alternative
-    gpts = gplately.Points(model, lons, lats, time=0.0)
+    gpts = gplately.Points(model, lon, lat, time=0.0)
     mothin_path_ret_tuple = gpts.motion_path(
-        time_array, anchor_plate_id=2, return_rate_of_motion=True
+        time_array, anchor_plate_id=2, return_times=True, return_rate_of_motion=True
     )
     assert len(mothin_path_ret_tuple) == 4
-    lon, lat, _, _ = mothin_path_ret_tuple
+    rlon, rlat, _, _ = mothin_path_ret_tuple
 
     fig = plt.figure(figsize=(12, 6))
     gs = GridSpec(2, 2, figure=fig)
@@ -66,22 +66,22 @@ def main(show=True):
     ax.set_title("Motion path of the Hawaiian-Emperor Chain")
 
     # --- Limit map extent
-    lon_min = 130.0
-    lon_max = 220
-    lat_min = 15.0
-    lat_max = 60.0
+    lon_min = 180 + 10
+    lon_max = 180 + 80
+    lat_min = -20
+    lat_max = 30
     ax.set_extent([lon_min, lon_max, lat_min, lat_max], crs=ccrs.PlateCarree())  # type: ignore
     ax.gridlines(  # type: ignore
         draw_labels=True, xlocs=np.arange(-180, 180, 20), ylocs=np.arange(-90, 90, 10)
     )
 
     # --- Make sure motion path longitudes are wrapped correctly to the dateline
-    lon360 = gplately.tools.correct_longitudes_for_dateline(lon)
+    rlon360 = gplately.tools.correct_longitudes_for_dateline(rlon)
 
     # --- plot motion path
     ax.scatter(
-        lon360,
-        lat,
+        rlon360,
+        rlat,
         100,
         marker=".",
         c=time_array,
@@ -116,10 +116,16 @@ def main(show=True):
     # Get the latitudes and longitudes of all points along the motion path
 
     motion_path_tuple_4 = model.create_motion_path(
-        lons, lats, time_array, plate_ID, anchor_plate_ID, return_rate_of_motion=True
+        lons,
+        lats,
+        time_array,
+        plate_id=plate_ID,
+        anchor_plate_id=anchor_plate_ID,
+        return_times=True,
+        return_rate_of_motion=True,
     )
     assert len(motion_path_tuple_4) == 4
-    lon, lat, step_times, step_rates_of_motion = motion_path_tuple_4
+    rlons, rlats, rtimes, rates_of_motion = motion_path_tuple_4
 
     ax2 = fig.add_subplot(gs[0, 1], projection=ccrs.PlateCarree(central_longitude=180))
     ax2.set_title("Motion path of the Indian craton to the North European Craton")
@@ -137,22 +143,22 @@ def main(show=True):
         draw_labels=True, xlocs=np.arange(-180, 180, 20), ylocs=np.arange(-90, 90, 10)
     )
     # --- Make sure negtive motion path longitudes are wrapped correctly to the dateline
-    lons = gplately.tools.correct_longitudes_for_dateline(lons)
+    rlons = gplately.tools.correct_longitudes_for_dateline(rlons)
 
     # --- plot motion path
-    for i in np.arange(0, len(lons)):
+    for i in range(len(lons)):
         ax2.scatter(
-            lon[:, i],
-            lat[:, i],
+            rlons[i],
+            rlats[i],
             200,
             marker="*",
-            c=time_array,
+            c=rtimes,
             cmap=plt.cm.inferno,  # type: ignore
             edgecolor="C{}".format(i),
             linewidth=0.5,
             transform=ccrs.PlateCarree(),
-            vmin=time_array[0],
-            vmax=time_array[-1],
+            vmin=rtimes[0],
+            vmax=rtimes[-1],
             zorder=4,
         )
 
@@ -160,11 +166,14 @@ def main(show=True):
 
     ax3 = fig.add_subplot(gs[1, :])
     ax3.set_title("Rate of motion between seed points and the North European Craton")
-    ax3.plot(step_times, step_rates_of_motion)
+    # For each seed point plot its rate of motion.
+    for rate_of_motion in rates_of_motion:
+        ax3.stairs(rate_of_motion, rtimes)
     ax3.set_xlabel("Time (Ma)", fontsize=12)
-    ax3.set_ylabel("Rate of motion (km/Myr)", fontsize=12)
+    ax3.set_ylabel("Rate of motion (cm/yr)", fontsize=12)
     ax3.invert_xaxis()
-    ax3.set_xlim((max_reconstruction_time, 0.0))
+    ax3.set_xlim(max_reconstruction_time, 0.0)
+    ax3.set_ylim(rates_of_motion.min() - 0.5, rates_of_motion.max() + 0.5)
     ax3.grid(alpha=0.3)
 
     plt.subplots_adjust(wspace=0.25)
