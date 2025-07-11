@@ -686,11 +686,11 @@ class Points(object):
         Returns
         -------
         reconstructed_points : :class:`Points`
-            If the ``return_array`` is False, return the reconstructed points in a :class:`Points` object.
+            If ``return_array`` is False, return the reconstructed points in a :class:`Points` object.
         rlons, rlats : ndarray
-            If the ``return_array`` is True, return the longitude and latitude coordinate arrays of the reconstructed points.
+            If ``return_array`` is True, return the longitude and latitude coordinate arrays of the reconstructed points.
         point_indices : ndarray
-            If the ``return_point_indices`` is True, return the indices of the returned points (that are reconstructed).
+            If ``return_point_indices`` is True, return the indices of the returned points (that are reconstructed).
             This array is the same size as ``rlons`` and ``rlats`` (or size of ``reconstructed_points``).
             These are indices into ``self.lons``, ``self.lats``, ``self.plate_id`` and ``self.age``.
         """
@@ -1169,16 +1169,25 @@ class Points(object):
         return return_tuple
 
     def motion_path(
-        self, time_array, anchor_plate_id=None, return_rate_of_motion=False
+        self,
+        time_array,
+        *,
+        time=None,
+        relative_plate_id=None,
+        anchor_plate_id=None,
+        return_times=False,
+        return_rate_of_motion=False,
     ):
         """Create a path of points to mark the trajectory of a plate's motion through geological time.
 
+        One motion path is created for each point that is reconstructable (see :ref:`Notes <points-note>`) using its plate ID.
+        Each motion path is reconstructed to ``time``.
+
         Parameters
         ----------
-        time_array : arr
-            An array of reconstruction times at which to determine the trajectory of a point on a plate.
-
-            For example,
+        time_array : float or 1D array
+            An array of reconstruction times at which to determine the trajectory of the points.
+            For example:
 
             .. code-block:: python
                 :linenos:
@@ -1189,121 +1198,80 @@ class Points(object):
                 time_step = 2.5
                 time_array = np.arange(min_time, max_time + time_step, time_step)
 
+            Note that the time array will be sorted in ascending order (if it is not already).
+
+        time : float, optional
+            The reconstruction time (Ma) to reconstruct the motion path to.
+            Defaults to the current time (:py:attr:`time` attribute).
+        relative_plate_id : int, optional
+            The ID of the plate that the motion path is relative to. Defaults to ``anchor_plate_id`` which itself
+            defaults to the current anchor plate ID (:py:attr:`anchor_plate_id` attribute).
         anchor_plate_id : int, optional
-            Reconstruct features with respect to a certain anchor plate. By default, reconstructions are made
-            with respect to the anchor plate ID specified in the :class:`PlateReconstruction` object.
+            Anchor plate ID. Defaults to the current anchor plate ID (:py:attr:`anchor_plate_id` attribute).
+        return_times : bool, default=False
+            Choose whether to return the times in ``time_array`` that are older than the reconstruction time
+            (ie, where ``time_array[i] >= time``).
         return_rate_of_motion : bool, default=False
-            Choose whether to return the rate of plate motion through time for each
+            Choose whether to return the rate of plate motion through time for each time step between the times in ``time_array``
+            that are older than the reconstruction time (ie, where ``time_array[i] >= time``).
 
         Returns
         -------
-        rlons : ndarray
-            An n-dimensional array with columns containing the longitudes of
-            the seed points at each timestep in ``time_array``. There are n columns for n seed points.
-        rlats : ndarray
-            An n-dimensional array with columns containing the latitudes of
-            the seed points at each timestep in ``time_array``. There are n columns for n seed points.
+        rlons : 2D array
+            A 2D array with each row containing the history of longitudes of a reconstructable point at each time in ``time_array`` that is
+            older than the reconstruction time (ie, where ``time_array[i] >= to_time``).
+            There are n rows for n reconstructable points.
+        rlats : 2D array
+            A 2D array with each row containing the history of latitudes of a reconstructable point at each time in ``time_array`` that is
+            older than the reconstruction time (ie, where ``time_array[i] >= to_time``).
+            There are n rows for n reconstructable points.
+        rtimes : 1D array
+            Only provided if ``return_times`` is True.
+            A 1D array with the times in ``time_array`` that are older than the reconstruction time (ie, where ``time_array[i] >= to_time``).
+            The size of this array is the same as the number of columns in ``rlons`` and ``rlats``.
+        rate_of_motion : 2D array
+            Only provided if ``return_rate_of_motion`` is True.
+            The rate of plate motion (in cm/yr) for each time step between the times in ``time_array`` that are older than the
+            reconstruction time (ie, where ``time_array[i] >= to_time``).
+            The number of columns is one less than the number of columns in ``rlons`` and ``rlats``.
+            There are n rows for n reconstructable points.
+
+        .. note::
+
+            If ``max(time_array) <= time`` then there will be no history in the returned arrays
+            (ie, the number of columns will be zero for each returned array, including ``rtimes`` and ``rate_of_motion`` if requested).
+
+        Examples
+        --------
+        To access the latitudes and longitudes of each point's motion path:
+
+        .. code-block:: python
+            :linenos:
+
+            lons = [...]
+            lats = [...]
+            gpts = gplately.Points(model, lons, lats)
+
+            time_array = [0, 10, 20, 30, 40, 50]
+            rlons, rlats = gpts.motion_path(time_array)
+
+            for i in range(len(rlons)):
+                current_lons = rlons[i]
+                current_lats = rlats[i]
         """
-        time_array = np.atleast_1d(time_array)
-
-        # ndarrays to fill with reconstructed points and
-        # rates of motion (if requested)
-        rlons = np.empty((len(time_array), len(self.lons)))
-        rlats = np.empty((len(time_array), len(self.lons)))
-
-        StepTimes = np.array([])
-        StepRates = np.array([])
-
-        for i, point_feature in enumerate(self.feature_collection):
-            # Create the motion path feature
-            motion_path_feature = pygplates.Feature.create_motion_path(
-                point_feature.get_geometry(),
-                time_array.tolist(),
-                valid_time=(time_array.max(), time_array.min()),
-                relative_plate=int(self.plate_id[i]),
-                reconstruction_plate_id=(
-                    anchor_plate_id  # if None then uses default anchor plate of 'self.plate_reconstruction'
-                    if anchor_plate_id is not None
-                    else self.plate_reconstruction.anchor_plate_id
-                ),
-            )
-
-            reconstructed_motion_paths = self.plate_reconstruction.reconstruct(
-                motion_path_feature,
-                to_time=0,
-                # from_time=0,
-                reconstruct_type=pygplates.ReconstructType.motion_path,
-                anchor_plate_id=anchor_plate_id,  # if None then uses default anchor plate of 'self.plate_reconstruction'
-            )
-
-            # Turn motion paths in to lat-lon coordinates
-            trail = np.array([])
-            for reconstructed_motion_path in reconstructed_motion_paths:
-                # not sure about this. always set the "trail" to the last one in reconstructed_motion_paths?
-                # or there is only one path in reconstructed_motion_paths? -- Michael Chin
-                # again???
-                trail = reconstructed_motion_path.get_motion_path().to_lat_lon_array()
-
-            lon, lat = np.flipud(trail[:, 1]), np.flipud(trail[:, 0])
-
-            rlons[:, i] = lon
-            rlats[:, i] = lat
-
-            # Obtain step-plot coordinates for rate of motion
-            if return_rate_of_motion is True:
-                StepTimes = np.empty(((len(time_array) - 1) * 2, len(self.lons)))
-                StepRates = np.empty(((len(time_array) - 1) * 2, len(self.lons)))
-
-                # Get timestep
-                TimeStep = []
-                for j in range(len(time_array) - 1):
-                    diff = time_array[j + 1] - time_array[j]
-                    TimeStep.append(diff)
-
-                # Iterate over each segment in the reconstructed motion path, get the distance travelled by the moving
-                # plate relative to the fixed plate in each time step
-                Dist = []
-                for reconstructed_motion_path in reconstructed_motion_paths:
-                    for (
-                        segment
-                    ) in reconstructed_motion_path.get_motion_path().get_segments():
-                        Dist.append(
-                            segment.get_arc_length()
-                            * _tools.geocentric_radius(
-                                segment.get_start_point().to_lat_lon()[0]
-                            )
-                            / 1e3
-                        )
-
-                # Note that the motion path coordinates come out starting with the oldest time and working forwards
-                # So, to match our 'times' array, we flip the order
-                Dist = np.flipud(Dist)
-
-                # Get rate of motion as distance per Myr
-                Rate = np.asarray(Dist) / TimeStep
-
-                # Manipulate arrays to get a step plot
-                StepRate = np.zeros(len(Rate) * 2)
-                StepRate[::2] = Rate
-                StepRate[1::2] = Rate
-
-                StepTime = np.zeros(len(Rate) * 2)
-                StepTime[::2] = time_array[:-1]
-                StepTime[1::2] = time_array[1:]
-
-                # Append the nth point's step time and step rate coordinates to the ndarray
-                StepTimes[:, i] = StepTime
-                StepRates[:, i] = StepRate * 0.1  # cm/yr
-
-        if return_rate_of_motion is True:
-            return (
-                np.squeeze(rlons),
-                np.squeeze(rlats),
-                np.squeeze(StepTimes),
-                np.squeeze(StepRates),
-            )
-        else:
-            return np.squeeze(rlons), np.squeeze(rlats)
+        # Create a motion path for each point that is *reconstructable*.
+        return self.plate_reconstruction.create_motion_path(
+            self.lons[self._reconstructable],
+            self.lats[self._reconstructable],
+            time_array,
+            from_time=self.time,
+            to_time=time,  # if None then defaults to 'self.time'
+            plate_id=self.plate_id[self._reconstructable],
+            relative_plate_id=relative_plate_id,
+            anchor_plate_id=anchor_plate_id,
+            return_times=return_times,
+            return_rate_of_motion=return_rate_of_motion,
+        )
 
     def flowline(
         self, time_array, left_plate_ID, right_plate_ID, return_rate_of_motion=False
