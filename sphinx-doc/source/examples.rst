@@ -58,6 +58,8 @@ Workflows
    used in the plate kinematics analysis and data mining.
 - `12 - Mutschler World Porphyry Copper Deposits Regional Plots`_ 
    Generates regional plots for Mutschler world porphyry copper deposits.
+- `13 - Reconstructing Zircon Data`_
+   Demonstrates how to reconstruct and plot Zircon data on a global map through geological time.
 
 .. _`01 - Getting Started`: ../../notebook-html/01-GettingStarted.html
 .. _`02 - Plate Reconstructions`: ../../notebook-html/02-PlateReconstructions.html
@@ -71,6 +73,7 @@ Workflows
 .. _`10 - Seafloor Grid`: ../../notebook-html/10-SeafloorGrids.html
 .. _`11 - Andes Fluxes`: ../../notebook-html/11-AndesFluxes.html
 .. _`12 - Mutschler World Porphyry Copper Deposits Regional Plots`: ../../notebook-html/12-MutschlerWorldPorphyryCopperDepositsRegionalPlots.html
+.. _`13 - Reconstructing Zircon Data`: ../../notebook-html/13-ReconstructingZirconData.html
 .. _`GPlates 2.3's sample data sets`: https://www.earthbyte.org/gplates-2-3-software-and-data-sets/
 
 .. note::

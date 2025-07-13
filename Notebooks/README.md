@@ -16,3 +16,4 @@ To see GPlately in action, launch a Jupyter Notebook environment and check out t
 - [**10 - Seafloor Grid**](10-SeafloorGrids.ipynb): Defines the parameters needed to set up a `SeafloorGrid` object, and demonstrates how to produce age and spreading rate grids from a set of plate reconstruction model files.
 - [**11 - Andes Fluxes**](11-AndesFluxes.ipynb): Demonstrates how the reconstructed subduction history along the Andean margin can be potentially used in the plate kinematics analysis and data mining.
 - [**12 - Mutschler World Porphyry Copper Deposits Regional Plots**](12-MutschlerWorldPorphyryCopperDepositsRegionalPlots.ipynb): Generates regional plots for Mutschler world porphyry copper deposits.
+- [**13 - Reconstructing Zircon Data**](13-ReconstructingZirconData.ipynb): Demonstrates how to reconstruct and plot Zircon data on a global map through geological time.

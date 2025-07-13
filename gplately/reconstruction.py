@@ -509,23 +509,23 @@ class PlateReconstruction(object):
                 )
             )
 
-        Notes
-        -----
-        If you want to access all sampled points regardless of their convergence/divergence you can call :meth:`topological_snapshot()`
-        and then use it to directly call `pygplates.TopologicalSnapshot.calculate_plate_boundary_statistics() <https://www.gplates.org/docs/pygplates/generated/pygplates.topologicalsnapshot#pygplates.TopologicalSnapshot.calculate_plate_boundary_statistics>`__.
-        Then you can do your own analysis on the returned data:
+        .. note::
 
-        .. code-block:: python
-            :linenos:
+            If you want to access all sampled points, regardless of their convergence/divergence, you can call :meth:`topological_snapshot()`
+            and then use the returned object to invoke `calculate_plate_boundary_statistics() <https://www.gplates.org/docs/pygplates/generated/pygplates.topologicalsnapshot#pygplates.TopologicalSnapshot.calculate_plate_boundary_statistics>`__.
+            From there, you can perform your own analysis on the returned data:
 
-            plate_boundary_statistics = plate_reconstruction.topological_snapshot(
-                time, include_topological_slab_boundaries=False
-            ).calculate_plate_boundary_statistics(uniform_point_spacing_radians=0.001)
+            .. code-block:: python
+                :linenos:
 
-            for stat in plate_boundary_statistics:
-                if np.isnan(stat.convergence_velocity_orthogonal):
-                    continue  # missing left or right plate
-                latitude, longitude = stat.boundary_point.to_lat_lon()
+                plate_boundary_statistics = plate_reconstruction.topological_snapshot(
+                    time, include_topological_slab_boundaries=False
+                ).calculate_plate_boundary_statistics(uniform_point_spacing_radians=0.001)
+
+                for stat in plate_boundary_statistics:
+                    if np.isnan(stat.convergence_velocity_orthogonal):
+                        continue  # missing left or right plate
+                    latitude, longitude = stat.boundary_point.to_lat_lon()
 
         """
 
