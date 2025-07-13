@@ -2477,6 +2477,7 @@ class PlateReconstruction(object):
             The number of columns is one less than the number of columns in ``rlons`` and ``rlats``.
             There are n rows for n seed points.
 
+
         .. note::
 
             If ``max(time_array) <= to_time`` then there will be no history in the returned arrays
@@ -2486,6 +2487,7 @@ class PlateReconstruction(object):
         ------
         ValueError
             If ``plate_id`` is ``None`` and topology features have not been set in this :class:`PlateReconstruction`.
+
 
         .. note::
 
@@ -2857,10 +2859,12 @@ class PlateReconstruction(object):
             The number of columns is one less than the number of columns in ``left_rlons`, ``left_rlats``, ``right_rlons` and ``right_rlats``.
             There are n rows for n seed points.
 
+
         .. note::
 
             If ``max(time_array) <= time`` then there will be no history in the returned arrays
             (ie, the number of columns will be zero for each returned array, including ``rtimes`` and ``rate_of_motion`` if requested).
+
 
         .. note::
 

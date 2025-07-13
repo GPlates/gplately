@@ -1238,6 +1238,7 @@ class Points(object):
             The number of columns is one less than the number of columns in ``rlons`` and ``rlats``.
             There are n rows for n reconstructable points.
 
+
         .. note::
 
             If ``max(time_array) <= time`` then there will be no history in the returned arrays
@@ -1354,6 +1355,7 @@ class Points(object):
             reconstruction time (ie, where ``time_array[i] >= to_time``).
             The number of columns is one less than the number of columns in ``left_rlons`, ``left_rlats``, ``right_rlons` and ``right_rlats``.
             There are n rows for n reconstructable points.
+
 
         .. note::
 
