@@ -43,9 +43,9 @@
               <p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../basic_usages.html">Minimal working example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../basic_usages.html">Minimal Working Example</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../use_cases.html">Common Use Cases</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../faq.html">Trouble-shooting and FAQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../faq.html">Troubleshooting and FAQ</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../examples.html">Examples</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../command_line_interface.html">Command Line Interface (CLI)</a></li>
 </ul>
@@ -101,9 +101,14 @@
 <span class="sd">&quot;&quot;&quot;A set of helper functions designed to streamline the use of GPlately’s functionalities,</span>
 <span class="sd">minimizing the coding effort required from users.&quot;&quot;&quot;</span>
 
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Union</span>
 
-<span class="kn">import</span><span class="w"> </span><span class="nn">pygmt</span>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">&quot;gplately&quot;</span><span class="p">)</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">pygmt</span>
+<span class="k">except</span><span class="p">:</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Failed to import PyGMT. PyGMT requires Python&gt;=3.11.&quot;</span><span class="p">)</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">plate_model_manager</span><span class="w"> </span><span class="kn">import</span> <span class="n">PlateModel</span><span class="p">,</span> <span class="n">PlateModelManager</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">.download</span><span class="w"> </span><span class="kn">import</span> <span class="n">path_to_cache</span>

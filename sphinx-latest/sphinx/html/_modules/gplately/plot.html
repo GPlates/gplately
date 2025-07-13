@@ -43,9 +43,9 @@
               <p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../basic_usages.html">Minimal working example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../basic_usages.html">Minimal Working Example</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../use_cases.html">Common Use Cases</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../faq.html">Trouble-shooting and FAQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../faq.html">Troubleshooting and FAQ</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../examples.html">Examples</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../command_line_interface.html">Command Line Interface (CLI)</a></li>
 </ul>
@@ -338,8 +338,13 @@
 <span class="sd">            `Cartopy projection list &lt;https://scitools.org.uk/cartopy/docs/v0.15/crs/projections.html&gt;`__.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="c1"># store these for when time is updated</span>
-        <span class="c1"># make sure these are initialised as FeatureCollection objects</span>
+        <span class="c1"># Pickle the __init__ arguments used to create coastline/continent/COB FeatureCollection&#39;s (see __reduce__ for details).</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_coastlines_pickle</span> <span class="o">=</span> <span class="n">coastlines</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_continents_pickle</span> <span class="o">=</span> <span class="n">continents</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_COBs_pickle</span> <span class="o">=</span> <span class="n">COBs</span>
+        <span class="c1"># Load the coastline/continent/COB FeatureCollection&#39;s.</span>
+        <span class="c1">#</span>
+        <span class="c1"># These will get used to create reconstructed geometries when the time is updated.</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_coastlines</span> <span class="o">=</span> <span class="n">_load_FeatureCollection</span><span class="p">(</span><span class="n">coastlines</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_continents</span> <span class="o">=</span> <span class="n">_load_FeatureCollection</span><span class="p">(</span><span class="n">continents</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_COBs</span> <span class="o">=</span> <span class="n">_load_FeatureCollection</span><span class="p">(</span><span class="n">COBs</span><span class="p">)</span>
@@ -398,79 +403,38 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_anchor_plate_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_anchor_plate_id</span><span class="p">(</span><span class="n">anchor_plate_id</span><span class="p">)</span>
 
+        <span class="c1"># Note: This calls &#39;update_time()&#39; which reconstructs our features and topologies.</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">time</span> <span class="o">=</span> <span class="n">time</span></div>
 
 
     <span class="k">def</span><span class="w"> </span><span class="nf">__reduce__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="c1"># Arguments for __init__.</span>
         <span class="c1">#</span>
-        <span class="c1"># Only one argument is required by __init__, and that&#39;s a PlateReconstruction object (which&#39;ll get pickled).</span>
-        <span class="n">init_args</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">plate_reconstruction</span><span class="p">,)</span>
+        <span class="c1"># Note: Instead of pickling the coastline/continent/COB FeatureCollection&#39;s we&#39;re pickling the __init__ arguments</span>
+        <span class="c1">#       used to create them. And if they are just filenames then it ends up being faster to rebuild the FeatureCollection&#39;s</span>
+        <span class="c1">#       (from files when __init__ is called during unpickling) than it is to pickle/unpickle the FeatureCollection&#39;s.</span>
+        <span class="n">init_args</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">plate_reconstruction</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_coastlines_pickle</span><span class="p">,</span>  <span class="c1"># pickle the __init__ argument</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_continents_pickle</span><span class="p">,</span>  <span class="c1"># pickle the __init__ argument</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_COBs_pickle</span><span class="p">,</span>  <span class="c1"># pickle the __init__ argument</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_time</span><span class="p">,</span>  <span class="c1"># is always valid (due to &#39;self.time = time&#39; in __init__)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_anchor_plate_id</span><span class="p">,</span>  <span class="c1"># can be None (meaning use PlateReconstruction&#39;s anchor plate ID)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_plot_engine</span><span class="p">,</span>
+        <span class="p">)</span>
 
-        <span class="c1"># State for __setstate__.</span>
-        <span class="n">state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-
-        <span class="c1"># Remove &#39;plate_reconstruction&#39; since that will get passed to __init__.</span>
-        <span class="k">del</span> <span class="n">state</span><span class="p">[</span><span class="s2">&quot;plate_reconstruction&quot;</span><span class="p">]</span>
-
-        <span class="c1"># Remove the unpicklable entries.</span>
+        <span class="c1"># The reason we implement __reduce__ is so that __init__ gets called.</span>
         <span class="c1">#</span>
-        <span class="c1"># This includes pygplates reconstructed feature geometries and resolved topological geometries.</span>
-        <span class="c1"># Note: PyGPlates features and features collections (and rotation models) can be pickled though.</span>
+        <span class="c1"># We do this instead of implementing __getstate__ (where __init__ doesn&#39;t get called) since it&#39;s easier to keep</span>
+        <span class="c1"># things in sync, otherwise __setstate__ would need to stay in sync with __init__ whenever __init_&#39;s code gets modified.</span>
         <span class="c1">#</span>
-        <span class="c1"># __setstate__ will call &#39;update_time()&#39; to generate these reconstructed/resolved geometries/features.</span>
-        <span class="c1"># So we don&#39;t need to pickle them.</span>
-        <span class="c1"># Note: Some of them we can pickle (eg, &quot;resolved features&quot;, which are of type pygplates.Feature) and</span>
-        <span class="c1">#       some we cannot (like &#39;coastlines&#39; which are of type pygplates.ReconstructedFeatureGeometry).</span>
-        <span class="c1">#       However, as mentioned, we won&#39;t pickle any of them (since taken care of by &#39;update_time()&#39;).</span>
-        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">(</span>
-            <span class="s2">&quot;coastlines&quot;</span><span class="p">,</span>  <span class="c1"># we&#39;re keeping &quot;_coastlines&quot; though (we need the original &#39;pygplates.Feature&#39;s to reconstruct with)</span>
-            <span class="s2">&quot;continents&quot;</span><span class="p">,</span>  <span class="c1"># we&#39;re keeping &quot;_continents&quot; though (we need the original &#39;pygplates.Feature&#39;s to reconstruct with)</span>
-            <span class="s2">&quot;COBs&quot;</span><span class="p">,</span>  <span class="c1"># we&#39;re keeping &quot;_COBs&quot; though (we need the original &#39;pygplates.Feature&#39;s to reconstruct with)</span>
-            <span class="s2">&quot;_topological_plate_boundaries&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;_topologies&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;_ridges&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;_ridges_do_not_use_for_now&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;_transforms&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;_transforms_do_not_use_for_now&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;trenches&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;trench_left&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;trench_right&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;other&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;continental_rifts&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;faults&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;fracture_zones&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;inferred_paleo_boundaries&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;terrane_boundaries&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;transitional_crusts&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;orogenic_belts&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;sutures&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;continental_crusts&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;extended_continental_crusts&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;passive_continental_boundaries&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;slab_edges&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;unclassified_features&quot;</span><span class="p">,</span>
-        <span class="p">):</span>
-            <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">state</span><span class="p">:</span>  <span class="c1"># in case some state has not been initialised yet</span>
-                <span class="k">del</span> <span class="n">state</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
-
-        <span class="c1"># Call __init__ so that we default initialise everything in a consistent state before __setstate__ gets called.</span>
-        <span class="c1"># Note that this is the reason we implement __reduce__, instead of __getstate__ (where __init__ doesn&#39;t get called).</span>
+        <span class="c1"># It also means we don&#39;t have to worry about pickling the *reconstructed* features and topologies.</span>
+        <span class="c1"># These are unpickable items because pygplates reconstructed feature geometries and resolved topological geometries</span>
+        <span class="c1"># cannot be pickled (only the *unreconstructed* pygplates features and features collections can be pickled).</span>
         <span class="c1">#</span>
-        <span class="c1"># If we don&#39;t do this then __setstate__ would need to stay in sync with __init__ (whenever it gets updated).</span>
-        <span class="k">return</span> <span class="n">PlotTopologies</span><span class="p">,</span> <span class="n">init_args</span><span class="p">,</span> <span class="n">state</span>
-
-    <span class="k">def</span><span class="w"> </span><span class="nf">__setstate__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">state</span><span class="p">)</span>
-
-        <span class="c1"># Restore the unpicklable entries.</span>
-        <span class="c1">#</span>
-        <span class="c1"># This includes pygplates reconstructed feature geometries and resolved topological geometries.</span>
-        <span class="c1"># Note: PyGPlates features and features collections (and rotation models) can be pickled though.</span>
-        <span class="c1">#</span>
-        <span class="c1"># Re-generate the pygplates reconstructed feature geometries and resolved topological geometries</span>
-        <span class="c1"># deleted from the state returned by __reduce__.</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_update_time</span><span class="p">()</span>
+        <span class="c1"># Note: We set the 3rd tuple element (the object state) to None so that __setstate__ doesn&#39;t get called since</span>
+        <span class="c1">#       we currently don&#39;t need to set any extra state beyond what __init__ sets up for us.</span>
+        <span class="k">return</span> <span class="n">PlotTopologies</span><span class="p">,</span> <span class="n">init_args</span><span class="p">,</span> <span class="kc">None</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">topological_plate_boundaries</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -2215,7 +2179,7 @@
                             <span class="n">tmp</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
                     <span class="n">converted</span> <span class="o">=</span> <span class="n">tmp</span>
                     <span class="k">del</span> <span class="n">tmp</span>
-                    <span class="n">converted</span> <span class="o">=</span> <span class="n">linemerge</span><span class="p">(</span><span class="n">converted</span><span class="p">)</span>
+                    <span class="n">converted</span> <span class="o">=</span> <span class="n">linemerge</span><span class="p">(</span><span class="n">converted</span><span class="p">,</span> <span class="n">directed</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
                 <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">converted</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
                     <span class="n">converted</span> <span class="o">=</span> <span class="n">converted</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
                 <span class="k">else</span><span class="p">:</span>

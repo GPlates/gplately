@@ -43,9 +43,9 @@
               <p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../basic_usages.html">Minimal working example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../basic_usages.html">Minimal Working Example</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../use_cases.html">Common Use Cases</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../faq.html">Trouble-shooting and FAQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../faq.html">Troubleshooting and FAQ</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../examples.html">Examples</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../command_line_interface.html">Command Line Interface (CLI)</a></li>
 </ul>
@@ -97,19 +97,25 @@
 <span class="c1">#    with this program; if not, write to Free Software Foundation, Inc.,</span>
 <span class="c1">#    51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.</span>
 <span class="c1">#</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">pygmt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">&quot;gplately&quot;</span><span class="p">)</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">pygmt</span>
+
+    <span class="n">pygmt</span><span class="o">.</span><span class="n">config</span><span class="p">(</span>
+        <span class="n">FONT_ANNOT</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
+        <span class="n">FONT_LABEL</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
+        <span class="n">FONT</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
+        <span class="n">MAP_TICK_PEN</span><span class="o">=</span><span class="s2">&quot;0.75p&quot;</span><span class="p">,</span>
+        <span class="n">MAP_FRAME_PEN</span><span class="o">=</span><span class="s2">&quot;0.75p&quot;</span><span class="p">,</span>
+        <span class="n">MAP_TICK_LENGTH_PRIMARY</span><span class="o">=</span><span class="s2">&quot;4p&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+<span class="k">except</span><span class="p">:</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Failed to import PyGMT. PyGMT requires Python&gt;=3.11.&quot;</span><span class="p">)</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">geopandas.geodataframe</span><span class="w"> </span><span class="kn">import</span> <span class="n">GeoDataFrame</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">.plot_engine</span><span class="w"> </span><span class="kn">import</span> <span class="n">PlotEngine</span>
-
-<span class="n">pygmt</span><span class="o">.</span><span class="n">config</span><span class="p">(</span>
-    <span class="n">FONT_ANNOT</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
-    <span class="n">FONT_LABEL</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
-    <span class="n">FONT</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
-    <span class="n">MAP_TICK_PEN</span><span class="o">=</span><span class="s2">&quot;0.75p&quot;</span><span class="p">,</span>
-    <span class="n">MAP_FRAME_PEN</span><span class="o">=</span><span class="s2">&quot;0.75p&quot;</span><span class="p">,</span>
-    <span class="n">MAP_TICK_LENGTH_PRIMARY</span><span class="o">=</span><span class="s2">&quot;4p&quot;</span><span class="p">,</span>
-<span class="p">)</span>
 
 <span class="c1"># NW&#39;s example is at https://gist.github.com/nickywright/f53018a8eda29223cca6f39ab2cfa25d</span>
 
@@ -117,7 +123,7 @@
 <div class="viewcode-block" id="PygmtPlotEngine">
 <a class="viewcode-back" href="../../../generated/gplately.PygmtPlotEngine.html#gplately.PygmtPlotEngine">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">PygmtPlotEngine</span><span class="p">(</span><span class="n">PlotEngine</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Use pygmt for map plotting&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Use PyGMT for map plotting.&quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="PygmtPlotEngine.__init__">
 <a class="viewcode-back" href="../../../generated/gplately.PygmtPlotEngine.html#gplately.PygmtPlotEngine.__init__">[docs]</a>
@@ -128,7 +134,7 @@
 <div class="viewcode-block" id="PygmtPlotEngine.plot_geo_data_frame">
 <a class="viewcode-back" href="../../../generated/gplately.PygmtPlotEngine.html#gplately.PygmtPlotEngine.plot_geo_data_frame">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">plot_geo_data_frame</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ax_or_fig</span><span class="p">,</span> <span class="n">gdf</span><span class="p">:</span> <span class="n">GeoDataFrame</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Use pygmt to plot geometries in a GeoDataFrame object onto a map</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Use PyGMT to plot geometries in a GeoDataFrame object onto a map.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -195,7 +201,7 @@
         <span class="n">color</span><span class="o">=</span><span class="s2">&quot;blue&quot;</span><span class="p">,</span>
         <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
     <span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Use pygmt to plot subduction zones with &quot;teeth&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Use PyGMT to plot subduction zones with &quot;teeth&quot;</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>

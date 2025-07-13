@@ -43,9 +43,9 @@
               <p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../basic_usages.html">Minimal working example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../basic_usages.html">Minimal Working Example</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../use_cases.html">Common Use Cases</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../faq.html">Trouble-shooting and FAQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../faq.html">Troubleshooting and FAQ</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../examples.html">Examples</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../command_line_interface.html">Command Line Interface (CLI)</a></li>
 </ul>
@@ -206,7 +206,9 @@
 <span class="sd">        The static polygons as a ``pygplates.FeatureCollection`` object.</span>
 
 
-<span class="sd">    See :func:`gplately.reconstruct_points` for other parameters.</span>
+<span class="sd">    .. seealso::</span>
+
+<span class="sd">        See :func:`gplately.reconstruct_points` for other parameter details.</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># the length of lons and lats must be the same.</span>
@@ -317,7 +319,12 @@
     <span class="n">anchor_plate_id</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
     <span class="n">ignore_valid_time</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
 <span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Wrapper function to reverse reconstruct points with :func:`gplately.reconstruct_points`.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Wrapper function to reverse reconstruct points with :func:`gplately.reconstruct_points`.</span>
+
+<span class="sd">    .. seealso::</span>
+
+<span class="sd">        See :func:`gplately.reconstruct_points` for parameter details.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">reconstruct_points</span><span class="p">(</span>
         <span class="n">lons</span><span class="p">,</span>
         <span class="n">lats</span><span class="p">,</span>
@@ -345,7 +352,12 @@
     <span class="n">anchor_plate_id</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
     <span class="n">ignore_valid_time</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
 <span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Wrapper function to reverse reconstruct points with :func:`gplately.reconstruct_points_impl`.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Wrapper function to reverse reconstruct points with :func:`gplately.reconstruct_points_impl`.</span>
+
+<span class="sd">    .. seealso::</span>
+
+<span class="sd">        See :func:`gplately.reconstruct_points` for parameter details.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">reconstruct_points_impl</span><span class="p">(</span>
         <span class="n">lons</span><span class="o">=</span><span class="n">lons</span><span class="p">,</span>
         <span class="n">lats</span><span class="o">=</span><span class="n">lats</span><span class="p">,</span>

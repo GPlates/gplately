@@ -1,4 +1,4 @@
-Minimal working example
+Minimal Working Example
 =======================
 
 .. contents::
@@ -13,10 +13,10 @@ Follow the steps below to create your own first paleogeographic map.
 
 .. _`how to use a terminal`: https://www.freecodecamp.org/news/command-line-for-beginners/
 
-Option 1: Python script
+Option 1: Python Script
 -----------------------
 
-- **Step 1**: use micromamba_ to create a GPlately environment
+- **Step 1**: use micromamba_ to create a GPlately environment.
    
    .. code:: console
 
@@ -28,7 +28,7 @@ Option 1: Python script
     
    |How to install micromamba?|
 
-- **Step 2**: create a gplately_hello_world.py file and copy & paste the Python code below
+- **Step 2**: create a gplately_hello_world.py file and copy & paste the Python code below.
 
    .. code-block:: python
       :linenos:
@@ -54,14 +54,14 @@ Option 1: Python script
       # save the map to a .png file
       plt.gcf().savefig("gplately-hello-world.png")
 
-- **Step 3**: run the Python file and check the map
+- **Step 3**: run the Python file and check the map.
 
    .. code:: console
 
       $ python3 gplately_hello_world.py
 
    Open the file ``gplately-hello-world.png`` in your current working directory.
-   The paleogeographic map created by the code above shows the coastlines at 100 Million years ago.
+   The paleogeographic map created by the code above shows the coastlines from 100 million years ago.
 
    .. image:: images/gplately-helloworld.png
       :width: 400
@@ -71,7 +71,7 @@ Option 1: Python script
 Option 2: Jupyter Notebook
 --------------------------
 
-- **Step 1**: use micromamba_ to create a GPlately environment
+- **Step 1**: use micromamba_ to create a GPlately environment.
    
    .. code:: console
 
@@ -83,7 +83,7 @@ Option 2: Jupyter Notebook
     
    |How to install micromamba?|
     
-- **Step 2**: start a Jupyter Notebook server
+- **Step 2**: start a Jupyter Notebook server.
 
    .. code:: console
 
@@ -95,7 +95,7 @@ Option 2: Jupyter Notebook
 
 .. _`Jupyter Notebook Documentation`: https://jupyter-notebook.readthedocs.io/en/latest/ 
 
-- **Step 3**: create an empty notebook and copy & paste the Python code below
+- **Step 3**: create an empty notebook and copy & paste the Python code below.
 
    .. code-block:: python
       :linenos:
@@ -121,10 +121,10 @@ Option 2: Jupyter Notebook
       # display the map
       plt.show()
 
-- **Step 4**: run the notebook and check the map
+- **Step 4**: run the notebook and check the map.
 
    The map will be displayed inline within the Jupyter Notebook's web interface.
-   The paleogeographic map created by the code above shows the coastlines at 100 Million years ago.
+   The paleogeographic map created by the code above shows the coastlines from 100 million years ago.
 
    .. image:: images/gplately-helloworld-notebook.png
       :width: 400
@@ -135,8 +135,8 @@ Option 2: Jupyter Notebook
    - `GPlately Hello World Python Script`_
    - `GPlately Hello World Jupyter Notebook`_
 
-.. _`GPlately Hello World Python Script`: https://github.com/GPlates/gplately/blob/update-doc-readme-examples/Notebooks/Examples/hello_world.py
-.. _`GPlately Hello World Jupyter Notebook`: https://github.com/GPlates/gplately/blob/update-doc-readme-examples/Notebooks/Examples/hello_world.ipynb
+.. _`GPlately Hello World Python Script`: https://github.com/GPlates/gplately/blob/master/Notebooks/Examples/hello_world.py
+.. _`GPlately Hello World Jupyter Notebook`: https://github.com/GPlates/gplately/blob/master/Notebooks/Examples/hello_world.ipynb
 .. _micromamba: https://mamba.readthedocs.io/en/latest/user_guide/micromamba.html
 .. |How to install micromamba?| raw:: html
    

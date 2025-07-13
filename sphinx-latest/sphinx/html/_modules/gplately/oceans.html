@@ -43,9 +43,9 @@
               <p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../basic_usages.html">Minimal working example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../basic_usages.html">Minimal Working Example</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../use_cases.html">Common Use Cases</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../faq.html">Trouble-shooting and FAQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../faq.html">Troubleshooting and FAQ</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../examples.html">Examples</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../command_line_interface.html">Command Line Interface (CLI)</a></li>
 </ul>
@@ -260,7 +260,7 @@
 <div class="viewcode-block" id="SeafloorGrid">
 <a class="viewcode-back" href="../../generated/gplately.SeafloorGrid.html#gplately.SeafloorGrid">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">SeafloorGrid</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Generate grids that track data atop global ocean basin points (which emerge from mid ocean ridges) through geological time.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Generate grids that track data atop global ocean basin points (which emerge from mid-ocean ridges) through geological time.&quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="SeafloorGrid.__init__">
 <a class="viewcode-back" href="../../generated/gplately.SeafloorGrid.html#gplately.SeafloorGrid.__init__">[docs]</a>
@@ -392,10 +392,8 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">_PlotTopologies_object</span><span class="o">.</span><span class="n">continents</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">rotation_model</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_max_time</span>
         <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_PlotTopologies_object</span><span class="o">.</span><span class="n">continents</span> <span class="o">=</span> <span class="n">PlotTopologies_object</span><span class="o">.</span><span class="n">continents</span>
-        <span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">icosahedral_multi_point</span><span class="p">,</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">icosahedral_global_mesh</span><span class="p">,</span>
-        <span class="p">)</span> <span class="o">=</span> <span class="n">create_icosahedral_mesh</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">refinement_levels</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">icosahedral_multi_point</span> <span class="o">=</span> <span class="n">create_icosahedral_mesh</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">refinement_levels</span><span class="p">)</span>
 
         <span class="c1"># Z value parameters</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">zval_names</span> <span class="o">=</span> <span class="n">zval_names</span>
