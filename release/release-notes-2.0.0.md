@@ -21,7 +21,7 @@
 
 ### New Features
 * The [online documentation](https://gplates.github.io/gplately/) has been overhauled to use "Sphinx", replacing pdoc3. As a result, the online documentation website now features a completely redesigned look.
-* A new [new plate-model-manager](https://pypi.org/project/plate-model-manager/) model has been introduced to facilitate the management of reconstruction models.
+* A new [plate-model-manager](https://pypi.org/project/plate-model-manager/) model has been introduced to facilitate the management of reconstruction models.
 * A new logging framework has been introduced to assist with debugging and enhance usability.
 * An initial implementation leveraging PyGMT for map plotting is now available.
 * A new [command line interface (CLI)](https://gplates.github.io/gplately/latest/sphinx/html/command_line_interface.html) has been introduced to enhance usability.

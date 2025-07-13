@@ -8,11 +8,7 @@
 
 ### Do the following things before announcing the new release
 
-- create a "x.x.x" branch, for example "2.0.0". the new release will be created from this "release branch".
 - change "USING_DEV_VERSION" variable to False in __init__.py in the release branch.
-- change "Version - latest dev" to "Version - x.x.x", for example "Version - 2.0.0".
-- search the code base for "dev-doc" and change "dev-doc" to the new release folder when applicable.
-- search the code base for "/master/" and change "/master/" to the new release branch when applicable.
 - create a new folder for the documentation files of the new release in the "gh-pages" branch.
 - make sure all the Jupyter notebooks work without errors.
 - make sure all examples work without errors.
