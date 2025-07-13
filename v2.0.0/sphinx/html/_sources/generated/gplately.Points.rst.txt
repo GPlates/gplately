@@ -1,0 +1,46 @@
+﻿gplately.Points
+===============
+
+.. currentmodule:: gplately
+
+.. autoclass:: Points
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~Points.__init__
+      ~Points.add_attributes
+      ~Points.copy
+      ~Points.flowline
+      ~Points.get_geodataframe
+      ~Points.get_geopandas_dataframe
+      ~Points.motion_path
+      ~Points.plate_velocity
+      ~Points.reconstruct
+      ~Points.reconstruct_to_birth_age
+      ~Points.rotate_reference_frames
+      ~Points.save
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~Points.age
+      ~Points.anchor_plate_id
+      ~Points.lats
+      ~Points.lons
+      ~Points.plate_id
+      ~Points.plate_reconstruction
+      ~Points.size
+      ~Points.time
+   
+   

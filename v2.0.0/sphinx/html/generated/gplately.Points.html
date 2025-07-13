@@ -1,0 +1,846 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>gplately.Points &mdash; gplately 2.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+
+  
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=51b770b3"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="gplately.Raster" href="gplately.Raster.html" />
+    <link rel="prev" title="gplately.PlateReconstruction" href="gplately.PlateReconstruction.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            gplately
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../basic_usages.html">Minimal Working Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../use_cases.html">Common Use Cases</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../faq.html">Troubleshooting and FAQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../command_line_interface.html">Command Line Interface (CLI)</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../api.html">Main Classes</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="gplately.DataServer.html">gplately.DataServer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gplately.PlateReconstruction.html">gplately.PlateReconstruction</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">gplately.Points</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#gplately.Points"><code class="docutils literal notranslate"><span class="pre">Points</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#gplately.Points.__init__"><code class="docutils literal notranslate"><span class="pre">Points.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gplately.Points.add_attributes"><code class="docutils literal notranslate"><span class="pre">Points.add_attributes()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gplately.Points.age"><code class="docutils literal notranslate"><span class="pre">Points.age</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gplately.Points.anchor_plate_id"><code class="docutils literal notranslate"><span class="pre">Points.anchor_plate_id</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gplately.Points.copy"><code class="docutils literal notranslate"><span class="pre">Points.copy()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gplately.Points.flowline"><code class="docutils literal notranslate"><span class="pre">Points.flowline()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gplately.Points.get_geodataframe"><code class="docutils literal notranslate"><span class="pre">Points.get_geodataframe()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gplately.Points.get_geopandas_dataframe"><code class="docutils literal notranslate"><span class="pre">Points.get_geopandas_dataframe()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gplately.Points.lats"><code class="docutils literal notranslate"><span class="pre">Points.lats</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gplately.Points.lons"><code class="docutils literal notranslate"><span class="pre">Points.lons</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gplately.Points.motion_path"><code class="docutils literal notranslate"><span class="pre">Points.motion_path()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gplately.Points.plate_id"><code class="docutils literal notranslate"><span class="pre">Points.plate_id</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gplately.Points.plate_reconstruction"><code class="docutils literal notranslate"><span class="pre">Points.plate_reconstruction</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gplately.Points.plate_velocity"><code class="docutils literal notranslate"><span class="pre">Points.plate_velocity()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gplately.Points.reconstruct"><code class="docutils literal notranslate"><span class="pre">Points.reconstruct()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gplately.Points.reconstruct_to_birth_age"><code class="docutils literal notranslate"><span class="pre">Points.reconstruct_to_birth_age()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gplately.Points.rotate_reference_frames"><code class="docutils literal notranslate"><span class="pre">Points.rotate_reference_frames()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gplately.Points.save"><code class="docutils literal notranslate"><span class="pre">Points.save()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gplately.Points.size"><code class="docutils literal notranslate"><span class="pre">Points.size</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gplately.Points.time"><code class="docutils literal notranslate"><span class="pre">Points.time</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="gplately.Raster.html">gplately.Raster</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gplately.PlotTopologies.html">gplately.PlotTopologies</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gplately.SeafloorGrid.html">gplately.SeafloorGrid</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../functions.html">Functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../secondaries.html">Other Classes</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">gplately</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../api.html">Main Classes</a></li>
+      <li class="breadcrumb-item active">gplately.Points</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/generated/gplately.Points.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="gplately-points">
+<h1>gplately.Points<a class="headerlink" href="#gplately-points" title="Link to this heading"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="gplately.Points">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">gplately.</span></span><span class="sig-name descname"><span class="pre">Points</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">plate_reconstruction</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lons</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lats</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plate_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">age</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">inf</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">anchor_plate_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">remove_unreconstructable_points</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/points.html#Points"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.Points" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Reconstruct and work with geological point data.</p>
+<p>The locations and plate velocities of point data can be calculated at a specific geological time.
+The <a class="reference internal" href="#gplately.Points" title="gplately.Points"><code class="xref py py-class docutils literal notranslate"><span class="pre">Points</span></code></a> class depends on the <a class="reference internal" href="gplately.PlateReconstruction.html#gplately.PlateReconstruction" title="gplately.PlateReconstruction"><code class="xref py py-class docutils literal notranslate"><span class="pre">PlateReconstruction</span></code></a> class,
+as it provides essential components for reconstructing plate motions.
+Specifically, it uses the <a class="reference internal" href="gplately.PlateReconstruction.html#gplately.PlateReconstruction.rotation_model" title="gplately.PlateReconstruction.rotation_model"><code class="xref py py-attr docutils literal notranslate"><span class="pre">PlateReconstruction.rotation_model</span></code></a> to compute point rotations through time,
+and the <a class="reference internal" href="gplately.PlateReconstruction.html#gplately.PlateReconstruction.static_polygons" title="gplately.PlateReconstruction.static_polygons"><code class="xref py py-attr docutils literal notranslate"><span class="pre">PlateReconstruction.static_polygons</span></code></a> to assign points to their respective tectonic plates.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="gplately.Points.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">plate_reconstruction</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lons</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lats</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plate_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">age</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">inf</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">anchor_plate_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">remove_unreconstructable_points</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/points.html#Points.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.Points.__init__" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>plate_reconstruction</strong> (<a class="reference internal" href="gplately.PlateReconstruction.html#gplately.PlateReconstruction" title="gplately.PlateReconstruction"><em>PlateReconstruction</em></a>) – <p>Object to provide the following essential components for reconstructing points.</p>
+<ul>
+<li><p><a class="reference internal" href="gplately.PlateReconstruction.html#gplately.PlateReconstruction.rotation_model" title="gplately.PlateReconstruction.rotation_model"><code class="xref py py-attr docutils literal notranslate"><span class="pre">PlateReconstruction.rotation_model</span></code></a></p></li>
+<li><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">PlateReconstruction.topology_featues</span></code></p></li>
+<li><p><a class="reference internal" href="gplately.PlateReconstruction.html#gplately.PlateReconstruction.static_polygons" title="gplately.PlateReconstruction.static_polygons"><code class="xref py py-attr docutils literal notranslate"><span class="pre">PlateReconstruction.static_polygons</span></code></a></p></li>
+</ul>
+</p></li>
+<li><p><strong>lons</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em> or </em><em>1D array</em>) – Longitudes of the initial points at the initial <code class="docutils literal notranslate"><span class="pre">time</span></code>.</p></li>
+<li><p><strong>lats</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em> or </em><em>1D array</em>) – Latitudes of the initial points at the initial <code class="docutils literal notranslate"><span class="pre">time</span></code>.</p></li>
+<li><p><strong>time</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em>, </em><em>default=0</em>) – The initial time (Ma) of the points.
+The <code class="docutils literal notranslate"><span class="pre">lons</span></code> and <code class="docutils literal notranslate"><span class="pre">lats</span></code> are the initial coordinates of the points at this time.
+By default, it is set to the present day (0 Ma).</p></li>
+<li><p><strong>plate_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a><em> or </em><em>1D array</em><em> or </em><em>None</em><em>, </em><em>default=None</em>) – Plate ID(s) of a particular tectonic plate on which point data lies, if known.
+If it is a single integer then all points will have the same plate ID. If it is a 1D array then length must match the number of points.
+If <code class="docutils literal notranslate"><span class="pre">None</span></code> then plate IDs are determined using the <a class="reference internal" href="gplately.PlateReconstruction.html#gplately.PlateReconstruction.static_polygons" title="gplately.PlateReconstruction.static_polygons"><code class="xref py py-attr docutils literal notranslate"><span class="pre">PlateReconstruction.static_polygons</span></code></a>.
+By default, the plate IDs are determined using the static polygons.</p></li>
+<li><p><strong>age</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em> or </em><em>1D array</em><em> or </em><em>None</em><em>, </em><em>default=numpy.inf</em>) – Age(s) at which each point appears, if known.
+If it is a single float then all points will have the same age.
+If it is a 1D array then length must match the number of points.
+If <code class="docutils literal notranslate"><span class="pre">None</span></code> then ages are determined using the <a class="reference internal" href="gplately.PlateReconstruction.html#gplately.PlateReconstruction.static_polygons" title="gplately.PlateReconstruction.static_polygons"><code class="xref py py-attr docutils literal notranslate"><span class="pre">PlateReconstruction.static_polygons</span></code></a>.
+For points on oceanic crust this is when they were created at a mid-ocean ridge.
+By default, all points exist for all time (ie, time of appearance is infinity). This default is for backward
+compatibility, but you’ll typically only want this if all your points are on <strong>continental</strong> crust (not <em>oceanic</em>).</p></li>
+<li><p><strong>anchor_plate_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a><em>, </em><em>optional</em>) – Anchor plate ID that the specified <code class="docutils literal notranslate"><span class="pre">lons</span></code> and <code class="docutils literal notranslate"><span class="pre">lats</span></code> are relative to.
+Defaults to the current anchor plate ID of <code class="docutils literal notranslate"><span class="pre">plate_reconstruction</span></code> (its <code class="docutils literal notranslate"><span class="pre">anchor_plate_id</span></code> attribute).</p></li>
+<li><p><strong>remove_unreconstructable_points</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><em>list</em></a><em>, </em><em>default=False</em>) – Whether to remove points that cannot be reconstructed.
+By default, all unreconstructable points are retained.
+A point cannot be reconstructed if it cannot be assigned a plate ID, or cannot be assigned an age, because it did not
+intersect any reconstructed static polygons (note that this can only happen when <code class="docutils literal notranslate"><span class="pre">plate_id</span></code> and/or <code class="docutils literal notranslate"><span class="pre">age</span></code> is None).
+Also, a point cannot be reconstructed if point ages were <strong>explicitly</strong> provided (ie, <code class="docutils literal notranslate"><span class="pre">age</span></code> was <strong>not</strong> None) and
+a point’s age was less than (younger than) <code class="docutils literal notranslate"><span class="pre">time</span></code>, meaning it did not exist as far back as <code class="docutils literal notranslate"><span class="pre">time</span></code>.
+Additionally, if this variable is a <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></a> then the indices (into the supplied <code class="docutils literal notranslate"><span class="pre">lons</span></code> and <code class="docutils literal notranslate"><span class="pre">lats</span></code> arguments)
+of any removed points (ie, that are unreconstructable) are appended to that list.</p></li>
+</ul>
+</dd>
+</dl>
+<div class="admonition note" id="points-note">
+<p class="admonition-title">Note</p>
+<p>If <code class="docutils literal notranslate"><span class="pre">time</span></code> is non-zero (ie, not present day) then <code class="docutils literal notranslate"><span class="pre">lons</span></code> and <code class="docutils literal notranslate"><span class="pre">lats</span></code> are assumed to be the <strong>reconstructed</strong> point
+locations at <code class="docutils literal notranslate"><span class="pre">time</span></code>. And the reconstructed positions are assumed to be relative to the anchor plate
+(which is <code class="docutils literal notranslate"><span class="pre">plate_reconstruction.anchor_plate_id</span></code> if <code class="docutils literal notranslate"><span class="pre">anchor_plate_id</span></code> is None).</p>
+<p>If <code class="docutils literal notranslate"><span class="pre">plate_id</span></code> and/or <code class="docutils literal notranslate"><span class="pre">age</span></code> is None then the plate ID and/or age of each point is determined by reconstructing the static polygons
+of <code class="docutils literal notranslate"><span class="pre">plate_reconstruction</span></code> to <code class="docutils literal notranslate"><span class="pre">time</span></code> and reconstructing relative to the anchor plate (regardless of whether <code class="docutils literal notranslate"><span class="pre">time</span></code> is present day or not).
+And then, for each point, assigning the plate ID and/or time-of-appearance (begin time) of the static polygon containing the point.</p>
+<p>A point is considered unreconstructable if it does not exist at <code class="docutils literal notranslate"><span class="pre">time</span></code>. This can happen if its age was explicitly provided (ie, <code class="docutils literal notranslate"><span class="pre">age</span></code> is <strong>not</strong> None)
+but is younger than <code class="docutils literal notranslate"><span class="pre">time</span></code>. It can also happen if the point is automatically assigned a plate ID (ie, <code class="docutils literal notranslate"><span class="pre">plate_id</span></code> is None) or an age (ie, <code class="docutils literal notranslate"><span class="pre">age</span></code> is None)
+but does not intersect any reconstructed static polygons (at <code class="docutils literal notranslate"><span class="pre">time</span></code>). In either of these cases it is marked as unreconstructable and will not be available
+for any method outputing a reconstruction, such as <a class="reference internal" href="#gplately.Points.reconstruct" title="gplately.Points.reconstruct"><code class="xref py py-meth docutils literal notranslate"><span class="pre">reconstruct()</span></code></a>, or any method depending on a reconstruction, such as <a class="reference internal" href="#gplately.Points.plate_velocity" title="gplately.Points.plate_velocity"><code class="xref py py-meth docutils literal notranslate"><span class="pre">plate_velocity()</span></code></a>.
+However, all the initial locations and their associated plate IDs and ages will still be accessible as attributes, regardless of whether all the points
+are reconstructable or not. That is, unless <code class="docutils literal notranslate"><span class="pre">remove_unreconstructable_points</span></code> is True (or a <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></a>),
+in which case only the reconstructable points are retained.</p>
+</div>
+</dd></dl>
+
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#gplately.Points.__init__" title="gplately.Points.__init__"><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code></a>(plate_reconstruction, lons, lats[, ...])</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#gplately.Points.add_attributes" title="gplately.Points.add_attributes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_attributes</span></code></a>(**kwargs)</p></td>
+<td><p>Adds the value of a feature attribute associated with a key.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#gplately.Points.copy" title="gplately.Points.copy"><code class="xref py py-obj docutils literal notranslate"><span class="pre">copy</span></code></a>()</p></td>
+<td><p>Returns a copy of the <a class="reference internal" href="#gplately.Points" title="gplately.Points"><code class="xref py py-class docutils literal notranslate"><span class="pre">Points</span></code></a> object</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#gplately.Points.flowline" title="gplately.Points.flowline"><code class="xref py py-obj docutils literal notranslate"><span class="pre">flowline</span></code></a>(time_array, left_plate_id, ...[, ...])</p></td>
+<td><p>Create a path of points to track plate motion away from spreading ridges over time using half-stage rotations.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#gplately.Points.get_geodataframe" title="gplately.Points.get_geodataframe"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_geodataframe</span></code></a>()</p></td>
+<td><p>The same as <a class="reference internal" href="#gplately.Points.get_geopandas_dataframe" title="gplately.Points.get_geopandas_dataframe"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_geopandas_dataframe()</span></code></a>.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#gplately.Points.get_geopandas_dataframe" title="gplately.Points.get_geopandas_dataframe"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_geopandas_dataframe</span></code></a>()</p></td>
+<td><p>Return a <code class="docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code> object for the points.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#gplately.Points.motion_path" title="gplately.Points.motion_path"><code class="xref py py-obj docutils literal notranslate"><span class="pre">motion_path</span></code></a>(time_array, *[, time, ...])</p></td>
+<td><p>Create a path of points to mark the trajectory of a plate's motion through geological time.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#gplately.Points.plate_velocity" title="gplately.Points.plate_velocity"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plate_velocity</span></code></a>(time[, delta_time, ...])</p></td>
+<td><p>Calculates the east and north components of the tectonic plate velocities of the internal points at a particular geological time.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#gplately.Points.reconstruct" title="gplately.Points.reconstruct"><code class="xref py py-obj docutils literal notranslate"><span class="pre">reconstruct</span></code></a>(time[, anchor_plate_id, ...])</p></td>
+<td><p>Reconstruct points from the initial time (<code class="docutils literal notranslate"><span class="pre">self.time</span></code>) to the specified time (<code class="docutils literal notranslate"><span class="pre">time</span></code>).</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#gplately.Points.reconstruct_to_birth_age" title="gplately.Points.reconstruct_to_birth_age"><code class="xref py py-obj docutils literal notranslate"><span class="pre">reconstruct_to_birth_age</span></code></a>(ages[, ...])</p></td>
+<td><p>Reconstruct points from the initial time (<code class="docutils literal notranslate"><span class="pre">self.time</span></code>) to a range of times.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#gplately.Points.rotate_reference_frames" title="gplately.Points.rotate_reference_frames"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rotate_reference_frames</span></code></a>(reconstruction_time)</p></td>
+<td><p>Rotate a grid defined in one plate model reference frame within a <a class="reference internal" href="gplately.Raster.html#gplately.Raster" title="gplately.Raster"><code class="xref py py-class docutils literal notranslate"><span class="pre">Raster</span></code></a> object to another plate reconstruction model reference frame.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#gplately.Points.save" title="gplately.Points.save"><code class="xref py py-obj docutils literal notranslate"><span class="pre">save</span></code></a>(filename)</p></td>
+<td><p>Saves the feature collection used in the Points object under a given filename to the current directory.</p></td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Attributes</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#gplately.Points.age" title="gplately.Points.age"><code class="xref py py-obj docutils literal notranslate"><span class="pre">age</span></code></a></p></td>
+<td><p>A 1D array containing the ages (time of appearance) of the points.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#gplately.Points.anchor_plate_id" title="gplately.Points.anchor_plate_id"><code class="xref py py-obj docutils literal notranslate"><span class="pre">anchor_plate_id</span></code></a></p></td>
+<td><p>Anchor plate that the initial <code class="docutils literal notranslate"><span class="pre">lons</span></code> and <code class="docutils literal notranslate"><span class="pre">lats</span></code> are relative to, at the initial <code class="docutils literal notranslate"><span class="pre">time</span></code>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#gplately.Points.lats" title="gplately.Points.lats"><code class="xref py py-obj docutils literal notranslate"><span class="pre">lats</span></code></a></p></td>
+<td><p>Latitudes of the initial points at the initial <code class="docutils literal notranslate"><span class="pre">time</span></code>.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#gplately.Points.lons" title="gplately.Points.lons"><code class="xref py py-obj docutils literal notranslate"><span class="pre">lons</span></code></a></p></td>
+<td><p>Longitudes of the initial points at the initial <code class="docutils literal notranslate"><span class="pre">time</span></code>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#gplately.Points.plate_id" title="gplately.Points.plate_id"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plate_id</span></code></a></p></td>
+<td><p>A 1D array containing the plate IDs of the points.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#gplately.Points.plate_reconstruction" title="gplately.Points.plate_reconstruction"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plate_reconstruction</span></code></a></p></td>
+<td><p>Object to provide the following essential components for reconstructing points.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#gplately.Points.size" title="gplately.Points.size"><code class="xref py py-obj docutils literal notranslate"><span class="pre">size</span></code></a></p></td>
+<td><p>Number of points.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#gplately.Points.time" title="gplately.Points.time"><code class="xref py py-obj docutils literal notranslate"><span class="pre">time</span></code></a></p></td>
+<td><p>The initial time (Ma) of the points.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="gplately.Points.add_attributes">
+<span class="sig-name descname"><span class="pre">add_attributes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/points.html#Points.add_attributes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.Points.add_attributes" title="Link to this definition"></a></dt>
+<dd><p>Adds the value of a feature attribute associated with a key.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>**kwargs</strong> (<em>sequence</em><em> of </em><em>key=item/s</em>) – A single key=value pair, or a sequence of key=value pairs denoting the name and
+value of an attribute.</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="c1"># Define latitudes and longitudes to set up a Points object</span>
+<span class="linenos"> 2</span><span class="n">pt_lons</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">140.</span><span class="p">,</span> <span class="mf">150.</span><span class="p">,</span> <span class="mf">160.</span><span class="p">])</span>
+<span class="linenos"> 3</span><span class="n">pt_lats</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="mf">30.</span><span class="p">,</span> <span class="o">-</span><span class="mf">40.</span><span class="p">,</span> <span class="o">-</span><span class="mf">50.</span><span class="p">])</span>
+<span class="linenos"> 4</span>
+<span class="linenos"> 5</span><span class="n">gpts</span> <span class="o">=</span> <span class="n">gplately</span><span class="o">.</span><span class="n">Points</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">pt_lons</span><span class="p">,</span> <span class="n">pt_lats</span><span class="p">)</span>
+<span class="linenos"> 6</span>
+<span class="linenos"> 7</span><span class="c1"># Add the attributes a, b and c to the points in the Points object</span>
+<span class="linenos"> 8</span><span class="n">gpts</span><span class="o">.</span><span class="n">add_attributes</span><span class="p">(</span>
+<span class="linenos"> 9</span>    <span class="n">a</span><span class="o">=</span><span class="p">[</span><span class="mi">10</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">],</span>
+<span class="linenos">10</span>    <span class="n">b</span><span class="o">=</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">],</span>
+<span class="linenos">11</span>    <span class="n">c</span><span class="o">=</span><span class="p">[</span><span class="mi">30</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span>
+<span class="linenos">12</span><span class="p">)</span>
+<span class="linenos">13</span>
+<span class="linenos">14</span><span class="nb">print</span><span class="p">(</span><span class="n">gpts</span><span class="o">.</span><span class="n">attributes</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The output would be:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">{&#39;a&#39;: [10, 2, 2], &#39;b&#39;: [2, 3, 3], &#39;c&#39;: [30, 0, 0]}</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>An <strong>assertion</strong> is raised if the number of points in the Points object is not equal
+to the number of values associated with an attribute key. For example, consider an instance
+of the Points object with 3 points. If the points are ascribed an attribute <code class="docutils literal notranslate"><span class="pre">temperature</span></code>,
+there must be one <code class="docutils literal notranslate"><span class="pre">temperature</span></code> value per point, i.e. <code class="docutils literal notranslate"><span class="pre">temperature</span> <span class="pre">=</span> <span class="pre">[20,</span> <span class="pre">15,</span> <span class="pre">17.5]</span></code>.</p>
+</div>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="gplately.Points.age">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">age</span></span><a class="headerlink" href="#gplately.Points.age" title="Link to this definition"></a></dt>
+<dd><p>A 1D array containing the ages (time of appearance) of the points.
+The length must match that of <code class="docutils literal notranslate"><span class="pre">lons</span></code> and <code class="docutils literal notranslate"><span class="pre">lats</span></code>.
+For points on oceanic crust this is when they were created at a mid-ocean ridge.
+Any points existing for all time will have a value of <code class="docutils literal notranslate"><span class="pre">numpy.inf</span></code> (equivalent to <code class="docutils literal notranslate"><span class="pre">float('inf')</span></code>).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float 1D array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="gplately.Points.anchor_plate_id">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">anchor_plate_id</span></span><a class="headerlink" href="#gplately.Points.anchor_plate_id" title="Link to this definition"></a></dt>
+<dd><p>Anchor plate that the initial <code class="docutils literal notranslate"><span class="pre">lons</span></code> and <code class="docutils literal notranslate"><span class="pre">lats</span></code> are relative to, at the initial <code class="docutils literal notranslate"><span class="pre">time</span></code>.
+This is also used as the default anchor plate when reconstructing the points.
+It does not change, even if the anchor plate of <code class="docutils literal notranslate"><span class="pre">plate_reconstruction</span></code> subsequently changes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)">int</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gplately.Points.copy">
+<span class="sig-name descname"><span class="pre">copy</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/points.html#Points.copy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.Points.copy" title="Link to this definition"></a></dt>
+<dd><p>Returns a copy of the <a class="reference internal" href="#gplately.Points" title="gplately.Points"><code class="xref py py-class docutils literal notranslate"><span class="pre">Points</span></code></a> object</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A copy of the current <a class="reference internal" href="#gplately.Points" title="gplately.Points"><code class="xref py py-class docutils literal notranslate"><span class="pre">Points</span></code></a> object</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="#gplately.Points" title="gplately.Points">Points</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gplately.Points.flowline">
+<span class="sig-name descname"><span class="pre">flowline</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time_array</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">left_plate_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">right_plate_id</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">time</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">anchor_plate_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_times</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_rate_of_motion</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/points.html#Points.flowline"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.Points.flowline" title="Link to this definition"></a></dt>
+<dd><p>Create a path of points to track plate motion away from spreading ridges over time using half-stage rotations.</p>
+<p>One flowline is created for each point that is reconstructable (see <a class="reference internal" href="#points-note"><span class="std std-ref">Notes</span></a>).
+Each flowline is reconstructed to <code class="docutils literal notranslate"><span class="pre">time</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>time_array</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em> or </em><em>1D array</em>) – <p>An array of reconstruction times at which to track spreading of the points.
+For example:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="linenos">2</span><span class="n">min_time</span> <span class="o">=</span> <span class="mi">30</span>
+<span class="linenos">3</span><span class="n">max_time</span> <span class="o">=</span> <span class="mi">100</span>
+<span class="linenos">4</span><span class="n">time_step</span> <span class="o">=</span> <span class="mf">2.5</span>
+<span class="linenos">5</span><span class="n">time_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">min_time</span><span class="p">,</span> <span class="n">max_time</span> <span class="o">+</span> <span class="n">time_step</span><span class="p">,</span> <span class="n">time_step</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Note that the time array will be sorted in ascending order (if it is not already).</p>
+</p></li>
+<li><p><strong>left_plate_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – The plate ID of the plate to the left of the spreading ridge.</p></li>
+<li><p><strong>right_plate_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – The plate ID of the plate to the right of the spreading ridge.</p></li>
+<li><p><strong>time</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em>, </em><em>optional</em>) – The reconstruction time (Ma) to reconstruct the flowline to.
+Defaults to the current time (<a class="reference internal" href="#gplately.Points.time" title="gplately.Points.time"><code class="xref py py-attr docutils literal notranslate"><span class="pre">time</span></code></a> attribute).</p></li>
+<li><p><strong>anchor_plate_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a><em>, </em><em>optional</em>) – Anchor plate ID. Defaults to the current anchor plate ID (<a class="reference internal" href="#gplately.Points.anchor_plate_id" title="gplately.Points.anchor_plate_id"><code class="xref py py-attr docutils literal notranslate"><span class="pre">anchor_plate_id</span></code></a> attribute).</p></li>
+<li><p><strong>return_times</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a><em>, </em><em>default=False</em>) – Choose whether to return the times in <code class="docutils literal notranslate"><span class="pre">time_array</span></code> that are older than the reconstruction time
+(ie, where <code class="docutils literal notranslate"><span class="pre">time_array[i]</span> <span class="pre">&gt;</span> <span class="pre">time</span></code>). This includes the reconstruction time (<code class="docutils literal notranslate"><span class="pre">to_time</span></code>)
+unless it is outside the time range of <code class="docutils literal notranslate"><span class="pre">time_array</span></code>.</p></li>
+<li><p><strong>return_rate_of_motion</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a><em>, </em><em>default=False</em>) – Choose whether to return the rate of spreading through time for each time step between the times in <code class="docutils literal notranslate"><span class="pre">time_array</span></code>
+that are older than the reconstruction time (ie, where <code class="docutils literal notranslate"><span class="pre">time_array[i]</span> <span class="pre">&gt;</span> <span class="pre">time</span></code>). This includes the reconstruction time
+(<code class="docutils literal notranslate"><span class="pre">to_time</span></code>) unless it is outside the time range of <code class="docutils literal notranslate"><span class="pre">time_array</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>left_rlons</strong> (<em>2D array</em>) – A 2D array with each row containing the <strong>left</strong> plate spreading history of longitudes of a reconstructable point
+at each time in <code class="docutils literal notranslate"><span class="pre">time_array</span></code> that is older than the reconstruction time (ie, where <code class="docutils literal notranslate"><span class="pre">time_array[i]</span> <span class="pre">&gt;=</span> <span class="pre">to_time</span></code>).
+There are n rows for n reconstructable points.</p></li>
+<li><p><strong>left_rlats</strong> (<em>2D array</em>) – A 2D array with each row containing the <strong>left</strong> plate spreading history of latitudes of a reconstructable point
+at each time in <code class="docutils literal notranslate"><span class="pre">time_array</span></code> that is older than the reconstruction time (ie, where <code class="docutils literal notranslate"><span class="pre">time_array[i]</span> <span class="pre">&gt;=</span> <span class="pre">to_time</span></code>).
+There are n rows for n reconstructable points.</p></li>
+<li><p><strong>right_rlons</strong> (<em>2D array</em>) – A 2D array with each row containing the <strong>right</strong> plate spreading history of longitudes of a reconstructable point
+at each time in <code class="docutils literal notranslate"><span class="pre">time_array</span></code> that is older than the reconstruction time (ie, where <code class="docutils literal notranslate"><span class="pre">time_array[i]</span> <span class="pre">&gt;=</span> <span class="pre">to_time</span></code>).
+There are n rows for n reconstructable points.</p></li>
+<li><p><strong>right_rlats</strong> (<em>2D array</em>) – A 2D array with each row containing the <strong>right</strong> plate spreading history of latitudes of a reconstructable point
+at each time in <code class="docutils literal notranslate"><span class="pre">time_array</span></code> that is older than the reconstruction time (ie, where <code class="docutils literal notranslate"><span class="pre">time_array[i]</span> <span class="pre">&gt;=</span> <span class="pre">to_time</span></code>).
+There are n rows for n reconstructable points.</p></li>
+<li><p><strong>rtimes</strong> (<em>1D array</em>) – Only provided if <code class="docutils literal notranslate"><span class="pre">return_times</span></code> is True.
+A 1D array with the times in <code class="docutils literal notranslate"><span class="pre">time_array</span></code> that are older than the reconstruction time (ie, where <code class="docutils literal notranslate"><span class="pre">time_array[i]</span> <span class="pre">&gt;=</span> <span class="pre">to_time</span></code>).
+The size of this array is the same as the number of columns in <code class="docutils literal notranslate"><span class="pre">left_rlons`,</span> <span class="pre">``left_rlats</span></code>, <code class="docutils literal notranslate"><span class="pre">right_rlons`</span> <span class="pre">and</span> <span class="pre">``right_rlats</span></code>.</p></li>
+<li><p><strong>rate_of_motion</strong> (<em>2D array</em>) – Only provided if <code class="docutils literal notranslate"><span class="pre">return_rate_of_motion</span></code> is True.
+The rate of plate motion (in cm/yr) for each time step between the times in <code class="docutils literal notranslate"><span class="pre">time_array</span></code> that are older than the
+reconstruction time (ie, where <code class="docutils literal notranslate"><span class="pre">time_array[i]</span> <span class="pre">&gt;=</span> <span class="pre">to_time</span></code>).
+The number of columns is one less than the number of columns in <code class="docutils literal notranslate"><span class="pre">left_rlons`,</span> <span class="pre">``left_rlats</span></code>, <code class="docutils literal notranslate"><span class="pre">right_rlons`</span> <span class="pre">and</span> <span class="pre">``right_rlats</span></code>.
+There are n rows for n reconstructable points.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If <code class="docutils literal notranslate"><span class="pre">max(time_array)</span> <span class="pre">&lt;=</span> <span class="pre">time</span></code> then there will be no history in the returned arrays
+(ie, the number of columns will be zero for each returned array, including <code class="docutils literal notranslate"><span class="pre">rtimes</span></code> and <code class="docutils literal notranslate"><span class="pre">rate_of_motion</span></code> if requested).</p>
+</div>
+<p class="rubric">Examples</p>
+<p>To access the latitudes and longitudes of each point’s flowline:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="n">lons</span> <span class="o">=</span> <span class="p">[</span><span class="o">...</span><span class="p">]</span>
+<span class="linenos"> 2</span><span class="n">lats</span> <span class="o">=</span> <span class="p">[</span><span class="o">...</span><span class="p">]</span>
+<span class="linenos"> 3</span><span class="n">gpts</span> <span class="o">=</span> <span class="n">gplately</span><span class="o">.</span><span class="n">Points</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">lons</span><span class="p">,</span> <span class="n">lats</span><span class="p">)</span>
+<span class="linenos"> 4</span>
+<span class="linenos"> 5</span><span class="n">time_array</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="mi">40</span><span class="p">,</span> <span class="mi">50</span><span class="p">]</span>
+<span class="linenos"> 6</span><span class="n">left_plate_ID</span><span class="o">=</span><span class="mi">201</span>
+<span class="linenos"> 7</span><span class="n">right_plate_ID</span><span class="o">=</span><span class="mi">701</span>
+<span class="linenos"> 8</span><span class="n">left_rlons</span><span class="p">,</span> <span class="n">left_rlats</span><span class="p">,</span> <span class="n">right_rlons</span><span class="p">,</span> <span class="n">right_rlats</span> <span class="o">=</span> <span class="n">gpts</span><span class="o">.</span><span class="n">flowline</span><span class="p">(</span><span class="n">time_array</span><span class="p">,</span> <span class="n">left_plate_ID</span><span class="p">,</span> <span class="n">right_plate_ID</span><span class="p">)</span>
+<span class="linenos"> 9</span>
+<span class="linenos">10</span><span class="c1"># Left flowline.</span>
+<span class="linenos">11</span><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">left_rlons</span><span class="p">)):</span>
+<span class="linenos">12</span>    <span class="n">current_left_lons</span> <span class="o">=</span> <span class="n">left_rlons</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+<span class="linenos">13</span>    <span class="n">current_left_lats</span> <span class="o">=</span> <span class="n">left_rlats</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+<span class="linenos">14</span>
+<span class="linenos">15</span><span class="c1"># Right flowline.</span>
+<span class="linenos">16</span><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">right_rlons</span><span class="p">)):</span>
+<span class="linenos">17</span>    <span class="n">current_right_lons</span> <span class="o">=</span> <span class="n">right_rlons</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+<span class="linenos">18</span>    <span class="n">current_right_lats</span> <span class="o">=</span> <span class="n">right_rlats</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gplately.Points.get_geodataframe">
+<span class="sig-name descname"><span class="pre">get_geodataframe</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/points.html#Points.get_geodataframe"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.Points.get_geodataframe" title="Link to this definition"></a></dt>
+<dd><p>The same as <a class="reference internal" href="#gplately.Points.get_geopandas_dataframe" title="gplately.Points.get_geopandas_dataframe"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_geopandas_dataframe()</span></code></a>.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gplately.Points.get_geopandas_dataframe">
+<span class="sig-name descname"><span class="pre">get_geopandas_dataframe</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/points.html#Points.get_geopandas_dataframe"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.Points.get_geopandas_dataframe" title="Link to this definition"></a></dt>
+<dd><p>Return a <code class="docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code> object for the points.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>GeoDataFrame</strong> – A <code class="docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code> object with rows equal to the number of points in the <a class="reference internal" href="#gplately.Points" title="gplately.Points"><code class="xref py py-class docutils literal notranslate"><span class="pre">Points</span></code></a> object,
+and an additional column containing a shapely <code class="docutils literal notranslate"><span class="pre">geometry</span></code> attribute.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>geopandas.GeoDataFrame</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="n">pt_lons</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">140.</span><span class="p">,</span> <span class="mf">150.</span><span class="p">,</span> <span class="mf">160.</span><span class="p">])</span>
+<span class="linenos"> 2</span><span class="n">pt_lats</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="mf">30.</span><span class="p">,</span> <span class="o">-</span><span class="mf">40.</span><span class="p">,</span> <span class="o">-</span><span class="mf">50.</span><span class="p">])</span>
+<span class="linenos"> 3</span>
+<span class="linenos"> 4</span><span class="n">gpts</span> <span class="o">=</span> <span class="n">gplately</span><span class="o">.</span><span class="n">Points</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">pt_lons</span><span class="p">,</span> <span class="n">pt_lats</span><span class="p">)</span>
+<span class="linenos"> 5</span>
+<span class="linenos"> 6</span><span class="c1"># Add sample attributes a, b and c to the points in the Points object</span>
+<span class="linenos"> 7</span><span class="n">gpts</span><span class="o">.</span><span class="n">add_attributes</span><span class="p">(</span>
+<span class="linenos"> 8</span>    <span class="n">a</span><span class="o">=</span><span class="p">[</span><span class="mi">10</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">],</span>
+<span class="linenos"> 9</span>    <span class="n">b</span><span class="o">=</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">],</span>
+<span class="linenos">10</span>    <span class="n">c</span><span class="o">=</span><span class="p">[</span><span class="mi">30</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span>
+<span class="linenos">11</span><span class="p">)</span>
+<span class="linenos">12</span>
+<span class="linenos">13</span><span class="n">gpts</span><span class="o">.</span><span class="n">get_geopandas_dataframe</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>has the output:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">    a  b   c                     geometry</span>
+<span class="go">0  10  2  30  POINT (140.00000 -30.00000)</span>
+<span class="go">1   2  3   0  POINT (150.00000 -40.00000)</span>
+<span class="go">2   2  3   0  POINT (160.00000 -50.00000)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="gplately.Points.lats">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">lats</span></span><a class="headerlink" href="#gplately.Points.lats" title="Link to this definition"></a></dt>
+<dd><p>Latitudes of the initial points at the initial <code class="docutils literal notranslate"><span class="pre">time</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float 1D array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="gplately.Points.lons">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">lons</span></span><a class="headerlink" href="#gplately.Points.lons" title="Link to this definition"></a></dt>
+<dd><p>Longitudes of the initial points at the initial <code class="docutils literal notranslate"><span class="pre">time</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float 1D array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gplately.Points.motion_path">
+<span class="sig-name descname"><span class="pre">motion_path</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time_array</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">time</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">relative_plate_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">anchor_plate_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_times</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_rate_of_motion</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/points.html#Points.motion_path"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.Points.motion_path" title="Link to this definition"></a></dt>
+<dd><p>Create a path of points to mark the trajectory of a plate’s motion through geological time.</p>
+<p>One motion path is created for each point that is reconstructable (see <a class="reference internal" href="#points-note"><span class="std std-ref">Notes</span></a>) using its plate ID.
+Each motion path is reconstructed to <code class="docutils literal notranslate"><span class="pre">time</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>time_array</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em> or </em><em>1D array</em>) – <p>An array of reconstruction times at which to determine the trajectory of the points.
+For example:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="linenos">2</span><span class="n">min_time</span> <span class="o">=</span> <span class="mi">30</span>
+<span class="linenos">3</span><span class="n">max_time</span> <span class="o">=</span> <span class="mi">100</span>
+<span class="linenos">4</span><span class="n">time_step</span> <span class="o">=</span> <span class="mf">2.5</span>
+<span class="linenos">5</span><span class="n">time_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">min_time</span><span class="p">,</span> <span class="n">max_time</span> <span class="o">+</span> <span class="n">time_step</span><span class="p">,</span> <span class="n">time_step</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Note that the time array will be sorted in ascending order (if it is not already).</p>
+</p></li>
+<li><p><strong>time</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em>, </em><em>optional</em>) – The reconstruction time (Ma) to reconstruct the motion path to.
+Defaults to the current time (<a class="reference internal" href="#gplately.Points.time" title="gplately.Points.time"><code class="xref py py-attr docutils literal notranslate"><span class="pre">time</span></code></a> attribute).</p></li>
+<li><p><strong>relative_plate_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a><em>, </em><em>optional</em>) – The ID of the plate that the motion path is relative to. Defaults to <code class="docutils literal notranslate"><span class="pre">anchor_plate_id</span></code> which itself
+defaults to the current anchor plate ID (<a class="reference internal" href="#gplately.Points.anchor_plate_id" title="gplately.Points.anchor_plate_id"><code class="xref py py-attr docutils literal notranslate"><span class="pre">anchor_plate_id</span></code></a> attribute).</p></li>
+<li><p><strong>anchor_plate_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a><em>, </em><em>optional</em>) – Anchor plate ID. Defaults to the current anchor plate ID (<a class="reference internal" href="#gplately.Points.anchor_plate_id" title="gplately.Points.anchor_plate_id"><code class="xref py py-attr docutils literal notranslate"><span class="pre">anchor_plate_id</span></code></a> attribute).</p></li>
+<li><p><strong>return_times</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a><em>, </em><em>default=False</em>) – Choose whether to return the times in <code class="docutils literal notranslate"><span class="pre">time_array</span></code> that are older than the reconstruction time
+(ie, where <code class="docutils literal notranslate"><span class="pre">time_array[i]</span> <span class="pre">&gt;</span> <span class="pre">time</span></code>). This includes the reconstruction time (<code class="docutils literal notranslate"><span class="pre">to_time</span></code>)
+unless it is outside the time range of <code class="docutils literal notranslate"><span class="pre">time_array</span></code>.</p></li>
+<li><p><strong>return_rate_of_motion</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a><em>, </em><em>default=False</em>) – Choose whether to return the rate of plate motion through time for each time step between the times in <code class="docutils literal notranslate"><span class="pre">time_array</span></code>
+that are older than the reconstruction time (ie, where <code class="docutils literal notranslate"><span class="pre">time_array[i]</span> <span class="pre">&gt;</span> <span class="pre">time</span></code>). This includes the reconstruction time
+(<code class="docutils literal notranslate"><span class="pre">to_time</span></code>) unless it is outside the time range of <code class="docutils literal notranslate"><span class="pre">time_array</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>rlons</strong> (<em>2D array</em>) – A 2D array with each row containing the history of longitudes of a reconstructable point at each time in <code class="docutils literal notranslate"><span class="pre">time_array</span></code> that is
+older than the reconstruction time (ie, where <code class="docutils literal notranslate"><span class="pre">time_array[i]</span> <span class="pre">&gt;=</span> <span class="pre">to_time</span></code>).
+There are n rows for n reconstructable points.</p></li>
+<li><p><strong>rlats</strong> (<em>2D array</em>) – A 2D array with each row containing the history of latitudes of a reconstructable point at each time in <code class="docutils literal notranslate"><span class="pre">time_array</span></code> that is
+older than the reconstruction time (ie, where <code class="docutils literal notranslate"><span class="pre">time_array[i]</span> <span class="pre">&gt;=</span> <span class="pre">to_time</span></code>).
+There are n rows for n reconstructable points.</p></li>
+<li><p><strong>rtimes</strong> (<em>1D array</em>) – Only provided if <code class="docutils literal notranslate"><span class="pre">return_times</span></code> is True.
+A 1D array with the times in <code class="docutils literal notranslate"><span class="pre">time_array</span></code> that are older than the reconstruction time (ie, where <code class="docutils literal notranslate"><span class="pre">time_array[i]</span> <span class="pre">&gt;=</span> <span class="pre">to_time</span></code>).
+The size of this array is the same as the number of columns in <code class="docutils literal notranslate"><span class="pre">rlons</span></code> and <code class="docutils literal notranslate"><span class="pre">rlats</span></code>.</p></li>
+<li><p><strong>rate_of_motion</strong> (<em>2D array</em>) – Only provided if <code class="docutils literal notranslate"><span class="pre">return_rate_of_motion</span></code> is True.
+The rate of plate motion (in cm/yr) for each time step between the times in <code class="docutils literal notranslate"><span class="pre">time_array</span></code> that are older than the
+reconstruction time (ie, where <code class="docutils literal notranslate"><span class="pre">time_array[i]</span> <span class="pre">&gt;=</span> <span class="pre">to_time</span></code>).
+The number of columns is one less than the number of columns in <code class="docutils literal notranslate"><span class="pre">rlons</span></code> and <code class="docutils literal notranslate"><span class="pre">rlats</span></code>.
+There are n rows for n reconstructable points.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If <code class="docutils literal notranslate"><span class="pre">max(time_array)</span> <span class="pre">&lt;=</span> <span class="pre">time</span></code> then there will be no history in the returned arrays
+(ie, the number of columns will be zero for each returned array, including <code class="docutils literal notranslate"><span class="pre">rtimes</span></code> and <code class="docutils literal notranslate"><span class="pre">rate_of_motion</span></code> if requested).</p>
+</div>
+<p class="rubric">Examples</p>
+<p>To access the latitudes and longitudes of each point’s motion path:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="n">lons</span> <span class="o">=</span> <span class="p">[</span><span class="o">...</span><span class="p">]</span>
+<span class="linenos"> 2</span><span class="n">lats</span> <span class="o">=</span> <span class="p">[</span><span class="o">...</span><span class="p">]</span>
+<span class="linenos"> 3</span><span class="n">gpts</span> <span class="o">=</span> <span class="n">gplately</span><span class="o">.</span><span class="n">Points</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">lons</span><span class="p">,</span> <span class="n">lats</span><span class="p">)</span>
+<span class="linenos"> 4</span>
+<span class="linenos"> 5</span><span class="n">time_array</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="mi">40</span><span class="p">,</span> <span class="mi">50</span><span class="p">]</span>
+<span class="linenos"> 6</span><span class="n">rlons</span><span class="p">,</span> <span class="n">rlats</span> <span class="o">=</span> <span class="n">gpts</span><span class="o">.</span><span class="n">motion_path</span><span class="p">(</span><span class="n">time_array</span><span class="p">)</span>
+<span class="linenos"> 7</span>
+<span class="linenos"> 8</span><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">rlons</span><span class="p">)):</span>
+<span class="linenos"> 9</span>    <span class="n">current_lons</span> <span class="o">=</span> <span class="n">rlons</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+<span class="linenos">10</span>    <span class="n">current_lats</span> <span class="o">=</span> <span class="n">rlats</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="gplately.Points.plate_id">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">plate_id</span></span><a class="headerlink" href="#gplately.Points.plate_id" title="Link to this definition"></a></dt>
+<dd><p>A 1D array containing the plate IDs of the points.
+The length must match that of <code class="docutils literal notranslate"><span class="pre">lons</span></code> and <code class="docutils literal notranslate"><span class="pre">lats</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int 1D array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="gplately.Points.plate_reconstruction">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">plate_reconstruction</span></span><a class="headerlink" href="#gplately.Points.plate_reconstruction" title="Link to this definition"></a></dt>
+<dd><p>Object to provide the following essential components for reconstructing points.</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="gplately.PlateReconstruction.html#gplately.PlateReconstruction.rotation_model" title="gplately.PlateReconstruction.rotation_model"><code class="xref py py-attr docutils literal notranslate"><span class="pre">PlateReconstruction.rotation_model</span></code></a></p></li>
+<li><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">PlateReconstruction.topology_featues</span></code></p></li>
+<li><p><a class="reference internal" href="gplately.PlateReconstruction.html#gplately.PlateReconstruction.static_polygons" title="gplately.PlateReconstruction.static_polygons"><code class="xref py py-attr docutils literal notranslate"><span class="pre">PlateReconstruction.static_polygons</span></code></a></p></li>
+</ul>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="gplately.PlateReconstruction.html#gplately.PlateReconstruction" title="gplately.PlateReconstruction">PlateReconstruction</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gplately.Points.plate_velocity">
+<span class="sig-name descname"><span class="pre">plate_velocity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delta_time</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">velocity_delta_time_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">pygplates.pygplates.VelocityDeltaTimeType.t_plus_delta_t_to_t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">velocity_units</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">pygplates.pygplates.VelocityUnits.cms_per_yr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">earth_radius_in_kms</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">6371.009</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">anchor_plate_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_reconstructed_points</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_point_indices</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/points.html#Points.plate_velocity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.Points.plate_velocity" title="Link to this definition"></a></dt>
+<dd><p>Calculates the east and north components of the tectonic plate velocities of the internal points at a particular geological time.</p>
+<p>The point velocities are calculated using the plate IDs of the internal points and the rotation model of the internal <a class="reference internal" href="gplately.PlateReconstruction.html#gplately.PlateReconstruction" title="gplately.PlateReconstruction"><code class="xref py py-class docutils literal notranslate"><span class="pre">PlateReconstruction</span></code></a> object.
+If the requested <code class="docutils literal notranslate"><span class="pre">time</span></code> differs from the initial time (<code class="docutils literal notranslate"><span class="pre">self.time</span></code>) then the internal points are first reconstructed to <code class="docutils literal notranslate"><span class="pre">time</span></code> before calculating velocities.
+Velocities are only calculated at points that are reconstructable (See <a class="reference internal" href="#points-note"><span class="std std-ref">Notes</span></a>) and that have ages greater than or equal to
+<code class="docutils literal notranslate"><span class="pre">time</span></code> (ie, at points that exist at <code class="docutils literal notranslate"><span class="pre">time</span></code>).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>time</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – The specific geological time (Ma) at which to calculate plate velocities.</p></li>
+<li><p><strong>delta_time</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em>, </em><em>default=1.0</em>) – The time interval used for velocity calculations. 1.0Ma by default.</p></li>
+<li><p><strong>velocity_delta_time_type</strong> (<em>pygplates.VelocityDeltaTimeType</em><em>, </em><em>default=pygplates.VelocityDeltaTimeType.t_plus_delta_t_to_t</em>) – How the two velocity times are calculated relative to <code class="docutils literal notranslate"><span class="pre">time</span></code> (defaults to <code class="docutils literal notranslate"><span class="pre">[time</span> <span class="pre">+</span> <span class="pre">velocity_delta_time,</span> <span class="pre">time]</span></code>).</p></li>
+<li><p><strong>velocity_units</strong> (<em>pygplates.VelocityUnits</em><em>, </em><em>default=pygplates.VelocityUnits.cms_per_yr</em>) – Whether to return velocities in centimetres per year or kilometres per million years (defaults to centimetres per year).</p></li>
+<li><p><strong>earth_radius_in_kms</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em>, </em><em>default=pygplates.Earth.mean_radius_in_kms</em>) – Radius of the Earth in kilometres.
+This is only used to calculate velocities (strain rates always use <code class="docutils literal notranslate"><span class="pre">pygplates.Earth.equatorial_radius_in_kms</span></code>).</p></li>
+<li><p><strong>anchor_plate_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a><em>, </em><em>optional</em>) – Anchor plate used to reconstruct the points and calculate velocities at their locations.
+By default, reconstructions are made with respect to <code class="docutils literal notranslate"><span class="pre">self.anchor_plate_id</span></code>
+(which is the anchor plate that the initial points at the initial time are relative to).</p></li>
+<li><p><strong>return_reconstructed_points</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a><em>, </em><em>default=False</em>) – Return the reconstructed points (as longitude and latitude arrays) in addition to the velocities.</p></li>
+<li><p><strong>return_point_indices</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a><em>, </em><em>default=False</em>) – Return the indices of those internal points at which velocities are calculated.
+These are indices into <code class="docutils literal notranslate"><span class="pre">self.lons</span></code>, <code class="docutils literal notranslate"><span class="pre">self.lats</span></code>, <code class="docutils literal notranslate"><span class="pre">self.plate_id</span></code> and <code class="docutils literal notranslate"><span class="pre">self.age</span></code>.
+Those points with an age less than <code class="docutils literal notranslate"><span class="pre">time</span></code> have not yet appeared at <code class="docutils literal notranslate"><span class="pre">time</span></code>, and therefore will not have velocities returned.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>velocity_lons, velocity_lats</strong> (<em>ndarray</em>) – The velocity arrays containing the <strong>east</strong> (longitude) and <em>north</em> (latitude) components of the velocity
+of each internal point that exists at <code class="docutils literal notranslate"><span class="pre">time</span></code> (ie, whose age greater than or equal to <code class="docutils literal notranslate"><span class="pre">time</span></code>).</p></li>
+<li><p><strong>rlons, rlats</strong> (<em>ndarray</em>) – Only provided if <code class="docutils literal notranslate"><span class="pre">return_reconstructed_points</span></code> is True.
+The longitude and latitude coordinate arrays of the reconstructed points (at which velocities are calculated).
+These arrays are the same size as <code class="docutils literal notranslate"><span class="pre">velocity_lons</span></code> and <code class="docutils literal notranslate"><span class="pre">velocity_lats</span></code>.</p></li>
+<li><p><strong>point_indices</strong> (<em>ndarray</em>) – Only provided if <code class="docutils literal notranslate"><span class="pre">return_point_indices</span></code> is True.
+The indices of the returned points (at which velocities are calculated).
+These are indices into <code class="docutils literal notranslate"><span class="pre">self.lons</span></code>, <code class="docutils literal notranslate"><span class="pre">self.lats</span></code>, <code class="docutils literal notranslate"><span class="pre">self.plate_id</span></code> and <code class="docutils literal notranslate"><span class="pre">self.age</span></code>.
+This array is the same size as <code class="docutils literal notranslate"><span class="pre">velocity_lons</span></code> and <code class="docutils literal notranslate"><span class="pre">velocity_lats</span></code>.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The velocities are in <strong>centimetres per year</strong> by default (not <strong>kilometres per million years</strong>, the default
+in <a class="reference internal" href="gplately.PlateReconstruction.html#gplately.PlateReconstruction.get_point_velocities" title="gplately.PlateReconstruction.get_point_velocities"><code class="xref py py-meth docutils literal notranslate"><span class="pre">PlateReconstruction.get_point_velocities()</span></code></a>).
+This difference is maintained for backward compatibility.</p>
+<p>For each velocity, the <em>east*</em> component is first followed by the <em>north</em> component.
+This is different to <a class="reference internal" href="gplately.PlateReconstruction.html#gplately.PlateReconstruction.get_point_velocities" title="gplately.PlateReconstruction.get_point_velocities"><code class="xref py py-meth docutils literal notranslate"><span class="pre">PlateReconstruction.get_point_velocities()</span></code></a> where the <strong>north</strong> component is first.
+This difference is maintained for backward compatibility.</p>
+</div>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="gplately.PlateReconstruction.html#gplately.PlateReconstruction.get_point_velocities" title="gplately.PlateReconstruction.get_point_velocities"><code class="xref py py-meth docutils literal notranslate"><span class="pre">PlateReconstruction.get_point_velocities()</span></code></a> : Velocities of points calculated using topologies instead of plate IDs (assigned from static polygons).</p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gplately.Points.reconstruct">
+<span class="sig-name descname"><span class="pre">reconstruct</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">anchor_plate_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_array</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_point_indices</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/points.html#Points.reconstruct"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.Points.reconstruct" title="Link to this definition"></a></dt>
+<dd><p>Reconstruct points from the initial time (<code class="docutils literal notranslate"><span class="pre">self.time</span></code>) to the specified time (<code class="docutils literal notranslate"><span class="pre">time</span></code>).</p>
+<p>Only those points that are reconstructable (See <a class="reference internal" href="#points-note"><span class="std std-ref">Notes</span></a>) and that have ages greater than or equal
+to <code class="docutils literal notranslate"><span class="pre">time</span></code> (ie, at points that exist at <code class="docutils literal notranslate"><span class="pre">time</span></code>) are reconstructed.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>time</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – The specific geological time (Ma) to reconstruct features to.</p></li>
+<li><p><strong>anchor_plate_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a><em>, </em><em>optional</em>) – Reconstruct features with respect to a certain anchor plate.
+By default, reconstructions are made with respect to <code class="docutils literal notranslate"><span class="pre">self.anchor_plate_id</span></code>
+(which is the anchor plate that the initial points at the initial time are relative to).</p></li>
+<li><p><strong>return_array</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a><em>, </em><em>default=False</em>) – Return a 2-tuple of <code class="docutils literal notranslate"><span class="pre">numpy.ndarray</span></code>, rather than a <a class="reference internal" href="#gplately.Points" title="gplately.Points"><code class="xref py py-class docutils literal notranslate"><span class="pre">Points</span></code></a> object.</p></li>
+<li><p><strong>return_point_indices</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a><em>, </em><em>default=False</em>) – Return the indices of the points that are reconstructed.
+Those points with an age less than <code class="docutils literal notranslate"><span class="pre">time</span></code> have not yet appeared at <code class="docutils literal notranslate"><span class="pre">time</span></code>, and therefore are not reconstructed.
+These are indices into <code class="docutils literal notranslate"><span class="pre">self.lons</span></code>, <code class="docutils literal notranslate"><span class="pre">self.lats</span></code>, <code class="docutils literal notranslate"><span class="pre">self.plate_id</span></code> and <code class="docutils literal notranslate"><span class="pre">self.age</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>reconstructed_points</strong> (<a class="reference internal" href="#gplately.Points" title="gplately.Points"><code class="xref py py-class docutils literal notranslate"><span class="pre">Points</span></code></a>) – If <code class="docutils literal notranslate"><span class="pre">return_array</span></code> is False, return the reconstructed points in a <a class="reference internal" href="#gplately.Points" title="gplately.Points"><code class="xref py py-class docutils literal notranslate"><span class="pre">Points</span></code></a> object.</p></li>
+<li><p><strong>rlons, rlats</strong> (<em>ndarray</em>) – If <code class="docutils literal notranslate"><span class="pre">return_array</span></code> is True, return the longitude and latitude coordinate arrays of the reconstructed points.</p></li>
+<li><p><strong>point_indices</strong> (<em>ndarray</em>) – If <code class="docutils literal notranslate"><span class="pre">return_point_indices</span></code> is True, return the indices of the returned points (that are reconstructed).
+This array is the same size as <code class="docutils literal notranslate"><span class="pre">rlons</span></code> and <code class="docutils literal notranslate"><span class="pre">rlats</span></code> (or size of <code class="docutils literal notranslate"><span class="pre">reconstructed_points</span></code>).
+These are indices into <code class="docutils literal notranslate"><span class="pre">self.lons</span></code>, <code class="docutils literal notranslate"><span class="pre">self.lats</span></code>, <code class="docutils literal notranslate"><span class="pre">self.plate_id</span></code> and <code class="docutils literal notranslate"><span class="pre">self.age</span></code>.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gplately.Points.reconstruct_to_birth_age">
+<span class="sig-name descname"><span class="pre">reconstruct_to_birth_age</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ages</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">anchor_plate_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_point_indices</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/points.html#Points.reconstruct_to_birth_age"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.Points.reconstruct_to_birth_age" title="Link to this definition"></a></dt>
+<dd><p>Reconstruct points from the initial time (<code class="docutils literal notranslate"><span class="pre">self.time</span></code>) to a range of times.</p>
+<p>The number of supplied times must equal the number of points supplied to this <a class="reference internal" href="#gplately.Points" title="gplately.Points"><code class="xref py py-class docutils literal notranslate"><span class="pre">Points</span></code></a> object (ie, <code class="docutils literal notranslate"><span class="pre">self.size</span></code> attribute).
+Only those points that are reconstructable (See <a class="reference internal" href="#points-note"><span class="std std-ref">Notes</span></a>) and that have ages greater than or equal
+to the respective supplied ages (ie, at points that exist at the supplied ages) are reconstructed.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ages</strong> (<em>array</em>) – Geological times to reconstruct points to. Must have the same length as the number of points (<code class="docutils literal notranslate"><span class="pre">self.size</span></code> attribute).</p></li>
+<li><p><strong>anchor_plate_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a><em>, </em><em>optional</em>) – Reconstruct points with respect to a certain anchor plate.
+By default, reconstructions are made with respect to <code class="docutils literal notranslate"><span class="pre">self.anchor_plate_id</span></code>
+(which is the anchor plate that the initial points at the initial time are relative to).</p></li>
+<li><p><strong>return_point_indices</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a><em>, </em><em>default=False</em>) – Return the indices of the points that are reconstructed.
+Those points with an age less than their respective supplied age have not yet appeared, and therefore are not reconstructed.
+These are indices into <code class="docutils literal notranslate"><span class="pre">self.lons</span></code>, <code class="docutils literal notranslate"><span class="pre">self.lats</span></code>, <code class="docutils literal notranslate"><span class="pre">self.plate_id</span></code> and <code class="docutils literal notranslate"><span class="pre">self.age</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.13)"><strong>ValueError</strong></a> – If the number of ages is not equal to the number of points supplied to this <a class="reference internal" href="#gplately.Points" title="gplately.Points"><code class="xref py py-class docutils literal notranslate"><span class="pre">Points</span></code></a> object.</p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><ul class="simple">
+<li><p><strong>rlons, rlats</strong> (<em>ndarray</em>) – The longitude and latitude coordinate arrays of points reconstructed to the specified ages.</p></li>
+<li><p><strong>point_indices</strong> (<em>ndarray</em>) – Only provided if <code class="docutils literal notranslate"><span class="pre">return_point_indices</span></code> is True.
+The indices of the returned points (that are reconstructed).
+This array is the same size as <code class="docutils literal notranslate"><span class="pre">rlons</span></code> and <code class="docutils literal notranslate"><span class="pre">rlats</span></code>.
+These are indices into <code class="docutils literal notranslate"><span class="pre">self.lons</span></code>, <code class="docutils literal notranslate"><span class="pre">self.lats</span></code>, <code class="docutils literal notranslate"><span class="pre">self.plate_id</span></code> and <code class="docutils literal notranslate"><span class="pre">self.age</span></code>.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<p>To reconstruct n seed points to B Ma (for this example n=2, with (lon,lat) = (78,30) and (56,22) at time=0 Ma,
+and we reconstruct to B=10 Ma):</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="c1"># Longitude and latitude of n=2 seed points</span>
+<span class="linenos"> 2</span><span class="n">pt_lon</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">78.</span><span class="p">,</span> <span class="mi">56</span><span class="p">])</span>
+<span class="linenos"> 3</span><span class="n">pt_lat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">30.</span><span class="p">,</span> <span class="mi">22</span><span class="p">])</span>
+<span class="linenos"> 4</span>
+<span class="linenos"> 5</span><span class="c1"># Call the Points object!</span>
+<span class="linenos"> 6</span><span class="n">gpts</span> <span class="o">=</span> <span class="n">gplately</span><span class="o">.</span><span class="n">Points</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">pt_lon</span><span class="p">,</span> <span class="n">pt_lat</span><span class="p">)</span>
+<span class="linenos"> 7</span><span class="nb">print</span><span class="p">(</span><span class="n">gpts</span><span class="o">.</span><span class="n">features</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">get_all_geometries</span><span class="p">())</span>   <span class="c1"># Confirms we have features represented as points on a sphere</span>
+<span class="linenos"> 8</span>
+<span class="linenos"> 9</span><span class="n">ages</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">pt_lon</span><span class="p">))</span>
+<span class="linenos">10</span><span class="n">rlons</span><span class="p">,</span> <span class="n">rlats</span> <span class="o">=</span> <span class="n">gpts</span><span class="o">.</span><span class="n">reconstruct_to_birth_age</span><span class="p">(</span><span class="n">ages</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gplately.Points.rotate_reference_frames">
+<span class="sig-name descname"><span class="pre">rotate_reference_frames</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reconstruction_time</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">from_rotation_features_or_model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">to_rotation_features_or_model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">from_rotation_reference_plate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">to_rotation_reference_plate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">non_reference_plate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">701</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_array</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/points.html#Points.rotate_reference_frames"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.Points.rotate_reference_frames" title="Link to this definition"></a></dt>
+<dd><p>Rotate a grid defined in one plate model reference frame within a <a class="reference internal" href="gplately.Raster.html#gplately.Raster" title="gplately.Raster"><code class="xref py py-class docutils literal notranslate"><span class="pre">Raster</span></code></a> object to another plate
+reconstruction model reference frame.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>reconstruction_time</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – The time at which to rotate the reconstructed points.</p></li>
+<li><p><strong>from_rotation_features_or_model</strong> (<em>str/os.PathLike</em><em>, </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><em>list</em></a><em> of </em><em>str/os.PathLike</em><em>, or </em><em>instance</em><em> of </em><em>pygplates.RotationModel</em>) – A filename, or a list of filenames, or a pyGPlates
+RotationModel object that defines the rotation model
+that the input grid is currently associated with.
+<code class="docutils literal notranslate"><span class="pre">self.plate_reconstruction.rotation_model</span></code> is default.</p></li>
+<li><p><strong>to_rotation_features_or_model</strong> (<em>str/os.PathLike</em><em>, </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><em>list</em></a><em> of </em><em>str/os.PathLike</em><em>, or </em><em>instance</em><em> of </em><em>pygplates.RotationModel</em>) – A filename, or a list of filenames, or a pyGPlates
+RotationModel object that defines the rotation model
+that the input grid shall be rotated with.
+<code class="docutils literal notranslate"><span class="pre">self.plate_reconstruction.rotation_model</span></code> is default.</p></li>
+<li><p><strong>from_rotation_reference_plate</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a><em>, </em><em>default = 0</em>) – The current reference plate for the plate model the points
+are defined in. Defaults to the anchor plate 0.</p></li>
+<li><p><strong>to_rotation_reference_plate</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a><em>, </em><em>default = 0</em>) – The desired reference plate for the plate model the points
+to be rotated to. Defaults to the anchor plate 0.</p></li>
+<li><p><strong>non_reference_plate</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a><em>, </em><em>default = 701</em>) – An arbitrary placeholder reference frame with which
+to define the “from” and “to” reference frames.</p></li>
+<li><p><strong>output_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><em>default None</em>) – If passed, the rotated points are saved as a gpml to this filename.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>An instance of the <a class="reference internal" href="#gplately.Points" title="gplately.Points"><code class="xref py py-class docutils literal notranslate"><span class="pre">Points</span></code></a> object containing the rotated points.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#gplately.Points" title="gplately.Points">Points</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gplately.Points.save">
+<span class="sig-name descname"><span class="pre">save</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/points.html#Points.save"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.Points.save" title="Link to this definition"></a></dt>
+<dd><p>Saves the feature collection used in the Points object under a given filename to the current directory.</p>
+<p>The file format is determined from the filename extension.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>filename</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – Can be provided as a string including the filename and the file format needed.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>Feature collection saved under given filename to current directory.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="gplately.Points.size">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">size</span></span><a class="headerlink" href="#gplately.Points.size" title="Link to this definition"></a></dt>
+<dd><p>Number of points.
+This is the size of <code class="docutils literal notranslate"><span class="pre">lons</span></code>, <code class="docutils literal notranslate"><span class="pre">lats</span></code>, <code class="docutils literal notranslate"><span class="pre">plate_id</span></code> and <code class="docutils literal notranslate"><span class="pre">age</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)">int</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="gplately.Points.time">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">time</span></span><a class="headerlink" href="#gplately.Points.time" title="Link to this definition"></a></dt>
+<dd><p>The initial time (Ma) of the points.
+The initial <code class="docutils literal notranslate"><span class="pre">lons</span></code> and <code class="docutils literal notranslate"><span class="pre">lats</span></code> are the coordinates of the points at this time.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)">float</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="gplately.PlateReconstruction.html" class="btn btn-neutral float-left" title="gplately.PlateReconstruction" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="gplately.Raster.html" class="btn btn-neutral float-right" title="gplately.Raster" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023-2025, The University of Sydney.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,51 @@
+﻿gplately.Raster
+===============
+
+.. currentmodule:: gplately
+
+.. autoclass:: Raster
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~Raster.__init__
+      ~Raster.clip_by_extent
+      ~Raster.copy
+      ~Raster.fill_NaNs
+      ~Raster.imshow
+      ~Raster.interpolate
+      ~Raster.plot
+      ~Raster.query
+      ~Raster.reconstruct
+      ~Raster.resample
+      ~Raster.resize
+      ~Raster.rotate_reference_frames
+      ~Raster.save_to_netcdf4
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~Raster.data
+      ~Raster.dtype
+      ~Raster.extent
+      ~Raster.filename
+      ~Raster.lats
+      ~Raster.lons
+      ~Raster.ndim
+      ~Raster.origin
+      ~Raster.plate_reconstruction
+      ~Raster.shape
+      ~Raster.size
+      ~Raster.time
+   
+   

@@ -1,0 +1,174 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>gplately.resolve_topological_snapshot &mdash; gplately 2.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+
+  
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=51b770b3"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="gplately.resolve_topologies_into_features" href="gplately.resolve_topologies_into_features.html" />
+    <link rel="prev" title="gplately.resolve_topologies" href="gplately.resolve_topologies.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            gplately
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../basic_usages.html">Minimal Working Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../use_cases.html">Common Use Cases</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../faq.html">Troubleshooting and FAQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../command_line_interface.html">Command Line Interface (CLI)</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../api.html">Main Classes</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../functions.html">Functions</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../functions.html#reconstruction">Reconstruction</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../functions.html#resolve-topologies">Resolve Topologies</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="gplately.resolve_topologies.html">gplately.resolve_topologies</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">gplately.resolve_topological_snapshot</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#gplately.resolve_topological_snapshot"><code class="docutils literal notranslate"><span class="pre">resolve_topological_snapshot()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="gplately.resolve_topologies_into_features.html">gplately.resolve_topologies_into_features</a></li>
+<li class="toctree-l3"><a class="reference internal" href="gplately.resolve_topological_snapshot_into_features.html">gplately.resolve_topological_snapshot_into_features</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../functions.html#miscellaneous">Miscellaneous</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../secondaries.html">Other Classes</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">gplately</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../functions.html">Functions</a></li>
+      <li class="breadcrumb-item active">gplately.resolve_topological_snapshot</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/generated/gplately.resolve_topological_snapshot.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="gplately-resolve-topological-snapshot">
+<h1>gplately.resolve_topological_snapshot<a class="headerlink" href="#gplately-resolve-topological-snapshot" title="Link to this heading"></a></h1>
+<dl class="py function">
+<dt class="sig sig-object py" id="gplately.resolve_topological_snapshot">
+<span class="sig-prename descclassname"><span class="pre">gplately.</span></span><span class="sig-name descname"><span class="pre">resolve_topological_snapshot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">topological_snapshot</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">TopologicalSnapshot</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_filename_prefix</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_filename_extension</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transform_segment_deviation_in_radians</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.2217304763960306</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resolve_topology_types</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">6</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/ptt/resolve_topologies.html#resolve_topological_snapshot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.resolve_topological_snapshot" title="Link to this definition"></a></dt>
+<dd><p>From the specified topological snapshot, save (to separate files) the resolved topologies, and their boundary sections as subduction zones,
+mid-ocean ridges (ridge/transform) and others (not subduction zones or mid-ocean ridges).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>topological_snapshot</strong> (<em>pygplates.TopologicalSnapshot</em>) – Topology snapshot containing the resolved topologies at a particular reconstruction time.</p></li>
+<li><p><strong>transform_segment_deviation_in_radians</strong> (<em>number</em>) – How much a mid-ocean ridge segment can deviate from the stage pole before
+it’s considered a transform segment (in radians).</p></li>
+<li><p><strong>resolve_topology_types</strong> – A bitwise combination of any of <code class="docutils literal notranslate"><span class="pre">pygplates.ResolveTopologyType.boundary</span></code> or <code class="docutils literal notranslate"><span class="pre">pygplates.ResolveTopologyType.network</span></code>.
+Defaults to both boundaries and networks.</p></li>
+</ul>
+</dd>
+</dl>
+<p>Writes output files containing the following features…</p>
+<ul class="simple">
+<li><p>resolved topology features (topological plates and networks)</p></li>
+<li><p>ridge and transform boundary sections (resolved features)</p></li>
+<li><p>ridge boundary sections (resolved features)</p></li>
+<li><p>transform boundary sections (resolved features)</p></li>
+<li><p>subduction boundary sections (resolved features)</p></li>
+<li><p>left subduction boundary sections (resolved features)</p></li>
+<li><p>right subduction boundary sections (resolved features)</p></li>
+<li><p>other boundary sections (resolved features) that are not subduction zones or mid-ocean ridges (ridge/transform)</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This is similar to <a class="reference internal" href="gplately.resolve_topologies_into_features.html#gplately.resolve_topologies_into_features" title="gplately.resolve_topologies_into_features"><code class="xref py py-func docutils literal notranslate"><span class="pre">resolve_topologies_into_features()</span></code></a> but is more efficient if you already have a topological snapshot because it
+avoids resolving topologies again (the topological snapshot already contains resolved topologies for a particular reconstruction time).</p>
+</div>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="gplately.resolve_topologies.html#gplately.resolve_topologies" title="gplately.resolve_topologies"><code class="xref py py-func docutils literal notranslate"><span class="pre">resolve_topologies()</span></code></a></p>
+</div>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="gplately.resolve_topologies.html" class="btn btn-neutral float-left" title="gplately.resolve_topologies" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="gplately.resolve_topologies_into_features.html" class="btn btn-neutral float-right" title="gplately.resolve_topologies_into_features" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023-2025, The University of Sydney.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

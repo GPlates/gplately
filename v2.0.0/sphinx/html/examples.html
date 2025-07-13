@@ -1,0 +1,280 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Examples &mdash; gplately 2.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
+  
+    <link rel="shortcut icon" href="_static/favicon.ico"/>
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=51b770b3"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Command Line Interface (CLI)" href="command_line_interface.html" />
+    <link rel="prev" title="Troubleshooting and FAQ" href="faq.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            gplately
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="basic_usages.html">Minimal Working Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="use_cases.html">Common Use Cases</a></li>
+<li class="toctree-l1"><a class="reference internal" href="faq.html">Troubleshooting and FAQ</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Examples</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#workflows">Workflows</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#basics">Basics</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="command_line_interface.html">Command Line Interface (CLI)</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="api.html">Main Classes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="functions.html">Functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="secondaries.html">Other Classes</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">gplately</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Examples</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/examples.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="examples">
+<span id="gplately-examples"></span><h1>Examples<a class="headerlink" href="#examples" title="Link to this heading"></a></h1>
+<p>It is recommended to use a Conda environment to run these examples.
+Download <a class="reference external" href="https://github.com/GPlates/gplately/blob/master/docker/env.yaml">this yaml file</a> and
+run the commands below to start using Jupyter Notebook.</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>conda<span class="w"> </span>env<span class="w"> </span>create<span class="w"> </span>--name<span class="w"> </span>my-gplately-env<span class="w"> </span>--file<span class="o">=</span>env.yaml
+<span class="gp">$ </span>conda<span class="w"> </span>activate<span class="w"> </span>my-gplately-env
+<span class="gp">$ </span>jupyter<span class="w"> </span>notebook
+</pre></div>
+</div>
+<p>Alternatively, you may use Docker to run these examples as well. Use <code class="docutils literal notranslate"><span class="pre">-v</span></code> option to access the local directory on the host machine.
+Visit <a class="reference external" href="https://docs.docker.com/engine/storage/bind-mounts/#options-for---volume">this page</a> for details.</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>docker<span class="w"> </span>pull<span class="w"> </span>gplates/gplately
+<span class="gp">$ </span>docker<span class="w"> </span>run<span class="w"> </span>--rm<span class="w"> </span>-ti<span class="w"> </span>-v<span class="w"> </span>.:/ws<span class="w"> </span>-w<span class="w"> </span>/ws<span class="w"> </span>-p<span class="w"> </span><span class="m">8888</span>:8888<span class="w"> </span>gplates/gplately
+</pre></div>
+</div>
+<nav class="contents local" id="contents">
+<ul class="simple">
+<li><p><a class="reference internal" href="#workflows" id="id1">Workflows</a></p></li>
+<li><p><a class="reference internal" href="#basics" id="id2">Basics</a></p></li>
+</ul>
+</nav>
+<section id="workflows">
+<h2><a class="toc-backref" href="#id1" role="doc-backlink">Workflows</a><a class="headerlink" href="#workflows" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><dl class="simple">
+<dt><a class="reference external" href="../../notebook-html/01-GettingStarted.html">01 - Getting Started</a></dt><dd><p>A brief overview of how to initialise GPlately’s main objects</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><a class="reference external" href="../../notebook-html/02-PlateReconstructions.html">02 - Plate Reconstructions</a></dt><dd><p>Setting up a <a class="reference internal" href="generated/gplately.PlateReconstruction.html#gplately.PlateReconstruction" title="gplately.PlateReconstruction"><code class="xref py py-class docutils literal notranslate"><span class="pre">gplately.PlateReconstruction</span></code></a> object, reconstructing geological data through time.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><a class="reference external" href="../../notebook-html/03-WorkingWithPoints.html">03 - Working with Points</a></dt><dd><p>Setting up a <a class="reference internal" href="generated/gplately.Points.html#gplately.Points" title="gplately.Points"><code class="xref py py-class docutils literal notranslate"><span class="pre">gplately.Points</span></code></a> object, reconstructing seed point locations through time.
+This notebook uses point data from the Paleobiology Database (PBDB).</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><a class="reference external" href="../../notebook-html/04-VelocityBasics.html">04 - Velocity Basics</a></dt><dd><p>Calculating plate velocities and plotting velocity vector fields.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><a class="reference external" href="../../notebook-html/05-WorkingWithFeatureGeometries.html">05 - Working with Feature Geometries</a></dt><dd><p>Processing and plotting assorted polyline, polygon and point data from <a class="reference external" href="https://www.earthbyte.org/gplates-2-3-software-and-data-sets/">GPlates 2.3’s sample data sets</a>.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><a class="reference external" href="../../notebook-html/06-Rasters.html">06 - Rasters</a></dt><dd><p>Reading, resizing, resampling raster data, and linearly interpolating point data onto raster data.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><a class="reference external" href="../../notebook-html/07-WorkingWithPlateTectonicStats.html">07 - Plate Tectonic Stats</a></dt><dd><p>Calculating and plotting subduction zone and ridge data (convergence/spreading velocities, subduction angles,
+subduction zone and ridge lengths, crustal surface areas produced and subducted, etc.).</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><a class="reference external" href="../../notebook-html/08-PredictingSlabFlux.html">08 - Predicting Slab Flux</a></dt><dd><p>Predicting the average slab dip angle of subducting oceanic lithosphere.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><a class="reference external" href="../../notebook-html/09-CreatingMotionPathsAndFlowlines.html">09 - Motion Paths and Flowlines</a></dt><dd><p>Using pyGPlates to create motion paths and flowines of points on a tectonic plate to illustrate the plate’s
+trajectory through geological time.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><a class="reference external" href="../../notebook-html/10-SeafloorGrids.html">10 - Seafloor Grid</a></dt><dd><p>Defines the parameters needed to set up a <a class="reference internal" href="generated/gplately.SeafloorGrid.html#gplately.SeafloorGrid" title="gplately.SeafloorGrid"><code class="xref py py-class docutils literal notranslate"><span class="pre">gplately.SeafloorGrid</span></code></a> object, and demonstrates
+how to produce age and spreading rate grids from a set of plate reconstruction model files.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><a class="reference external" href="../../notebook-html/11-AndesFluxes.html">11 - Andes Fluxes</a></dt><dd><p>Demonstrates how the reconstructed subduction history along the Andean margin can be potentially
+used in the plate kinematics analysis and data mining.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><a class="reference external" href="../../notebook-html/12-MutschlerWorldPorphyryCopperDepositsRegionalPlots.html">12 - Mutschler World Porphyry Copper Deposits Regional Plots</a></dt><dd><p>Generates regional plots for Mutschler world porphyry copper deposits.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><a class="reference external" href="../../notebook-html/13-ReconstructingZirconData.html">13 - Reconstructing Zircon Data</a></dt><dd><p>Demonstrates how to reconstruct and plot Zircon data on a global map through geological time.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>All the <a class="reference external" href="https://docs.jupyter.org/en/latest/#what-is-a-notebook">Jupyter Notebook</a> files of these sample workflows
+are available <a class="reference external" href="https://github.com/GPlates/gplately/tree/master/Notebooks">here</a> in the GPlately GitHub repository.</p>
+</div>
+</section>
+<section id="basics">
+<h2><a class="toc-backref" href="#id2" role="doc-backlink">Basics</a><a class="headerlink" href="#basics" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><dl class="simple">
+<dt><a class="reference external" href="../../notebook-html/hello_world.html">Hello World</a></dt><dd><p>A minimal working example of GPlately.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><a class="reference external" href="../../notebook-html/introducing_plate_model_manager.html">Use Plate Model Manager</a></dt><dd><p>Use plate-model-manager to download plate reconstruction models.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><a class="reference external" href="../../notebook-html/plot_map_with_cartopy.html">Plot with Cartopy</a></dt><dd><p>Plot a paleo-map using Cartopy.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><a class="reference external" href="../../notebook-html/plot_map_with_pygmt.html">Plot with PyGMT</a></dt><dd><p>Plot a paleo-map using PyGMT.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><a class="reference external" href="../../notebook-html/reconstruct_files.html">Reconstruct Files</a></dt><dd><p>Reconstruct and plot shapefiles and <a class="reference external" href="https://www.gplates.org/docs/pygplates/generated/pygplates.featurecollection">other supported files</a>.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><a class="reference external" href="../../notebook-html/use_your_own_plate_model.html">Use Your Own Plate Model</a></dt><dd><p>Use your own plate model to reconstruct points.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><a class="reference external" href="../../notebook-html/save_reconstructed_data.html">Save Reconstructed Geometries to Files</a></dt><dd><p>Save the reconstructed data to shapefiles.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><a class="reference external" href="../../notebook-html/use_auxiliary_functions.html">Shortcut to Create PlateReconstruction and PlotTopologies Objects</a></dt><dd><p>Easier way to get PlateReconstruction and PlotTopologies objects from the name of a plate reconstruction model.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><a class="reference external" href="../../notebook-html/icosahedron_mesh.html">Generate Icosahedron Mesh</a></dt><dd><p>Generate and visualize Icosahedron mesh.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The <a class="reference external" href="https://docs.jupyter.org/en/latest/#what-is-a-notebook">Jupyter Notebook</a> files of these basic examples
+are available <a class="reference external" href="https://github.com/GPlates/gplately/tree/master/Notebooks/Examples">here</a>.</p>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="faq.html" class="btn btn-neutral float-left" title="Troubleshooting and FAQ" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="command_line_interface.html" class="btn btn-neutral float-right" title="Command Line Interface (CLI)" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023-2025, The University of Sydney.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

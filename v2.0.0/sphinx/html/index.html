@@ -1,0 +1,216 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GPlately v2.0.0 Documentation &mdash; gplately 2.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
+  
+    <link rel="shortcut icon" href="_static/favicon.ico"/>
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=51b770b3"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Installation" href="installation.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="#" class="icon icon-home">
+            gplately
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="basic_usages.html">Minimal Working Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="use_cases.html">Common Use Cases</a></li>
+<li class="toctree-l1"><a class="reference internal" href="faq.html">Troubleshooting and FAQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="command_line_interface.html">Command Line Interface (CLI)</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="api.html">Main Classes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="functions.html">Functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="secondaries.html">Other Classes</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="#">gplately</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="#" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">GPlately v2.0.0 Documentation</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="gplately-v2-0-0-documentation">
+<h1>GPlately v2.0.0 Documentation<a class="headerlink" href="#gplately-v2-0-0-documentation" title="Link to this heading"></a></h1>
+<p><a class="reference external" href="https://github.com/GPlates/gplately">GPlately</a> was created to accelerate spatio-temporal data analysis by leveraging <a class="reference external" href="https://www.gplates.org/docs/pygplates/">pyGPlates</a> within a simplified Python interface.
+This object-oriented package enables the reconstruction of data through deep geologic time (such as points, lines, polygons, and rasters),
+the interrogation of plate kinematic information (plate velocities and rates of subduction and seafloor spreading),
+the rapid comparison of multiple plate motion models, and the plotting of reconstructed output data on maps.
+All tools are designed to be parallel-safe, accelerating spatio-temporal analysis over multiple CPU processors.</p>
+<p>GPlately can be installed using either <a class="reference external" href="https://pip.pypa.io/en/stable/">pip</a> or <a class="reference external" href="https://docs.conda.io/projects/conda/en/latest/index.html">conda</a> (via the <a class="reference external" href="https://conda-forge.org/">conda-forge channel</a>).
+See the <a class="reference external" href="installation.html">installation section</a> for details. Additionally, <a href="installation.html#use-docker" target="_blank">Docker images</a> are available for your convenience.</p>
+<p>Sample data is available from <a href="https://www.earthbyte.org/category/resources/" target="_blank">EarthByte servers</a>, which include rasters, seafloor age grids, rotation files,
+and more to help you get started with plate reconstructions.</p>
+<div class="toctree-wrapper compound">
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#use-conda-recommended">Use Conda (recommended)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#use-pip">Use Pip</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#use-docker">Use Docker</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="basic_usages.html">Minimal Working Example</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="basic_usages.html#option-1-python-script">Option 1: Python Script</a></li>
+<li class="toctree-l2"><a class="reference internal" href="basic_usages.html#option-2-jupyter-notebook">Option 2: Jupyter Notebook</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="use_cases.html">Common Use Cases</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="use_cases.html#dataserver">DataServer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="use_cases.html#platereconstruction">PlateReconstruction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="use_cases.html#points">Points</a></li>
+<li class="toctree-l2"><a class="reference internal" href="use_cases.html#raster">Raster</a></li>
+<li class="toctree-l2"><a class="reference internal" href="use_cases.html#plottopologies">PlotTopologies</a></li>
+<li class="toctree-l2"><a class="reference internal" href="use_cases.html#seafloorgrid">SeafloorGrid</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="faq.html">Troubleshooting and FAQ</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="faq.html#troubleshooting">Troubleshooting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="faq.html#frequently-asked-questions">Frequently Asked Questions</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="examples.html#workflows">Workflows</a></li>
+<li class="toctree-l2"><a class="reference internal" href="examples.html#basics">Basics</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="command_line_interface.html">Command Line Interface (CLI)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="command_line_interface.html#list">list</a></li>
+<li class="toctree-l2"><a class="reference internal" href="command_line_interface.html#combine">combine</a></li>
+<li class="toctree-l2"><a class="reference internal" href="command_line_interface.html#filter">filter</a></li>
+<li class="toctree-l2"><a class="reference internal" href="command_line_interface.html#reset-feature-type">reset_feature_type</a></li>
+<li class="toctree-l2"><a class="reference internal" href="command_line_interface.html#agegrid-ag">agegrid (ag)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="command_line_interface.html#fix-crossovers">fix_crossovers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="command_line_interface.html#remove-rotations">remove_rotations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="command_line_interface.html#cleanup-topologies">cleanup_topologies</a></li>
+<li class="toctree-l2"><a class="reference internal" href="command_line_interface.html#convert-xy-to-gplates">convert_xy_to_gplates</a></li>
+<li class="toctree-l2"><a class="reference internal" href="command_line_interface.html#diagnose-rotations">diagnose_rotations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="command_line_interface.html#resolve-topologies">resolve_topologies</a></li>
+<li class="toctree-l2"><a class="reference internal" href="command_line_interface.html#rotation-tools">rotation_tools</a></li>
+<li class="toctree-l2"><a class="reference internal" href="command_line_interface.html#separate-ridge-transform-segments">separate_ridge_transform_segments</a></li>
+<li class="toctree-l2"><a class="reference internal" href="command_line_interface.html#subduction-convergence">subduction_convergence</a></li>
+<li class="toctree-l2"><a class="reference internal" href="command_line_interface.html#gpmdb">gpmdb</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="toctree-wrapper compound">
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="api.html">Main Classes</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="generated/gplately.DataServer.html">gplately.DataServer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/gplately.PlateReconstruction.html">gplately.PlateReconstruction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/gplately.Points.html">gplately.Points</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/gplately.Raster.html">gplately.Raster</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/gplately.PlotTopologies.html">gplately.PlotTopologies</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/gplately.SeafloorGrid.html">gplately.SeafloorGrid</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="functions.html">Functions</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#reconstruction">Reconstruction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#resolve-topologies">Resolve Topologies</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#miscellaneous">Miscellaneous</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="secondaries.html">Other Classes</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="generated/gplately.PlateModel.html">gplately.PlateModel</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/gplately.PlateModelManager.html">gplately.PlateModelManager</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/gplately.PresentDayRasterManager.html">gplately.PresentDayRasterManager</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/gplately.PlotEngine.html">gplately.PlotEngine</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/gplately.CartopyPlotEngine.html">gplately.CartopyPlotEngine</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/gplately.PygmtPlotEngine.html">gplately.PygmtPlotEngine</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+<section id="index">
+<h1>Index<a class="headerlink" href="#index" title="Link to this heading"></a></h1>
+<ul class="simple">
+<li><p><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></p></li>
+</ul>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="installation.html" class="btn btn-neutral float-right" title="Installation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023-2025, The University of Sydney.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

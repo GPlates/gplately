@@ -1,0 +1,254 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>gplately.PlateModelManager &mdash; gplately 2.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+
+  
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=51b770b3"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="gplately.PresentDayRasterManager" href="gplately.PresentDayRasterManager.html" />
+    <link rel="prev" title="gplately.PlateModel" href="gplately.PlateModel.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            gplately
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../basic_usages.html">Minimal Working Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../use_cases.html">Common Use Cases</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../faq.html">Troubleshooting and FAQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../command_line_interface.html">Command Line Interface (CLI)</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../api.html">Main Classes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../functions.html">Functions</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../secondaries.html">Other Classes</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="gplately.PlateModel.html">gplately.PlateModel</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">gplately.PlateModelManager</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#gplately.PlateModelManager"><code class="docutils literal notranslate"><span class="pre">PlateModelManager</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#gplately.PlateModelManager.__init__"><code class="docutils literal notranslate"><span class="pre">PlateModelManager.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gplately.PlateModelManager.download_all_models"><code class="docutils literal notranslate"><span class="pre">PlateModelManager.download_all_models()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gplately.PlateModelManager.get_available_model_names"><code class="docutils literal notranslate"><span class="pre">PlateModelManager.get_available_model_names()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gplately.PlateModelManager.get_default_repo_url"><code class="docutils literal notranslate"><span class="pre">PlateModelManager.get_default_repo_url()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gplately.PlateModelManager.get_local_available_model_names"><code class="docutils literal notranslate"><span class="pre">PlateModelManager.get_local_available_model_names()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gplately.PlateModelManager.get_model"><code class="docutils literal notranslate"><span class="pre">PlateModelManager.get_model()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gplately.PlateModelManager.models"><code class="docutils literal notranslate"><span class="pre">PlateModelManager.models</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="gplately.PresentDayRasterManager.html">gplately.PresentDayRasterManager</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gplately.PlotEngine.html">gplately.PlotEngine</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gplately.CartopyPlotEngine.html">gplately.CartopyPlotEngine</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gplately.PygmtPlotEngine.html">gplately.PygmtPlotEngine</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">gplately</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../secondaries.html">Other Classes</a></li>
+      <li class="breadcrumb-item active">gplately.PlateModelManager</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/generated/gplately.PlateModelManager.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="gplately-platemodelmanager">
+<h1>gplately.PlateModelManager<a class="headerlink" href="#gplately-platemodelmanager" title="Link to this heading"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="gplately.PlateModelManager">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">gplately.</span></span><span class="sig-name descname"><span class="pre">PlateModelManager</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_manifest</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(None,</span> <span class="pre">None)</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/plate_model_manager/plate_model_manager.html#PlateModelManager"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PlateModelManager" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Manage a set of public available plate reconstruction models.
+The model files are hosted on EarthByte servers.
+You need Internet connection to download the files.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="gplately.PlateModelManager.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_manifest</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(None,</span> <span class="pre">None)</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/plate_model_manager/plate_model_manager.html#PlateModelManager.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PlateModelManager.__init__" title="Link to this definition"></a></dt>
+<dd><p>Constructor. Create a <a class="reference internal" href="#gplately.PlateModelManager" title="gplately.PlateModelManager"><code class="xref py py-class docutils literal notranslate"><span class="pre">PlateModelManager</span></code></a> instance.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>model_manifest</strong> – The URL to a <code class="docutils literal notranslate"><span class="pre">models.json</span></code> metadata file.
+Normally you don’t need to provide this parameter unless
+you would like to setup your own plate model server.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#gplately.PlateModelManager.__init__" title="gplately.PlateModelManager.__init__"><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code></a>([model_manifest, timeout])</p></td>
+<td><p>Constructor.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#gplately.PlateModelManager.download_all_models" title="gplately.PlateModelManager.download_all_models"><code class="xref py py-obj docutils literal notranslate"><span class="pre">download_all_models</span></code></a>([data_dir])</p></td>
+<td><p>Download all available models into the <code class="docutils literal notranslate"><span class="pre">data_dir</span></code>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#gplately.PlateModelManager.get_available_model_names" title="gplately.PlateModelManager.get_available_model_names"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_available_model_names</span></code></a>()</p></td>
+<td><p>Return the names of available models as a list.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#gplately.PlateModelManager.get_default_repo_url" title="gplately.PlateModelManager.get_default_repo_url"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_default_repo_url</span></code></a>()</p></td>
+<td><p>Return the URL to the configuration data of models.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#gplately.PlateModelManager.get_local_available_model_names" title="gplately.PlateModelManager.get_local_available_model_names"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_local_available_model_names</span></code></a>(local_dir)</p></td>
+<td><p>Return a list of model names in a local folder.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#gplately.PlateModelManager.get_model" title="gplately.PlateModelManager.get_model"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_model</span></code></a>([model_name, data_dir])</p></td>
+<td><p>Return a <a class="reference internal" href="gplately.PlateModel.html#gplately.PlateModel" title="gplately.PlateModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">PlateModel</span></code></a> object for a given model name.</p></td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Attributes</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#gplately.PlateModelManager.models" title="gplately.PlateModelManager.models"><code class="xref py py-obj docutils literal notranslate"><span class="pre">models</span></code></a></p></td>
+<td><p>The metadata for all the models.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="gplately.PlateModelManager.download_all_models">
+<span class="sig-name descname"><span class="pre">download_all_models</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'./'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../_modules/plate_model_manager/plate_model_manager.html#PlateModelManager.download_all_models"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PlateModelManager.download_all_models" title="Link to this definition"></a></dt>
+<dd><p>Download all available models into the <code class="docutils literal notranslate"><span class="pre">data_dir</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>data_dir</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – The folder to save the model files.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gplately.PlateModelManager.get_available_model_names">
+<span class="sig-name descname"><span class="pre">get_available_model_names</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/plate_model_manager/plate_model_manager.html#PlateModelManager.get_available_model_names"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PlateModelManager.get_available_model_names" title="Link to this definition"></a></dt>
+<dd><p>Return the names of available models as a list.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gplately.PlateModelManager.get_default_repo_url">
+<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_default_repo_url</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/plate_model_manager/plate_model_manager.html#PlateModelManager.get_default_repo_url"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PlateModelManager.get_default_repo_url" title="Link to this definition"></a></dt>
+<dd><p>Return the URL to the configuration data of models.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gplately.PlateModelManager.get_local_available_model_names">
+<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_local_available_model_names</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">local_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/plate_model_manager/plate_model_manager.html#PlateModelManager.get_local_available_model_names"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PlateModelManager.get_local_available_model_names" title="Link to this definition"></a></dt>
+<dd><p>Return a list of model names in a local folder.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>local_dir</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – The local folder containing models.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gplately.PlateModelManager.get_model">
+<span class="sig-name descname"><span class="pre">get_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'default'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'.'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="gplately.PlateModel.html#gplately.PlateModel" title="plate_model_manager.plate_model.PlateModel"><span class="pre">PlateModel</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../_modules/plate_model_manager/plate_model_manager.html#PlateModelManager.get_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PlateModelManager.get_model" title="Link to this definition"></a></dt>
+<dd><p>Return a <a class="reference internal" href="gplately.PlateModel.html#gplately.PlateModel" title="gplately.PlateModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">PlateModel</span></code></a> object for a given model name.</p>
+<p>Call <a class="reference internal" href="#gplately.PlateModelManager.get_available_model_names" title="gplately.PlateModelManager.get_available_model_names"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_available_model_names()</span></code></a> to see a list of available model names.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model_name</strong> – the model name of interest</p></li>
+<li><p><strong>data_dir</strong> – The folder to save the model files.
+This <code class="docutils literal notranslate"><span class="pre">data_dir</span></code> can be changed with <a class="reference internal" href="gplately.PlateModel.html#gplately.PlateModel.set_data_dir" title="gplately.PlateModel.set_data_dir"><code class="xref py py-meth docutils literal notranslate"><span class="pre">PlateModel.set_data_dir()</span></code></a> later.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>a <a class="reference internal" href="gplately.PlateModel.html#gplately.PlateModel" title="gplately.PlateModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">PlateModel</span></code></a> object or <code class="docutils literal notranslate"><span class="pre">None</span></code> if the model name is no good.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="gplately.PlateModelManager.models">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">models</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.13)"><span class="pre">Dict</span></a></em><a class="headerlink" href="#gplately.PlateModelManager.models" title="Link to this definition"></a></dt>
+<dd><p>The metadata for all the models.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="gplately.PlateModel.html" class="btn btn-neutral float-left" title="gplately.PlateModel" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="gplately.PresentDayRasterManager.html" class="btn btn-neutral float-right" title="gplately.PresentDayRasterManager" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023-2025, The University of Sydney.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

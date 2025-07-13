@@ -1,0 +1,6 @@
+﻿gplately.reverse\_reconstruct\_points\_impl
+===========================================
+
+.. currentmodule:: gplately
+
+.. autofunction:: reverse_reconstruct_points_impl

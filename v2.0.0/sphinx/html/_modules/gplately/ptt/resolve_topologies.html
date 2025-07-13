@@ -1,0 +1,969 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>gplately.ptt.resolve_topologies &mdash; gplately 2.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+
+  
+    <link rel="shortcut icon" href="../../../_static/favicon.ico"/>
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=51b770b3"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            gplately
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../basic_usages.html">Minimal Working Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../use_cases.html">Common Use Cases</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../faq.html">Troubleshooting and FAQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../command_line_interface.html">Command Line Interface (CLI)</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../api.html">Main Classes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../functions.html">Functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../secondaries.html">Other Classes</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">gplately</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">gplately.ptt.resolve_topologies</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for gplately.ptt.resolve_topologies</h1><div class="highlight"><pre>
+<span></span><span class="c1">#</span>
+<span class="c1">#    Copyright (C) 2015-2025 The University of Sydney, Australia</span>
+<span class="c1">#</span>
+<span class="c1">#    This program is free software; you can redistribute it and/or modify it under</span>
+<span class="c1">#    the terms of the GNU General Public License, version 2, as published by</span>
+<span class="c1">#    the Free Software Foundation.</span>
+<span class="c1">#</span>
+<span class="c1">#    This program is distributed in the hope that it will be useful, but WITHOUT</span>
+<span class="c1">#    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or</span>
+<span class="c1">#    FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License</span>
+<span class="c1">#    for more details.</span>
+<span class="c1">#</span>
+<span class="c1">#    You should have received a copy of the GNU General Public License along</span>
+<span class="c1">#    with this program; if not, write to Free Software Foundation, Inc.,</span>
+<span class="c1">#    51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.</span>
+<span class="c1">#</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">print_function</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">argparse</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">math</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">pygplates</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">separate_ridge_transform_segments</span>
+
+<span class="n">DEFAULT_OUTPUT_FILENAME_PREFIX</span> <span class="o">=</span> <span class="s2">&quot;topology_&quot;</span>
+<span class="n">DEFAULT_OUTPUT_FILENAME_EXTENSION</span> <span class="o">=</span> <span class="s2">&quot;shp&quot;</span>
+
+
+<div class="viewcode-block" id="resolve_topologies">
+<a class="viewcode-back" href="../../../generated/gplately.resolve_topologies.html#gplately.resolve_topologies">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">resolve_topologies</span><span class="p">(</span>
+    <span class="n">rotation_features_or_model</span><span class="p">,</span>
+    <span class="n">topology_features</span><span class="p">,</span>
+    <span class="n">time</span><span class="p">,</span>
+    <span class="n">output_filename_prefix</span><span class="p">,</span>
+    <span class="n">output_filename_extension</span><span class="p">,</span>
+    <span class="n">transform_segment_deviation_in_radians</span><span class="o">=</span><span class="n">separate_ridge_transform_segments</span><span class="o">.</span><span class="n">DEFAULT_TRANSFORM_SEGMENT_DEVIATION_RADIANS</span><span class="p">,</span>
+    <span class="n">anchor_plate_id</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">resolve_topology_types</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">pygplates</span><span class="o">.</span><span class="n">ResolveTopologyType</span><span class="o">.</span><span class="n">boundary</span> <span class="o">|</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">ResolveTopologyType</span><span class="o">.</span><span class="n">network</span>
+    <span class="p">),</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Resolve topologies at a specified time and save (to separate files) the resolved topologies, and their boundary sections as subduction zones,</span>
+<span class="sd">    mid-ocean ridges (ridge/transform) and others (not subduction zones or mid-ocean ridges).</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+
+<span class="sd">    rotation_features_or_model:</span>
+<span class="sd">        Rotation model or feature collection(s), or list of features, or filename(s).</span>
+
+<span class="sd">    topology_features</span>
+<span class="sd">        Topology feature collection(s), or list of features, or filename(s) or any combination of those.</span>
+
+<span class="sd">    time: number</span>
+<span class="sd">        Reconstruction time to resolve topologies.</span>
+
+<span class="sd">    transform_segment_deviation_in_radians: number</span>
+<span class="sd">        How much a mid-ocean ridge segment can deviate from the stage pole before</span>
+<span class="sd">        it&#39;s considered a transform segment (in radians).</span>
+
+<span class="sd">    anchor_plate_id: int, optional</span>
+<span class="sd">        Anchor plate ID.</span>
+<span class="sd">        If not specified then defaults to ``0`` if using rotation **features**, or the default anchor plate of the rotation **model** if using one.</span>
+
+<span class="sd">    resolve_topology_types:</span>
+<span class="sd">        A bitwise combination of any of ``pygplates.ResolveTopologyType.boundary`` or ``pygplates.ResolveTopologyType.network``.</span>
+<span class="sd">        Defaults to both boundaries and networks.</span>
+
+
+<span class="sd">    Writes output files containing the following features...</span>
+
+<span class="sd">    - resolved topology features (topological plates and networks)</span>
+<span class="sd">    - ridge and transform boundary sections (resolved features)</span>
+<span class="sd">    - ridge boundary sections (resolved features)</span>
+<span class="sd">    - transform boundary sections (resolved features)</span>
+<span class="sd">    - subduction boundary sections (resolved features)</span>
+<span class="sd">    - left subduction boundary sections (resolved features)</span>
+<span class="sd">    - right subduction boundary sections (resolved features)</span>
+<span class="sd">    - other boundary sections (resolved features) that are not subduction zones or mid-ocean ridges (ridge/transform)</span>
+
+
+<span class="sd">    .. seealso::</span>
+
+<span class="sd">        :func:`resolve_topological_snapshot`</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Resolve our topological plate polygons (and deforming networks) to the current &#39;time&#39;.</span>
+    <span class="c1"># We generate both the resolved topology boundaries and the boundary sections between them.</span>
+    <span class="n">topological_snapshot</span> <span class="o">=</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">TopologicalSnapshot</span><span class="p">(</span>
+        <span class="n">topology_features</span><span class="p">,</span>
+        <span class="n">rotation_features_or_model</span><span class="p">,</span>
+        <span class="n">time</span><span class="p">,</span>
+        <span class="n">anchor_plate_id</span><span class="o">=</span><span class="n">anchor_plate_id</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">resolve_topological_snapshot</span><span class="p">(</span>
+        <span class="n">topological_snapshot</span><span class="p">,</span>
+        <span class="n">output_filename_prefix</span><span class="p">,</span>
+        <span class="n">output_filename_extension</span><span class="p">,</span>
+        <span class="n">transform_segment_deviation_in_radians</span><span class="p">,</span>
+        <span class="n">resolve_topology_types</span><span class="p">,</span>
+    <span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="resolve_topological_snapshot">
+<a class="viewcode-back" href="../../../generated/gplately.resolve_topological_snapshot.html#gplately.resolve_topological_snapshot">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">resolve_topological_snapshot</span><span class="p">(</span>
+    <span class="n">topological_snapshot</span><span class="p">:</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">TopologicalSnapshot</span><span class="p">,</span>
+    <span class="n">output_filename_prefix</span><span class="p">,</span>
+    <span class="n">output_filename_extension</span><span class="p">,</span>
+    <span class="n">transform_segment_deviation_in_radians</span><span class="o">=</span><span class="n">separate_ridge_transform_segments</span><span class="o">.</span><span class="n">DEFAULT_TRANSFORM_SEGMENT_DEVIATION_RADIANS</span><span class="p">,</span>
+    <span class="n">resolve_topology_types</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">pygplates</span><span class="o">.</span><span class="n">ResolveTopologyType</span><span class="o">.</span><span class="n">boundary</span> <span class="o">|</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">ResolveTopologyType</span><span class="o">.</span><span class="n">network</span>
+    <span class="p">),</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    From the specified topological snapshot, save (to separate files) the resolved topologies, and their boundary sections as subduction zones,</span>
+<span class="sd">    mid-ocean ridges (ridge/transform) and others (not subduction zones or mid-ocean ridges).</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+
+<span class="sd">    topological_snapshot: pygplates.TopologicalSnapshot</span>
+<span class="sd">        Topology snapshot containing the resolved topologies at a particular reconstruction time.</span>
+
+<span class="sd">    transform_segment_deviation_in_radians: number</span>
+<span class="sd">        How much a mid-ocean ridge segment can deviate from the stage pole before</span>
+<span class="sd">        it&#39;s considered a transform segment (in radians).</span>
+
+<span class="sd">    resolve_topology_types:</span>
+<span class="sd">        A bitwise combination of any of ``pygplates.ResolveTopologyType.boundary`` or ``pygplates.ResolveTopologyType.network``.</span>
+<span class="sd">        Defaults to both boundaries and networks.</span>
+
+
+<span class="sd">    Writes output files containing the following features...</span>
+
+<span class="sd">    - resolved topology features (topological plates and networks)</span>
+<span class="sd">    - ridge and transform boundary sections (resolved features)</span>
+<span class="sd">    - ridge boundary sections (resolved features)</span>
+<span class="sd">    - transform boundary sections (resolved features)</span>
+<span class="sd">    - subduction boundary sections (resolved features)</span>
+<span class="sd">    - left subduction boundary sections (resolved features)</span>
+<span class="sd">    - right subduction boundary sections (resolved features)</span>
+<span class="sd">    - other boundary sections (resolved features) that are not subduction zones or mid-ocean ridges (ridge/transform)</span>
+
+<span class="sd">    .. note::</span>
+
+<span class="sd">        This is similar to :func:`resolve_topologies_into_features` but is more efficient if you already have a topological snapshot because it</span>
+<span class="sd">        avoids resolving topologies again (the topological snapshot already contains resolved topologies for a particular reconstruction time).</span>
+
+<span class="sd">    .. seealso::</span>
+
+<span class="sd">        :func:`resolve_topologies`</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Resolve our topological plate polygons (and deforming networks) to the current &#39;time&#39;.</span>
+    <span class="c1"># We generate both the resolved topology boundaries and the boundary sections between them.</span>
+    <span class="p">(</span>
+        <span class="n">resolved_topology_features</span><span class="p">,</span>
+        <span class="n">ridge_transform_boundary_section_features</span><span class="p">,</span>
+        <span class="n">ridge_boundary_section_features</span><span class="p">,</span>
+        <span class="n">transform_boundary_section_features</span><span class="p">,</span>
+        <span class="n">subduction_boundary_section_features</span><span class="p">,</span>
+        <span class="n">left_subduction_boundary_section_features</span><span class="p">,</span>
+        <span class="n">right_subduction_boundary_section_features</span><span class="p">,</span>
+        <span class="n">other_boundary_section_features</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">=</span> <span class="n">resolve_topological_snapshot_into_features</span><span class="p">(</span>
+        <span class="n">topological_snapshot</span><span class="p">,</span>
+        <span class="n">transform_segment_deviation_in_radians</span><span class="p">,</span>
+        <span class="n">resolve_topology_types</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">time</span> <span class="o">=</span> <span class="n">topological_snapshot</span><span class="o">.</span><span class="n">get_reconstruction_time</span><span class="p">()</span>
+
+    <span class="c1"># Write each list of features to a separate file.</span>
+    <span class="n">_write_resolved_topologies</span><span class="p">(</span>
+        <span class="n">time</span><span class="p">,</span>
+        <span class="n">output_filename_prefix</span><span class="p">,</span>
+        <span class="n">output_filename_extension</span><span class="p">,</span>
+        <span class="n">resolved_topology_features</span><span class="p">,</span>
+        <span class="n">ridge_transform_boundary_section_features</span><span class="p">,</span>
+        <span class="n">ridge_boundary_section_features</span><span class="p">,</span>
+        <span class="n">transform_boundary_section_features</span><span class="p">,</span>
+        <span class="n">subduction_boundary_section_features</span><span class="p">,</span>
+        <span class="n">left_subduction_boundary_section_features</span><span class="p">,</span>
+        <span class="n">right_subduction_boundary_section_features</span><span class="p">,</span>
+        <span class="n">other_boundary_section_features</span><span class="p">,</span>
+    <span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="resolve_topologies_into_features">
+<a class="viewcode-back" href="../../../generated/gplately.resolve_topologies_into_features.html#gplately.resolve_topologies_into_features">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">resolve_topologies_into_features</span><span class="p">(</span>
+    <span class="n">rotation_features_or_model</span><span class="p">,</span>
+    <span class="n">topology_features</span><span class="p">,</span>
+    <span class="n">time</span><span class="p">,</span>
+    <span class="n">transform_segment_deviation_in_radians</span><span class="o">=</span><span class="n">separate_ridge_transform_segments</span><span class="o">.</span><span class="n">DEFAULT_TRANSFORM_SEGMENT_DEVIATION_RADIANS</span><span class="p">,</span>
+    <span class="n">anchor_plate_id</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">resolve_topology_types</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">pygplates</span><span class="o">.</span><span class="n">ResolveTopologyType</span><span class="o">.</span><span class="n">boundary</span> <span class="o">|</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">ResolveTopologyType</span><span class="o">.</span><span class="n">network</span>
+    <span class="p">),</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Resolve topologies at a specified time and return resolved topologies and their boundary sections as subduction zones,</span>
+<span class="sd">    mid-ocean ridges (ridge/transform) and others (not subduction zones or mid-ocean ridges).</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+
+<span class="sd">    rotation_features_or_model</span>
+<span class="sd">        Rotation model or feature collection(s), or list of features, or filename(s).</span>
+
+<span class="sd">    topology_features</span>
+<span class="sd">        Topology feature collection(s), or list of features, or filename(s) or any combination of those.</span>
+
+<span class="sd">    time: number</span>
+<span class="sd">        Reconstruction time to resolve topologies.</span>
+
+<span class="sd">    transform_segment_deviation_in_radians: number</span>
+<span class="sd">        How much a mid-ocean ridge segment can deviate from the stage pole before</span>
+<span class="sd">        it&#39;s considered a transform segment (in radians).</span>
+
+<span class="sd">    anchor_plate_id: int, optional</span>
+<span class="sd">        Anchor plate ID.</span>
+<span class="sd">        If not specified then defaults to ``0`` if using rotation *features*, or the default anchor plate of the rotation *model* if using one.</span>
+
+<span class="sd">    resolve_topology_types:</span>
+<span class="sd">        A bitwise combination of any of ``pygplates.ResolveTopologyType.boundary`` or ``pygplates.ResolveTopologyType.network``.</span>
+<span class="sd">        Defaults to both boundaries and networks.</span>
+
+
+<span class="sd">    Returns a tuple containing the following lists...</span>
+
+<span class="sd">    - resolved topology features (topological plates and networks)</span>
+<span class="sd">    - ridge and transform boundary sections (resolved features)</span>
+<span class="sd">    - ridge boundary sections (resolved features)</span>
+<span class="sd">    - transform boundary sections (resolved features)</span>
+<span class="sd">    - subduction boundary sections (resolved features)</span>
+<span class="sd">    - left subduction boundary sections (resolved features)</span>
+<span class="sd">    - right subduction boundary sections (resolved features)</span>
+<span class="sd">    - other boundary sections (resolved features) that are not subduction zones or mid-ocean ridges (ridge/transform)</span>
+
+<span class="sd">    .. seealso::</span>
+
+<span class="sd">        :func:`resolve_topological_snapshot_into_features`</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Resolve our topological plate polygons (and deforming networks) to the current &#39;time&#39;.</span>
+    <span class="c1"># We generate both the resolved topology boundaries and the boundary sections between them.</span>
+    <span class="n">topological_snapshot</span> <span class="o">=</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">TopologicalSnapshot</span><span class="p">(</span>
+        <span class="n">topology_features</span><span class="p">,</span>
+        <span class="n">rotation_features_or_model</span><span class="p">,</span>
+        <span class="n">time</span><span class="p">,</span>
+        <span class="n">anchor_plate_id</span><span class="o">=</span><span class="n">anchor_plate_id</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">resolve_topological_snapshot_into_features</span><span class="p">(</span>
+        <span class="n">topological_snapshot</span><span class="p">,</span>
+        <span class="n">transform_segment_deviation_in_radians</span><span class="p">,</span>
+        <span class="n">resolve_topology_types</span><span class="p">,</span>
+    <span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="resolve_topological_snapshot_into_features">
+<a class="viewcode-back" href="../../../generated/gplately.resolve_topological_snapshot_into_features.html#gplately.resolve_topological_snapshot_into_features">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">resolve_topological_snapshot_into_features</span><span class="p">(</span>
+    <span class="n">topological_snapshot</span><span class="p">:</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">TopologicalSnapshot</span><span class="p">,</span>
+    <span class="n">transform_segment_deviation_in_radians</span><span class="o">=</span><span class="n">separate_ridge_transform_segments</span><span class="o">.</span><span class="n">DEFAULT_TRANSFORM_SEGMENT_DEVIATION_RADIANS</span><span class="p">,</span>
+    <span class="n">resolve_topology_types</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">pygplates</span><span class="o">.</span><span class="n">ResolveTopologyType</span><span class="o">.</span><span class="n">boundary</span> <span class="o">|</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">ResolveTopologyType</span><span class="o">.</span><span class="n">network</span>
+    <span class="p">),</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    From the specified topological snapshot, return resolved topologies and their boundary sections as subduction zones,</span>
+<span class="sd">    mid-ocean ridges (ridge/transform) and others (not subduction zones or mid-ocean ridges).</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+
+<span class="sd">    topological_snapshot: pygplates.TopologicalSnapshot</span>
+<span class="sd">        Topology snapshot containing the resolved topologies at a particular reconstruction time.</span>
+
+<span class="sd">    transform_segment_deviation_in_radians: number</span>
+<span class="sd">        How much a mid-ocean ridge segment can deviate from the stage pole before</span>
+<span class="sd">        it&#39;s considered a transform segment (in radians).</span>
+
+<span class="sd">    resolve_topology_types:</span>
+<span class="sd">        A bitwise combination of any of ``pygplates.ResolveTopologyType.boundary`` or ``pygplates.ResolveTopologyType.network``.</span>
+<span class="sd">        Defaults to both boundaries and networks.</span>
+
+
+<span class="sd">    Returns a tuple containing the following lists...</span>
+
+<span class="sd">    - resolved topology features (topological plates and networks)</span>
+<span class="sd">    - ridge and transform boundary sections (resolved features)</span>
+<span class="sd">    - ridge boundary sections (resolved features)</span>
+<span class="sd">    - transform boundary sections (resolved features)</span>
+<span class="sd">    - subduction boundary sections (resolved features)</span>
+<span class="sd">    - left subduction boundary sections (resolved features)</span>
+<span class="sd">    - right subduction boundary sections (resolved features)</span>
+<span class="sd">    - other boundary sections (resolved features) that are not subduction zones or mid-ocean ridges (ridge/transform)</span>
+
+<span class="sd">    .. note::</span>
+
+<span class="sd">        This is similar to ``resolve_topologies_into_features`` but is more efficient if you already have a topological snapshot because it</span>
+<span class="sd">        avoids resolving topologies again (the topological snapshot already contains resolved topologies for a particular reconstruction time).</span>
+
+<span class="sd">    .. seealso::</span>
+
+<span class="sd">        :func:`resolve_topologies_into_features`</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Extract the resolved topologies, shared boundary sections, rotation model and reconstruction time from the topological snapshot.</span>
+    <span class="n">resolved_topologies</span> <span class="o">=</span> <span class="n">topological_snapshot</span><span class="o">.</span><span class="n">get_resolved_topologies</span><span class="p">(</span>
+        <span class="n">resolve_topology_types</span>
+    <span class="p">)</span>
+    <span class="n">shared_boundary_sections</span> <span class="o">=</span> <span class="n">topological_snapshot</span><span class="o">.</span><span class="n">get_resolved_topological_sections</span><span class="p">(</span>
+        <span class="n">resolve_topology_types</span>
+    <span class="p">)</span>
+    <span class="n">rotation_model</span> <span class="o">=</span> <span class="n">topological_snapshot</span><span class="o">.</span><span class="n">get_rotation_model</span><span class="p">()</span>
+    <span class="n">time</span> <span class="o">=</span> <span class="n">topological_snapshot</span><span class="o">.</span><span class="n">get_reconstruction_time</span><span class="p">()</span>
+
+    <span class="c1"># We&#39;ll create a feature for each boundary polygon feature and each type of</span>
+    <span class="c1"># resolved topological section feature we find.</span>
+    <span class="n">resolved_topology_features</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">ridge_transform_boundary_section_features</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">ridge_boundary_section_features</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">transform_boundary_section_features</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">subduction_boundary_section_features</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">left_subduction_boundary_section_features</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">right_subduction_boundary_section_features</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">other_boundary_section_features</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="c1"># Iterate over the resolved topologies.</span>
+    <span class="k">for</span> <span class="n">resolved_topology</span> <span class="ow">in</span> <span class="n">resolved_topologies</span><span class="p">:</span>
+        <span class="n">resolved_topology_features</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">resolved_topology</span><span class="o">.</span><span class="n">get_resolved_feature</span><span class="p">())</span>
+
+    <span class="c1"># Iterate over the shared boundary sections.</span>
+    <span class="k">for</span> <span class="n">shared_boundary_section</span> <span class="ow">in</span> <span class="n">shared_boundary_sections</span><span class="p">:</span>
+        <span class="c1"># Get all the geometries of the current boundary section.</span>
+        <span class="n">boundary_section_features</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">shared_sub_segment</span><span class="o">.</span><span class="n">get_resolved_feature</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">shared_sub_segment</span> <span class="ow">in</span> <span class="n">shared_boundary_section</span><span class="o">.</span><span class="n">get_shared_sub_segments</span><span class="p">()</span>
+        <span class="p">]</span>
+
+        <span class="c1"># Add the feature to the correct list depending on feature type, etc.</span>
+        <span class="k">if</span> <span class="p">(</span>
+            <span class="n">shared_boundary_section</span><span class="o">.</span><span class="n">get_feature</span><span class="p">()</span><span class="o">.</span><span class="n">get_feature_type</span><span class="p">()</span>
+            <span class="o">==</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">FeatureType</span><span class="o">.</span><span class="n">gpml_subduction_zone</span>
+        <span class="p">):</span>
+            <span class="c1"># Put all subduction zones in one collection/file.</span>
+            <span class="n">subduction_boundary_section_features</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">boundary_section_features</span><span class="p">)</span>
+
+            <span class="c1"># Also put subduction zones in left/right collection/file.</span>
+            <span class="n">polarity_property</span> <span class="o">=</span> <span class="n">shared_boundary_section</span><span class="o">.</span><span class="n">get_feature</span><span class="p">()</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+                <span class="n">pygplates</span><span class="o">.</span><span class="n">PropertyName</span><span class="o">.</span><span class="n">create_gpml</span><span class="p">(</span><span class="s2">&quot;subductionPolarity&quot;</span><span class="p">)</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="n">polarity_property</span><span class="p">:</span>
+                <span class="n">polarity</span> <span class="o">=</span> <span class="n">polarity_property</span><span class="o">.</span><span class="n">get_value</span><span class="p">()</span><span class="o">.</span><span class="n">get_content</span><span class="p">()</span>
+                <span class="k">if</span> <span class="n">polarity</span> <span class="o">==</span> <span class="s2">&quot;Left&quot;</span><span class="p">:</span>
+                    <span class="n">left_subduction_boundary_section_features</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span>
+                        <span class="n">boundary_section_features</span>
+                    <span class="p">)</span>
+                <span class="k">elif</span> <span class="n">polarity</span> <span class="o">==</span> <span class="s2">&quot;Right&quot;</span><span class="p">:</span>
+                    <span class="n">right_subduction_boundary_section_features</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span>
+                        <span class="n">boundary_section_features</span>
+                    <span class="p">)</span>
+
+        <span class="k">elif</span> <span class="p">(</span>
+            <span class="n">shared_boundary_section</span><span class="o">.</span><span class="n">get_feature</span><span class="p">()</span><span class="o">.</span><span class="n">get_feature_type</span><span class="p">()</span>
+            <span class="o">==</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">FeatureType</span><span class="o">.</span><span class="n">gpml_mid_ocean_ridge</span>
+        <span class="p">):</span>
+            <span class="n">ridge_transform_boundary_section_features</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">boundary_section_features</span><span class="p">)</span>
+
+            <span class="c1"># Find the stage rotation of the MOR in the frame of reference of its reconstructed geometry at the current &#39;time&#39;.</span>
+            <span class="c1"># The stage pole can then be directly geometrically compared to the reconstructed spreading geometry.</span>
+            <span class="n">spreading_stage_rotation</span> <span class="o">=</span> <span class="n">separate_ridge_transform_segments</span><span class="o">.</span><span class="n">get_stage_rotation_for_reconstructed_geometry</span><span class="p">(</span>
+                <span class="n">shared_boundary_section</span><span class="o">.</span><span class="n">get_feature</span><span class="p">(),</span> <span class="n">rotation_model</span><span class="p">,</span> <span class="n">time</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="n">spreading_stage_rotation</span><span class="p">:</span>
+                <span class="n">boundary_section_geometries</span> <span class="o">=</span> <span class="p">[</span>
+                    <span class="n">shared_sub_segment</span><span class="o">.</span><span class="n">get_resolved_geometry</span><span class="p">()</span>
+                    <span class="k">for</span> <span class="n">shared_sub_segment</span> <span class="ow">in</span> <span class="n">shared_boundary_section</span><span class="o">.</span><span class="n">get_shared_sub_segments</span><span class="p">()</span>
+                <span class="p">]</span>
+                <span class="k">for</span> <span class="n">boundary_section_index</span><span class="p">,</span> <span class="n">boundary_section_feature</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span>
+                    <span class="n">boundary_section_features</span>
+                <span class="p">):</span>
+                    <span class="c1"># Split into ridge and transform segments.</span>
+                    <span class="n">ridge_and_transform_segment_geometries</span> <span class="o">=</span> <span class="n">separate_ridge_transform_segments</span><span class="o">.</span><span class="n">separate_geometry_into_ridges_and_transforms</span><span class="p">(</span>
+                        <span class="n">spreading_stage_rotation</span><span class="p">,</span>
+                        <span class="n">boundary_section_geometries</span><span class="p">[</span><span class="n">boundary_section_index</span><span class="p">],</span>
+                        <span class="n">transform_segment_deviation_in_radians</span><span class="p">,</span>
+                    <span class="p">)</span>
+                    <span class="k">if</span> <span class="n">ridge_and_transform_segment_geometries</span><span class="p">:</span>
+                        <span class="p">(</span>
+                            <span class="n">ridge_sub_segment_geometries</span><span class="p">,</span>
+                            <span class="n">transform_sub_segment_geometries</span><span class="p">,</span>
+                        <span class="p">)</span> <span class="o">=</span> <span class="n">ridge_and_transform_segment_geometries</span>
+
+                        <span class="k">if</span> <span class="n">ridge_sub_segment_geometries</span><span class="p">:</span>
+                            <span class="n">ridge_boundary_section_feature</span> <span class="o">=</span> <span class="p">(</span>
+                                <span class="n">boundary_section_feature</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span>
+                            <span class="p">)</span>
+                            <span class="n">ridge_boundary_section_feature</span><span class="o">.</span><span class="n">set_geometry</span><span class="p">(</span>
+                                <span class="n">ridge_sub_segment_geometries</span>
+                            <span class="p">)</span>
+                            <span class="n">ridge_boundary_section_features</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                                <span class="n">ridge_boundary_section_feature</span>
+                            <span class="p">)</span>
+
+                        <span class="k">if</span> <span class="n">transform_sub_segment_geometries</span><span class="p">:</span>
+                            <span class="n">transform_boundary_section_feature</span> <span class="o">=</span> <span class="p">(</span>
+                                <span class="n">boundary_section_feature</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span>
+                            <span class="p">)</span>
+                            <span class="n">transform_boundary_section_feature</span><span class="o">.</span><span class="n">set_geometry</span><span class="p">(</span>
+                                <span class="n">transform_sub_segment_geometries</span>
+                            <span class="p">)</span>
+                            <span class="n">transform_boundary_section_features</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                                <span class="n">transform_boundary_section_feature</span>
+                            <span class="p">)</span>
+
+                    <span class="c1"># else skip shared sub segment - it&#39;s not a polyline (or polygon).</span>
+
+            <span class="c1"># else most likely MOR doesn&#39;t have left/right plate IDs or reconstruction/conjugate plate IDs,</span>
+            <span class="c1"># so don&#39;t split into ridge and transform segments.</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">other_boundary_section_features</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">boundary_section_features</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="p">(</span>
+        <span class="n">resolved_topology_features</span><span class="p">,</span>
+        <span class="n">ridge_transform_boundary_section_features</span><span class="p">,</span>
+        <span class="n">ridge_boundary_section_features</span><span class="p">,</span>
+        <span class="n">transform_boundary_section_features</span><span class="p">,</span>
+        <span class="n">subduction_boundary_section_features</span><span class="p">,</span>
+        <span class="n">left_subduction_boundary_section_features</span><span class="p">,</span>
+        <span class="n">right_subduction_boundary_section_features</span><span class="p">,</span>
+        <span class="n">other_boundary_section_features</span><span class="p">,</span>
+    <span class="p">)</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">find_total_boundary_length_in_kms</span><span class="p">(</span>
+    <span class="n">ridge_transform_boundary_section_features</span><span class="p">,</span>
+    <span class="n">ridge_boundary_section_features</span><span class="p">,</span>
+    <span class="n">transform_boundary_section_features</span><span class="p">,</span>
+    <span class="n">subduction_boundary_section_features</span><span class="p">,</span>
+    <span class="n">left_subduction_boundary_section_features</span><span class="p">,</span>
+    <span class="n">right_subduction_boundary_section_features</span><span class="p">,</span>
+    <span class="n">other_boundary_section_features</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Find the total length (in kms) of resolved topology boundary sections (in the various categories).&quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">find_total_length</span><span class="p">(</span><span class="n">features</span><span class="p">):</span>
+        <span class="n">total_length_features</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="k">for</span> <span class="n">feature</span> <span class="ow">in</span> <span class="n">features</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">geometry</span> <span class="ow">in</span> <span class="n">feature</span><span class="o">.</span><span class="n">get_geometries</span><span class="p">():</span>
+                <span class="n">total_length_features</span> <span class="o">+=</span> <span class="n">geometry</span><span class="o">.</span><span class="n">get_arc_length</span><span class="p">()</span>
+        <span class="c1"># Return total lengths in kms (converted from radians).</span>
+        <span class="k">return</span> <span class="n">total_length_features</span> <span class="o">*</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">Earth</span><span class="o">.</span><span class="n">mean_radius_in_kms</span>
+
+    <span class="c1"># Return total lengths in kms (converted from radians).</span>
+    <span class="k">return</span> <span class="p">(</span>
+        <span class="n">find_total_length</span><span class="p">(</span><span class="n">ridge_transform_boundary_section_features</span><span class="p">),</span>
+        <span class="n">find_total_length</span><span class="p">(</span><span class="n">ridge_boundary_section_features</span><span class="p">),</span>
+        <span class="n">find_total_length</span><span class="p">(</span><span class="n">transform_boundary_section_features</span><span class="p">),</span>
+        <span class="n">find_total_length</span><span class="p">(</span><span class="n">subduction_boundary_section_features</span><span class="p">),</span>
+        <span class="n">find_total_length</span><span class="p">(</span><span class="n">left_subduction_boundary_section_features</span><span class="p">),</span>
+        <span class="n">find_total_length</span><span class="p">(</span><span class="n">right_subduction_boundary_section_features</span><span class="p">),</span>
+        <span class="n">find_total_length</span><span class="p">(</span><span class="n">other_boundary_section_features</span><span class="p">),</span>
+    <span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_write_resolved_topologies</span><span class="p">(</span>
+    <span class="n">time</span><span class="p">,</span>
+    <span class="n">output_filename_prefix</span><span class="p">,</span>
+    <span class="n">output_filename_extension</span><span class="p">,</span>
+    <span class="n">resolved_topology_features</span><span class="p">,</span>
+    <span class="n">ridge_transform_boundary_section_features</span><span class="p">,</span>
+    <span class="n">ridge_boundary_section_features</span><span class="p">,</span>
+    <span class="n">transform_boundary_section_features</span><span class="p">,</span>
+    <span class="n">subduction_boundary_section_features</span><span class="p">,</span>
+    <span class="n">left_subduction_boundary_section_features</span><span class="p">,</span>
+    <span class="n">right_subduction_boundary_section_features</span><span class="p">,</span>
+    <span class="n">other_boundary_section_features</span><span class="p">,</span>
+<span class="p">):</span>
+    <span class="k">if</span> <span class="n">resolved_topology_features</span><span class="p">:</span>
+        <span class="c1"># Put the features in a feature collection so we can write them to a file.</span>
+        <span class="n">resolved_topology_feature_collection</span> <span class="o">=</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">FeatureCollection</span><span class="p">(</span>
+            <span class="n">resolved_topology_features</span>
+        <span class="p">)</span>
+        <span class="n">resolved_topology_features_filename</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="s2">&quot;</span><span class="si">{0}</span><span class="s2">boundary_polygons_</span><span class="si">{1:0.2f}</span><span class="s2">Ma.</span><span class="si">{2}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">output_filename_prefix</span><span class="p">,</span> <span class="n">time</span><span class="p">,</span> <span class="n">output_filename_extension</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">resolved_topology_feature_collection</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">resolved_topology_features_filename</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">ridge_transform_boundary_section_features</span><span class="p">:</span>
+        <span class="c1"># Put the features in a feature collection so we can write them to a file.</span>
+        <span class="n">ridge_transform_boundary_section_feature_collection</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">pygplates</span><span class="o">.</span><span class="n">FeatureCollection</span><span class="p">(</span><span class="n">ridge_transform_boundary_section_features</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">ridge_transform_boundary_section_features_filename</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="s2">&quot;</span><span class="si">{0}</span><span class="s2">ridge_transform_boundaries_</span><span class="si">{1:0.2f}</span><span class="s2">Ma.</span><span class="si">{2}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">output_filename_prefix</span><span class="p">,</span> <span class="n">time</span><span class="p">,</span> <span class="n">output_filename_extension</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">ridge_transform_boundary_section_feature_collection</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
+            <span class="n">ridge_transform_boundary_section_features_filename</span>
+        <span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">ridge_boundary_section_features</span><span class="p">:</span>
+        <span class="c1"># Put the features in a feature collection so we can write them to a file.</span>
+        <span class="n">ridge_boundary_section_feature_collection</span> <span class="o">=</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">FeatureCollection</span><span class="p">(</span>
+            <span class="n">ridge_boundary_section_features</span>
+        <span class="p">)</span>
+        <span class="n">ridge_boundary_section_features_filename</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="s2">&quot;</span><span class="si">{0}</span><span class="s2">ridge_boundaries_</span><span class="si">{1:0.2f}</span><span class="s2">Ma.</span><span class="si">{2}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">output_filename_prefix</span><span class="p">,</span> <span class="n">time</span><span class="p">,</span> <span class="n">output_filename_extension</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">ridge_boundary_section_feature_collection</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
+            <span class="n">ridge_boundary_section_features_filename</span>
+        <span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">transform_boundary_section_features</span><span class="p">:</span>
+        <span class="c1"># Put the features in a feature collection so we can write them to a file.</span>
+        <span class="n">transform_boundary_section_feature_collection</span> <span class="o">=</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">FeatureCollection</span><span class="p">(</span>
+            <span class="n">transform_boundary_section_features</span>
+        <span class="p">)</span>
+        <span class="n">transform_boundary_section_features_filename</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="s2">&quot;</span><span class="si">{0}</span><span class="s2">transform_boundaries_</span><span class="si">{1:0.2f}</span><span class="s2">Ma.</span><span class="si">{2}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">output_filename_prefix</span><span class="p">,</span> <span class="n">time</span><span class="p">,</span> <span class="n">output_filename_extension</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">transform_boundary_section_feature_collection</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
+            <span class="n">transform_boundary_section_features_filename</span>
+        <span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">subduction_boundary_section_features</span><span class="p">:</span>
+        <span class="c1"># Put the features in a feature collection so we can write them to a file.</span>
+        <span class="n">subduction_boundary_section_feature_collection</span> <span class="o">=</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">FeatureCollection</span><span class="p">(</span>
+            <span class="n">subduction_boundary_section_features</span>
+        <span class="p">)</span>
+        <span class="n">subduction_boundary_section_features_filename</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="s2">&quot;</span><span class="si">{0}</span><span class="s2">subduction_boundaries_</span><span class="si">{1:0.2f}</span><span class="s2">Ma.</span><span class="si">{2}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">output_filename_prefix</span><span class="p">,</span> <span class="n">time</span><span class="p">,</span> <span class="n">output_filename_extension</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">subduction_boundary_section_feature_collection</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
+            <span class="n">subduction_boundary_section_features_filename</span>
+        <span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">left_subduction_boundary_section_features</span><span class="p">:</span>
+        <span class="c1"># Put the features in a feature collection so we can write them to a file.</span>
+        <span class="n">left_subduction_boundary_section_feature_collection</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">pygplates</span><span class="o">.</span><span class="n">FeatureCollection</span><span class="p">(</span><span class="n">left_subduction_boundary_section_features</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">left_subduction_boundary_section_features_filename</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="s2">&quot;</span><span class="si">{0}</span><span class="s2">subduction_boundaries_sL_</span><span class="si">{1:0.2f}</span><span class="s2">Ma.</span><span class="si">{2}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">output_filename_prefix</span><span class="p">,</span> <span class="n">time</span><span class="p">,</span> <span class="n">output_filename_extension</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">left_subduction_boundary_section_feature_collection</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
+            <span class="n">left_subduction_boundary_section_features_filename</span>
+        <span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">right_subduction_boundary_section_features</span><span class="p">:</span>
+        <span class="c1"># Put the features in a feature collection so we can write them to a file.</span>
+        <span class="n">right_subduction_boundary_section_feature_collection</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">pygplates</span><span class="o">.</span><span class="n">FeatureCollection</span><span class="p">(</span><span class="n">right_subduction_boundary_section_features</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">right_subduction_boundary_section_features_filename</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="s2">&quot;</span><span class="si">{0}</span><span class="s2">subduction_boundaries_sR_</span><span class="si">{1:0.2f}</span><span class="s2">Ma.</span><span class="si">{2}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">output_filename_prefix</span><span class="p">,</span> <span class="n">time</span><span class="p">,</span> <span class="n">output_filename_extension</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">right_subduction_boundary_section_feature_collection</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
+            <span class="n">right_subduction_boundary_section_features_filename</span>
+        <span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">other_boundary_section_features</span><span class="p">:</span>
+        <span class="c1"># Put the features in a feature collection so we can write them to a file.</span>
+        <span class="n">other_boundary_section_feature_collection</span> <span class="o">=</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">FeatureCollection</span><span class="p">(</span>
+            <span class="n">other_boundary_section_features</span>
+        <span class="p">)</span>
+        <span class="n">other_boundary_section_features_filename</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="s2">&quot;</span><span class="si">{0}</span><span class="s2">other_boundaries_</span><span class="si">{1:0.2f}</span><span class="s2">Ma.</span><span class="si">{2}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">output_filename_prefix</span><span class="p">,</span> <span class="n">time</span><span class="p">,</span> <span class="n">output_filename_extension</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">other_boundary_section_feature_collection</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
+            <span class="n">other_boundary_section_features_filename</span>
+        <span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">add_arguments</span><span class="p">(</span><span class="n">parser</span><span class="p">:</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;add command line argument parser&quot;&quot;&quot;</span>
+
+    <span class="n">parser</span><span class="o">.</span><span class="n">formatter_class</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">RawDescriptionHelpFormatter</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">description</span> <span class="o">=</span> <span class="n">__description__</span>
+
+    <span class="n">parser</span><span class="o">.</span><span class="n">set_defaults</span><span class="p">(</span><span class="n">func</span><span class="o">=</span><span class="n">main</span><span class="p">)</span>
+
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;-r&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;--rotation_filenames&quot;</span><span class="p">,</span>
+        <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
+        <span class="n">nargs</span><span class="o">=</span><span class="s2">&quot;+&quot;</span><span class="p">,</span>
+        <span class="n">required</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">metavar</span><span class="o">=</span><span class="s2">&quot;rotation_filename&quot;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;One or more rotation files.&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;-m&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;--topology_filenames&quot;</span><span class="p">,</span>
+        <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
+        <span class="n">nargs</span><span class="o">=</span><span class="s2">&quot;+&quot;</span><span class="p">,</span>
+        <span class="n">required</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">metavar</span><span class="o">=</span><span class="s2">&quot;topology_filename&quot;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;One or more topology files.&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;-a&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;--anchor&quot;</span><span class="p">,</span>
+        <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;anchor_plate_id&quot;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Anchor plate id used for reconstructing. Defaults to zero.&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="c1"># User must specify a sequence of reconstruction times or a time range (but not both).</span>
+    <span class="n">reconstruction_times_argument_group</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">add_mutually_exclusive_group</span><span class="p">(</span>
+        <span class="n">required</span><span class="o">=</span><span class="kc">True</span>
+    <span class="p">)</span>
+    <span class="n">reconstruction_times_argument_group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;-t&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;--reconstruction_times&quot;</span><span class="p">,</span>
+        <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span>
+        <span class="n">nargs</span><span class="o">=</span><span class="s2">&quot;+&quot;</span><span class="p">,</span>
+        <span class="n">metavar</span><span class="o">=</span><span class="s2">&quot;reconstruction_time&quot;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;One or more times at which to reconstruct/resolve topologies.&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">reconstruction_times_argument_group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;-i&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;--reconstruction_time_range&quot;</span><span class="p">,</span>
+        <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span>
+        <span class="n">nargs</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+        <span class="n">metavar</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;young_time&quot;</span><span class="p">,</span> <span class="s2">&quot;old_time&quot;</span><span class="p">),</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;The time range (in Ma) from young time to old time over which to reconstruct/resolve topologies (in increments of 1Myr).&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;-d&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;--transform_segment_deviation_degrees&quot;</span><span class="p">,</span>
+        <span class="nb">type</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">{0}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="n">separate_ridge_transform_segments</span><span class="o">.</span><span class="n">DEFAULT_TRANSFORM_SEGMENT_DEVIATION_DEGREES</span>
+        <span class="p">),</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;How many degrees a mid-ocean ridge spreading segment can deviate from its stage pole before it&#39;s considered a transform segment - &quot;</span>
+        <span class="s2">&quot;default is &#39;</span><span class="si">{0}</span><span class="s2">&#39;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="n">separate_ridge_transform_segments</span><span class="o">.</span><span class="n">DEFAULT_TRANSFORM_SEGMENT_DEVIATION_DEGREES</span>
+        <span class="p">),</span>
+    <span class="p">)</span>
+
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;-e&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;--output_filename_extension&quot;</span><span class="p">,</span>
+        <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">{0}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">DEFAULT_OUTPUT_FILENAME_EXTENSION</span><span class="p">),</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;The filename extension of the output files containing the resolved topological boundaries and sections &quot;</span>
+        <span class="s2">&quot;- the default extension is &#39;</span><span class="si">{0}</span><span class="s2">&#39; - supported extensions include &#39;shp&#39;, &#39;gmt&#39; and &#39;xy&#39;.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="n">DEFAULT_OUTPUT_FILENAME_EXTENSION</span>
+        <span class="p">),</span>
+    <span class="p">)</span>
+
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;-nb&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;--no_output_boundaries&quot;</span><span class="p">,</span>
+        <span class="n">action</span><span class="o">=</span><span class="s2">&quot;store_true&quot;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Do not write geometries of resolved topologies and their boundaries to files. &quot;</span>
+        <span class="s1">&#39;This is most useful when used with the &quot;-l&quot; option to generate only the text file containing boundary lengths. &#39;</span>
+        <span class="s2">&quot;By default geometry files are written.&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;-l&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;--output_boundary_lengths&quot;</span><span class="p">,</span>
+        <span class="n">action</span><span class="o">=</span><span class="s2">&quot;store_true&quot;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Also generate a text file containing the total boundary lengths (in kms) of the resolved topology boundary sections &quot;</span>
+        <span class="s2">&quot;for the requested reconstruction times. By default no text file is generated.&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;output_filename_prefix&quot;</span><span class="p">,</span>
+        <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
+        <span class="n">nargs</span><span class="o">=</span><span class="s2">&quot;?&quot;</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">{0}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">DEFAULT_OUTPUT_FILENAME_PREFIX</span><span class="p">),</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;The prefix of the output files containing the resolved topological boundaries and sections &quot;</span>
+        <span class="s2">&quot;- the default prefix is &#39;</span><span class="si">{0}</span><span class="s2">&#39;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">DEFAULT_OUTPUT_FILENAME_PREFIX</span><span class="p">),</span>
+    <span class="p">)</span>
+
+
+<span class="n">__description__</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;Resolve topological plate polygons (and deforming networks) and saves (to separate files) the resolved topologies, and their</span>
+<span class="s2">    boundary sections as subduction zones, mid-ocean ridges (ridge/transform) and others (not subduction zones or mid-ocean ridges).</span>
+
+<span class="s2">    NOTE: Separate the positional and optional arguments with &#39;--&#39; (workaround for bug in argparse module).</span>
+<span class="s2">    For example...</span>
+
+<span class="s2">    </span><span class="si">%(prog)s</span><span class="s2"> -r rotations1.rot rotations2.rot -m topologies1.gpml topologies2.gpml -t 10 -- topology_&quot;&quot;&quot;</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">(</span><span class="n">args</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">reconstruction_times</span><span class="p">:</span>
+        <span class="n">reconstruction_times</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">reconstruction_times</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">reconstruction_time_range</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">args</span><span class="o">.</span><span class="n">reconstruction_time_range</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+            <span class="k">raise</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentTypeError</span><span class="p">(</span>
+                <span class="s2">&quot;First (young) value in reconstruction time range is greater than second (old) value&quot;</span>
+            <span class="p">)</span>
+        <span class="n">reconstruction_times</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span>
+            <span class="nb">range</span><span class="p">(</span>
+                <span class="n">args</span><span class="o">.</span><span class="n">reconstruction_time_range</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">args</span><span class="o">.</span><span class="n">reconstruction_time_range</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+
+    <span class="c1"># Create a rotation model from rotation files.</span>
+    <span class="n">rotation_model</span> <span class="o">=</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">RotationModel</span><span class="p">(</span>
+        <span class="n">args</span><span class="o">.</span><span class="n">rotation_filenames</span><span class="p">,</span> <span class="n">default_anchor_plate_id</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">anchor_plate_id</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Read topology features from topology files.</span>
+    <span class="n">topology_features</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">topology_filename</span> <span class="ow">in</span> <span class="n">args</span><span class="o">.</span><span class="n">topology_filenames</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">topology_feature</span> <span class="ow">in</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">FeatureCollection</span><span class="p">(</span><span class="n">topology_filename</span><span class="p">):</span>
+            <span class="c1"># FIXME: Temporary fix to avoid getting OGR GMT/Shapefile error &quot;Mismatch in field names...&quot; and</span>
+            <span class="c1"># missing geometries when saving resolved topologies/sections to GMT/Shapefile.</span>
+            <span class="c1"># It&#39;s caused by the OGR writer inside pyglates trying to write out features with different</span>
+            <span class="c1"># shapefiles attribute field (key) names to the same file. We get around this by removing</span>
+            <span class="c1"># all shapefile attributes.</span>
+            <span class="n">topology_feature</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">pygplates</span><span class="o">.</span><span class="n">PropertyName</span><span class="o">.</span><span class="n">gpml_shapefile_attributes</span><span class="p">)</span>
+            <span class="n">topology_features</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">topology_feature</span><span class="p">)</span>
+
+    <span class="n">boundary_lengths_file</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">output_boundary_lengths</span><span class="p">:</span>
+        <span class="c1"># Create the text file for writing.</span>
+        <span class="n">boundary_lengths_filename</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{0}</span><span class="s2">boundary_lengths.txt&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="n">args</span><span class="o">.</span><span class="n">output_filename_prefix</span>
+        <span class="p">)</span>
+        <span class="n">boundary_lengths_file</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">boundary_lengths_filename</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;w&quot;</span><span class="p">)</span>
+        <span class="c1"># Write the header line (showing what each column represents).</span>
+        <span class="n">boundary_lengths_file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
+            <span class="s2">&quot;# time(Ma)&quot;</span>
+            <span class="s2">&quot; ridge-transform-boundary-sections(km)&quot;</span>
+            <span class="s2">&quot; ridge-boundary-sections(km)&quot;</span>
+            <span class="s2">&quot; transform-boundary-sections(km)&quot;</span>
+            <span class="s2">&quot; subduction-boundary-sections(km)&quot;</span>
+            <span class="s2">&quot; left-subduction-boundary-sections(km)&quot;</span>
+            <span class="s2">&quot; right-subduction-boundary-sections(km)&quot;</span>
+            <span class="s2">&quot; other-boundary-sections(km)</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">reconstruction_time</span> <span class="ow">in</span> <span class="n">reconstruction_times</span><span class="p">:</span>
+        <span class="c1"># Resolve our topological plate polygons (and deforming networks) to the current &#39;time&#39;.</span>
+        <span class="c1"># We generate both the resolved topology boundaries and the boundary sections between them.</span>
+        <span class="p">(</span>
+            <span class="n">resolved_topology_features</span><span class="p">,</span>
+            <span class="n">ridge_transform_boundary_section_features</span><span class="p">,</span>
+            <span class="n">ridge_boundary_section_features</span><span class="p">,</span>
+            <span class="n">transform_boundary_section_features</span><span class="p">,</span>
+            <span class="n">subduction_boundary_section_features</span><span class="p">,</span>
+            <span class="n">left_subduction_boundary_section_features</span><span class="p">,</span>
+            <span class="n">right_subduction_boundary_section_features</span><span class="p">,</span>
+            <span class="n">other_boundary_section_features</span><span class="p">,</span>
+        <span class="p">)</span> <span class="o">=</span> <span class="n">resolve_topologies_into_features</span><span class="p">(</span>
+            <span class="n">rotation_model</span><span class="p">,</span>
+            <span class="n">topology_features</span><span class="p">,</span>
+            <span class="n">reconstruction_time</span><span class="p">,</span>
+            <span class="n">math</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">transform_segment_deviation_degrees</span><span class="p">),</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Write each list of features to a separate file.</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">args</span><span class="o">.</span><span class="n">no_output_boundaries</span><span class="p">:</span>
+            <span class="n">_write_resolved_topologies</span><span class="p">(</span>
+                <span class="n">reconstruction_time</span><span class="p">,</span>
+                <span class="n">args</span><span class="o">.</span><span class="n">output_filename_prefix</span><span class="p">,</span>
+                <span class="n">args</span><span class="o">.</span><span class="n">output_filename_extension</span><span class="p">,</span>
+                <span class="n">resolved_topology_features</span><span class="p">,</span>
+                <span class="n">ridge_transform_boundary_section_features</span><span class="p">,</span>
+                <span class="n">ridge_boundary_section_features</span><span class="p">,</span>
+                <span class="n">transform_boundary_section_features</span><span class="p">,</span>
+                <span class="n">subduction_boundary_section_features</span><span class="p">,</span>
+                <span class="n">left_subduction_boundary_section_features</span><span class="p">,</span>
+                <span class="n">right_subduction_boundary_section_features</span><span class="p">,</span>
+                <span class="n">other_boundary_section_features</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="c1"># Write the total boundary lengths to a text file (if requested).</span>
+        <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">output_boundary_lengths</span><span class="p">:</span>
+            <span class="p">(</span>
+                <span class="n">total_length_kms_ridge_transform_boundary_section_features</span><span class="p">,</span>
+                <span class="n">total_length_kms_ridge_boundary_section_features</span><span class="p">,</span>
+                <span class="n">total_length_kms_transform_boundary_section_features</span><span class="p">,</span>
+                <span class="n">total_length_kms_subduction_boundary_section_features</span><span class="p">,</span>
+                <span class="n">total_length_kms_left_subduction_boundary_section_features</span><span class="p">,</span>
+                <span class="n">total_length_kms_right_subduction_boundary_section_features</span><span class="p">,</span>
+                <span class="n">total_length_kms_other_boundary_section_features</span><span class="p">,</span>
+            <span class="p">)</span> <span class="o">=</span> <span class="n">find_total_boundary_length_in_kms</span><span class="p">(</span>
+                <span class="n">ridge_transform_boundary_section_features</span><span class="p">,</span>
+                <span class="n">ridge_boundary_section_features</span><span class="p">,</span>
+                <span class="n">transform_boundary_section_features</span><span class="p">,</span>
+                <span class="n">subduction_boundary_section_features</span><span class="p">,</span>
+                <span class="n">left_subduction_boundary_section_features</span><span class="p">,</span>
+                <span class="n">right_subduction_boundary_section_features</span><span class="p">,</span>
+                <span class="n">other_boundary_section_features</span><span class="p">,</span>
+            <span class="p">)</span>
+
+            <span class="k">assert</span> <span class="n">boundary_lengths_file</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+            <span class="n">boundary_lengths_file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
+                <span class="s2">&quot;</span><span class="si">{0}</span><span class="s2"> </span><span class="si">{1}</span><span class="s2"> </span><span class="si">{2}</span><span class="s2"> </span><span class="si">{3}</span><span class="s2"> </span><span class="si">{4}</span><span class="s2"> </span><span class="si">{5}</span><span class="s2"> </span><span class="si">{6}</span><span class="s2"> </span><span class="si">{7}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                    <span class="n">reconstruction_time</span><span class="p">,</span>
+                    <span class="n">total_length_kms_ridge_transform_boundary_section_features</span><span class="p">,</span>
+                    <span class="n">total_length_kms_ridge_boundary_section_features</span><span class="p">,</span>
+                    <span class="n">total_length_kms_transform_boundary_section_features</span><span class="p">,</span>
+                    <span class="n">total_length_kms_subduction_boundary_section_features</span><span class="p">,</span>
+                    <span class="n">total_length_kms_left_subduction_boundary_section_features</span><span class="p">,</span>
+                    <span class="n">total_length_kms_right_subduction_boundary_section_features</span><span class="p">,</span>
+                    <span class="n">total_length_kms_other_boundary_section_features</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+
+    <span class="c1"># The command-line parser.</span>
+    <span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">(</span>
+        <span class="n">description</span><span class="o">=</span><span class="n">__description__</span><span class="p">,</span>
+        <span class="n">formatter_class</span><span class="o">=</span><span class="n">argparse</span><span class="o">.</span><span class="n">RawDescriptionHelpFormatter</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="c1"># add arguments</span>
+    <span class="n">add_arguments</span><span class="p">(</span><span class="n">parser</span><span class="p">)</span>
+
+    <span class="c1"># Parse command-line options.</span>
+    <span class="n">args</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">()</span>
+
+    <span class="c1"># call main function</span>
+    <span class="n">main</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023-2025, The University of Sydney.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

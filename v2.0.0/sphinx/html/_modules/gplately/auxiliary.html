@@ -1,0 +1,312 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>gplately.auxiliary &mdash; gplately 2.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+
+  
+    <link rel="shortcut icon" href="../../_static/favicon.ico"/>
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=51b770b3"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            gplately
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../basic_usages.html">Minimal Working Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../use_cases.html">Common Use Cases</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../faq.html">Troubleshooting and FAQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../command_line_interface.html">Command Line Interface (CLI)</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html">Main Classes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../functions.html">Functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../secondaries.html">Other Classes</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">gplately</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">gplately.auxiliary</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for gplately.auxiliary</h1><div class="highlight"><pre>
+<span></span><span class="c1">#</span>
+<span class="c1">#    Copyright (C) 2024-2025 The University of Sydney, Australia</span>
+<span class="c1">#</span>
+<span class="c1">#    This program is free software; you can redistribute it and/or modify it under</span>
+<span class="c1">#    the terms of the GNU General Public License, version 2, as published by</span>
+<span class="c1">#    the Free Software Foundation.</span>
+<span class="c1">#</span>
+<span class="c1">#    This program is distributed in the hope that it will be useful, but WITHOUT</span>
+<span class="c1">#    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or</span>
+<span class="c1">#    FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License</span>
+<span class="c1">#    for more details.</span>
+<span class="c1">#</span>
+<span class="c1">#    You should have received a copy of the GNU General Public License along</span>
+<span class="c1">#    with this program; if not, write to Free Software Foundation, Inc.,</span>
+<span class="c1">#    51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.</span>
+<span class="c1">#</span>
+
+<span class="sd">&quot;&quot;&quot;A set of helper functions designed to streamline the use of GPlately’s functionalities,</span>
+<span class="sd">minimizing the coding effort required from users.&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Union</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">&quot;gplately&quot;</span><span class="p">)</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">pygmt</span>
+<span class="k">except</span><span class="p">:</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Failed to import PyGMT. PyGMT requires Python&gt;=3.11.&quot;</span><span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">plate_model_manager</span><span class="w"> </span><span class="kn">import</span> <span class="n">PlateModel</span><span class="p">,</span> <span class="n">PlateModelManager</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">.download</span><span class="w"> </span><span class="kn">import</span> <span class="n">path_to_cache</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.mapping.cartopy_plot</span><span class="w"> </span><span class="kn">import</span> <span class="n">CartopyPlotEngine</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.mapping.plot_engine</span><span class="w"> </span><span class="kn">import</span> <span class="n">PlotEngine</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.plot</span><span class="w"> </span><span class="kn">import</span> <span class="n">PlotTopologies</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.reconstruction</span><span class="w"> </span><span class="kn">import</span> <span class="n">PlateReconstruction</span>
+
+
+<div class="viewcode-block" id="get_plate_reconstruction">
+<a class="viewcode-back" href="../../generated/gplately.auxiliary.html#gplately.auxiliary.get_plate_reconstruction">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_plate_reconstruction</span><span class="p">(</span><span class="n">model</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">PlateModel</span><span class="p">],</span> <span class="n">model_repo_dir</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;./&quot;</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return a :py:class:`gplately.PlateReconstruction` object for a given model name or :class:`gplately.PlateModel` object.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    model : str or PlateModel</span>
+<span class="sd">        model name or a :class:`gplately.PlateModel` object</span>
+<span class="sd">    model_repo_dir: str, default=&quot;./&quot;</span>
+<span class="sd">        the folder in which you would like to keep the model files</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    PlateReconstruction</span>
+<span class="sd">        a :class:`gplately.PlateReconstruction` object</span>
+
+
+<span class="sd">    .. seealso::</span>
+
+<span class="sd">        `usage example &lt;https://github.com/GPlates/gplately/blob/master/Notebooks/Examples/use_auxiliary_functions.py&gt;`__</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="n">model_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">model</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">plate_model</span> <span class="o">=</span> <span class="n">PlateModelManager</span><span class="p">()</span><span class="o">.</span><span class="n">get_model</span><span class="p">(</span>
+                <span class="n">model_name</span><span class="p">,</span> <span class="n">data_dir</span><span class="o">=</span><span class="n">model_repo_dir</span>
+            <span class="p">)</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="n">plate_model</span> <span class="o">=</span> <span class="n">PlateModel</span><span class="p">(</span><span class="n">model_name</span><span class="p">,</span> <span class="n">data_dir</span><span class="o">=</span><span class="n">model_repo_dir</span><span class="p">,</span> <span class="n">readonly</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">plate_model</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unable to get model (</span><span class="si">{</span><span class="n">model_name</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">plate_model</span> <span class="o">=</span> <span class="n">model</span>
+
+    <span class="n">topology_features</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">static_polygons</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="n">all_layers</span> <span class="o">=</span> <span class="n">plate_model</span><span class="o">.</span><span class="n">get_avail_layers</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="s2">&quot;Topologies&quot;</span> <span class="ow">in</span> <span class="n">all_layers</span><span class="p">:</span>
+        <span class="n">topology_features</span> <span class="o">=</span> <span class="n">plate_model</span><span class="o">.</span><span class="n">get_layer</span><span class="p">(</span><span class="s2">&quot;Topologies&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="s2">&quot;StaticPolygons&quot;</span> <span class="ow">in</span> <span class="n">all_layers</span><span class="p">:</span>
+        <span class="n">static_polygons</span> <span class="o">=</span> <span class="n">plate_model</span><span class="o">.</span><span class="n">get_layer</span><span class="p">(</span><span class="s2">&quot;StaticPolygons&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">PlateReconstruction</span><span class="p">(</span>
+        <span class="n">plate_model</span><span class="o">.</span><span class="n">get_rotation_model</span><span class="p">(),</span>
+        <span class="n">topology_features</span><span class="o">=</span><span class="n">topology_features</span><span class="p">,</span>
+        <span class="n">static_polygons</span><span class="o">=</span><span class="n">static_polygons</span><span class="p">,</span>
+        <span class="n">plate_model</span><span class="o">=</span><span class="n">plate_model</span><span class="p">,</span>
+    <span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="get_gplot">
+<a class="viewcode-back" href="../../generated/gplately.auxiliary.html#gplately.auxiliary.get_gplot">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_gplot</span><span class="p">(</span>
+    <span class="n">model</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">PlateModel</span><span class="p">],</span>
+    <span class="n">model_repo_dir</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;./&quot;</span><span class="p">,</span>
+    <span class="n">time</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+    <span class="n">plot_engine</span><span class="p">:</span> <span class="n">PlotEngine</span> <span class="o">=</span> <span class="n">CartopyPlotEngine</span><span class="p">(),</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PlotTopologies</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return a :py:class:`gplately.PlotTopologies` object for a given model name or :class:`gplately.PlateModel` object.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    model : str or PlateModel</span>
+<span class="sd">        model name or a :class:`gplately.PlateModel` object</span>
+<span class="sd">    model_repo_dir: str, default=&quot;./&quot;</span>
+<span class="sd">        the folder in which you would like to keep the model files</span>
+<span class="sd">    time: int or float, default=0</span>
+<span class="sd">        the reconstruction age/time</span>
+<span class="sd">    plot_engine: PlotEngine, default=CartopyPlotEngine()</span>
+<span class="sd">        two choices - CartopyPlotEngine() or PygmtPlotEngine()</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    PlotTopologies</span>
+<span class="sd">        a :class:`gplately.PlotTopologies` object</span>
+
+
+<span class="sd">    .. seealso::</span>
+
+<span class="sd">        `usage example &lt;https://github.com/GPlates/gplately/blob/master/Notebooks/Examples/use_auxiliary_functions.py&gt;`__</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="n">model_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">model</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">plate_model</span> <span class="o">=</span> <span class="n">PlateModelManager</span><span class="p">()</span><span class="o">.</span><span class="n">get_model</span><span class="p">(</span>
+                <span class="n">model_name</span><span class="p">,</span> <span class="n">data_dir</span><span class="o">=</span><span class="n">model_repo_dir</span>
+            <span class="p">)</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="n">plate_model</span> <span class="o">=</span> <span class="n">PlateModel</span><span class="p">(</span><span class="n">model_name</span><span class="p">,</span> <span class="n">data_dir</span><span class="o">=</span><span class="n">model_repo_dir</span><span class="p">,</span> <span class="n">readonly</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">plate_model</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unable to get model (</span><span class="si">{</span><span class="n">model_name</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">plate_model</span> <span class="o">=</span> <span class="n">model</span>
+
+    <span class="n">m</span> <span class="o">=</span> <span class="n">get_plate_reconstruction</span><span class="p">(</span><span class="n">plate_model</span><span class="p">)</span>
+
+    <span class="n">coastlines</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">COBs</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">continents</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="n">all_layers</span> <span class="o">=</span> <span class="n">plate_model</span><span class="o">.</span><span class="n">get_avail_layers</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="s2">&quot;Coastlines&quot;</span> <span class="ow">in</span> <span class="n">all_layers</span><span class="p">:</span>
+        <span class="n">coastlines</span> <span class="o">=</span> <span class="n">plate_model</span><span class="o">.</span><span class="n">get_layer</span><span class="p">(</span><span class="s2">&quot;Coastlines&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="s2">&quot;COBs&quot;</span> <span class="ow">in</span> <span class="n">all_layers</span><span class="p">:</span>
+        <span class="n">COBs</span> <span class="o">=</span> <span class="n">plate_model</span><span class="o">.</span><span class="n">get_layer</span><span class="p">(</span><span class="s2">&quot;COBs&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="s2">&quot;ContinentalPolygons&quot;</span> <span class="ow">in</span> <span class="n">all_layers</span><span class="p">:</span>
+        <span class="n">continents</span> <span class="o">=</span> <span class="n">plate_model</span><span class="o">.</span><span class="n">get_layer</span><span class="p">(</span><span class="s2">&quot;ContinentalPolygons&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">PlotTopologies</span><span class="p">(</span>
+        <span class="n">m</span><span class="p">,</span>
+        <span class="n">coastlines</span><span class="o">=</span><span class="n">coastlines</span><span class="p">,</span>
+        <span class="n">COBs</span><span class="o">=</span><span class="n">COBs</span><span class="p">,</span>
+        <span class="n">continents</span><span class="o">=</span><span class="n">continents</span><span class="p">,</span>
+        <span class="n">time</span><span class="o">=</span><span class="n">time</span><span class="p">,</span>
+        <span class="n">plot_engine</span><span class="o">=</span><span class="n">plot_engine</span><span class="p">,</span>
+    <span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="get_pygmt_basemap_figure">
+<a class="viewcode-back" href="../../generated/gplately.auxiliary.html#gplately.auxiliary.get_pygmt_basemap_figure">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_pygmt_basemap_figure</span><span class="p">(</span><span class="n">projection</span><span class="o">=</span><span class="s2">&quot;N180/10c&quot;</span><span class="p">,</span> <span class="n">region</span><span class="o">=</span><span class="s2">&quot;d&quot;</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A helper function to return a ``pygmt.Figure()`` object</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    projection: str, default=&quot;N180/10c&quot;</span>
+<span class="sd">        string to define the map projection in GMT style</span>
+<span class="sd">    region: str, default=&quot;d&quot;</span>
+<span class="sd">        string to define the map extent in GMT style</span>
+
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    pygmt.Figure()</span>
+<span class="sd">       a ``pygmt.Figure()`` object for map plotting</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">fig</span> <span class="o">=</span> <span class="n">pygmt</span><span class="o">.</span><span class="n">Figure</span><span class="p">()</span>
+    <span class="n">fig</span><span class="o">.</span><span class="n">basemap</span><span class="p">(</span><span class="n">region</span><span class="o">=</span><span class="n">region</span><span class="p">,</span> <span class="n">projection</span><span class="o">=</span><span class="n">projection</span><span class="p">,</span> <span class="n">frame</span><span class="o">=</span><span class="s2">&quot;lrtb&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">fig</span></div>
+
+
+
+<div class="viewcode-block" id="get_data_server_cache_path">
+<a class="viewcode-back" href="../../generated/gplately.auxiliary.html#gplately.auxiliary.get_data_server_cache_path">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_data_server_cache_path</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return the path to the :class:`gplately.DataServer` cache as a ``os.PathLike`` object.</span>
+
+<span class="sd">    .. seealso::</span>
+
+<span class="sd">        :py:attr:`gplately.DataServer.cache_path`</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">path_to_cache</span><span class="p">()</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023-2025, The University of Sydney.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

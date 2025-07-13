@@ -1,0 +1,32 @@
+﻿gplately.PresentDayRasterManager
+================================
+
+.. currentmodule:: gplately
+
+.. autoclass:: PresentDayRasterManager
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~PresentDayRasterManager.__init__
+      ~PresentDayRasterManager.get_raster
+      ~PresentDayRasterManager.is_wms
+      ~PresentDayRasterManager.list_present_day_rasters
+      ~PresentDayRasterManager.set_data_dir
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~PresentDayRasterManager.rasters
+   
+   

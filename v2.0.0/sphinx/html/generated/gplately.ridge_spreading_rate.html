@@ -1,0 +1,196 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>gplately.ridge_spreading_rate &mdash; gplately 2.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+
+  
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=51b770b3"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="gplately.subduction_convergence" href="gplately.subduction_convergence.html" />
+    <link rel="prev" title="gplately.read_netcdf_grid" href="gplately.read_netcdf_grid.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            gplately
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../basic_usages.html">Minimal Working Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../use_cases.html">Common Use Cases</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../faq.html">Troubleshooting and FAQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../command_line_interface.html">Command Line Interface (CLI)</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../api.html">Main Classes</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../functions.html">Functions</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../functions.html#reconstruction">Reconstruction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../functions.html#resolve-topologies">Resolve Topologies</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../functions.html#miscellaneous">Miscellaneous</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="gplately.auxiliary.html">gplately.auxiliary</a></li>
+<li class="toctree-l3"><a class="reference internal" href="gplately.read_netcdf_grid.html">gplately.read_netcdf_grid</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">gplately.ridge_spreading_rate</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#gplately.ridge_spreading_rate"><code class="docutils literal notranslate"><span class="pre">ridge_spreading_rate()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="gplately.subduction_convergence.html">gplately.subduction_convergence</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../secondaries.html">Other Classes</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">gplately</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../functions.html">Functions</a></li>
+      <li class="breadcrumb-item active">gplately.ridge_spreading_rate</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/generated/gplately.ridge_spreading_rate.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="gplately-ridge-spreading-rate">
+<h1>gplately.ridge_spreading_rate<a class="headerlink" href="#gplately-ridge-spreading-rate" title="Link to this heading"></a></h1>
+<dl class="py function">
+<dt class="sig sig-object py" id="gplately.ridge_spreading_rate">
+<span class="sig-prename descclassname"><span class="pre">gplately.</span></span><span class="sig-name descname"><span class="pre">ridge_spreading_rate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">rotation_features_or_model,</span> <span class="pre">topology_features,</span> <span class="pre">time,</span> <span class="pre">threshold_sampling_distance_radians,</span> <span class="pre">spreading_feature_types=[&lt;pygplates.pygplates.FeatureType</span> <span class="pre">object&gt;],</span> <span class="pre">transform_segment_deviation_in_radians=1.2217304763960306,</span> <span class="pre">velocity_delta_time=1.0,</span> <span class="pre">anchor_plate_id=None,</span> <span class="pre">include_network_boundaries=False,</span> <span class="pre">output_obliquity_and_normal_and_left_right_plates=False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#gplately.ridge_spreading_rate" title="Link to this definition"></a></dt>
+<dd><p>Calculate the spreading rate of ridge segments (and other statistics like spreading obliquity, and ridge length/normals and left/right plates).</p>
+<p>The transform segments of spreading features are ignored (unless <code class="docutils literal notranslate"><span class="pre">transform_segment_deviation_in_radians</span></code> is <code class="docutils literal notranslate"><span class="pre">None</span></code>).</p>
+<p>Resolves topologies at <code class="docutils literal notranslate"><span class="pre">time</span></code>, tessellates all resolved spreading features to within <code class="docutils literal notranslate"><span class="pre">threshold_sampling_distance_radians</span></code> radians and
+returns a list of tuples where each tuple represents a tessellated point.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>rotation_features_or_model</strong> (str/os.PathLike, or <a class="reference external" href="https://www.gplates.org/docs/pygplates/generated/pygplates.featurecollection#pygplates.FeatureCollection">pygplates.FeatureCollection</a>, or <a class="reference external" href="https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature">pygplates.Feature</a>, or sequence of <a class="reference external" href="https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature">pygplates.Feature</a>, or a sequence (eg, a list or tuple) of any combination of those four types, or <a class="reference external" href="https://www.gplates.org/docs/pygplates/generated/pygplates.rotationmodel">pygplates.RotationModel</a>) – A rotation model to calculate spreading rate.
+Can be provided as a rotation filename, or rotation feature collection, or rotation feature, or
+sequence of rotation features, or a sequence (eg, a list or tuple) of any combination of those four types.</p></li>
+<li><p><strong>topology_features</strong> (str/os.PathLike, or <a class="reference external" href="https://www.gplates.org/docs/pygplates/generated/pygplates.featurecollection#pygplates.FeatureCollection">pygplates.FeatureCollection</a>, or <a class="reference external" href="https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature">pygplates.Feature</a>, or a sequence <a class="reference external" href="https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature">pygplates.Feature</a>, or a sequence (eg, a list or tuple) of any combination of those four types) – Reconstructable topological features representing the spreading features.</p></li>
+<li><p><strong>time</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – The reconstruction time (Ma) at which to calculate spreading rate.</p></li>
+<li><p><strong>threshold_sampling_distance_radians</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – Threshold sampling distance along spreading features (in radians).</p></li>
+<li><p><strong>spreading_feature_types</strong> (<a class="reference external" href="https://www.gplates.org/docs/pygplates/generated/pygplates.featuretype">pygplates.FeatureType</a> or sequence of <a class="reference external" href="https://www.gplates.org/docs/pygplates/generated/pygplates.featuretype">pygplates.FeatureType</a>, default=pygplates.FeatureType.gpml_mid_ocean_ridge) – Only spreading features with a feature type contained in this list are considered.
+If <code class="docutils literal notranslate"><span class="pre">None</span></code> then all spreading features are considered.</p></li>
+<li><p><strong>transform_segment_deviation_in_radians</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em>, </em><em>default=&lt;implementation-defined&gt;</em>) – How much a segment can deviate from the stage pole before it’s considered a transform segment (in radians).
+The default value has been empirically determined to give the best results for typical models.
+If <code class="docutils literal notranslate"><span class="pre">None</span></code> then the full feature geometry is used (ie, it is not split into ridge and transform segments, with the transform segments getting ignored).</p></li>
+<li><p><strong>velocity_delta_time</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em>, </em><em>default=1.0</em>) – Delta time interval used to calculate spreading velocity. Defaults to 1 Myr.</p></li>
+<li><p><strong>anchor_plate_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a><em>, </em><em>optional</em>) – Anchor plate ID for reconstruction.
+If not specified then uses the default anchor plate of <code class="docutils literal notranslate"><span class="pre">rotation_model</span></code> if it’s a <a class="reference external" href="https://www.gplates.org/docs/pygplates/generated/pygplates.rotationmodel">pygplates.RotationModel</a> (otherwise uses zero).</p></li>
+<li><p><strong>include_network_boundaries</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a><em>, </em><em>default=False</em>) – Whether to calculate spreading rate along network boundaries that are not also plate boundaries (defaults to False).
+If a deforming network shares a boundary with a plate then it’ll get included regardless of this option.</p></li>
+<li><p><strong>output_obliquity_and_normal_and_left_right_plates</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a><em>, </em><em>default=False</em>) – Whether to also return spreading obliquity, normal azimuth and left/right plates.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><p><strong>output_data</strong> – The results for all tessellated points sampled along spreading features.
+The size of the returned list is equal to the number of tessellated points.
+Each tuple in the list corresponds to a tessellated point and has the following tuple items
+(depending on <code class="docutils literal notranslate"><span class="pre">output_obliquity_and_normal_and_left_right_plates</span></code>):</p>
+<p>If <code class="docutils literal notranslate"><span class="pre">output_obliquity_and_normal_and_left_right_plates</span></code> is <code class="docutils literal notranslate"><span class="pre">False</span></code> (the default):</p>
+<ul class="simple">
+<li><p>longitude of tessellated point</p></li>
+<li><p>latitude of tessellated point</p></li>
+<li><p>spreading velocity magnitude (in cm/yr)</p></li>
+<li><p>length of arc segment (in degrees) that tessellated point is on</p></li>
+</ul>
+<p>If <code class="docutils literal notranslate"><span class="pre">output_obliquity_and_normal_and_left_right_plates</span></code> is <code class="docutils literal notranslate"><span class="pre">True</span></code>:</p>
+<ul class="simple">
+<li><p>longitude of tessellated point</p></li>
+<li><p>latitude of tessellated point</p></li>
+<li><p>spreading velocity magnitude (in cm/yr)</p></li>
+<li><p>spreading obliquity in degrees (deviation from normal line in range 0 to 90 degrees)</p></li>
+<li><p>length of arc segment (in degrees) that tessellated point is on</p></li>
+<li><p>azimuth of vector normal to the arc segment in degrees (clockwise starting at North, ie, 0 to 360 degrees)</p></li>
+<li><p>left plate ID</p></li>
+<li><p>right plate ID</p></li>
+</ul>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>a list of tuples</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="gplately.read_netcdf_grid.html" class="btn btn-neutral float-left" title="gplately.read_netcdf_grid" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="gplately.subduction_convergence.html" class="btn btn-neutral float-right" title="gplately.subduction_convergence" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023-2025, The University of Sydney.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

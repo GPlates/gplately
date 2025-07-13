@@ -1,0 +1,53 @@
+﻿gplately.PlateModel
+===================
+
+.. currentmodule:: gplately
+
+.. autoclass:: PlateModel
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~PlateModel.__init__
+      ~PlateModel.create_model_dir
+      ~PlateModel.download_all
+      ~PlateModel.download_all_layers
+      ~PlateModel.download_time_dependent_rasters
+      ~PlateModel.get_COBs
+      ~PlateModel.get_avail_layers
+      ~PlateModel.get_avail_time_dependent_raster_names
+      ~PlateModel.get_big_time
+      ~PlateModel.get_cfg
+      ~PlateModel.get_coastlines
+      ~PlateModel.get_continental_polygons
+      ~PlateModel.get_data_dir
+      ~PlateModel.get_layer
+      ~PlateModel.get_model_dir
+      ~PlateModel.get_raster
+      ~PlateModel.get_rasters
+      ~PlateModel.get_rotation_model
+      ~PlateModel.get_small_time
+      ~PlateModel.get_static_polygons
+      ~PlateModel.get_topologies
+      ~PlateModel.is_model_dir
+      ~PlateModel.purge
+      ~PlateModel.purge_layer
+      ~PlateModel.purge_time_dependent_rasters
+      ~PlateModel.set_data_dir
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~PlateModel.model
+   
+   

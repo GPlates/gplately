@@ -1,0 +1,199 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>gplately.reconstruct_grid &mdash; gplately 2.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+
+  
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=51b770b3"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="gplately.reconstruct_points" href="gplately.reconstruct_points.html" />
+    <link rel="prev" title="Functions" href="../functions.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            gplately
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../basic_usages.html">Minimal Working Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../use_cases.html">Common Use Cases</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../faq.html">Troubleshooting and FAQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../command_line_interface.html">Command Line Interface (CLI)</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../api.html">Main Classes</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../functions.html">Functions</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="../functions.html#reconstruction">Reconstruction</a><ul class="current">
+<li class="toctree-l3 current"><a class="current reference internal" href="#">gplately.reconstruct_grid</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#gplately.reconstruct_grid"><code class="docutils literal notranslate"><span class="pre">reconstruct_grid()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="gplately.reconstruct_points.html">gplately.reconstruct_points</a></li>
+<li class="toctree-l3"><a class="reference internal" href="gplately.reconstruct_points_impl.html">gplately.reconstruct_points_impl</a></li>
+<li class="toctree-l3"><a class="reference internal" href="gplately.reverse_reconstruct_points.html">gplately.reverse_reconstruct_points</a></li>
+<li class="toctree-l3"><a class="reference internal" href="gplately.reverse_reconstruct_points_impl.html">gplately.reverse_reconstruct_points_impl</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../functions.html#resolve-topologies">Resolve Topologies</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../functions.html#miscellaneous">Miscellaneous</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../secondaries.html">Other Classes</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">gplately</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../functions.html">Functions</a></li>
+      <li class="breadcrumb-item active">gplately.reconstruct_grid</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/generated/gplately.reconstruct_grid.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="gplately-reconstruct-grid">
+<h1>gplately.reconstruct_grid<a class="headerlink" href="#gplately-reconstruct-grid" title="Link to this heading"></a></h1>
+<dl class="py function">
+<dt class="sig sig-object py" id="gplately.reconstruct_grid">
+<span class="sig-prename descclassname"><span class="pre">gplately.</span></span><span class="sig-name descname"><span class="pre">reconstruct_grid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">grid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">partitioning_features</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rotation_model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">to_time</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">from_time</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extent</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.13)"><span class="pre">tuple</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'global'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">origin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fill_value</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threads</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">anchor_plate_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_dimension_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_dimension_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_variable_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/grids.html#reconstruct_grid"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.reconstruct_grid" title="Link to this definition"></a></dt>
+<dd><p>Reconstruct a gridded dataset to a given reconstruction time.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Use <a class="reference internal" href="gplately.Raster.html#gplately.Raster.reconstruct" title="gplately.Raster.reconstruct"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Raster.reconstruct()</span></code></a> whenever is possible. This <a class="reference internal" href="#gplately.reconstruct_grid" title="gplately.reconstruct_grid"><code class="xref py py-func docutils literal notranslate"><span class="pre">reconstruct_grid()</span></code></a> is better to be private.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>grid</strong> (<em>array_like</em><em>, or </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – The grid to be reconstructed. If <code class="docutils literal notranslate"><span class="pre">grid</span></code> is a filename, it will be loaded using <a class="reference internal" href="gplately.read_netcdf_grid.html#gplately.read_netcdf_grid" title="gplately.read_netcdf_grid"><code class="xref py py-meth docutils literal notranslate"><span class="pre">read_netcdf_grid()</span></code></a>.</p></li>
+<li><p><strong>partitioning_features</strong> (<em>valid argument to pygplates.FeaturesFunctionArgument</em>) – Features used to partition the <code class="docutils literal notranslate"><span class="pre">grid</span></code> by plate ID, usually a static
+polygons file. The <code class="docutils literal notranslate"><span class="pre">partitioning_features</span></code> may be a single
+<code class="docutils literal notranslate"><span class="pre">pygplates.Feature</span></code> object, a <code class="docutils literal notranslate"><span class="pre">pygplates.FeatureCollection</span></code>, a filename (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>), or a (potentially
+nested) sequence of any combination of the above types.</p></li>
+<li><p><strong>rotation_model</strong> (<em>valid argument to pygplates.RotationModel</em>) – The rotation model used to reconstruct the <code class="docutils literal notranslate"><span class="pre">grid</span></code>.
+The <code class="docutils literal notranslate"><span class="pre">rotation_model</span></code> may be a <code class="docutils literal notranslate"><span class="pre">pygplates.RotationModel</span></code> object, a rotation <code class="docutils literal notranslate"><span class="pre">pygplates.FeatureCollection</span></code>, a rotation filename
+(<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>), a rotation <code class="docutils literal notranslate"><span class="pre">pygplates.Feature</span></code>, a sequence of
+rotation features, or a (potentially nested) sequence of any combination of the above types.</p></li>
+<li><p><strong>to_time</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – Time to which <code class="docutils literal notranslate"><span class="pre">grid</span></code> will be reconstructed.</p></li>
+<li><p><strong>from_time</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em>, </em><em>default=0.0</em>) – Time from which to reconstruct the <code class="docutils literal notranslate"><span class="pre">grid</span></code>.</p></li>
+<li><p><strong>extent</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.13)"><em>tuple</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><em>default=&quot;global&quot;</em>) – Extent of the <code class="docutils literal notranslate"><span class="pre">grid</span></code>. Valid arguments are a tuple of the form (xmin, xmax, ymin, ymax), or the string “global”,
+equivalent to (-180.0, 180.0, -90.0, 90.0).</p></li>
+<li><p><strong>origin</strong> (<em>{&quot;upper&quot;</em><em>, </em><em>&quot;lower&quot;}</em><em>, </em><em>optional</em>) – Origin of the <code class="docutils literal notranslate"><span class="pre">grid</span></code> - either lower-left or upper-left. By default, determined from <cite>extent</cite>.</p></li>
+<li><p><strong>fill_value</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a><em>, or </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.13)"><em>tuple</em></a><em>, </em><em>optional</em><em>, </em><em>default=None</em>) – The value to be used for regions outside of <code class="docutils literal notranslate"><span class="pre">partitioning_features</span></code>
+at <code class="docutils literal notranslate"><span class="pre">to_time</span></code>. If not provided, this value will be determined based on the input.</p></li>
+<li><p><strong>threads</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a><em>, </em><em>default=1</em>) – Number of threads to use for certain computationally heavy routines.</p></li>
+<li><p><strong>anchor_plate_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a><em>, </em><em>optional</em><em>, </em><em>default=None</em>) – ID of the anchored plate. By default, use the default anchor plate ID of <code class="docutils literal notranslate"><span class="pre">rotation_model</span></code>
+if it’s a <code class="docutils literal notranslate"><span class="pre">pygplates.RotationModel</span></code> (otherwise zero).</p></li>
+<li><p><strong>x_dimension_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><em>optional</em><em>, </em><em>default=&quot;&quot;</em>) – If the grid file uses comman names, such as “x”, “lon”, “lons” or “longitude”, you need not set this parameter.
+Otherwise, you need to tell us what the x dimension name is.</p></li>
+<li><p><strong>y_dimension_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><em>optional</em><em>, </em><em>default=&quot;&quot;</em>) – If the grid file uses comman names, such as “y”, “lat”, “lats” or “latitude”, you need not set this parameter.
+Otherwise, you need to tell us what the y dimension name is.</p></li>
+<li><p><strong>data_variable_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><em>optional</em><em>, </em><em>default=&quot;&quot;</em>) – The program will try its best to determine the data variable name.
+However, it would be better if you could tell us what the data variable name is.
+Otherwise, the program will guess. The result may/may not be correct.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The reconstructed grid. Areas for which no plate ID could be
+determined from <code class="docutils literal notranslate"><span class="pre">partitioning_features</span></code> will be filled with <code class="docutils literal notranslate"><span class="pre">fill_value</span></code>.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy.ndarray</p>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>For two-dimensional grids, <code class="docutils literal notranslate"><span class="pre">fill_value</span></code> should be a single
+number. The default value will be <code class="docutils literal notranslate"><span class="pre">np.nan</span></code> for float or
+complex types, the minimum value for integer types, and the
+maximum value for unsigned types.
+For RGB image grids, <code class="docutils literal notranslate"><span class="pre">fill_value</span></code> should be a 3-tuple RGB
+colour code or a matplotlib colour name. The default value
+will be black (0.0, 0.0, 0.0).
+For RGBA image grids, <code class="docutils literal notranslate"><span class="pre">fill_value</span></code> should be a 4-tuple RGBA
+colour code or a matplotlib colour name. The default fill
+value will be transparent black (0.0, 0.0, 0.0, 0.0).</p>
+</div>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../functions.html" class="btn btn-neutral float-left" title="Functions" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="gplately.reconstruct_points.html" class="btn btn-neutral float-right" title="gplately.reconstruct_points" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023-2025, The University of Sydney.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

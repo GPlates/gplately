@@ -1,0 +1,1850 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>gplately.download &mdash; gplately 2.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+
+  
+    <link rel="shortcut icon" href="../../_static/favicon.ico"/>
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=51b770b3"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            gplately
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../basic_usages.html">Minimal Working Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../use_cases.html">Common Use Cases</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../faq.html">Troubleshooting and FAQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../command_line_interface.html">Command Line Interface (CLI)</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html">Main Classes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../functions.html">Functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../secondaries.html">Other Classes</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">gplately</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">gplately.download</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for gplately.download</h1><div class="highlight"><pre>
+<span></span><span class="c1">#</span>
+<span class="c1">#    Copyright (C) 2024-2025 The University of Sydney, Australia</span>
+<span class="c1">#</span>
+<span class="c1">#    This program is free software; you can redistribute it and/or modify it under</span>
+<span class="c1">#    the terms of the GNU General Public License, version 2, as published by</span>
+<span class="c1">#    the Free Software Foundation.</span>
+<span class="c1">#</span>
+<span class="c1">#    This program is distributed in the hope that it will be useful, but WITHOUT</span>
+<span class="c1">#    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or</span>
+<span class="c1">#    FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License</span>
+<span class="c1">#    for more details.</span>
+<span class="c1">#</span>
+<span class="c1">#    You should have received a copy of the GNU General Public License along</span>
+<span class="c1">#    with this program; if not, write to Free Software Foundation, Inc.,</span>
+<span class="c1">#    51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.</span>
+<span class="c1">#</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Functions for downloading assorted plate reconstruction data to use with GPlately&#39;s</span>
+<span class="sd">main objects. Files are stored in the user&#39;s cache and can be reused after being</span>
+<span class="sd">downloaded once.</span>
+
+<span class="sd">These data have been created and used in plate reconstruction models and studies, and</span>
+<span class="sd">are available from public web servers (like EarthByte&#39;s webDAV server, or the GPlates</span>
+<span class="sd">2.3 sample dataset library).</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">hashlib</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">_hashlib</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">_os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">_pathlib</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">re</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">_re</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">shutil</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">_shutil</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">urllib.request</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">_request</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Union</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">_np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pooch</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">_pooch</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pygplates</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">requests</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">_requests</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">matplotlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">image</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">plate_model_manager</span><span class="w"> </span><span class="kn">import</span> <span class="n">PlateModelManager</span><span class="p">,</span> <span class="n">PresentDayRasterManager</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pooch</span><span class="w"> </span><span class="kn">import</span> <span class="n">Decompress</span> <span class="k">as</span> <span class="n">_Decompress</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pooch</span><span class="w"> </span><span class="kn">import</span> <span class="n">HTTPDownloader</span> <span class="k">as</span> <span class="n">_HTTPDownloader</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pooch</span><span class="w"> </span><span class="kn">import</span> <span class="n">Unzip</span> <span class="k">as</span> <span class="n">_Unzip</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pooch</span><span class="w"> </span><span class="kn">import</span> <span class="n">os_cache</span> <span class="k">as</span> <span class="n">_os_cache</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pooch</span><span class="w"> </span><span class="kn">import</span> <span class="n">retrieve</span> <span class="k">as</span> <span class="n">_retrieve</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">.data</span><span class="w"> </span><span class="kn">import</span> <span class="n">_feature_data</span><span class="p">,</span> <span class="n">_rasters</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.grids</span><span class="w"> </span><span class="kn">import</span> <span class="n">Raster</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">DownloadWarning</span><span class="p">(</span><span class="ne">RuntimeWarning</span><span class="p">):</span>
+    <span class="k">pass</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_test_internet_connection</span><span class="p">(</span><span class="n">url</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Test whether a connection to the required web server</span>
+<span class="sd">    can be made given a `url`.</span>
+
+<span class="sd">    Returns `False` the `url` is incorrect, and/or if there</span>
+<span class="sd">    is no internet connection.&quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">_request</span><span class="o">.</span><span class="n">urlopen</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">True</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_determine_processor</span><span class="p">(</span><span class="n">url</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Set instructions for how to process/unpack a file depending on</span>
+<span class="sd">    its filetype. The unpacked file paths will have an .unzip, or</span>
+<span class="sd">    .decomp, or no file extension in their processed form.&quot;&quot;&quot;</span>
+    <span class="n">archive_formats</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">([</span><span class="s2">&quot;.gz&quot;</span><span class="p">,</span> <span class="s2">&quot;.xz&quot;</span><span class="p">,</span> <span class="s2">&quot;.bz2&quot;</span><span class="p">])</span>
+    <span class="k">if</span> <span class="n">url</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;.zip&quot;</span><span class="p">):</span>
+        <span class="n">processor</span> <span class="o">=</span> <span class="n">_Unzip</span><span class="p">()</span>
+        <span class="n">ext</span> <span class="o">=</span> <span class="s2">&quot;.unzip&quot;</span>
+    <span class="k">elif</span> <span class="n">url</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="n">archive_formats</span><span class="p">):</span>
+        <span class="n">processor</span> <span class="o">=</span> <span class="n">_Decompress</span><span class="p">()</span>
+        <span class="n">ext</span> <span class="o">=</span> <span class="s2">&quot;.decomp&quot;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">processor</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">ext</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">processor</span><span class="p">,</span> <span class="n">ext</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">path_of_cached_file</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">model_name</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Determine the absolute path where the file(s) from `url`</span>
+<span class="sd">    will be downloaded to.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    url : str</span>
+<span class="sd">        The full download URL for the file passed as a string.</span>
+
+<span class="sd">    model_name : str, default None</span>
+<span class="sd">        An optional substring that ideally describes/labels the file.</span>
+<span class="sd">        This will help name the file(s) when it is downloaded to the</span>
+<span class="sd">        gplately cache (this directory can be</span>
+<span class="sd">        found using `gplately.download.path_to_cache()`).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">cached_filename</span> <span class="o">=</span> <span class="n">_pooch</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">unique_file_name</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+    <span class="n">cached_filename</span> <span class="o">=</span> <span class="n">_remove_hash</span><span class="p">(</span><span class="n">cached_filename</span><span class="p">)</span>
+    <span class="n">path</span> <span class="o">=</span> <span class="n">path_to_cache</span><span class="p">()</span>
+
+    <span class="n">processor_to_use</span><span class="p">,</span> <span class="n">processor_extension</span> <span class="o">=</span> <span class="n">_determine_processor</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+
+    <span class="n">fn</span> <span class="o">=</span> <span class="n">_parse_url_for_filenames</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">fn</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span>
+    <span class="c1"># If the requested files need processing (i.e. zip, gz folders)</span>
+    <span class="k">if</span> <span class="n">processor_extension</span><span class="p">:</span>
+        <span class="c1"># Are they from plate models? These typically are the .zip folders for plate models</span>
+        <span class="k">if</span> <span class="n">model_name</span><span class="p">:</span>
+            <span class="n">cached_filename</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">path</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;/&quot;</span> <span class="o">+</span> <span class="n">model_name</span> <span class="o">+</span> <span class="n">processor_extension</span> <span class="o">+</span> <span class="s2">&quot;/&quot;</span>
+            <span class="n">unprocessed_path</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">path</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;/&quot;</span> <span class="o">+</span> <span class="n">model_name</span>
+            <span class="c1"># cached_filename = cached_filename = str(path) + &#39;/&#39; + model_name</span>
+
+        <span class="c1"># If not from plate models but need processing, i.e. ETOPO1</span>
+        <span class="k">else</span><span class="p">:</span>
+
+            <span class="n">cached_filename</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="nb">str</span><span class="p">(</span><span class="n">path</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;/&quot;</span> <span class="o">+</span> <span class="s2">&quot;gplately_&quot;</span> <span class="o">+</span> <span class="n">fn</span> <span class="o">+</span> <span class="n">processor_extension</span> <span class="o">+</span> <span class="s2">&quot;/&quot;</span>
+            <span class="p">)</span>
+            <span class="n">unprocessed_path</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">path</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;/&quot;</span> <span class="o">+</span> <span class="s2">&quot;gplately_&quot;</span> <span class="o">+</span> <span class="n">fn</span>
+            <span class="c1"># cached_filename = &quot;gplately_&quot;+_parse_url_for_filenames(url)</span>
+
+    <span class="c1"># If the requested files do not need processing, like standalone .nc files:</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">model_name</span><span class="p">:</span>
+            <span class="n">cached_filename</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">path</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;/&quot;</span> <span class="o">+</span> <span class="n">model_name</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="n">fn</span>
+            <span class="n">unprocessed_path</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">cached_filename</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">path</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;/&quot;</span> <span class="o">+</span> <span class="s2">&quot;gplately_&quot;</span> <span class="o">+</span> <span class="n">fn</span>
+            <span class="n">unprocessed_path</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="n">_pooch</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">make_local_storage</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+    <span class="n">full_path</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span> <span class="o">/</span> <span class="n">cached_filename</span>
+
+    <span class="k">return</span> <span class="n">full_path</span><span class="p">,</span> <span class="n">unprocessed_path</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_extract_processed_files</span><span class="p">(</span><span class="n">processed_directory</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return a list of all full filenames from a given directory</span>
+<span class="sd">    in the GPlately cache.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">_os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">processed_directory</span><span class="p">):</span>
+        <span class="n">fnames</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">root</span><span class="p">,</span> <span class="n">dirs</span><span class="p">,</span> <span class="n">files</span> <span class="ow">in</span> <span class="n">_os</span><span class="o">.</span><span class="n">walk</span><span class="p">(</span><span class="n">processed_directory</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">files</span><span class="p">:</span>
+                <span class="n">fnames</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">_os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">file</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">fnames</span>
+    <span class="k">elif</span> <span class="n">_os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">processed_directory</span><span class="p">)):</span>
+        <span class="k">return</span> <span class="n">processed_directory</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">path_to_cache</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Determine the absolute path to the system gplately cache.&quot;&quot;&quot;</span>
+    <span class="n">path</span> <span class="o">=</span> <span class="n">_pooch</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">cache_location</span><span class="p">(</span><span class="n">_os_cache</span><span class="p">(</span><span class="s2">&quot;gplately&quot;</span><span class="p">),</span> <span class="n">env</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">path</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">clear_cache</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Clear the `gplately` cache directory.</span>
+
+<span class="sd">    The absolute path of this directory can be found by running</span>
+<span class="sd">    [gplately.download.path_to_cache()](file:///Users/laurenilano/gplately/api/gplately/download.html#gplately.download.path_to_cache).</span>
+
+<span class="sd">    Caution - when called, all files in /path/to/caches/gplately will</span>
+<span class="sd">    be deleted. This action cannot be undone.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">cache_path</span> <span class="o">=</span> <span class="n">path_to_cache</span><span class="p">()</span>
+    <span class="n">_shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">cache_path</span><span class="p">))</span>
+    <span class="n">_pooch</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">make_local_storage</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">cache_path</span><span class="p">))</span>
+    <span class="k">return</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_parse_url_for_filenames</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">return_hash</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="c1"># Determine the filename of an E-Tag txt file</span>
+    <span class="n">md5</span> <span class="o">=</span> <span class="n">_hashlib</span><span class="o">.</span><span class="n">md5</span><span class="p">(</span><span class="n">url</span><span class="o">.</span><span class="n">encode</span><span class="p">())</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">()</span>
+    <span class="n">fname</span> <span class="o">=</span> <span class="n">_os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">_pooch</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">parse_url</span><span class="p">(</span><span class="n">url</span><span class="p">)[</span><span class="s2">&quot;path&quot;</span><span class="p">])</span>
+    <span class="n">fname</span> <span class="o">=</span> <span class="n">fname</span><span class="p">[</span><span class="o">-</span><span class="p">(</span><span class="mi">255</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">md5</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="p">:]</span>
+    <span class="k">if</span> <span class="n">return_hash</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">fname</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="n">md5</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_get_url_etag</span><span class="p">(</span><span class="n">url</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Obtain the E-Tag of a web server URL.</span>
+
+<span class="sd">    The E-Tag identifies a resource under a URL. If the resource</span>
+<span class="sd">    is modified, a new E-Tag is generated. DataServer uses the</span>
+<span class="sd">    E-Tag to determine whether local copies of plate model files</span>
+<span class="sd">    available from a web server need to be updated to match the</span>
+<span class="sd">    version on the web server.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Determine E-Tag of the URL</span>
+    <span class="n">etag</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">_requests</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="n">url</span><span class="p">)</span><span class="o">.</span><span class="n">headers</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;ETag&quot;</span><span class="p">))</span>
+
+    <span class="c1"># Determine the filename of an E-Tag txt file</span>
+    <span class="n">parsed_fname</span><span class="p">,</span> <span class="n">filehash</span> <span class="o">=</span> <span class="n">_parse_url_for_filenames</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">return_hash</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="n">unique_name</span> <span class="o">=</span> <span class="n">filehash</span> <span class="o">+</span> <span class="s2">&quot;-ETAG.txt&quot;</span>
+
+    <span class="n">cachepath</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">_pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="n">_os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">_os_cache</span><span class="p">(</span><span class="s2">&quot;gplately&quot;</span><span class="p">)))))</span>
+
+    <span class="n">text_path</span> <span class="o">=</span> <span class="n">_os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">cachepath</span><span class="p">,</span> <span class="n">unique_name</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">etag</span><span class="p">,</span> <span class="n">text_path</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_save_url_etag_to_txt</span><span class="p">(</span><span class="n">etag</span><span class="p">,</span> <span class="n">text_path</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Write an E-Tag to a text file.&quot;&quot;&quot;</span>
+    <span class="c1"># Write E-Tag to a text file on the GPlately cache.</span>
+    <span class="n">text_file</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">text_path</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span>
+    <span class="n">text_file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">etag</span><span class="p">)</span>
+    <span class="n">text_file</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_match_url_to_extension</span><span class="p">(</span><span class="n">url</span><span class="p">):</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">url</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;.nc&quot;</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s2">&quot;.nc&quot;</span>
+    <span class="k">elif</span> <span class="n">url</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;.jpg&quot;</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s2">&quot;.jpg&quot;</span>
+    <span class="k">elif</span> <span class="n">url</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;.png&quot;</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s2">&quot;.png&quot;</span>
+    <span class="k">elif</span> <span class="n">url</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;.tif&quot;</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s2">&quot;.tif&quot;</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_first_time_download_from_web</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">model_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    # Provided a web connection to a server can be established,</span>
+<span class="sd">    download the files from the URL into the GPlately cache.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">logger</span> <span class="o">=</span> <span class="n">_pooch</span><span class="o">.</span><span class="n">get_logger</span><span class="p">()</span>
+    <span class="n">log_level</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">level</span>
+    <span class="k">if</span> <span class="n">_test_internet_connection</span><span class="p">(</span><span class="n">url</span><span class="p">):</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">verbose</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="s2">&quot;WARNING&quot;</span><span class="p">)</span>
+
+        <span class="c1"># The filename pooch saves the requested file is derived from</span>
+        <span class="c1"># one of four permutations:</span>
+        <span class="c1"># 1. File is from a plate model and needs processing (i.e. zip --&gt; unzip)</span>
+        <span class="c1"># 2. File is from a plate model and does not need processing (i.e. .nc age grids)</span>
+        <span class="c1"># 3. File is not from a plate model but needs processing (i.e. ETOPO, .grd.gz --&gt; .decomp)</span>
+        <span class="c1"># 4. File is not from a plate model and does not need processing</span>
+        <span class="n">processor_to_use</span><span class="p">,</span> <span class="n">processor_extension</span> <span class="o">=</span> <span class="n">_determine_processor</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+
+        <span class="n">fn</span> <span class="o">=</span> <span class="n">_parse_url_for_filenames</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">fn</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span>
+
+        <span class="c1"># If the requested files need processing (i.e. zip, gz folders)</span>
+        <span class="k">if</span> <span class="n">processor_extension</span><span class="p">:</span>
+            <span class="c1"># Are they from plate models? These typically are the .zip folders for plate models</span>
+            <span class="k">if</span> <span class="n">model_name</span><span class="p">:</span>
+                <span class="c1"># Download the files with a naming structure like:</span>
+                <span class="c1"># /path/to/cache/gplately/model_name+processor_extension</span>
+                <span class="n">used_fname</span> <span class="o">=</span> <span class="n">model_name</span>
+                <span class="n">fnames</span> <span class="o">=</span> <span class="n">_retrieve</span><span class="p">(</span>
+                    <span class="n">url</span><span class="o">=</span><span class="n">url</span><span class="p">,</span>
+                    <span class="n">known_hash</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                    <span class="n">downloader</span><span class="o">=</span><span class="n">_HTTPDownloader</span><span class="p">(</span><span class="n">progressbar</span><span class="o">=</span><span class="n">verbose</span><span class="p">),</span>
+                    <span class="n">fname</span><span class="o">=</span><span class="n">used_fname</span><span class="p">,</span>
+                    <span class="n">path</span><span class="o">=</span><span class="n">_os_cache</span><span class="p">(</span><span class="s2">&quot;gplately&quot;</span><span class="p">),</span>
+                    <span class="n">processor</span><span class="o">=</span><span class="n">processor_to_use</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="c1"># If not from plate models but need processing, i.e. ETOPO1</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># Download the files with a naming structure like:</span>
+                <span class="c1"># /path/to/cache/gplately/file_name-as_inteded_in_url+processor_extension</span>
+                <span class="n">used_fname</span> <span class="o">=</span> <span class="s2">&quot;gplately_&quot;</span> <span class="o">+</span> <span class="n">fn</span>
+                <span class="n">fnames</span> <span class="o">=</span> <span class="n">_retrieve</span><span class="p">(</span>
+                    <span class="n">url</span><span class="o">=</span><span class="n">url</span><span class="p">,</span>
+                    <span class="n">known_hash</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                    <span class="n">downloader</span><span class="o">=</span><span class="n">_HTTPDownloader</span><span class="p">(</span><span class="n">progressbar</span><span class="o">=</span><span class="n">verbose</span><span class="p">),</span>
+                    <span class="n">fname</span><span class="o">=</span><span class="n">used_fname</span><span class="p">,</span>
+                    <span class="n">path</span><span class="o">=</span><span class="n">_os_cache</span><span class="p">(</span><span class="s2">&quot;gplately&quot;</span><span class="p">),</span>
+                    <span class="n">processor</span><span class="o">=</span><span class="n">processor_to_use</span><span class="p">,</span>
+                <span class="p">)</span>
+        <span class="c1"># If the requested files do not need processing, like standalone .nc files:</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Are they from plate models? These typically are age or spreading rate grids</span>
+            <span class="k">if</span> <span class="n">model_name</span><span class="p">:</span>
+                <span class="c1"># Download the files with a naming structure like:</span>
+                <span class="c1"># /path/to/cache/gplately/file_name-as_inteded_in_url+processor_extension</span>
+                <span class="n">used_fname</span> <span class="o">=</span> <span class="n">model_name</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="n">fn</span>
+                <span class="n">fnames</span> <span class="o">=</span> <span class="n">_retrieve</span><span class="p">(</span>
+                    <span class="n">url</span><span class="o">=</span><span class="n">url</span><span class="p">,</span>
+                    <span class="n">known_hash</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                    <span class="n">downloader</span><span class="o">=</span><span class="n">_HTTPDownloader</span><span class="p">(</span><span class="n">progressbar</span><span class="o">=</span><span class="n">verbose</span><span class="p">),</span>
+                    <span class="n">fname</span><span class="o">=</span><span class="n">used_fname</span><span class="p">,</span>
+                    <span class="n">path</span><span class="o">=</span><span class="n">_os_cache</span><span class="p">(</span><span class="s2">&quot;gplately&quot;</span><span class="p">),</span>
+                    <span class="n">processor</span><span class="o">=</span><span class="n">processor_to_use</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="c1"># If not from plate models and do not need processing,</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">used_fname</span> <span class="o">=</span> <span class="s2">&quot;gplately_&quot;</span> <span class="o">+</span> <span class="n">fn</span>
+                <span class="n">fnames</span> <span class="o">=</span> <span class="n">_retrieve</span><span class="p">(</span>
+                    <span class="n">url</span><span class="o">=</span><span class="n">url</span><span class="p">,</span>
+                    <span class="n">known_hash</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                    <span class="n">downloader</span><span class="o">=</span><span class="n">_HTTPDownloader</span><span class="p">(</span><span class="n">progressbar</span><span class="o">=</span><span class="n">verbose</span><span class="p">),</span>
+                    <span class="n">fname</span><span class="o">=</span><span class="n">used_fname</span><span class="p">,</span>
+                    <span class="n">path</span><span class="o">=</span><span class="n">_os_cache</span><span class="p">(</span><span class="s2">&quot;gplately&quot;</span><span class="p">),</span>
+                    <span class="n">processor</span><span class="o">=</span><span class="n">processor_to_use</span><span class="p">,</span>
+                <span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">verbose</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">log_level</span><span class="p">)</span>
+
+        <span class="c1"># Get the URL&#39;s E-Tag for the first time</span>
+        <span class="n">etag</span><span class="p">,</span> <span class="n">textfilename</span> <span class="o">=</span> <span class="n">_get_url_etag</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+        <span class="n">_save_url_etag_to_txt</span><span class="p">(</span><span class="n">etag</span><span class="p">,</span> <span class="n">textfilename</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">fnames</span><span class="p">,</span> <span class="n">etag</span><span class="p">,</span> <span class="n">textfilename</span><span class="p">,</span> <span class="n">used_fname</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">download_from_web</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">download_changes</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">model_name</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Download a file from a `url` into the `gplately` cache.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    After the file belonging to the given `url` is downloaded</span>
+<span class="sd">    to the `gplately` cache once, subsequent runs of</span>
+<span class="sd">    `download_from_web` with this `url` will not redownload</span>
+<span class="sd">    the file as long as:</span>
+
+<span class="sd">    * The file has not been updated on the web server,</span>
+<span class="sd">    * The file has not been removed from the `gplately` cache.</span>
+
+<span class="sd">    Instead, the file will be re-accessed from the `gplately`</span>
+<span class="sd">    cache it was downloaded to.</span>
+
+<span class="sd">    However, if the file has been updated on the web server,</span>
+<span class="sd">    `download_from_web` overwrites the cached file with the</span>
+<span class="sd">    updated version. The following messages will be displayed</span>
+<span class="sd">    to the user:</span>
+
+<span class="sd">        &quot;Checking whether the requested files need to be updated...&quot;</span>
+<span class="sd">        &quot;Yes - updating requested files...&quot;</span>
+<span class="sd">        &quot;Requested files downloaded to the GPlately cache folder!&quot;</span>
+
+<span class="sd">    If ever a connection to the web server (and the file(s)) in</span>
+<span class="sd">    `url` is unsuccessful, this is likely because:</span>
+
+<span class="sd">    * An internet connection could not be established; or</span>
+<span class="sd">    * The `url` passed to `download_from_web` is incorrect</span>
+
+<span class="sd">    In either case, `download_from_web` attempts to find a version</span>
+<span class="sd">    of the requested file(s) in `url` already stored in the</span>
+<span class="sd">    `gplately` cache (assuming it has been downloaded from the same</span>
+<span class="sd">    `url` once before). This version may not match the one on the web</span>
+<span class="sd">    server. If a copy of the file(s) cannot be found in the `gplately`</span>
+<span class="sd">    cache, a `ConnectionError` is raised.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    url : str</span>
+<span class="sd">        The full URL used to download a file from a public web server</span>
+<span class="sd">        like webDAV.</span>
+<span class="sd">    verbose : bool</span>
+<span class="sd">        Choose whether to print user alerts regarding file availability,</span>
+<span class="sd">        data server/internet connection status etc.</span>
+<span class="sd">    download_changes : bool, default=True</span>
+<span class="sd">        Permit the re-downloading/update of the file from `url` if</span>
+<span class="sd">        it has been updated on the web server since the last download.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    fnames : list of str</span>
+<span class="sd">        A list of strings representing the full paths to all cached data</span>
+<span class="sd">        downloaded from the given `url`.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ConnectionError</span>
+<span class="sd">        If a connection to the web server and file(s) in the given `url` is</span>
+<span class="sd">        unsuccessful (because there is no internet access, and/or the `url`</span>
+<span class="sd">        is incorrect) and no version of the requested file(s) have been</span>
+<span class="sd">        cached before. In this case, nothing is returned.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1">#   NOTE: We need a way to verify the existence of requested file(s) in the gplately</span>
+    <span class="c1">#   cache to determine whether a file needs to be installed, updated, or re-accessed</span>
+    <span class="c1">#   from the cache. Every time a file is installed for the first time,</span>
+    <span class="c1">#   DataServer creates a directory called `full_path`. Its existence verifies the</span>
+    <span class="c1">#   existence</span>
+    <span class="c1">#</span>
+    <span class="c1">#   The nature of `full_path` is dependent on the file-type:</span>
+    <span class="c1">#</span>
+    <span class="c1">#   .zip files will be downloaded and expanded in an inside folder:</span>
+    <span class="c1">#</span>
+    <span class="c1">#   /path/to/cache/gplately/fname.zip.unzip/</span>
+    <span class="c1">#</span>
+    <span class="c1">#   Thus, for zips, `full_path` is a directory that ends in &quot;.zip.unzip&quot;:</span>
+    <span class="c1">#</span>
+    <span class="c1">#   For example: /Users/laurenilano/Library/Caches/gplately/Muller2019.zip.unzip/</span>
+
+    <span class="c1">#   Other types of files that need processing, like .gz --&gt; .decomp, aren&#39;t</span>
+    <span class="c1">#   expanded in an internal folder. This is also the case for files that do not</span>
+    <span class="c1">#   need processing, e.g. &quot;.nc&quot; files. In these cases, `full_path` is the exact</span>
+    <span class="c1">#   directory that the cached file is saved to.</span>
+    <span class="c1">#</span>
+    <span class="c1">#</span>
+    <span class="c1">#   For example: /Users/laurenilano/Library/Caches/gplately/Muller_etal_2019_Tectonics_v2.0_AgeGrid-100.nc</span>
+    <span class="c1">#</span>
+    <span class="c1">#   `full_path` is an empty directory for non-zips, and is the parent directory of</span>
+    <span class="c1">#   unzipped contents in &quot;.zip&quot; URLs.</span>
+    <span class="c1">#</span>
+    <span class="c1">#   Why do we need `full_path`?</span>
+    <span class="c1">#   We search the top-level gplately cache directory for the `full_path` directory as it is</span>
+    <span class="c1">#   installed with the requested files. Its existence verifies the</span>
+    <span class="c1">#   existence of the requested file(s), and thus to decide whether to install the</span>
+    <span class="c1">#   files or re-access existing cached versions. This also helps with E-Tag versioning</span>
+    <span class="c1">#   in instances where the download URL remains the same but its contents may have changed</span>
+    <span class="c1">#   since the file(s) were last cached.</span>
+
+    <span class="n">full_path</span><span class="p">,</span> <span class="n">unprocessed_path</span> <span class="o">=</span> <span class="n">path_of_cached_file</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">model_name</span><span class="p">)</span>
+
+    <span class="c1"># If the file required processing (zips make a directory to unzip in, and .gz for example</span>
+    <span class="c1"># makes a file just saved to the top-level directory), and the directory or file is not</span>
+    <span class="c1"># yet on the cache,</span>
+    <span class="k">if</span> <span class="n">_determine_processor</span><span class="p">(</span><span class="n">url</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="ow">and</span> <span class="ow">not</span> <span class="p">(</span>
+        <span class="n">_os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">full_path</span><span class="p">))</span> <span class="ow">or</span> <span class="n">_os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">full_path</span><span class="p">))</span>
+    <span class="p">):</span>
+
+        <span class="c1"># ...and if a connection to the web server can be established,</span>
+        <span class="c1"># download files from the URL and create a textfile for this URL&#39;s E-Tag</span>
+        <span class="k">if</span> <span class="n">_test_internet_connection</span><span class="p">(</span><span class="n">url</span><span class="p">):</span>
+            <span class="n">fnames</span><span class="p">,</span> <span class="n">etag</span><span class="p">,</span> <span class="n">textfilename</span><span class="p">,</span> <span class="n">used_fname</span> <span class="o">=</span> <span class="n">_first_time_download_from_web</span><span class="p">(</span>
+                <span class="n">url</span><span class="p">,</span> <span class="n">model_name</span><span class="o">=</span><span class="n">model_name</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span>
+            <span class="p">)</span>  <span class="c1"># type: ignore</span>
+            <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Requested files downloaded to the GPlately cache folder!&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">fnames</span>
+
+        <span class="c1"># ... if a connection to the web server cannot be established</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ConnectionError</span><span class="p">(</span>
+                <span class="s2">&quot;A connection to </span><span class="si">{}</span><span class="s2"> could not be made. Please check your internet connection and/or ensure the URL is correct. No file from the given URL has been cached to </span><span class="si">{}</span><span class="s2"> yet - nothing has been returned.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                    <span class="n">url</span><span class="p">,</span> <span class="n">full_path</span><span class="o">.</span><span class="n">parent</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+
+    <span class="c1"># If the file does not require processing, it did not open up a directory, so check isfile,</span>
+    <span class="c1"># and if the file is not yet on the cache,</span>
+    <span class="k">elif</span> <span class="ow">not</span> <span class="n">_determine_processor</span><span class="p">(</span><span class="n">url</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">_os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">full_path</span><span class="p">)):</span>
+        <span class="c1"># ...and if a connection to the web server can be established,</span>
+        <span class="c1"># download files from the URL and create a textfile for this URL&#39;s E-Tag</span>
+        <span class="k">if</span> <span class="n">_test_internet_connection</span><span class="p">(</span><span class="n">url</span><span class="p">):</span>
+            <span class="n">fnames</span><span class="p">,</span> <span class="n">etag</span><span class="p">,</span> <span class="n">textfilename</span><span class="p">,</span> <span class="n">used_fname</span> <span class="o">=</span> <span class="n">_first_time_download_from_web</span><span class="p">(</span>
+                <span class="n">url</span><span class="p">,</span> <span class="n">model_name</span><span class="o">=</span><span class="n">model_name</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span>
+            <span class="p">)</span>  <span class="c1"># type: ignore</span>
+            <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Requested files downloaded to the GPlately cache folder!&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">fnames</span>
+
+        <span class="c1"># ... if a connection to the web server cannot be established</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ConnectionError</span><span class="p">(</span>
+                <span class="s2">&quot;A connection to </span><span class="si">{}</span><span class="s2"> could not be made. Please check your internet connection and/or ensure the URL is correct. No file from the given URL has been cached to </span><span class="si">{}</span><span class="s2"> yet - nothing has been returned.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                    <span class="n">url</span><span class="p">,</span> <span class="n">full_path</span><span class="o">.</span><span class="n">parent</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+
+    <span class="c1"># If the files have been downloaded before...</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># ... and if a connection to the web server can be made...</span>
+        <span class="k">if</span> <span class="n">_test_internet_connection</span><span class="p">(</span><span class="n">url</span><span class="p">):</span>
+
+            <span class="n">_</span><span class="p">,</span> <span class="n">local_etag_txtfile</span> <span class="o">=</span> <span class="n">_get_url_etag</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+
+            <span class="c1"># If the newest version of the files in `url` must be cached</span>
+            <span class="c1"># at all times, perform E-Tag comparisons:</span>
+            <span class="k">if</span> <span class="n">download_changes</span><span class="p">:</span>
+
+                <span class="c1"># Walk through the top-level cache directory to find an E-Tag textfile unique to the URL</span>
+                <span class="n">etag_exists</span> <span class="o">=</span> <span class="kc">False</span>
+
+                <span class="n">cache_path</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">path_to_cache</span><span class="p">())</span>
+                <span class="k">if</span> <span class="n">_os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">local_etag_txtfile</span><span class="p">):</span>
+                    <span class="n">etag_exists</span> <span class="o">=</span> <span class="kc">True</span>
+
+                <span class="c1"># If an e-tag text file does not exist, erase the cached files</span>
+                <span class="c1"># and download the latest version from the web server. This, in turn,</span>
+                <span class="c1"># creates an e-tag textfile for this version.</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">etag_exists</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">_os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">full_path</span><span class="p">):</span>
+                        <span class="n">_shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">full_path</span><span class="p">))</span>
+                    <span class="k">elif</span> <span class="n">_os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">full_path</span><span class="p">):</span>
+                        <span class="n">_os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">full_path</span><span class="p">)</span>
+
+                    <span class="k">if</span> <span class="n">unprocessed_path</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">_os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">unprocessed_path</span><span class="p">):</span>
+                            <span class="n">_shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">unprocessed_path</span><span class="p">))</span>
+                        <span class="k">elif</span> <span class="n">_os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">unprocessed_path</span><span class="p">):</span>
+                            <span class="n">_os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">unprocessed_path</span><span class="p">)</span>
+
+                    <span class="n">fnames</span><span class="p">,</span> <span class="n">etag</span><span class="p">,</span> <span class="n">local_etag_txtfile</span><span class="p">,</span> <span class="n">used_fname</span> <span class="o">=</span> <span class="p">(</span>
+                        <span class="n">_first_time_download_from_web</span><span class="p">(</span>
+                            <span class="n">url</span><span class="p">,</span> <span class="n">model_name</span><span class="o">=</span><span class="n">model_name</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span>
+                        <span class="p">)</span>
+                    <span class="p">)</span>  <span class="c1"># type: ignore</span>
+                    <span class="k">return</span> <span class="n">fnames</span>
+
+                <span class="c1"># If the e-tag textfile exists for the local files,</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+                        <span class="nb">print</span><span class="p">(</span>
+                            <span class="s2">&quot;Checking whether the requested files need to be updated...&quot;</span>
+                        <span class="p">)</span>
+
+                    <span class="c1"># Determine the local file&#39;s URL e-tag from the textfile</span>
+                    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">local_etag_txtfile</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                        <span class="n">local_etag</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">readlines</span><span class="p">()[</span><span class="mi">0</span><span class="p">])</span>
+
+                    <span class="c1"># Get the e-tag of the web server URL at current time</span>
+                    <span class="n">remote_etag</span><span class="p">,</span> <span class="n">remote_etag_textfile</span> <span class="o">=</span> <span class="n">_get_url_etag</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+
+                    <span class="c1"># If the local and remote e-tags are unequal, the web-server URL</span>
+                    <span class="c1"># contains an updated version of the cached files.</span>
+                    <span class="k">if</span> <span class="nb">str</span><span class="p">(</span><span class="n">remote_etag</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">str</span><span class="p">(</span><span class="n">local_etag</span><span class="p">):</span>
+                        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+                            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Yes - updating requested files...&quot;</span><span class="p">)</span>
+
+                        <span class="c1"># Update the e-tag textfile with this newly-identified URL e-tag</span>
+                        <span class="n">_save_url_etag_to_txt</span><span class="p">(</span><span class="n">remote_etag</span><span class="p">,</span> <span class="n">local_etag_txtfile</span><span class="p">)</span>
+
+                        <span class="c1"># Delete existing version of the files...</span>
+                        <span class="c1"># If it didn&#39;t need processing, i.e. &#39;unzipping&#39;, just delete as-is</span>
+                        <span class="k">if</span> <span class="n">_os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">full_path</span><span class="p">):</span>
+                            <span class="n">_shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">full_path</span><span class="p">))</span>
+                        <span class="k">elif</span> <span class="n">_os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">full_path</span><span class="p">):</span>
+                            <span class="n">_os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">full_path</span><span class="p">)</span>
+
+                        <span class="c1"># If it&#39;s the kind of file that needs processing, delete the</span>
+                        <span class="c1"># unprocessed version so we can re-download it</span>
+                        <span class="k">if</span> <span class="n">unprocessed_path</span><span class="p">:</span>
+                            <span class="k">if</span> <span class="n">_os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">unprocessed_path</span><span class="p">):</span>
+                                <span class="n">_shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">unprocessed_path</span><span class="p">))</span>
+                            <span class="k">elif</span> <span class="n">_os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">unprocessed_path</span><span class="p">):</span>
+                                <span class="n">_os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">unprocessed_path</span><span class="p">)</span>
+
+                        <span class="c1"># Treat as if downloading the file(s) from the URL for the first time</span>
+                        <span class="n">fnames</span><span class="p">,</span> <span class="n">etag</span><span class="p">,</span> <span class="n">local_etag_txtfile</span><span class="p">,</span> <span class="n">used_fname</span> <span class="o">=</span> <span class="p">(</span>
+                            <span class="n">_first_time_download_from_web</span><span class="p">(</span>
+                                <span class="n">url</span><span class="p">,</span> <span class="n">model_name</span><span class="o">=</span><span class="n">model_name</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span>
+                            <span class="p">)</span>
+                        <span class="p">)</span>  <span class="c1"># type: ignore</span>
+
+                        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+                            <span class="nb">print</span><span class="p">(</span>
+                                <span class="s2">&quot;Updated requested files downloaded to the GPlately cache folder!&quot;</span>
+                            <span class="p">)</span>
+                        <span class="k">return</span> <span class="n">fnames</span>
+
+                    <span class="c1"># If the e-tags are equal, the local and remote files are the same.</span>
+                    <span class="c1"># Just return the file(s) as-is.</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+                            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Requested files are up-to-date!&quot;</span><span class="p">)</span>
+
+                        <span class="c1"># If files were processed once, return the processed files.</span>
+                        <span class="k">if</span> <span class="n">_determine_processor</span><span class="p">(</span><span class="n">url</span><span class="p">):</span>
+                            <span class="k">if</span> <span class="nb">str</span><span class="p">(</span><span class="n">full_path</span><span class="p">)</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="n">_determine_processor</span><span class="p">(</span><span class="n">url</span><span class="p">)[</span><span class="mi">1</span><span class="p">]):</span>
+                                <span class="k">return</span> <span class="n">_extract_processed_files</span><span class="p">((</span><span class="nb">str</span><span class="p">(</span><span class="n">full_path</span><span class="p">)))</span>
+                            <span class="k">else</span><span class="p">:</span>
+                                <span class="k">return</span> <span class="n">_extract_processed_files</span><span class="p">(</span>
+                                    <span class="nb">str</span><span class="p">(</span><span class="n">full_path</span><span class="p">)</span> <span class="o">+</span> <span class="n">_determine_processor</span><span class="p">(</span><span class="n">url</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+                                <span class="p">)</span>
+                        <span class="c1"># If not, return as-is.</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="k">return</span> <span class="n">_extract_processed_files</span><span class="p">(</span>
+                                <span class="nb">str</span><span class="p">(</span><span class="n">full_path</span><span class="p">)</span> <span class="o">+</span> <span class="n">_match_url_to_extension</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
+                            <span class="p">)</span>
+
+            <span class="c1"># If file versioning doesn&#39;t matter, just keep returning the cached files.</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">fnames</span><span class="p">,</span> <span class="n">etag</span><span class="p">,</span> <span class="n">local_etag_txtfile</span> <span class="o">=</span> <span class="n">_first_time_download_from_web</span><span class="p">(</span>  <span class="c1"># type: ignore</span>
+                    <span class="n">url</span><span class="p">,</span> <span class="n">model_name</span>
+                <span class="p">)</span>  <span class="c1"># type: ignore</span>
+                <span class="k">return</span> <span class="n">fnames</span>
+
+        <span class="c1"># If a connection to the web server could not be made, and the files exist in</span>
+        <span class="c1"># the GPlately cache, just return the files as-is.</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span>
+                <span class="s2">&quot;No connection to </span><span class="si">{}</span><span class="s2"> established. The requested file(s) (potentially older versions) exist in the GPlately cache (</span><span class="si">{}</span><span class="s2">) and have been returned.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                    <span class="n">url</span><span class="p">,</span> <span class="n">full_path</span><span class="o">.</span><span class="n">parent</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+            <span class="c1"># print(str(full_path)+_determine_processor(url)[1])</span>
+            <span class="k">return</span> <span class="n">_extract_processed_files</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">full_path</span><span class="p">))</span>
+            <span class="c1"># This created zip.unzip.unzip, so i deleted it but not sure if this will affect other files.</span>
+            <span class="c1"># return(_extract_processed_files(str(full_path)+_determine_processor(url)[1]))</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_collect_file_extension</span><span class="p">(</span><span class="n">fnames</span><span class="p">,</span> <span class="n">file_extension</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Searches cached directory for filenames with a specified extension(s).&quot;&quot;&quot;</span>
+    <span class="n">sorted_fnames</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">file_extension</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">file_extension</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">fnames</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">file</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="n">file_extension</span><span class="p">):</span>
+            <span class="n">sorted_fnames</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">sorted_fnames</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_str_in_folder</span><span class="p">(</span><span class="n">fnames</span><span class="p">,</span> <span class="n">strings_to_include</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">strings_to_ignore</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="n">fnames_to_ignore</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">fnames_to_include</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">sorted_fnames</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">fname</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">fnames</span><span class="p">):</span>
+        <span class="n">parent_directory</span> <span class="o">=</span> <span class="n">_os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">strings_to_ignore</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">strings_to_ignore</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">parent_directory</span><span class="p">:</span>
+                    <span class="n">fnames_to_ignore</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
+            <span class="n">sorted_fnames</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">fnames</span><span class="p">)</span> <span class="o">-</span> <span class="nb">set</span><span class="p">(</span><span class="n">fnames_to_ignore</span><span class="p">))</span>
+
+    <span class="k">if</span> <span class="n">strings_to_include</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">fname</span> <span class="ow">in</span> <span class="n">sorted_fnames</span><span class="p">:</span>
+            <span class="n">parent_directory</span> <span class="o">=</span> <span class="n">_os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">strings_to_include</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">parent_directory</span><span class="p">:</span>
+                    <span class="n">fnames_to_include</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
+        <span class="n">sorted_fnames</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">sorted_fnames</span><span class="p">)</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">fnames_to_include</span><span class="p">)))</span>
+    <span class="k">return</span> <span class="n">sorted_fnames</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_str_in_filename</span><span class="p">(</span>
+    <span class="n">fnames</span><span class="p">,</span>
+    <span class="n">strings_to_include</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">strings_to_ignore</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">file_collection</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">file_collection_sensitive</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="p">):</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">filter_func</span><span class="p">(</span><span class="n">fname</span><span class="p">):</span>
+        <span class="n">basename</span> <span class="o">=</span> <span class="n">_os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
+        <span class="n">keep</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="n">strings_to_include</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">keep</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># If a file collection was passed to the string to include, there is at least one file specific to</span>
+            <span class="c1"># this model that must be included. Such a file should be presented in the respective</span>
+            <span class="c1"># strings_to_include list in data.py with format:</span>
+
+            <span class="c1">#    &quot;file_collection string_to_include&quot;</span>
+
+            <span class="c1"># That is, a whitespace must be placed between the file collection and the string to include.</span>
+            <span class="c1"># The file collection must be identical to the string allocated to the key.</span>
+
+            <span class="c1"># For example, strings_to_include = [&quot;Muller2022 1000_0_rotfile_Merdith_et_al_optimised.rot&quot;]</span>
+
+            <span class="c1"># In this example, &quot;Muller2022&quot; and the strings_to_include list from data.py are passed to this function</span>
+            <span class="c1"># when sorting through rotation files.</span>
+            <span class="c1"># The list is looped through - if the current string has &quot;Muller2022&quot; (case insensitive) in it,</span>
+            <span class="c1"># we will only pass through the filename following &quot;Muller2022&quot;, i.e. the optmised plate model.</span>
+            <span class="c1"># All other rotation files bundled in the webDAV zip (including the published Merdith et al. 2021 rot files)</span>
+            <span class="c1"># are excluded from the filter.</span>
+
+            <span class="c1"># If no strings in the list include the passed file collection, we have one of two options, depending on whether</span>
+            <span class="c1"># file_collection_sensitive is True or False.</span>
+
+            <span class="c1"># If it is set to True, that means that we should only treat strings_to_include as True if and only if the</span>
+            <span class="c1">#  passed file collection was found in the strings_to_include list. Otherwise, we have to treat strings_to_include</span>
+            <span class="c1"># as if it was NoneType, and therefore place no filter for the files we accept through (that is, accept all files).</span>
+
+            <span class="c1"># If it is set to False, that means that we should treat strings_to_include as True always, irrespective of</span>
+            <span class="c1"># whether the passed file collection was found in the strings_to_include list. An example is the static polygon</span>
+            <span class="c1"># filetype - this relies on strings_to_include being True no matter what.</span>
+
+            <span class="c1"># For example, Merdith2021, Muller2019 would have file_collection_sensitive = False because these</span>
+            <span class="c1"># models currently don&#39;t have any files that MUST be excluded for their own instance, but MUST</span>
+            <span class="c1"># be included for other model instances.</span>
+
+            <span class="c1"># Conversely, Muller2022 would have file_collection_sensitive = True because it requires all published Merdith2021</span>
+            <span class="c1"># rot models to be ignored (in favour of the optimised model). However, we do not want to ignore Merdith2021 rot</span>
+            <span class="c1"># models when we are using DataServer to collect Merdith2021 files.</span>
+
+            <span class="k">if</span> <span class="n">file_collection</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+
+                <span class="c1"># If the file collection is in the provided list of strings to include...</span>
+                <span class="n">strings_with_file_collection</span> <span class="o">=</span> <span class="p">[</span>
+                    <span class="n">s</span>
+                    <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">strings_to_include</span>
+                    <span class="k">if</span> <span class="n">file_collection</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="n">s</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+                <span class="p">]</span>
+                <span class="k">if</span> <span class="n">strings_with_file_collection</span><span class="p">:</span>
+
+                    <span class="c1"># Include the string, and break out.</span>
+                    <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">strings_with_file_collection</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">s</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="n">basename</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
+                            <span class="n">keep</span> <span class="o">=</span> <span class="kc">True</span>
+                            <span class="k">break</span>
+
+                <span class="c1"># If there is a file collection passed, but none of the strings to include include the file collection,</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="c1"># If we no longer require strings_to_include, treat as if strings_to_include is False, and just pass</span>
+                    <span class="c1"># all files through.</span>
+                    <span class="k">if</span> <span class="n">file_collection_sensitive</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+                        <span class="n">keep</span> <span class="o">=</span> <span class="kc">True</span>
+
+                    <span class="c1"># If we still need strings_to_include, treat as if strings_to_include is True, and pass only required</span>
+                    <span class="c1"># files through.</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">strings_to_include</span><span class="p">:</span>
+                            <span class="k">if</span> <span class="n">s</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="n">basename</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
+                                <span class="n">keep</span> <span class="o">=</span> <span class="kc">True</span>
+                                <span class="k">break</span>
+
+            <span class="c1"># If a file collection is not passed, but strings_to_include exists, only pass through those requested.</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">strings_to_include</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">s</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="n">basename</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
+                        <span class="n">keep</span> <span class="o">=</span> <span class="kc">True</span>
+                        <span class="k">break</span>
+
+        <span class="k">if</span> <span class="n">strings_to_ignore</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">strings_to_ignore</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">s</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="n">basename</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
+                    <span class="n">keep</span> <span class="o">=</span> <span class="kc">False</span>
+                    <span class="k">break</span>
+        <span class="k">return</span> <span class="n">keep</span>
+
+    <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="nb">filter</span><span class="p">(</span><span class="n">filter_func</span><span class="p">,</span> <span class="n">fnames</span><span class="p">))</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_check_gpml_or_shp</span><span class="p">(</span><span class="n">fnames</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;For topology features, returns GPML by default. Searches for ESRI Shapefiles</span>
+<span class="sd">    instead if GPML files not found.&quot;&quot;&quot;</span>
+    <span class="n">sorted_fnames</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">fnames</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">file</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;.gpml&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">file</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;.gpmlz&quot;</span><span class="p">):</span>
+            <span class="n">sorted_fnames</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">file</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;.shp&quot;</span><span class="p">):</span>
+            <span class="n">sorted_fnames</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">sorted_fnames</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_remove_hash</span><span class="p">(</span><span class="n">fname</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Removes hashes (32 character file IDs) from cached filenames.&quot;&quot;&quot;</span>
+    <span class="n">split_paths</span> <span class="o">=</span> <span class="n">fname</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;-&quot;</span><span class="p">)</span>
+    <span class="n">cache_path</span> <span class="o">=</span> <span class="n">split_paths</span><span class="p">[</span><span class="mi">0</span><span class="p">][:</span><span class="o">-</span><span class="mi">32</span><span class="p">]</span>
+    <span class="n">new_path</span> <span class="o">=</span> <span class="n">cache_path</span> <span class="o">+</span> <span class="s2">&quot;-&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">split_paths</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+    <span class="k">return</span> <span class="n">new_path</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_order_filenames_by_time</span><span class="p">(</span><span class="n">fnames</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Orders filenames in a list from present day to deeper geological time if they</span>
+<span class="sd">    are labelled by time.&quot;&quot;&quot;</span>
+    <span class="c1"># Collect all digits in each filename.</span>
+    <span class="n">filepath_digits</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">file</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">fnames</span><span class="p">):</span>
+        <span class="n">digits</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">element</span> <span class="ow">in</span> <span class="n">_re</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;([0-9]+)&quot;</span><span class="p">,</span> <span class="n">_remove_hash</span><span class="p">(</span><span class="n">file</span><span class="p">)):</span>
+            <span class="k">if</span> <span class="n">element</span><span class="o">.</span><span class="n">isdigit</span><span class="p">():</span>
+                <span class="n">digits</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">element</span><span class="p">)))</span>
+        <span class="n">filepath_digits</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">digits</span><span class="p">)</span>
+
+    <span class="c1"># Ignore digits common to all full file paths. This leaves behind the files&#39;</span>
+    <span class="c1"># geological time label.</span>
+    <span class="n">geological_times</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">filepath_digits</span> <span class="o">=</span> <span class="n">_np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">filepath_digits</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+    <span class="k">for</span> <span class="n">digit_array</span> <span class="ow">in</span> <span class="n">filepath_digits</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span><span class="n">digit</span> <span class="o">==</span> <span class="n">digit_array</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">digit</span> <span class="ow">in</span> <span class="n">digit_array</span><span class="p">):</span>
+            <span class="n">geological_times</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">digit_array</span><span class="p">)</span>
+
+    <span class="c1"># If files have geological time labels, allocate indices to the current filename order,</span>
+    <span class="c1"># and sort files from recent to deep geological time.</span>
+    <span class="k">if</span> <span class="n">geological_times</span><span class="p">:</span>
+        <span class="n">sorted_geological_times</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span>
+            <span class="nb">enumerate</span><span class="p">(</span><span class="n">geological_times</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="p">)</span>
+        <span class="n">sorted_geological_time_indices</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">geo_time</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">geo_time</span> <span class="ow">in</span> <span class="n">sorted_geological_times</span>
+        <span class="p">]</span>
+        <span class="n">filenames_sorted</span> <span class="o">=</span> <span class="p">[</span><span class="n">fnames</span><span class="p">[</span><span class="n">index</span><span class="p">]</span> <span class="k">for</span> <span class="n">index</span> <span class="ow">in</span> <span class="n">sorted_geological_time_indices</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># If given filenames do not have a time label, return them as is.</span>
+        <span class="n">filenames_sorted</span> <span class="o">=</span> <span class="n">fnames</span>
+    <span class="k">return</span> <span class="n">filenames_sorted</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_collection_sorter</span><span class="p">(</span><span class="n">fnames</span><span class="p">,</span> <span class="n">string_identifier</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;If multiple file collections or plate reconstruction models are downloaded from</span>
+<span class="sd">    a single zip folder, only return the needed model.</span>
+
+<span class="sd">    The plate models that need separating are listed.&quot;&quot;&quot;</span>
+
+    <span class="n">needs_sorting</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s2">&quot;merdith2021&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;scotese2008&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;golonka2007&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;clennett2020&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;johansson2018&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;whittaker2015&quot;</span><span class="p">,</span>
+    <span class="p">]</span>
+    <span class="k">if</span> <span class="n">string_identifier</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="n">needs_sorting</span><span class="p">:</span>
+        <span class="n">studyname</span> <span class="o">=</span> <span class="n">_re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;[A-Za-z]+|\d+&quot;</span><span class="p">,</span> <span class="n">string_identifier</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">newfnames</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">files</span> <span class="ow">in</span> <span class="n">fnames</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">studyname</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">files</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">newfnames</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">files</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">newfnames</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">fnames</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_match_filetype_to_extension</span><span class="p">(</span><span class="n">filetype</span><span class="p">):</span>
+    <span class="n">extensions</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">if</span> <span class="n">filetype</span> <span class="o">==</span> <span class="s2">&quot;netCDF&quot;</span><span class="p">:</span>
+        <span class="n">extensions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;.nc&quot;</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">filetype</span> <span class="o">==</span> <span class="s2">&quot;jpeg&quot;</span><span class="p">:</span>
+        <span class="n">extensions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;.jpg&quot;</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">filetype</span> <span class="o">==</span> <span class="s2">&quot;png&quot;</span><span class="p">:</span>
+        <span class="n">extensions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;.png&quot;</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">filetype</span> <span class="o">==</span> <span class="s2">&quot;TIFF&quot;</span><span class="p">:</span>
+        <span class="n">extensions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;.tif&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">extensions</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">get_raster</span><span class="p">(</span><span class="n">raster_id_string</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Downloads assorted raster data that are not associated with the plate</span>
+<span class="sd">    reconstruction models supported by GPlately&#39;s `DataServer`. Stores rasters in the</span>
+<span class="sd">    &quot;gplately&quot; cache.</span>
+
+<span class="sd">    Currently, gplately supports the following rasters and images:</span>
+
+<span class="sd">    * __[ETOPO1](https://www.ngdc.noaa.gov/mgg/global/)__:</span>
+<span class="sd">        * Filetypes available : TIF, netCDF (GRD)</span>
+<span class="sd">        * `raster_id_string` = `&quot;ETOPO1_grd&quot;`, `&quot;ETOPO1_tif&quot;` (depending on the requested format)</span>
+<span class="sd">        * A 1-arc minute global relief model combining lang topography and ocean bathymetry.</span>
+<span class="sd">        * Citation: doi:10.7289/V5C8276M</span>
+
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    raster_id_string : str, default=None</span>
+<span class="sd">        A string to identify which raster to download.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    a gplately.Raster object</span>
+<span class="sd">        A gplately.Raster object containing the raster data. The gridded data can be extracted</span>
+<span class="sd">        into a numpy ndarray or MaskedArray by appending `.data` to the variable assigned to `get_raster()`.</span>
+
+<span class="sd">        For example:</span>
+
+<span class="sd">            graster = gplately.download.get_raster(raster_id_string, verbose)</span>
+
+<span class="sd">            graster_data = graster.data</span>
+
+<span class="sd">        where `graster_data` is a numpy ndarray. This array can be visualised using</span>
+<span class="sd">        `matplotlib.pyplot.imshow` on a `cartopy.mpl.GeoAxis` GeoAxesSubplot</span>
+<span class="sd">        (see example below).</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        * if a `raster_id_string` is not supplied.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    Rasters obtained by this method are (so far) only reconstructed to present-day.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    To download ETOPO1 and plot it on a Mollweide projection:</span>
+
+<span class="sd">        import gplately</span>
+<span class="sd">        import numpy as np</span>
+<span class="sd">        import matplotlib.pyplot as plt</span>
+<span class="sd">        import cartopy.crs as ccrs</span>
+
+<span class="sd">        etopo1 = gplately.download.get_raster(&quot;ETOPO1_tif&quot;)</span>
+<span class="sd">        etopo1_data = etopo1.data</span>
+
+<span class="sd">        fig = plt.figure(figsize=(18,14), dpi=300)</span>
+<span class="sd">        ax = fig.add_subplot(111, projection=ccrs.Mollweide(central_longitude = -150))</span>
+<span class="sd">        etopo1.imshow(ax)</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">matplotlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">image</span>
+
+    <span class="k">if</span> <span class="n">raster_id_string</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Please specify which raster to download.&quot;</span><span class="p">)</span>
+    <span class="c1"># filetype = &quot;.&quot;+&quot;_&quot;.split(raster_id_string)[-1]</span>
+
+    <span class="n">archive_formats</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">([</span><span class="s2">&quot;.gz&quot;</span><span class="p">,</span> <span class="s2">&quot;.xz&quot;</span><span class="p">,</span> <span class="s2">&quot;.bz2&quot;</span><span class="p">])</span>
+    <span class="n">grid_extensions</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">([</span><span class="s2">&quot;.grd&quot;</span><span class="p">,</span> <span class="s2">&quot;.nc&quot;</span><span class="p">])</span>
+
+    <span class="c1"># Set to true if we find the given collection in database</span>
+    <span class="n">found_collection</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">raster_filenames</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">database</span> <span class="o">=</span> <span class="n">_rasters</span><span class="p">()</span>
+
+    <span class="k">for</span> <span class="n">collection</span><span class="p">,</span> <span class="n">zip_url</span> <span class="ow">in</span> <span class="n">database</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="c1"># Isolate the raster name and the file type</span>
+        <span class="c1"># raster_name = collection.split(&quot;_&quot;)[0]</span>
+        <span class="c1"># raster_type = &quot;.&quot;+collection.split(&quot;_&quot;)[-1]</span>
+        <span class="k">if</span> <span class="n">raster_id_string</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="n">collection</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
+            <span class="n">raster_filenames</span> <span class="o">=</span> <span class="n">download_from_web</span><span class="p">(</span><span class="n">zip_url</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">verbose</span><span class="p">)</span>
+            <span class="n">found_collection</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">break</span>
+
+    <span class="k">if</span> <span class="n">found_collection</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> not in collection database.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">raster_id_string</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># If the downloaded raster is a grid, process it with the gplately.Raster object</span>
+        <span class="k">if</span> <span class="nb">any</span><span class="p">(</span>
+            <span class="n">grid_extension</span> <span class="ow">in</span> <span class="n">raster_filenames</span> <span class="k">for</span> <span class="n">grid_extension</span> <span class="ow">in</span> <span class="n">grid_extensions</span>
+        <span class="p">):</span>
+            <span class="n">raster</span> <span class="o">=</span> <span class="n">Raster</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">raster_filenames</span><span class="p">)</span>
+
+        <span class="c1"># Otherwise, the raster is an image; use imread to process</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">raster_matrix</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">imread</span><span class="p">(</span><span class="n">raster_filenames</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
+            <span class="n">raster</span> <span class="o">=</span> <span class="n">Raster</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">raster_matrix</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">raster_id_string</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;etopo1_tif&quot;</span><span class="p">:</span>
+            <span class="n">raster</span><span class="o">.</span><span class="n">lats</span> <span class="o">=</span> <span class="n">raster</span><span class="o">.</span><span class="n">lats</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">raster_id_string</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;etopo1_grd&quot;</span><span class="p">:</span>
+            <span class="n">raster</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="n">raster</span><span class="o">.</span><span class="n">_data</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
+
+    <span class="k">return</span> <span class="n">raster</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">get_feature_data</span><span class="p">(</span><span class="n">feature_data_id_string</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Downloads assorted geological feature data from web servers (i.e.</span>
+<span class="sd">    [GPlates 2.3 sample data](https://www.earthbyte.org/gplates-2-3-software-and-data-sets/))</span>
+<span class="sd">    into the &quot;gplately&quot; cache.</span>
+
+<span class="sd">    Currently, gplately supports the following feature data:</span>
+
+<span class="sd">    --------------</span>
+
+<span class="sd">    | **Feature data string identifier** | **Description**                                                                                                                                                                              |</span>
+<span class="sd">    |------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|</span>
+<span class="sd">    | Johansson2018                      | Large igneous provinces from  Johansson et al. (2018)                                                                                                                                        |</span>
+<span class="sd">    | Whittaker2015                      | Large igneous province products  interpreted as plume products  from Whittaker et al. (2015).                                                                                                |</span>
+<span class="sd">    | SeafloorFabric                     | Seafloor tectonic fabric  (fracture zones, discordant zones,  V-shaped structures, unclassified  V-anomalies, propagating ridge  lineations and extinct ridges)  from Matthews et al. (2011) |</span>
+<span class="sd">    | Hotspots                           | Present day surface hotspot/plume  locations from Whittaker et al. (2013)                                                                                                                    |</span>
+
+<span class="sd">    ---------------</span>
+
+<span class="sd">    Detailed descriptions can be found below:</span>
+
+<span class="sd">    * __Large igneous provinces from Johansson et al. (2018)__</span>
+
+<span class="sd">        Information</span>
+<span class="sd">        -----------</span>
+<span class="sd">        * Formats: .gpmlz</span>
+<span class="sd">        * `feature_data_id_string` = `Johansson2018`</span>
+
+<span class="sd">        Citations</span>
+<span class="sd">        ---------</span>
+<span class="sd">        * Johansson, L., Zahirovic, S., and Müller, R. D., In Prep, The</span>
+<span class="sd">        interplay between the eruption and weathering of Large Igneous Provinces and</span>
+<span class="sd">        the deep-time carbon cycle: Geophysical Research Letters.</span>
+
+
+<span class="sd">    - __Large igneous province products interpreted as plume products from Whittaker</span>
+<span class="sd">    et al. (2015)__.</span>
+
+<span class="sd">        Information</span>
+<span class="sd">        -----------</span>
+<span class="sd">        * Formats: .gpmlz, .shp</span>
+<span class="sd">        * `feature_data_id_string` = `Whittaker2015`</span>
+
+<span class="sd">        Citations</span>
+<span class="sd">        ---------</span>
+<span class="sd">        * Whittaker, J. M., Afonso, J. C., Masterton, S., Müller, R. D.,</span>
+<span class="sd">        Wessel, P., Williams, S. E., &amp; Seton, M. (2015). Long-term interaction between</span>
+<span class="sd">        mid-ocean ridges and mantle plumes. Nature Geoscience, 8(6), 479-483.</span>
+<span class="sd">        doi:10.1038/ngeo2437.</span>
+
+
+<span class="sd">    - __Seafloor tectonic fabric (fracture zones, discordant zones, V-shaped structures,</span>
+<span class="sd">    unclassified V-anomalies, propagating ridge lineations and extinct ridges) from</span>
+<span class="sd">    Matthews et al. (2011)__</span>
+
+<span class="sd">        Information</span>
+<span class="sd">        -----------</span>
+<span class="sd">        * Formats: .gpml</span>
+<span class="sd">        * `feature_data_id_string` = `SeafloorFabric`</span>
+
+<span class="sd">        Citations</span>
+<span class="sd">        ---------</span>
+<span class="sd">        * Matthews, K.J., Müller, R.D., Wessel, P. and Whittaker, J.M., 2011. The</span>
+<span class="sd">        tectonic fabric of the ocean basins. Journal of Geophysical Research, 116(B12):</span>
+<span class="sd">        B12109, DOI: 10.1029/2011JB008413.</span>
+
+
+<span class="sd">    - __Present day surface hotspot/plume locations from Whittaker et al. (2013)__</span>
+
+<span class="sd">        Information</span>
+<span class="sd">        -----------</span>
+<span class="sd">        * Formats: .gpmlz</span>
+<span class="sd">        * `feature_data_id_string` = `Hotspots`</span>
+
+<span class="sd">        Citation</span>
+<span class="sd">        --------</span>
+<span class="sd">        * Whittaker, J., Afonso, J., Masterton, S., Müller, R., Wessel, P.,</span>
+<span class="sd">        Williams, S., and Seton, M., 2015, Long-term interaction between mid-ocean ridges and</span>
+<span class="sd">        mantle plumes: Nature Geoscience, v. 8, no. 6, p. 479-483, doi:10.1038/ngeo2437.</span>
+
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    feature_data_id_string : str, default=None</span>
+<span class="sd">        A string to identify which feature data to download to the cache (see list of supported</span>
+<span class="sd">        feature data above).</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    feature_data_filenames : instance of &lt;pygplates.FeatureCollection&gt;, or list of instance &lt;pygplates.FeatureCollection&gt;</span>
+<span class="sd">        If a single set of feature data is downloaded, a single pyGPlates `FeatureCollection`</span>
+<span class="sd">        object is returned. Otherwise, a list containing multiple pyGPlates `FeatureCollection`</span>
+<span class="sd">        objects is returned (like for `SeafloorFabric`). In the latter case, feature reconstruction</span>
+<span class="sd">        and plotting may have to be done iteratively.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        If a `feature_data_id_string` is not provided.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    For examples of plotting data downloaded with `get_feature_data`, see GPlately&#39;s sample</span>
+<span class="sd">    notebook 05 - Working With Feature Geometries [here](https://github.com/GPlates/gplately/blob/master/Notebooks/05-WorkingWithFeatureGeometries.ipynb).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">feature_data_id_string</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Please specify which feature data to fetch.&quot;</span><span class="p">)</span>
+
+    <span class="n">database</span> <span class="o">=</span> <span class="n">_feature_data</span><span class="p">()</span>
+
+    <span class="n">found_collection</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">feature_data_filenames</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">collection</span><span class="p">,</span> <span class="n">zip_url</span> <span class="ow">in</span> <span class="n">database</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">if</span> <span class="n">feature_data_id_string</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="n">collection</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
+            <span class="n">found_collection</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="n">feature_data_filenames</span> <span class="o">=</span> <span class="n">_collection_sorter</span><span class="p">(</span>
+                <span class="n">_collect_file_extension</span><span class="p">(</span>
+                    <span class="n">download_from_web</span><span class="p">(</span><span class="n">zip_url</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">verbose</span><span class="p">),</span> <span class="p">[</span><span class="s2">&quot;.gpml&quot;</span><span class="p">,</span> <span class="s2">&quot;.gpmlz&quot;</span><span class="p">]</span>
+                <span class="p">),</span>
+                <span class="n">collection</span><span class="p">,</span>
+            <span class="p">)</span>
+
+            <span class="k">break</span>
+
+    <span class="k">if</span> <span class="n">found_collection</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> are not in GPlately&#39;s DataServer.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">feature_data_id_string</span><span class="p">)</span>
+        <span class="p">)</span>
+
+    <span class="n">feat_data</span> <span class="o">=</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">FeatureCollection</span><span class="p">()</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">feature_data_filenames</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">feat_data</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">pygplates</span><span class="o">.</span><span class="n">FeatureCollection</span><span class="p">(</span><span class="n">feature_data_filenames</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+        <span class="k">return</span> <span class="n">feat_data</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">feat_data</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">feature_data_filenames</span><span class="p">:</span>
+            <span class="n">feat_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pygplates</span><span class="o">.</span><span class="n">FeatureCollection</span><span class="p">(</span><span class="n">file</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">feat_data</span>
+
+
+<div class="viewcode-block" id="DataServer">
+<a class="viewcode-back" href="../../generated/gplately.DataServer.html#gplately.DataServer">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">DataServer</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Download the plate reconstruction models from the `EarthByte server &lt;https://repo.gplates.org/webdav/pmm/&gt;`__.</span>
+
+<span class="sd">    The :class:`DataServer` object downloads the model files to the ``GPlately cache folder``.</span>
+<span class="sd">    If the same model is requested again, a new :class:`DataServer` instance will retrieve the files from the cache --</span>
+<span class="sd">    provided they haven&#39;t been moved or deleted.</span>
+
+<span class="sd">    .. seealso::</span>
+
+<span class="sd">        - `This table &lt;https://gplates.github.io/gplately/sphinx-latest/html/use_cases.html#id1&gt;`__ provides a list of available plate reconstruction models.</span>
+<span class="sd">        - Visit this `EarthByte web page &lt;https://www.earthbyte.org/category/resources/data-models/global-regional-plate-motion-models/&gt;`__ for more information about these plate models.</span>
+<span class="sd">        - Call :meth:`gplately.auxiliary.get_data_server_cache_path` to see the path to the ``GPlately cache folder``.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="DataServer.__init__">
+<a class="viewcode-back" href="../../generated/gplately.DataServer.html#gplately.DataServer.__init__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file_collection</span><span class="p">,</span> <span class="n">data_dir</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Constructor. Create a :class:`DataServer` object.</span>
+
+<span class="sd">        Example</span>
+<span class="sd">        -------</span>
+<span class="sd">        .. code-block:: python</span>
+
+<span class="sd">            # create a DataServer object for the Cao2024 model (https://zenodo.org/records/11536686)</span>
+<span class="sd">            data_server = gplately.DataServer(&quot;Cao2024&quot;)</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        file_collection: str</span>
+<span class="sd">            The model name of interest.</span>
+
+<span class="sd">        verbose: bool, default=True</span>
+<span class="sd">            Toggle print messages regarding server/internet connection status, file availability, etc.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">data_dir</span><span class="p">:</span>
+            <span class="n">_data_dir</span> <span class="o">=</span> <span class="n">path_to_cache</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">_data_dir</span> <span class="o">=</span> <span class="n">data_dir</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">file_collection</span> <span class="o">=</span> <span class="n">file_collection</span><span class="o">.</span><span class="n">capitalize</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pmm</span> <span class="o">=</span> <span class="n">PlateModelManager</span><span class="p">()</span><span class="o">.</span><span class="n">get_model</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">file_collection</span><span class="p">,</span> <span class="n">data_dir</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">_data_dir</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">pmm</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Unable to get plate model </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">file_collection</span><span class="si">}</span><span class="s2">. Check if the model name is correct.&quot;</span>
+            <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_available_layers</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pmm</span><span class="o">.</span><span class="n">get_avail_layers</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span> <span class="o">=</span> <span class="n">verbose</span>
+
+        <span class="c1"># initialise empty attributes</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_rotation_model</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_topology_features</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_static_polygons</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_coastlines</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_continents</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_COBs</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_create_feature_collection</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file_list</span><span class="p">):</span>
+        <span class="n">feature_collection</span> <span class="o">=</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">FeatureCollection</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">feature</span> <span class="ow">in</span> <span class="n">file_list</span><span class="p">:</span>
+            <span class="n">feature_collection</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">pygplates</span><span class="o">.</span><span class="n">FeatureCollection</span><span class="p">(</span><span class="n">feature</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">feature_collection</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">cache_path</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The location of DataServer cache on your computer.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">path_to_cache</span><span class="p">()</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">rotation_model</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;A pygplates.RotationModel object for the plate reconstruction model.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rotation_model</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">pmm</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_rotation_model</span> <span class="o">=</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">RotationModel</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">pmm</span><span class="o">.</span><span class="n">get_rotation_model</span><span class="p">()</span>
+            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_rotation_model</span><span class="o">.</span><span class="n">reconstruction_identifier</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">file_collection</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rotation_model</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">topology_features</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;A pygplates.FeatureCollection object containing topology features.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_topology_features</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">pmm</span><span class="p">:</span>
+            <span class="k">if</span> <span class="s2">&quot;Topologies&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_available_layers</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_topology_features</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_feature_collection</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">pmm</span><span class="o">.</span><span class="n">get_topologies</span><span class="p">()</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_topology_features</span> <span class="o">=</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">FeatureCollection</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_topology_features</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">static_polygons</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;A pygplates.FeatureCollection object containing static polygons.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_static_polygons</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">pmm</span><span class="p">:</span>
+            <span class="k">if</span> <span class="s2">&quot;StaticPolygons&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_available_layers</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_static_polygons</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_feature_collection</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">pmm</span><span class="o">.</span><span class="n">get_static_polygons</span><span class="p">()</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_static_polygons</span> <span class="o">=</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">FeatureCollection</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_static_polygons</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">coastlines</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;A pygplates.FeatureCollection object containing coastlines.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_coastlines</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">pmm</span><span class="p">:</span>
+            <span class="k">if</span> <span class="s2">&quot;Coastlines&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_available_layers</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_coastlines</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_feature_collection</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">pmm</span><span class="o">.</span><span class="n">get_coastlines</span><span class="p">()</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_coastlines</span> <span class="o">=</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">FeatureCollection</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_coastlines</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">continents</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;A pygplates.FeatureCollection object containing continental polygons.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_continents</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">pmm</span><span class="p">:</span>
+            <span class="k">if</span> <span class="s2">&quot;ContinentalPolygons&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_available_layers</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_continents</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_feature_collection</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">pmm</span><span class="o">.</span><span class="n">get_continental_polygons</span><span class="p">()</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_continents</span> <span class="o">=</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">FeatureCollection</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_continents</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">COBs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;A pygplates.FeatureCollection object containing continent-ocean boundaries.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_COBs</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">pmm</span><span class="p">:</span>
+            <span class="k">if</span> <span class="s2">&quot;COBs&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_available_layers</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_COBs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_feature_collection</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pmm</span><span class="o">.</span><span class="n">get_COBs</span><span class="p">())</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_COBs</span> <span class="o">=</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">FeatureCollection</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_COBs</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_age</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The max age/time of the plate model.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">pmm</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">pmm</span><span class="o">.</span><span class="n">get_big_time</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span>
+                <span class="s2">&quot;Unable to get max reconstruction age/time. Check the PlateModel object.&quot;</span>
+            <span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">to_age</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The min age/time of the plate model.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">pmm</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">pmm</span><span class="o">.</span><span class="n">get_small_time</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span>
+                <span class="s2">&quot;Unable to get min reconstruction age/time. Check the PlateModel object.&quot;</span>
+            <span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">time_range</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Deprecated!!! Use :attr:`DataServer.valid_time` instead.</span>
+<span class="sd">        Keep consistent with `GML naming &lt;https://www.gplates.org/docs/gpgim/#gml:validTime&gt;`__.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">from_age</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">to_age</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">valid_times</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Deprecated!!! Use :attr:`DataServer.valid_time` instead.</span>
+<span class="sd">        Keep consistent with `GML naming &lt;https://www.gplates.org/docs/gpgim/#gml:validTime&gt;`__.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">from_age</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">to_age</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">valid_time</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The period of time the plate model are valid. Return a tuple of (max time, min time).&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">from_age</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">to_age</span>
+
+<div class="viewcode-block" id="DataServer.get_plate_reconstruction_files">
+<a class="viewcode-back" href="../../generated/gplately.DataServer.html#gplately.DataServer.get_plate_reconstruction_files">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_plate_reconstruction_files</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Download and return a tuple of **rotation_model**, **topology_features** and **static_polygons**.</span>
+<span class="sd">        These objects can then be used to create :class:`gplately.PlateReconstruction` object.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        rotation_model : pygplates.RotationModel</span>
+<span class="sd">            A rotation model to query equivalent and/or relative topological plate rotations</span>
+<span class="sd">            from a time in the past relative to another time in the past or to present day.</span>
+<span class="sd">        topology_features : pygplates.FeatureCollection</span>
+<span class="sd">            Topological features including ridges, transforms, subduction zones, etc.</span>
+<span class="sd">            These features can be used to build topological plate boundaries and networks.</span>
+<span class="sd">        static_polygons : pygplates.FeatureCollection</span>
+<span class="sd">            Static polygons which can be used to assign plate IDs for other geometries.</span>
+<span class="sd">            The plate IDs are essential to tectonic plate reconstruction.</span>
+
+
+<span class="sd">        .. note::</span>
+
+<span class="sd">            The example code below downloads ``rotation model``, ``topology features`` and ``static polygons`` files from the</span>
+<span class="sd">            Müller et al. (2019) plate reconstruction model and create a :class:`gplately.PlateReconstruction` object.</span>
+
+<span class="sd">            .. code-block:: python</span>
+<span class="sd">                :linenos:</span>
+
+<span class="sd">                import gplately</span>
+
+<span class="sd">                data_server = gplately.DataServer(&quot;Muller2019&quot;)</span>
+<span class="sd">                rotation_model, topology_features, static_polygons = (</span>
+<span class="sd">                    data_server.get_plate_reconstruction_files()</span>
+<span class="sd">                )</span>
+
+<span class="sd">                # create a PlateReconstruction object using the returned objects</span>
+<span class="sd">                model = gplately.PlateReconstruction(</span>
+<span class="sd">                    rotation_model, topology_features, static_polygons</span>
+<span class="sd">                )</span>
+
+<span class="sd">            If the requested plate model does not have certain file(s), warning messages will alert user of the missing file(s).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">rotation_model</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">topology_features</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">static_polygons</span></div>
+
+
+<div class="viewcode-block" id="DataServer.get_topology_geometries">
+<a class="viewcode-back" href="../../generated/gplately.DataServer.html#gplately.DataServer.get_topology_geometries">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_topology_geometries</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Download and return coastlines, continental polygons and COBs (continent-ocean boundary).</span>
+<span class="sd">        These feature collections can be used to create :class:`gplately.PlotTopologies` object and plot paleomaps.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        coastlines : pygplates.FeatureCollection</span>
+<span class="sd">            Global coastlines. These coastlines have been assigned plate IDs using static polygons and are ready to</span>
+<span class="sd">            be reconstructed to a particular geological time.</span>
+
+<span class="sd">        continents : pygplates.FeatureCollection</span>
+<span class="sd">            Continental polygons containing continental crust and volcanically-modified oceanic crust (including island arcs).</span>
+
+<span class="sd">        COBs : pygplates.FeatureCollection</span>
+<span class="sd">            Continent-ocean boundary. The COBs are represented as lines along passive margins and does not include data from active margins.</span>
+
+
+<span class="sd">        .. note::</span>
+
+<span class="sd">            The example code below will attempt to download ``coastlines``, ``continents`` and ``COBs`` from the Müller</span>
+<span class="sd">            et al. (2019) plate reconstruction model and create a :class:`gplately.PlotTopologies` object.</span>
+
+<span class="sd">            .. code-block:: python</span>
+<span class="sd">                :linenos:</span>
+<span class="sd">                :emphasize-lines: 9, 12</span>
+
+<span class="sd">                data_server = gplately.download.DataServer(&quot;Muller2019&quot;)</span>
+<span class="sd">                rotation_model, topology_features, static_polygons = (</span>
+<span class="sd">                    data_server.get_plate_reconstruction_files()</span>
+<span class="sd">                )</span>
+<span class="sd">                model = gplately.PlateReconstruction(</span>
+<span class="sd">                    rotation_model, topology_features, static_polygons</span>
+<span class="sd">                )</span>
+
+<span class="sd">                coastlines, continents, COBs = data_server.get_topology_geometries()</span>
+
+<span class="sd">                # create a gplately.PlotTopologies object at 100Ma</span>
+<span class="sd">                gPlot = gplately.PlotTopologies(model, 100, continents, coastlines, COBs)</span>
+
+<span class="sd">            If the requested plate model does not have certain geometries, warning messages will be printed to alert the user.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">coastlines</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">continents</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">COBs</span></div>
+
+
+<div class="viewcode-block" id="DataServer.get_age_grid">
+<a class="viewcode-back" href="../../generated/gplately.DataServer.html#gplately.DataServer.get_age_grid">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_age_grid</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">times</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]]):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Download the seafloor age grids for the plate model. Save the grids in the ``GPlately cache folder``.</span>
+
+<span class="sd">        .. seealso::</span>
+
+<span class="sd">            :attr:`DataServer.cache_path`</span>
+
+<span class="sd">        The available seafloor age grids are listed below.</span>
+
+<span class="sd">        * Muller et al. 2019</span>
+
+<span class="sd">            * ``file_collection`` = ``Muller2019``</span>
+<span class="sd">            * Time range: 0-250 Ma</span>
+<span class="sd">            * Seafloor age grids in netCDF format.</span>
+
+<span class="sd">        * Muller et al. 2016</span>
+
+<span class="sd">            * ``file_collection`` = ``Muller2016``</span>
+<span class="sd">            * Time range: 0-240 Ma</span>
+<span class="sd">            * Seafloor age grids in netCDF format.</span>
+
+<span class="sd">        * Seton et al. 2012</span>
+
+<span class="sd">            * ``file_collection`` = ``Seton2012``</span>
+<span class="sd">            * Time range: 0-200 Ma</span>
+<span class="sd">            * Seafloor age grids in netCDF format.</span>
+
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        times : int, or a list of int</span>
+<span class="sd">            A reconstruction time or a list of reconstruction times.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        :class:`gplately.Raster` or a list of :class:`gplately.Raster`</span>
+
+
+<span class="sd">        .. note::</span>
+
+<span class="sd">            The age grid data can be accessed as a numpy ndarray or MaskedArray via the :attr:`gplately.Raster.data` attribute.</span>
+
+<span class="sd">            For example:</span>
+
+<span class="sd">            .. code-block:: python</span>
+<span class="sd">                :linenos:</span>
+
+<span class="sd">                data_server = gplately.DataServer(&quot;Muller2019&quot;)</span>
+<span class="sd">                graster = data_server.get_age_grid(100)</span>
+<span class="sd">                graster_data = graster.data</span>
+
+<span class="sd">            where ``graster_data`` is a numpy ndarray.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            If the ``times`` parameter contains invalid reconstruction time.</span>
+
+
+<span class="sd">        Example</span>
+<span class="sd">        -------</span>
+<span class="sd">        To download  Müller et al. (2019) seafloor age grids for 0Ma, 1Ma and 100 Ma:</span>
+
+<span class="sd">            .. code-block:: python</span>
+<span class="sd">                :linenos:</span>
+
+<span class="sd">                data_server = gplately.DataServer(&quot;Muller2019&quot;)</span>
+<span class="sd">                age_grids = data_server.get_age_grid([0, 1, 100])</span>
+
+<span class="sd">        .. seealso::</span>
+
+<span class="sd">            - :meth:`PlateModel.get_raster()`</span>
+<span class="sd">            - :meth:`PlateModel.get_rasters()`</span>
+
+<span class="sd">            .. code-block:: python</span>
+<span class="sd">                :linenos:</span>
+<span class="sd">                :emphasize-lines: 4,5</span>
+
+<span class="sd">                from gplately import PlateModelManager</span>
+
+<span class="sd">                model = PlateModelManager().get_model(&quot;Muller2019&quot;)</span>
+<span class="sd">                print(model.get_rasters(&quot;AgeGrids&quot;, times=[10, 20, 30]))</span>
+<span class="sd">                print(model.get_raster(&quot;AgeGrids&quot;, time=100))</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">pmm</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;The plate model object is None. Unable to get age grid.&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="s2">&quot;AgeGrids&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">pmm</span><span class="o">.</span><span class="n">get_cfg</span><span class="p">()[</span><span class="s2">&quot;TimeDepRasters&quot;</span><span class="p">]:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;The time-dependent seafloor age grids are not currently available for </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">file_collection</span><span class="si">}</span><span class="s2">.&quot;</span>
+            <span class="p">)</span>
+
+        <span class="n">age_grids</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">time</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">(</span><span class="n">times</span><span class="p">):</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">time_i</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">time</span><span class="p">)</span>
+            <span class="k">except</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Invalid time </span><span class="si">{</span><span class="n">time</span><span class="si">}</span><span class="s2">. Reconstruction time must be a number.&quot;</span>
+                <span class="p">)</span>
+            <span class="k">if</span> <span class="n">time_i</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">to_age</span> <span class="ow">or</span> <span class="n">time_i</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">from_age</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Invalid time </span><span class="si">{</span><span class="n">time</span><span class="si">}</span><span class="s2">. Reconstruction time must be between </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">time_range</span><span class="si">}</span><span class="s2">.&quot;</span>
+                <span class="p">)</span>
+            <span class="n">age_grids</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Raster</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pmm</span><span class="o">.</span><span class="n">get_raster</span><span class="p">(</span><span class="s2">&quot;AgeGrids&quot;</span><span class="p">,</span> <span class="n">time_i</span><span class="p">)))</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">age_grids</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unable to get the seafloor age grids for times: </span><span class="si">{</span><span class="n">times</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">age_grids</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">age_grids</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">age_grids</span></div>
+
+
+<div class="viewcode-block" id="DataServer.get_spreading_rate_grid">
+<a class="viewcode-back" href="../../generated/gplately.DataServer.html#gplately.DataServer.get_spreading_rate_grid">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_spreading_rate_grid</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">times</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Download seafloor spreading rate grids from the plate reconstruction model and save the grids in the ``GPlately cache folder``.</span>
+
+<span class="sd">        .. seealso::</span>
+
+<span class="sd">            :attr:`DataServer.cache_path`</span>
+
+<span class="sd">        The available seafloor spreading rate grids are listed below.</span>
+
+<span class="sd">        * Clennett et al. 2020</span>
+
+<span class="sd">            * `file_collection` = `Clennett2020`</span>
+<span class="sd">            * Time range: 0-250 Ma</span>
+<span class="sd">            * Seafloor spreading rate grids in netCDF format.</span>
+
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        time : int, or list of int</span>
+<span class="sd">            Request spreading grid(s) for one (an integer) or multiple reconstruction times (a list of integers).</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        :class:`gplately.Raster` or a list of :class:`gplately.Raster`</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">pmm</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span>
+                <span class="s2">&quot;The plate model object is None. Unable to get spreading rate grids.&quot;</span>
+            <span class="p">)</span>
+
+        <span class="k">if</span> <span class="s2">&quot;SpreadingRateGrids&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">pmm</span><span class="o">.</span><span class="n">get_cfg</span><span class="p">()[</span><span class="s2">&quot;TimeDepRasters&quot;</span><span class="p">]:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;The time-dependant SpreadingRateGrids are not currently available for </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">file_collection</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+
+        <span class="n">spread_grids</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">time</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">(</span><span class="n">times</span><span class="p">):</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">time_i</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">time</span><span class="p">)</span>
+            <span class="k">except</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Invalid time </span><span class="si">{</span><span class="n">time</span><span class="si">}</span><span class="s2">. Reconstruction time must be a number.&quot;</span>
+                <span class="p">)</span>
+            <span class="k">if</span> <span class="n">time_i</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">to_age</span> <span class="ow">or</span> <span class="n">time_i</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">from_age</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Invalid time </span><span class="si">{</span><span class="n">time</span><span class="si">}</span><span class="s2">. Reconstruction time must be between </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">time_range</span><span class="si">}</span><span class="s2">.&quot;</span>
+                <span class="p">)</span>
+            <span class="n">spread_grids</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="n">Raster</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pmm</span><span class="o">.</span><span class="n">get_raster</span><span class="p">(</span><span class="s2">&quot;SpreadingRateGrids&quot;</span><span class="p">,</span> <span class="n">time_i</span><span class="p">))</span>
+            <span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">spread_grids</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Unable to get the seafloor spreading rate grids for times: </span><span class="si">{</span><span class="n">times</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">spread_grids</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">spread_grids</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">spread_grids</span></div>
+
+
+<div class="viewcode-block" id="DataServer.get_valid_times">
+<a class="viewcode-back" href="../../generated/gplately.DataServer.html#gplately.DataServer.get_valid_times">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_valid_times</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Deprecated!!! Use :attr:`DataServer.valid_times` instead.</span>
+<span class="sd">        Return a tuple (max_time, min_time) representing the valid time range of the plate model.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">from_age</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">to_age</span></div>
+
+
+<div class="viewcode-block" id="DataServer.get_raster">
+<a class="viewcode-back" href="../../generated/gplately.DataServer.html#gplately.DataServer.get_raster">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_raster</span><span class="p">(</span><span class="n">raster_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Download rasters that are not associated with any plate reconstruction models. Store the rasters in the ``GPlately cache``.</span>
+
+<span class="sd">        The available present-day rasters are listed below.</span>
+
+<span class="sd">        * `ETOPO1 &lt;https://www.ngdc.noaa.gov/mgg/global/&gt;`__</span>
+<span class="sd">            * Filetypes available : TIF, netCDF (GRD)</span>
+<span class="sd">            * `raster_name` = ``ETOPO1_grd``, ``ETOPO1_tif`` (depending on the requested format)</span>
+<span class="sd">            * A 1-arc minute global relief model combining lang topography and ocean bathymetry.</span>
+<span class="sd">            * Citation: doi:10.7289/V5C8276M</span>
+
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        raster_name : :class:`str`</span>
+<span class="sd">            The raster name of interest.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        :class:`gplately.Raster`</span>
+<span class="sd">            A :class:`gplately.Raster` object containing the raster data which can be accessed as</span>
+<span class="sd">            a ``numpy ndarray`` or ``MaskedArray`` via :attr:`gplately.Raster.data` attribute.</span>
+
+<span class="sd">            For example:</span>
+
+<span class="sd">            .. code-block:: python</span>
+<span class="sd">                :linenos:</span>
+
+<span class="sd">                graster = gplately.DataServer.get_raster(&quot;ETOPO1_tif&quot;)</span>
+<span class="sd">                graster_data = graster.data</span>
+
+<span class="sd">            where ``graster_data`` is a ``numpy ndarray``. This array can be visualised using ``matplotlib.pyplot.imshow`` (see example below).</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        Exception</span>
+<span class="sd">            Raise ``Exception`` when ``raster_name`` is invalid.</span>
+
+
+<span class="sd">        Example</span>
+<span class="sd">        -------</span>
+<span class="sd">        Download ETOPO1 and plot it on a map with Mollweide projection.</span>
+
+<span class="sd">        .. code-block:: python</span>
+<span class="sd">            :linenos:</span>
+
+<span class="sd">            import cartopy.crs as ccrs</span>
+<span class="sd">            import matplotlib.pyplot as plt</span>
+
+<span class="sd">            import gplately</span>
+
+<span class="sd">            etopo1 = gplately.DataServer.get_raster(&quot;ETOPO1_tif&quot;)</span>
+<span class="sd">            fig = plt.figure(figsize=(18, 14), dpi=300)</span>
+<span class="sd">            ax = fig.add_subplot(111, projection=ccrs.Mollweide(central_longitude=-150))</span>
+<span class="sd">            ax.imshow(etopo1.data, extent=(-180, 180, -90, 90), transform=ccrs.PlateCarree())</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">raster_name</span><span class="p">:</span>
+            <span class="n">raster_path</span> <span class="o">=</span> <span class="n">PresentDayRasterManager</span><span class="p">(</span>
+                <span class="n">data_dir</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">path_to_cache</span><span class="p">())</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">get_raster</span><span class="p">(</span><span class="n">raster_name</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">raster_path</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;.grd&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">raster_path</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;.nc&quot;</span><span class="p">):</span>
+                <span class="n">raster</span> <span class="o">=</span> <span class="n">Raster</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">raster_path</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># Otherwise, the raster is an image; use imread to process</span>
+                <span class="n">raster</span> <span class="o">=</span> <span class="n">Raster</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">image</span><span class="o">.</span><span class="n">imread</span><span class="p">(</span><span class="n">raster_path</span><span class="p">))</span>
+
+            <span class="k">if</span> <span class="n">raster_name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;etopo1_tif&quot;</span><span class="p">:</span>
+                <span class="n">raster</span><span class="o">.</span><span class="n">lats</span> <span class="o">=</span> <span class="n">raster</span><span class="o">.</span><span class="n">lats</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">raster_name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;etopo1_grd&quot;</span><span class="p">:</span>
+                <span class="n">raster</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="n">raster</span><span class="o">.</span><span class="n">_data</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
+            <span class="k">return</span> <span class="n">raster</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;The &#39;raster_name&#39; parameter is required!&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DataServer.get_feature_data">
+<a class="viewcode-back" href="../../generated/gplately.DataServer.html#gplately.DataServer.get_feature_data">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_feature_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">feature_data_id_string</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Downloads assorted geological feature data from web servers (i.e.</span>
+<span class="sd">        `GPlates 2.3 sample data &lt;https://www.earthbyte.org/gplates-2-3-software-and-data-sets/&gt;`__) into the &quot;gplately&quot; cache.</span>
+
+<span class="sd">        Currently, ``DataServer`` supports the following feature data:</span>
+
+<span class="sd">        * Large igneous provinces from Johansson et al. (2018)</span>
+
+<span class="sd">            - Information</span>
+
+<span class="sd">                * Formats: .gpmlz</span>
+<span class="sd">                * `feature_data_id_string` = `Johansson2018`</span>
+
+<span class="sd">            - Citations</span>
+
+<span class="sd">                Johansson, L., Zahirovic, S., and Müller, R. D., In Prep, The</span>
+<span class="sd">                interplay between the eruption and weathering of Large Igneous Provinces and</span>
+<span class="sd">                the deep-time carbon cycle: Geophysical Research Letters.</span>
+
+
+<span class="sd">        - Large igneous province products interpreted as plume products from Whittaker et al. (2015).</span>
+
+<span class="sd">            - Information</span>
+
+<span class="sd">                * Formats: .gpmlz, .shp</span>
+<span class="sd">                * `feature_data_id_string` = `Whittaker2015`</span>
+
+<span class="sd">            - Citations</span>
+
+<span class="sd">                Whittaker, J. M., Afonso, J. C., Masterton, S., Müller, R. D.,</span>
+<span class="sd">                Wessel, P., Williams, S. E., &amp; Seton, M. (2015). Long-term interaction between</span>
+<span class="sd">                mid-ocean ridges and mantle plumes. Nature Geoscience, 8(6), 479-483. doi:10.1038/ngeo2437.</span>
+
+
+<span class="sd">        - Seafloor tectonic fabric (fracture zones, discordant zones, V-shaped structures, unclassified V-anomalies, propagating ridge lineations and extinct ridges) from Matthews et al. (2011)</span>
+
+<span class="sd">            - Information</span>
+
+<span class="sd">                * Formats: .gpml</span>
+<span class="sd">                * `feature_data_id_string` = `SeafloorFabric`</span>
+
+<span class="sd">            - Citations</span>
+
+<span class="sd">                Matthews, K.J., Müller, R.D., Wessel, P. and Whittaker, J.M., 2011. The</span>
+<span class="sd">                tectonic fabric of the ocean basins. Journal of Geophysical Research, 116(B12):</span>
+<span class="sd">                B12109, DOI: 10.1029/2011JB008413.</span>
+
+
+<span class="sd">        - Present day surface hotspot/plume locations from Whittaker et al. (2013)</span>
+
+<span class="sd">            - Information</span>
+
+<span class="sd">                * Formats: .gpmlz</span>
+<span class="sd">                * `feature_data_id_string` = `Hotspots`</span>
+
+<span class="sd">            - Citation</span>
+
+<span class="sd">                Whittaker, J., Afonso, J., Masterton, S., Müller, R., Wessel, P.,</span>
+<span class="sd">                Williams, S., and Seton, M., 2015, Long-term interaction between mid-ocean ridges and</span>
+<span class="sd">                mantle plumes: Nature Geoscience, v. 8, no. 6, p. 479-483, doi:10.1038/ngeo2437.</span>
+
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        feature_data_id_string : str, default=None</span>
+<span class="sd">            A string to identify which feature data to download to the cache (see list of supported feature data above).</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        feature_data_filenames : instance of &lt;pygplates.FeatureCollection&gt;, or list of instance &lt;pygplates.FeatureCollection&gt;</span>
+<span class="sd">            If a single set of feature data is downloaded, a single pyGPlates ``FeatureCollection``</span>
+<span class="sd">            object is returned. Otherwise, a list containing multiple pyGPlates ``FeatureCollection``</span>
+<span class="sd">            objects is returned (like for ``SeafloorFabric``). In the latter case, feature reconstruction</span>
+<span class="sd">            and plotting may have to be done iteratively.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            If a ``feature_data_id_string`` is not provided.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        For examples of plotting data downloaded with ``get_feature_data``, see GPlately&#39;s sample notebook 05 - Working With Feature Geometries</span>
+<span class="sd">        `here &lt;https://github.com/GPlates/gplately/blob/master/Notebooks/05-WorkingWithFeatureGeometries.ipynb&gt;`__.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">feature_data_id_string</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Please specify which feature data to fetch.&quot;</span><span class="p">)</span>
+
+        <span class="n">database</span> <span class="o">=</span> <span class="n">_feature_data</span><span class="p">()</span>
+
+        <span class="n">found_collection</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="n">feature_data_filenames</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">collection</span><span class="p">,</span> <span class="n">zip_url</span> <span class="ow">in</span> <span class="n">database</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">feature_data_id_string</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="n">collection</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
+                <span class="n">found_collection</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="n">feature_data_filenames</span> <span class="o">=</span> <span class="n">_collection_sorter</span><span class="p">(</span>
+                    <span class="n">_collect_file_extension</span><span class="p">(</span>
+                        <span class="n">download_from_web</span><span class="p">(</span><span class="n">zip_url</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">),</span> <span class="p">[</span><span class="s2">&quot;.gpml&quot;</span><span class="p">,</span> <span class="s2">&quot;.gpmlz&quot;</span><span class="p">]</span>
+                    <span class="p">),</span>
+                    <span class="n">collection</span><span class="p">,</span>
+                <span class="p">)</span>
+
+                <span class="k">break</span>
+
+        <span class="k">if</span> <span class="n">found_collection</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> are not in GPlately&#39;s DataServer.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">feature_data_id_string</span><span class="p">)</span>
+            <span class="p">)</span>
+
+        <span class="n">feat_data</span> <span class="o">=</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">FeatureCollection</span><span class="p">()</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">feature_data_filenames</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">feat_data</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">pygplates</span><span class="o">.</span><span class="n">FeatureCollection</span><span class="p">(</span><span class="n">feature_data_filenames</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+            <span class="k">return</span> <span class="n">feat_data</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">feat_data</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">feature_data_filenames</span><span class="p">:</span>
+                <span class="n">feat_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pygplates</span><span class="o">.</span><span class="n">FeatureCollection</span><span class="p">(</span><span class="n">file</span><span class="p">))</span>
+            <span class="k">return</span> <span class="n">feat_data</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023-2025, The University of Sydney.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,46 @@
+﻿gplately.DataServer
+===================
+
+.. currentmodule:: gplately
+
+.. autoclass:: DataServer
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~DataServer.__init__
+      ~DataServer.get_age_grid
+      ~DataServer.get_feature_data
+      ~DataServer.get_plate_reconstruction_files
+      ~DataServer.get_raster
+      ~DataServer.get_spreading_rate_grid
+      ~DataServer.get_topology_geometries
+      ~DataServer.get_valid_times
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~DataServer.COBs
+      ~DataServer.cache_path
+      ~DataServer.coastlines
+      ~DataServer.continents
+      ~DataServer.from_age
+      ~DataServer.rotation_model
+      ~DataServer.static_polygons
+      ~DataServer.time_range
+      ~DataServer.to_age
+      ~DataServer.topology_features
+      ~DataServer.valid_time
+      ~DataServer.valid_times
+   
+   
