@@ -605,23 +605,23 @@
 <span class="sd">                )</span>
 <span class="sd">            )</span>
 
-<span class="sd">        Notes</span>
-<span class="sd">        -----</span>
-<span class="sd">        If you want to access all sampled points regardless of their convergence/divergence you can call :meth:`topological_snapshot()`</span>
-<span class="sd">        and then use it to directly call `pygplates.TopologicalSnapshot.calculate_plate_boundary_statistics() &lt;https://www.gplates.org/docs/pygplates/generated/pygplates.topologicalsnapshot#pygplates.TopologicalSnapshot.calculate_plate_boundary_statistics&gt;`__.</span>
-<span class="sd">        Then you can do your own analysis on the returned data:</span>
+<span class="sd">        .. note::</span>
 
-<span class="sd">        .. code-block:: python</span>
-<span class="sd">            :linenos:</span>
+<span class="sd">            If you want to access all sampled points, regardless of their convergence/divergence, you can call :meth:`topological_snapshot()`</span>
+<span class="sd">            and then use the returned object to invoke `calculate_plate_boundary_statistics() &lt;https://www.gplates.org/docs/pygplates/generated/pygplates.topologicalsnapshot#pygplates.TopologicalSnapshot.calculate_plate_boundary_statistics&gt;`__.</span>
+<span class="sd">            From there, you can perform your own analysis on the returned data:</span>
 
-<span class="sd">            plate_boundary_statistics = plate_reconstruction.topological_snapshot(</span>
-<span class="sd">                time, include_topological_slab_boundaries=False</span>
-<span class="sd">            ).calculate_plate_boundary_statistics(uniform_point_spacing_radians=0.001)</span>
+<span class="sd">            .. code-block:: python</span>
+<span class="sd">                :linenos:</span>
 
-<span class="sd">            for stat in plate_boundary_statistics:</span>
-<span class="sd">                if np.isnan(stat.convergence_velocity_orthogonal):</span>
-<span class="sd">                    continue  # missing left or right plate</span>
-<span class="sd">                latitude, longitude = stat.boundary_point.to_lat_lon()</span>
+<span class="sd">                plate_boundary_statistics = plate_reconstruction.topological_snapshot(</span>
+<span class="sd">                    time, include_topological_slab_boundaries=False</span>
+<span class="sd">                ).calculate_plate_boundary_statistics(uniform_point_spacing_radians=0.001)</span>
+
+<span class="sd">                for stat in plate_boundary_statistics:</span>
+<span class="sd">                    if np.isnan(stat.convergence_velocity_orthogonal):</span>
+<span class="sd">                        continue  # missing left or right plate</span>
+<span class="sd">                    latitude, longitude = stat.boundary_point.to_lat_lon()</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
 

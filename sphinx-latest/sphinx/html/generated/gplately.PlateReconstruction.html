@@ -571,10 +571,11 @@ Each <a class="reference external" href="https://www.gplates.org/docs/pygplates/
 <span class="linenos">5</span><span class="p">)</span>
 </pre></div>
 </div>
-<p class="rubric">Notes</p>
-<p>If you want to access all sampled points regardless of their convergence/divergence you can call <a class="reference internal" href="#gplately.PlateReconstruction.topological_snapshot" title="gplately.PlateReconstruction.topological_snapshot"><code class="xref py py-meth docutils literal notranslate"><span class="pre">topological_snapshot()</span></code></a>
-and then use it to directly call <a class="reference external" href="https://www.gplates.org/docs/pygplates/generated/pygplates.topologicalsnapshot#pygplates.TopologicalSnapshot.calculate_plate_boundary_statistics">pygplates.TopologicalSnapshot.calculate_plate_boundary_statistics()</a>.
-Then you can do your own analysis on the returned data:</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If you want to access all sampled points, regardless of their convergence/divergence, you can call <a class="reference internal" href="#gplately.PlateReconstruction.topological_snapshot" title="gplately.PlateReconstruction.topological_snapshot"><code class="xref py py-meth docutils literal notranslate"><span class="pre">topological_snapshot()</span></code></a>
+and then use the returned object to invoke <a class="reference external" href="https://www.gplates.org/docs/pygplates/generated/pygplates.topologicalsnapshot#pygplates.TopologicalSnapshot.calculate_plate_boundary_statistics">calculate_plate_boundary_statistics()</a>.
+From there, you can perform your own analysis on the returned data:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span><span class="n">plate_boundary_statistics</span> <span class="o">=</span> <span class="n">plate_reconstruction</span><span class="o">.</span><span class="n">topological_snapshot</span><span class="p">(</span>
 <span class="linenos">2</span>    <span class="n">time</span><span class="p">,</span> <span class="n">include_topological_slab_boundaries</span><span class="o">=</span><span class="kc">False</span>
 <span class="linenos">3</span><span class="p">)</span><span class="o">.</span><span class="n">calculate_plate_boundary_statistics</span><span class="p">(</span><span class="n">uniform_point_spacing_radians</span><span class="o">=</span><span class="mf">0.001</span><span class="p">)</span>
@@ -584,6 +585,7 @@ Then you can do your own analysis on the returned data:</p>
 <span class="linenos">7</span>        <span class="k">continue</span>  <span class="c1"># missing left or right plate</span>
 <span class="linenos">8</span>    <span class="n">latitude</span><span class="p">,</span> <span class="n">longitude</span> <span class="o">=</span> <span class="n">stat</span><span class="o">.</span><span class="n">boundary_point</span><span class="o">.</span><span class="n">to_lat_lon</span><span class="p">()</span>
 </pre></div>
+</div>
 </div>
 </dd></dl>
 
