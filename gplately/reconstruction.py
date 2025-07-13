@@ -2393,6 +2393,7 @@ class PlateReconstruction(object):
         from_time=0,
         to_time=None,
         plate_id=None,
+        assign_plate_id_using_static_polygons=True,
         relative_plate_id=None,
         anchor_plate_id=None,
         return_times=False,
@@ -2434,7 +2435,13 @@ class PlateReconstruction(object):
         plate_id : int or 1D array, optional
             The ID of the moving plate(s). If it is a single integer then all seed points will have the same plate ID.
             If it is a 1D array then length must match the number of seed points. If ``None`` then the plate ID of
-            each seed point is determined using the :py:attr:`topology_features` (resolved at the initial time ``from_time``).
+            each seed point is determined using the :py:attr:`static_polygons` (reconstructed to the initial time ``from_time``) or the
+            :py:attr:`topology_features` (resolved at the initial time ``from_time``) depending on ``assign_plate_id_using_static_polygons``.
+        assign_plate_id_using_static_polygons : bool, default=True
+            Note that this argument is **ignored** unless ``plate_id`` is ``None`` (indicating that the plate ID(s) need to be assigned).
+            Whether to assign the plate ID(s) using the :py:attr:`static_polygons` (reconstructed to the initial time ``from_time``) or
+            the :py:attr:`topology_features` (resolved at the initial time ``from_time``).
+            Defaults to using the :py:attr:`static_polygons`.
         relative_plate_id : int, optional
             The ID of the plate that the motion path is relative to. Defaults to ``anchor_plate_id`` which itself
             defaults to the current anchor plate ID (:py:attr:`anchor_plate_id` attribute).
@@ -2485,10 +2492,14 @@ class PlateReconstruction(object):
             If ``from_time`` is non-zero (ie, not present day) then ``lons`` and ``lats`` are assumed to be the **reconstructed**
             seed point locations at ``from_time``. And the reconstructed positions are assumed to be relative to the anchor plate.
 
-            If ``plate_id`` is None then the plate ID of each seed point is determined by resolving the topologies to ``from_time`` (relative to the anchor plate) and
-            then, for each seed point, assigning the plate ID of the resolved topological plate/network containing the point.
-            If a point is not contained by any resolved topological plates/networks then it is assigned the anchor plate ID
-            (however this is very unlikely to happen if the topological model has global coverage).
+            If ``plate_id`` is None then the plate ID of each seed point is determined by first reconstructing the static polygons
+            (if ``assign_plate_id_using_static_polygons`` is ``True``, the default) or resolving the topologies
+            (if ``assign_plate_id_using_static_polygons`` is ``False``) to ``from_time`` (relative to the anchor plate).
+            And then, for each seed point, assigning the plate ID of the reconstructed static polygon (or resolved topological plate/network)
+            containing the point. If a point is not contained by any reconstructed static polygons (or resolved topological plates/networks)
+            then it is assigned the anchor plate ID. Note that it is generally better to use the static polygons, however they do have the
+            limitation of progressively reduced oceanic coverage further back in time (whereas a topological model typically has global coverage
+            throughout time).
 
         Examples
         --------
@@ -2561,46 +2572,74 @@ class PlateReconstruction(object):
                     )
         # Else assign a plate ID to each point based on which resolved topology it's inside.
         else:
-            topological_snapshot = self.topological_snapshot(
-                # The initial time of the seed point locations...
-                time=from_time,
-                anchor_plate_id=anchor_plate_id,
-                # Ignore topological slab boundaries since they are not *plate* boundaries...
-                include_topological_slab_boundaries=False,
-            )
-
-            resolved_topology_locations_containing_points = (
-                topological_snapshot.get_point_locations(points)
-            )
-
             point_plate_ids = np.empty(num_points, dtype=int)
-            for point_index in range(num_points):
-                resolved_topology_location = (
-                    resolved_topology_locations_containing_points[point_index]
-                )
 
-                # If current point is inside a resolved topology then assign its plate ID to the point,
-                # otherwise assign the anchor plate to the point.
-                if (
-                    resolved_topology_location.located_in_resolved_boundary()
-                ):  # if point is inside a resolved boundary
-                    point_plate_ids[point_index] = (
+            if assign_plate_id_using_static_polygons:
+                #
+                # Assign a plate ID to each point based on which reconstructed static polygon it's inside.
+                #
+                static_polygons_snapshot = self.static_polygons_snapshot(
+                    # The initial time of the seed point locations...
+                    time=from_time,
+                    anchor_plate_id=anchor_plate_id,
+                )
+                reconstructed_static_polygons_containing_points = (
+                    static_polygons_snapshot.get_point_locations(points)
+                )
+                for point_index in range(num_points):
+                    reconstructed_static_polygon = (
+                        reconstructed_static_polygons_containing_points[point_index]
+                    )
+                    # If current point is inside a reconstructed static polygon then assign its plate ID to the point,
+                    # otherwise assign the anchor plate to the point.
+                    if reconstructed_static_polygon is not None:
+                        point_plate_ids[point_index] = (
+                            reconstructed_static_polygon.get_feature().get_reconstruction_plate_id()
+                        )
+                    else:  # point is not in any reconstructed static polygons
+                        # Assign the anchor plate ID to indicate we could NOT assign a proper plate ID.
+                        point_plate_ids[point_index] = anchor_plate_id
+
+            else:
+                #
+                # Assign a plate ID to each point based on which resolved topology it's inside.
+                #
+                topological_snapshot = self.topological_snapshot(
+                    # The initial time of the seed point locations...
+                    time=from_time,
+                    anchor_plate_id=anchor_plate_id,
+                    # Ignore topological slab boundaries since they are not *plate* boundaries...
+                    include_topological_slab_boundaries=False,
+                )
+                resolved_topology_locations_containing_points = (
+                    topological_snapshot.get_point_locations(points)
+                )
+                for point_index in range(num_points):
+                    resolved_topology_location = (
+                        resolved_topology_locations_containing_points[point_index]
+                    )
+                    # If current point is inside a resolved topology then assign its plate ID to the point,
+                    # otherwise assign the anchor plate to the point.
+                    if (
                         resolved_topology_location.located_in_resolved_boundary()
-                        .get_feature()
-                        .get_reconstruction_plate_id()
-                    )
-                elif (
-                    resolved_topology_location.located_in_resolved_network()
-                ):  # if point is inside a resolved network
-                    point_plate_ids[point_index] = (
+                    ):  # if point is inside a resolved boundary
+                        point_plate_ids[point_index] = (
+                            resolved_topology_location.located_in_resolved_boundary()
+                            .get_feature()
+                            .get_reconstruction_plate_id()
+                        )
+                    elif (
                         resolved_topology_location.located_in_resolved_network()
-                        .get_feature()
-                        .get_reconstruction_plate_id()
-                    )
-                else:  # point is not in any resolved topologies
-                    # Assign the anchor plate ID to indicate we could NOT assign a proper plate ID.
-                    # This generally shouldn't happen if the topologies have global coverage.
-                    point_plate_ids[point_index] = anchor_plate_id
+                    ):  # if point is inside a resolved network
+                        point_plate_ids[point_index] = (
+                            resolved_topology_location.located_in_resolved_network()
+                            .get_feature()
+                            .get_reconstruction_plate_id()
+                        )
+                    else:  # point is not in any resolved topologies
+                        # Assign the anchor plate ID to indicate we could NOT assign a proper plate ID.
+                        # This generally shouldn't happen if the topologies have global coverage.
+                        point_plate_ids[point_index] = anchor_plate_id
 
         # Need to query the first reconstructed motion path before we can size the return arrays.
         created_return_arrays = False
@@ -2972,7 +3011,7 @@ class PlateReconstruction(object):
                 reconstructed_flowline.get_right_flowline().to_lat_lon_array()
             )
 
-            # If we the youngest point (first point) then do so.
+            # If we ignore the youngest point (first point) then do so.
             if ignore_youngest_time_sample:
                 left_trail_lat_lon = left_trail_lat_lon[1:]
                 right_trail_lat_lon = right_trail_lat_lon[1:]
@@ -3021,7 +3060,7 @@ class PlateReconstruction(object):
                 # get the distance travelled by the moving plate relative to the fixed plate in each time step
                 segments = reconstructed_flowline.get_left_flowline().get_segments()
 
-                # If we the youngest segment (first segment) then do so.
+                # If we ignore the youngest segment (first segment) then do so.
                 if ignore_youngest_time_sample:
                     segments = segments[1:]
 
