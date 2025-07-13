@@ -395,12 +395,15 @@ The rate of plate motion (in cm/yr) for each time step between the times in <cod
 reconstruction time (ie, where <code class="docutils literal notranslate"><span class="pre">time_array[i]</span> <span class="pre">&gt;=</span> <span class="pre">to_time</span></code>).
 The number of columns is one less than the number of columns in <code class="docutils literal notranslate"><span class="pre">left_rlons`,</span> <span class="pre">``left_rlats</span></code>, <code class="docutils literal notranslate"><span class="pre">right_rlons`</span> <span class="pre">and</span> <span class="pre">``right_rlats</span></code>.
 There are n rows for n reconstructable points.</p></li>
-<li><p><em>.. note::</em> – If <code class="docutils literal notranslate"><span class="pre">max(time_array)</span> <span class="pre">&lt;=</span> <span class="pre">time</span></code> then there will be no history in the returned arrays
-(ie, the number of columns will be zero for each returned array, including <code class="docutils literal notranslate"><span class="pre">rtimes</span></code> and <code class="docutils literal notranslate"><span class="pre">rate_of_motion</span></code> if requested).</p></li>
 </ul>
 </p>
 </dd>
 </dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If <code class="docutils literal notranslate"><span class="pre">max(time_array)</span> <span class="pre">&lt;=</span> <span class="pre">time</span></code> then there will be no history in the returned arrays
+(ie, the number of columns will be zero for each returned array, including <code class="docutils literal notranslate"><span class="pre">rtimes</span></code> and <code class="docutils literal notranslate"><span class="pre">rate_of_motion</span></code> if requested).</p>
+</div>
 <p class="rubric">Examples</p>
 <p>To access the latitudes and longitudes of each point’s flowline:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="n">lons</span> <span class="o">=</span> <span class="p">[</span><span class="o">...</span><span class="p">]</span>
@@ -540,12 +543,15 @@ The rate of plate motion (in cm/yr) for each time step between the times in <cod
 reconstruction time (ie, where <code class="docutils literal notranslate"><span class="pre">time_array[i]</span> <span class="pre">&gt;=</span> <span class="pre">to_time</span></code>).
 The number of columns is one less than the number of columns in <code class="docutils literal notranslate"><span class="pre">rlons</span></code> and <code class="docutils literal notranslate"><span class="pre">rlats</span></code>.
 There are n rows for n reconstructable points.</p></li>
-<li><p><em>.. note::</em> – If <code class="docutils literal notranslate"><span class="pre">max(time_array)</span> <span class="pre">&lt;=</span> <span class="pre">time</span></code> then there will be no history in the returned arrays
-(ie, the number of columns will be zero for each returned array, including <code class="docutils literal notranslate"><span class="pre">rtimes</span></code> and <code class="docutils literal notranslate"><span class="pre">rate_of_motion</span></code> if requested).</p></li>
 </ul>
 </p>
 </dd>
 </dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If <code class="docutils literal notranslate"><span class="pre">max(time_array)</span> <span class="pre">&lt;=</span> <span class="pre">time</span></code> then there will be no history in the returned arrays
+(ie, the number of columns will be zero for each returned array, including <code class="docutils literal notranslate"><span class="pre">rtimes</span></code> and <code class="docutils literal notranslate"><span class="pre">rate_of_motion</span></code> if requested).</p>
+</div>
 <p class="rubric">Examples</p>
 <p>To access the latitudes and longitudes of each point’s motion path:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="n">lons</span> <span class="o">=</span> <span class="p">[</span><span class="o">...</span><span class="p">]</span>

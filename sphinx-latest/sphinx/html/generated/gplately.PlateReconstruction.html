@@ -289,14 +289,20 @@ The full spreading rate (in cm/yr) for each time step between the times in <code
 reconstruction time (ie, where <code class="docutils literal notranslate"><span class="pre">time_array[i]</span> <span class="pre">&gt;=</span> <span class="pre">to_time</span></code>).
 The number of columns is one less than the number of columns in <code class="docutils literal notranslate"><span class="pre">left_rlons`,</span> <span class="pre">``left_rlats</span></code>, <code class="docutils literal notranslate"><span class="pre">right_rlons`</span> <span class="pre">and</span> <span class="pre">``right_rlats</span></code>.
 There are n rows for n seed points.</p></li>
-<li><p><em>.. note::</em> – If <code class="docutils literal notranslate"><span class="pre">max(time_array)</span> <span class="pre">&lt;=</span> <span class="pre">time</span></code> then there will be no history in the returned arrays
-(ie, the number of columns will be zero for each returned array, including <code class="docutils literal notranslate"><span class="pre">rtimes</span></code> and <code class="docutils literal notranslate"><span class="pre">rate_of_motion</span></code> if requested).</p></li>
-<li><p><em>.. note::</em> – If <code class="docutils literal notranslate"><span class="pre">from_time</span></code> is non-zero (ie, not present day) then <code class="docutils literal notranslate"><span class="pre">lons</span></code> and <code class="docutils literal notranslate"><span class="pre">lats</span></code> are assumed to be the <strong>reconstructed</strong>
-seed point locations at <code class="docutils literal notranslate"><span class="pre">from_time</span></code>.</p></li>
 </ul>
 </p>
 </dd>
 </dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If <code class="docutils literal notranslate"><span class="pre">max(time_array)</span> <span class="pre">&lt;=</span> <span class="pre">time</span></code> then there will be no history in the returned arrays
+(ie, the number of columns will be zero for each returned array, including <code class="docutils literal notranslate"><span class="pre">rtimes</span></code> and <code class="docutils literal notranslate"><span class="pre">rate_of_motion</span></code> if requested).</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If <code class="docutils literal notranslate"><span class="pre">from_time</span></code> is non-zero (ie, not present day) then <code class="docutils literal notranslate"><span class="pre">lons</span></code> and <code class="docutils literal notranslate"><span class="pre">lats</span></code> are assumed to be the <strong>reconstructed</strong>
+seed point locations at <code class="docutils literal notranslate"><span class="pre">from_time</span></code>.</p>
+</div>
 <p class="rubric">Examples</p>
 <p>To access the latitudes and longitudes of each point’s flowline:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="n">lons</span> <span class="o">=</span> <span class="p">[</span><span class="o">...</span><span class="p">]</span>
@@ -383,28 +389,33 @@ The rate of plate motion (in cm/yr) for each time step between the times in <cod
 reconstruction time (ie, where <code class="docutils literal notranslate"><span class="pre">time_array[i]</span> <span class="pre">&gt;=</span> <span class="pre">to_time</span></code>).
 The number of columns is one less than the number of columns in <code class="docutils literal notranslate"><span class="pre">rlons</span></code> and <code class="docutils literal notranslate"><span class="pre">rlats</span></code>.
 There are n rows for n seed points.</p></li>
-<li><p><em>.. note::</em> – If <code class="docutils literal notranslate"><span class="pre">max(time_array)</span> <span class="pre">&lt;=</span> <span class="pre">to_time</span></code> then there will be no history in the returned arrays
-(ie, the number of columns will be zero for each returned array, including <code class="docutils literal notranslate"><span class="pre">rtimes</span></code> and <code class="docutils literal notranslate"><span class="pre">rate_of_motion</span></code> if requested).</p></li>
 </ul>
 </p>
 </dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If <code class="docutils literal notranslate"><span class="pre">max(time_array)</span> <span class="pre">&lt;=</span> <span class="pre">to_time</span></code> then there will be no history in the returned arrays
+(ie, the number of columns will be zero for each returned array, including <code class="docutils literal notranslate"><span class="pre">rtimes</span></code> and <code class="docutils literal notranslate"><span class="pre">rate_of_motion</span></code> if requested).</p>
+</div>
+<dl class="field-list simple">
 <dt class="field-odd">Raises<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.13)"><strong>ValueError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">plate_id</span></code> is <code class="docutils literal notranslate"><span class="pre">None</span></code> and topology features have not been set in this <a class="reference internal" href="#gplately.PlateReconstruction" title="gplately.PlateReconstruction"><code class="xref py py-class docutils literal notranslate"><span class="pre">PlateReconstruction</span></code></a>.</p></li>
-<li><p><strong>.. note::</strong> – If <code class="docutils literal notranslate"><span class="pre">from_time</span></code> is non-zero (ie, not present day) then <code class="docutils literal notranslate"><span class="pre">lons</span></code> and <code class="docutils literal notranslate"><span class="pre">lats</span></code> are assumed to be the <strong>reconstructed</strong>
-    seed point locations at <code class="docutils literal notranslate"><span class="pre">from_time</span></code>. And the reconstructed positions are assumed to be relative to the anchor plate.
-    
-    If <code class="docutils literal notranslate"><span class="pre">plate_id</span></code> is None then the plate ID of each seed point is determined by first reconstructing the static polygons
-    (if <code class="docutils literal notranslate"><span class="pre">assign_plate_id_using_static_polygons</span></code> is <code class="docutils literal notranslate"><span class="pre">True</span></code>, the default) or resolving the topologies
-    (if <code class="docutils literal notranslate"><span class="pre">assign_plate_id_using_static_polygons</span></code> is <code class="docutils literal notranslate"><span class="pre">False</span></code>) to <code class="docutils literal notranslate"><span class="pre">from_time</span></code> (relative to the anchor plate).
-    And then, for each seed point, assigning the plate ID of the reconstructed static polygon (or resolved topological plate/network)
-    containing the point. If a point is not contained by any reconstructed static polygons (or resolved topological plates/networks)
-    then it is assigned the anchor plate ID. Note that it is generally better to use the static polygons, however they do have the
-    limitation of progressively reduced oceanic coverage further back in time (whereas a topological model typically has global coverage
-    throughout time).</p></li>
-</ul>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.13)"><strong>ValueError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">plate_id</span></code> is <code class="docutils literal notranslate"><span class="pre">None</span></code> and topology features have not been set in this <a class="reference internal" href="#gplately.PlateReconstruction" title="gplately.PlateReconstruction"><code class="xref py py-class docutils literal notranslate"><span class="pre">PlateReconstruction</span></code></a>.</p>
 </dd>
 </dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If <code class="docutils literal notranslate"><span class="pre">from_time</span></code> is non-zero (ie, not present day) then <code class="docutils literal notranslate"><span class="pre">lons</span></code> and <code class="docutils literal notranslate"><span class="pre">lats</span></code> are assumed to be the <strong>reconstructed</strong>
+seed point locations at <code class="docutils literal notranslate"><span class="pre">from_time</span></code>. And the reconstructed positions are assumed to be relative to the anchor plate.</p>
+<p>If <code class="docutils literal notranslate"><span class="pre">plate_id</span></code> is None then the plate ID of each seed point is determined by first reconstructing the static polygons
+(if <code class="docutils literal notranslate"><span class="pre">assign_plate_id_using_static_polygons</span></code> is <code class="docutils literal notranslate"><span class="pre">True</span></code>, the default) or resolving the topologies
+(if <code class="docutils literal notranslate"><span class="pre">assign_plate_id_using_static_polygons</span></code> is <code class="docutils literal notranslate"><span class="pre">False</span></code>) to <code class="docutils literal notranslate"><span class="pre">from_time</span></code> (relative to the anchor plate).
+And then, for each seed point, assigning the plate ID of the reconstructed static polygon (or resolved topological plate/network)
+containing the point. If a point is not contained by any reconstructed static polygons (or resolved topological plates/networks)
+then it is assigned the anchor plate ID. Note that it is generally better to use the static polygons, however they do have the
+limitation of progressively reduced oceanic coverage further back in time (whereas a topological model typically has global coverage
+throughout time).</p>
+</div>
 <p class="rubric">Examples</p>
 <p>To access the latitudes and longitudes of each seed point’s motion path:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span><span class="n">lons</span> <span class="o">=</span> <span class="p">[</span><span class="o">...</span><span class="p">]</span>
