@@ -2519,6 +2519,7 @@
         <span class="n">from_time</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
         <span class="n">to_time</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">plate_id</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">assign_plate_id_using_static_polygons</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
         <span class="n">relative_plate_id</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">anchor_plate_id</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">return_times</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
@@ -2560,7 +2561,13 @@
 <span class="sd">        plate_id : int or 1D array, optional</span>
 <span class="sd">            The ID of the moving plate(s). If it is a single integer then all seed points will have the same plate ID.</span>
 <span class="sd">            If it is a 1D array then length must match the number of seed points. If ``None`` then the plate ID of</span>
-<span class="sd">            each seed point is determined using the :py:attr:`topology_features` (resolved at the initial time ``from_time``).</span>
+<span class="sd">            each seed point is determined using the :py:attr:`static_polygons` (reconstructed to the initial time ``from_time``) or the</span>
+<span class="sd">            :py:attr:`topology_features` (resolved at the initial time ``from_time``) depending on ``assign_plate_id_using_static_polygons``.</span>
+<span class="sd">        assign_plate_id_using_static_polygons : bool, default=True</span>
+<span class="sd">            Note that this argument is **ignored** unless ``plate_id`` is ``None`` (indicating that the plate ID(s) need to be assigned).</span>
+<span class="sd">            Whether to assign the plate ID(s) using the :py:attr:`static_polygons` (reconstructed to the initial time ``from_time``) or</span>
+<span class="sd">            the :py:attr:`topology_features` (resolved at the initial time ``from_time``).</span>
+<span class="sd">            Defaults to using the :py:attr:`static_polygons`.</span>
 <span class="sd">        relative_plate_id : int, optional</span>
 <span class="sd">            The ID of the plate that the motion path is relative to. Defaults to ``anchor_plate_id`` which itself</span>
 <span class="sd">            defaults to the current anchor plate ID (:py:attr:`anchor_plate_id` attribute).</span>
@@ -2611,10 +2618,14 @@
 <span class="sd">            If ``from_time`` is non-zero (ie, not present day) then ``lons`` and ``lats`` are assumed to be the **reconstructed**</span>
 <span class="sd">            seed point locations at ``from_time``. And the reconstructed positions are assumed to be relative to the anchor plate.</span>
 
-<span class="sd">            If ``plate_id`` is None then the plate ID of each seed point is determined by resolving the topologies to ``from_time`` (relative to the anchor plate) and</span>
-<span class="sd">            then, for each seed point, assigning the plate ID of the resolved topological plate/network containing the point.</span>
-<span class="sd">            If a point is not contained by any resolved topological plates/networks then it is assigned the anchor plate ID</span>
-<span class="sd">            (however this is very unlikely to happen if the topological model has global coverage).</span>
+<span class="sd">            If ``plate_id`` is None then the plate ID of each seed point is determined by first reconstructing the static polygons</span>
+<span class="sd">            (if ``assign_plate_id_using_static_polygons`` is ``True``, the default) or resolving the topologies</span>
+<span class="sd">            (if ``assign_plate_id_using_static_polygons`` is ``False``) to ``from_time`` (relative to the anchor plate).</span>
+<span class="sd">            And then, for each seed point, assigning the plate ID of the reconstructed static polygon (or resolved topological plate/network)</span>
+<span class="sd">            containing the point. If a point is not contained by any reconstructed static polygons (or resolved topological plates/networks)</span>
+<span class="sd">            then it is assigned the anchor plate ID. Note that it is generally better to use the static polygons, however they do have the</span>
+<span class="sd">            limitation of progressively reduced oceanic coverage further back in time (whereas a topological model typically has global coverage</span>
+<span class="sd">            throughout time).</span>
 
 <span class="sd">        Examples</span>
 <span class="sd">        --------</span>
@@ -2687,46 +2698,74 @@
                     <span class="p">)</span>
         <span class="c1"># Else assign a plate ID to each point based on which resolved topology it&#39;s inside.</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">topological_snapshot</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">topological_snapshot</span><span class="p">(</span>
-                <span class="c1"># The initial time of the seed point locations...</span>
-                <span class="n">time</span><span class="o">=</span><span class="n">from_time</span><span class="p">,</span>
-                <span class="n">anchor_plate_id</span><span class="o">=</span><span class="n">anchor_plate_id</span><span class="p">,</span>
-                <span class="c1"># Ignore topological slab boundaries since they are not *plate* boundaries...</span>
-                <span class="n">include_topological_slab_boundaries</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-            <span class="p">)</span>
-
-            <span class="n">resolved_topology_locations_containing_points</span> <span class="o">=</span> <span class="p">(</span>
-                <span class="n">topological_snapshot</span><span class="o">.</span><span class="n">get_point_locations</span><span class="p">(</span><span class="n">points</span><span class="p">)</span>
-            <span class="p">)</span>
-
             <span class="n">point_plate_ids</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">num_points</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
-            <span class="k">for</span> <span class="n">point_index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_points</span><span class="p">):</span>
-                <span class="n">resolved_topology_location</span> <span class="o">=</span> <span class="p">(</span>
-                    <span class="n">resolved_topology_locations_containing_points</span><span class="p">[</span><span class="n">point_index</span><span class="p">]</span>
-                <span class="p">)</span>
 
-                <span class="c1"># If current point is inside a resolved topology then assign its plate ID to the point,</span>
-                <span class="c1"># otherwise assign the anchor plate to the point.</span>
-                <span class="k">if</span> <span class="p">(</span>
-                    <span class="n">resolved_topology_location</span><span class="o">.</span><span class="n">located_in_resolved_boundary</span><span class="p">()</span>
-                <span class="p">):</span>  <span class="c1"># if point is inside a resolved boundary</span>
-                    <span class="n">point_plate_ids</span><span class="p">[</span><span class="n">point_index</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="k">if</span> <span class="n">assign_plate_id_using_static_polygons</span><span class="p">:</span>
+                <span class="c1">#</span>
+                <span class="c1"># Assign a plate ID to each point based on which reconstructed static polygon it&#39;s inside.</span>
+                <span class="c1">#</span>
+                <span class="n">static_polygons_snapshot</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">static_polygons_snapshot</span><span class="p">(</span>
+                    <span class="c1"># The initial time of the seed point locations...</span>
+                    <span class="n">time</span><span class="o">=</span><span class="n">from_time</span><span class="p">,</span>
+                    <span class="n">anchor_plate_id</span><span class="o">=</span><span class="n">anchor_plate_id</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="n">reconstructed_static_polygons_containing_points</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="n">static_polygons_snapshot</span><span class="o">.</span><span class="n">get_point_locations</span><span class="p">(</span><span class="n">points</span><span class="p">)</span>
+                <span class="p">)</span>
+                <span class="k">for</span> <span class="n">point_index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_points</span><span class="p">):</span>
+                    <span class="n">reconstructed_static_polygon</span> <span class="o">=</span> <span class="p">(</span>
+                        <span class="n">reconstructed_static_polygons_containing_points</span><span class="p">[</span><span class="n">point_index</span><span class="p">]</span>
+                    <span class="p">)</span>
+                    <span class="c1"># If current point is inside a reconstructed static polygon then assign its plate ID to the point,</span>
+                    <span class="c1"># otherwise assign the anchor plate to the point.</span>
+                    <span class="k">if</span> <span class="n">reconstructed_static_polygon</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="n">point_plate_ids</span><span class="p">[</span><span class="n">point_index</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                            <span class="n">reconstructed_static_polygon</span><span class="o">.</span><span class="n">get_feature</span><span class="p">()</span><span class="o">.</span><span class="n">get_reconstruction_plate_id</span><span class="p">()</span>
+                        <span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>  <span class="c1"># point is not in any reconstructed static polygons</span>
+                        <span class="c1"># Assign the anchor plate ID to indicate we could NOT assign a proper plate ID.</span>
+                        <span class="n">point_plate_ids</span><span class="p">[</span><span class="n">point_index</span><span class="p">]</span> <span class="o">=</span> <span class="n">anchor_plate_id</span>
+
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1">#</span>
+                <span class="c1"># Assign a plate ID to each point based on which resolved topology it&#39;s inside.</span>
+                <span class="c1">#</span>
+                <span class="n">topological_snapshot</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">topological_snapshot</span><span class="p">(</span>
+                    <span class="c1"># The initial time of the seed point locations...</span>
+                    <span class="n">time</span><span class="o">=</span><span class="n">from_time</span><span class="p">,</span>
+                    <span class="n">anchor_plate_id</span><span class="o">=</span><span class="n">anchor_plate_id</span><span class="p">,</span>
+                    <span class="c1"># Ignore topological slab boundaries since they are not *plate* boundaries...</span>
+                    <span class="n">include_topological_slab_boundaries</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="n">resolved_topology_locations_containing_points</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="n">topological_snapshot</span><span class="o">.</span><span class="n">get_point_locations</span><span class="p">(</span><span class="n">points</span><span class="p">)</span>
+                <span class="p">)</span>
+                <span class="k">for</span> <span class="n">point_index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_points</span><span class="p">):</span>
+                    <span class="n">resolved_topology_location</span> <span class="o">=</span> <span class="p">(</span>
+                        <span class="n">resolved_topology_locations_containing_points</span><span class="p">[</span><span class="n">point_index</span><span class="p">]</span>
+                    <span class="p">)</span>
+                    <span class="c1"># If current point is inside a resolved topology then assign its plate ID to the point,</span>
+                    <span class="c1"># otherwise assign the anchor plate to the point.</span>
+                    <span class="k">if</span> <span class="p">(</span>
                         <span class="n">resolved_topology_location</span><span class="o">.</span><span class="n">located_in_resolved_boundary</span><span class="p">()</span>
-                        <span class="o">.</span><span class="n">get_feature</span><span class="p">()</span>
-                        <span class="o">.</span><span class="n">get_reconstruction_plate_id</span><span class="p">()</span>
-                    <span class="p">)</span>
-                <span class="k">elif</span> <span class="p">(</span>
-                    <span class="n">resolved_topology_location</span><span class="o">.</span><span class="n">located_in_resolved_network</span><span class="p">()</span>
-                <span class="p">):</span>  <span class="c1"># if point is inside a resolved network</span>
-                    <span class="n">point_plate_ids</span><span class="p">[</span><span class="n">point_index</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="p">):</span>  <span class="c1"># if point is inside a resolved boundary</span>
+                        <span class="n">point_plate_ids</span><span class="p">[</span><span class="n">point_index</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                            <span class="n">resolved_topology_location</span><span class="o">.</span><span class="n">located_in_resolved_boundary</span><span class="p">()</span>
+                            <span class="o">.</span><span class="n">get_feature</span><span class="p">()</span>
+                            <span class="o">.</span><span class="n">get_reconstruction_plate_id</span><span class="p">()</span>
+                        <span class="p">)</span>
+                    <span class="k">elif</span> <span class="p">(</span>
                         <span class="n">resolved_topology_location</span><span class="o">.</span><span class="n">located_in_resolved_network</span><span class="p">()</span>
-                        <span class="o">.</span><span class="n">get_feature</span><span class="p">()</span>
-                        <span class="o">.</span><span class="n">get_reconstruction_plate_id</span><span class="p">()</span>
-                    <span class="p">)</span>
-                <span class="k">else</span><span class="p">:</span>  <span class="c1"># point is not in any resolved topologies</span>
-                    <span class="c1"># Assign the anchor plate ID to indicate we could NOT assign a proper plate ID.</span>
-                    <span class="c1"># This generally shouldn&#39;t happen if the topologies have global coverage.</span>
-                    <span class="n">point_plate_ids</span><span class="p">[</span><span class="n">point_index</span><span class="p">]</span> <span class="o">=</span> <span class="n">anchor_plate_id</span>
+                    <span class="p">):</span>  <span class="c1"># if point is inside a resolved network</span>
+                        <span class="n">point_plate_ids</span><span class="p">[</span><span class="n">point_index</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                            <span class="n">resolved_topology_location</span><span class="o">.</span><span class="n">located_in_resolved_network</span><span class="p">()</span>
+                            <span class="o">.</span><span class="n">get_feature</span><span class="p">()</span>
+                            <span class="o">.</span><span class="n">get_reconstruction_plate_id</span><span class="p">()</span>
+                        <span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>  <span class="c1"># point is not in any resolved topologies</span>
+                        <span class="c1"># Assign the anchor plate ID to indicate we could NOT assign a proper plate ID.</span>
+                        <span class="c1"># This generally shouldn&#39;t happen if the topologies have global coverage.</span>
+                        <span class="n">point_plate_ids</span><span class="p">[</span><span class="n">point_index</span><span class="p">]</span> <span class="o">=</span> <span class="n">anchor_plate_id</span>
 
         <span class="c1"># Need to query the first reconstructed motion path before we can size the return arrays.</span>
         <span class="n">created_return_arrays</span> <span class="o">=</span> <span class="kc">False</span>
@@ -3101,7 +3140,7 @@
                 <span class="n">reconstructed_flowline</span><span class="o">.</span><span class="n">get_right_flowline</span><span class="p">()</span><span class="o">.</span><span class="n">to_lat_lon_array</span><span class="p">()</span>
             <span class="p">)</span>
 
-            <span class="c1"># If we the youngest point (first point) then do so.</span>
+            <span class="c1"># If we ignore the youngest point (first point) then do so.</span>
             <span class="k">if</span> <span class="n">ignore_youngest_time_sample</span><span class="p">:</span>
                 <span class="n">left_trail_lat_lon</span> <span class="o">=</span> <span class="n">left_trail_lat_lon</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
                 <span class="n">right_trail_lat_lon</span> <span class="o">=</span> <span class="n">right_trail_lat_lon</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
@@ -3150,7 +3189,7 @@
                 <span class="c1"># get the distance travelled by the moving plate relative to the fixed plate in each time step</span>
                 <span class="n">segments</span> <span class="o">=</span> <span class="n">reconstructed_flowline</span><span class="o">.</span><span class="n">get_left_flowline</span><span class="p">()</span><span class="o">.</span><span class="n">get_segments</span><span class="p">()</span>
 
-                <span class="c1"># If we the youngest segment (first segment) then do so.</span>
+                <span class="c1"># If we ignore the youngest segment (first segment) then do so.</span>
                 <span class="k">if</span> <span class="n">ignore_youngest_time_sample</span><span class="p">:</span>
                     <span class="n">segments</span> <span class="o">=</span> <span class="n">segments</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
 
