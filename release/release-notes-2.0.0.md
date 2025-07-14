@@ -16,7 +16,7 @@
 * In the "Muller2016" model, all COB (Continent-Ocean Boundary) features now consist exclusively of polylines. Any polygons previously included have been converted to polylines.
 * The "setup.py" has been removed. Instead of using `python setup.py install`, now you need to use `pip install`.
 * The `gplately.pygplates` is deprecated. Users now need to `import pygplates` directly.
-* Python 3.5, 3.6 and 3.7 support has been dropped.
+* Python 3.5, 3.6, 3.7 and 3.8 support has been dropped.
 * Removed Stripy dependency.
 
 ### New Features

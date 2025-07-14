@@ -12,12 +12,11 @@ description = "Object-orientated Python interface to pyGPlates for plate tectoni
 readme = "README.md"
 authors = [{ name = "Ben Mather", email = "ben.mather@sydney.edu.au" }]
 license = { file = "LICENSE" }
-requires-python = ">= 3.8" # At least Python 3.8
+requires-python = ">= 3.9" # At least Python 3.9
 classifiers = [
     "License :: OSI Approved :: GNU General Public License v2 (GPLv2)",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
