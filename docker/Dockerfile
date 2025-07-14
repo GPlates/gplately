@@ -25,7 +25,8 @@ RUN micromamba install -y -n base -f /tmp/env.yaml && \
 
 ARG MAMBA_DOCKERFILE_ACTIVATE=1 
 
-COPY --chown=$MAMBA_USER:$MAMBA_USER . /tmp/gplately
+RUN git clone --depth=1 https://github.com/GPlates/gplately.git /tmp/gplately
+#COPY --chown=$MAMBA_USER:$MAMBA_USER . /tmp/gplately
 RUN pip3 install /tmp/gplately
 RUN rm -rf /tmp/gplately
 
