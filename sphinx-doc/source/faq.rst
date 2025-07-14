@@ -26,6 +26,10 @@ Failed to import PyGMT.
 
 PyGMT requires Python>=3.11. Upgrade your Python if you want PyGMT.
 
+If you installed GPlately using ``pip``, you also need to `install GMT <https://docs.generic-mapping-tools.org/latest/install.html>`__
+manually for PyGMT to function properly. This is because PyGMT depends on GMT, but ``pip`` cannot install GMT automatically. 
+Alternatively, you can install GPlately via ``conda``, which can install GMT automatically for you.
+
 Tcl error using Python 3.13.0 on Windows.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

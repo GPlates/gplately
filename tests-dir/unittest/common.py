@@ -30,7 +30,7 @@ def save_fig(filename):
     plt.close(plt.gcf())
 
 
-def get_test_loca_code_flag():
+def get_test_local_code_flag():
     if "GPLATELY_TEST_LOCAL_FLAG" in os.environ and (
         os.environ["GPLATELY_TEST_LOCAL_FLAG"].lower() == "false"
         or os.environ["GPLATELY_TEST_LOCAL_FLAG"].lower() == "0"
@@ -39,5 +39,5 @@ def get_test_loca_code_flag():
     return True
 
 
-if get_test_loca_code_flag():
+if get_test_local_code_flag():
     sys.path.insert(0, f"{os.path.dirname(os.path.realpath(__file__))}/../..")
