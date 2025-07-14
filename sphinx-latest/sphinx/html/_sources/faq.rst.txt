@@ -26,6 +26,11 @@ Failed to import PyGMT.
 
 PyGMT requires Python>=3.11. Upgrade your Python if you want PyGMT.
 
+Tcl error using Python 3.13.0 on Windows.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If you're using Python 3.13 on Windows then use Python>=3.13.1 to the avoid error `_tkinter.TclError: Can't find a usable init.tcl in the following directories`.
+
 Parallel code running slower than serial code.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
