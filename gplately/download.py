@@ -1078,7 +1078,7 @@ class DataServer(object):
 
     .. seealso::
 
-        - `This table <https://gplates.github.io/gplately/sphinx-latest/html/use_cases.html#id1>`__ provides a list of available plate reconstruction models.
+        - `This table <../use_cases.html#id1>`__ provides a list of available plate reconstruction models.
         - Visit this `EarthByte web page <https://www.earthbyte.org/category/resources/data-models/global-regional-plate-motion-models/>`__ for more information about these plate models.
         - Call :meth:`gplately.auxiliary.get_data_server_cache_path` to see the path to the ``GPlately cache folder``.
     """
