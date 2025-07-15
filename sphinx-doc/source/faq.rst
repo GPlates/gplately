@@ -33,7 +33,7 @@ Alternatively, you can install GPlately via ``conda``, which can install GMT aut
 Tcl error using Python 3.13.0 on Windows.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-If you're using Python 3.13 on Windows then use Python>=3.13.1 to the avoid error `_tkinter.TclError: Can't find a usable init.tcl in the following directories`.
+If you're using Python 3.13 on Windows then use Python>=3.13.1 to avoid the error `_tkinter.TclError: Can't find a usable init.tcl in the following directories`.
 
 Parallel code running slower than serial code.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
