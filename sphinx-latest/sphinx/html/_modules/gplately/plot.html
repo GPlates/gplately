@@ -309,8 +309,9 @@
 <span class="sd">            if these features are sourced from the :class:`DataServer` object).</span>
 <span class="sd">        time: float</span>
 <span class="sd">            The time (Ma) to reconstruct and plot geological features to.</span>
-<span class="sd">        anchor_plate_id : int</span>
-<span class="sd">            Anchor plate ID for reconstruction. Must be an integer &gt;= 0.</span>
+<span class="sd">        anchor_plate_id : int, optional</span>
+<span class="sd">            Anchor plate ID for reconstruction.</span>
+<span class="sd">            Defaults to the current anchor plate ID of ``plate_reconstruction`` (its ``anchor_plate_id`` attribute).</span>
 <span class="sd">        plot_engine : :class:`PlotEngine`, default=CartopyPlotEngine()</span>
 <span class="sd">            Use Cartopy (:class:`CartopyPlotEngine`) or pyGMT (:class:`PygmtPlotEngine`) to plot the map.</span>
 
