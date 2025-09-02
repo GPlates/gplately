@@ -10,5 +10,5 @@ dependencies:
   - pdoc3
   - rioxarray
   - docutils
-  - sphinx 
-  - sphinx_rtd_theme
+  - sphinx>=8.0
+  - sphinx_rtd_theme>=3.0

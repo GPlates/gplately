@@ -222,8 +222,9 @@ class PlotTopologies(object):
             if these features are sourced from the :class:`DataServer` object).
         time: float
             The time (Ma) to reconstruct and plot geological features to.
-        anchor_plate_id : int
-            Anchor plate ID for reconstruction. Must be an integer >= 0.
+        anchor_plate_id : int, optional
+            Anchor plate ID for reconstruction.
+            Defaults to the current anchor plate ID of ``plate_reconstruction`` (its ``anchor_plate_id`` attribute).
         plot_engine : :class:`PlotEngine`, default=CartopyPlotEngine()
             Use Cartopy (:class:`CartopyPlotEngine`) or pyGMT (:class:`PygmtPlotEngine`) to plot the map.
 
