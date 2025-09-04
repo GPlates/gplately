@@ -597,7 +597,7 @@ def griddata_sphere(points, values, xi, method="nearest", **kwargs):
 
 # From Simon Williams' GPRM
 def find_distance_to_nearest_ridge(
-    resolved_topologies, shared_boundary_sections, point_features, fill_value=5000.0
+    resolved_topologies, point_features, fill_value=5000.0
 ):
 
     all_point_distance_to_ridge = []
@@ -605,30 +605,18 @@ def find_distance_to_nearest_ridge(
     all_point_lons = []
 
     for topology in resolved_topologies:
-        plate_id = topology.get_resolved_feature().get_reconstruction_plate_id()
 
-        # Section to isolate the mid-ocean ridge segments that bound the current plate
+        # Isolate the mid-ocean ridge segments that bound the current plate.
         mid_ocean_ridges_on_plate = []
-        for shared_boundary_section in shared_boundary_sections:
+        for boundary_sub_segment in topology.get_boundary_sub_segments():
 
             if (
-                shared_boundary_section.get_feature().get_feature_type()
-                == pygplates.FeatureType.create_gpml("MidOceanRidge")
+                boundary_sub_segment.get_feature().get_feature_type()
+                == pygplates.FeatureType.gpml_mid_ocean_ridge
             ):
-                for (
-                    shared_subsegment
-                ) in shared_boundary_section.get_shared_sub_segments():
-                    sharing_resolved_topologies = (
-                        shared_subsegment.get_sharing_resolved_topologies()
-                    )
-                    for resolved_polygon in sharing_resolved_topologies:
-                        if (
-                            resolved_polygon.get_feature().get_reconstruction_plate_id()
-                            == plate_id
-                        ):
-                            mid_ocean_ridges_on_plate.append(
-                                shared_subsegment.get_resolved_geometry()
-                            )
+                mid_ocean_ridges_on_plate.append(
+                    boundary_sub_segment.get_resolved_geometry()
+                )
 
         point_distance_to_ridge = []
         point_lats = []

@@ -82,8 +82,8 @@ class PlateReconstruction(object):
         .. _pygplates.Feature: https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature
         .. _pygplates.FeatureCollection: https://www.gplates.org/docs/pygplates/generated/pygplates.featurecollection#pygplates.FeatureCollection
         """
-        #: A `pygplates.RotationModel <https://www.gplates.org/docs/pygplates/generated/pygplates.rotationmodel>`__ object
-        #: to query equivalent and/or relative topological plate rotations
+        #: A `pygplates.RotationModel <https://www.gplates.org/docs/pygplates/generated/pygplates.rotationmodel>`__ object,
+        #: with default anchor plate :py:attr:`anchor_plate_id`, used to query equivalent and/or relative topological plate rotations
         #: from a time in the past relative to another time in the past or to present day.
         self.rotation_model: Union[pygplates.RotationModel, None] = None
 

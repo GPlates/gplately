@@ -241,27 +241,28 @@ class SeafloorGrid(object):
             ``save_directory`` if re-run after interruption, or normally re-run, thus beginning
             gridding preparation from scratch. ``False`` will be useful if data allocated to the
             MOR seed points need to be augmented.
-        zval_names : list of :class:`str`
+        zval_names : list of :class:`str`, default=["SPREADING_RATE"]
             A list containing string labels for the z values to attribute to points.
             Will be used as column headers for z value point dataframes.
-        continent_mask_filename : str
+        continent_mask_filename : str, optional
             An optional parameter pointing to the full path to a continental mask for each timestep.
             Assuming the time is in the filename, i.e. ``/path/to/continent_mask_0Ma.nc``, it should be
             passed as ``/path/to/continent_mask_{}Ma.nc`` with curly brackets. Include decimal formatting if needed.
+        use_continent_contouring: bool, default=False
+            Note that this is ignored if ``continent_mask_filename`` is specified.
+            If ``True`` then builds the continent mask for a given time using ptt's 'continent contouring' method
+            (for more information about 'Continent Contouring', visit https://github.com/EarthByte/continent-contouring).
+            If ``False`` then builds the continent masks using the continents of ``PlotTopologies_object``.
+
 
 
         .. _pygplates.RotationModel: https://www.gplates.org/docs/pygplates/generated/pygplates.rotationmodel
         .. _pygplates.Feature: https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature
         .. _pygplates.FeatureCollection: https://www.gplates.org/docs/pygplates/generated/pygplates.featurecollection#pygplates.FeatureCollection
         """
-        # Provides a rotation model, topology features and reconstruction time for the SeafloorGrid
-        self.PlateReconstruction_object = PlateReconstruction_object
-        self.rotation_model = self.PlateReconstruction_object.rotation_model
-        self.topology_features = self.PlateReconstruction_object.topology_features
-        self._PlotTopologies_object = PlotTopologies_object
-        self.topological_model = pygplates.TopologicalModel(
-            self.topology_features, self.rotation_model
-        )
+
+        self.plate_reconstruction = PlateReconstruction_object
+        self.plot_topologies = PlotTopologies_object
 
         self.file_collection = file_collection
 
@@ -298,13 +299,17 @@ class SeafloorGrid(object):
         )
 
         # ensure the time for continental masking is consistent.
-        self._PlotTopologies_object.time = self._max_time
+        self.plot_topologies.time = self._max_time
 
         # Essential features and meshes for the SeafloorGrid
         self.continental_polygons = ensure_polygon_geometry(
-            self._PlotTopologies_object.continents, self.rotation_model, self._max_time
+            self.plot_topologies.continents,
+            self.plate_reconstruction.rotation_model,
+            self._max_time,
         )
-        self._PlotTopologies_object.continents = PlotTopologies_object.continents
+        self.plot_topologies.continents = (
+            PlotTopologies_object.continents
+        )  # What is this for? Does it do anything?
 
         self.icosahedral_multi_point = create_icosahedral_mesh(self.refinement_levels)
 
@@ -495,7 +500,7 @@ class SeafloorGrid(object):
 
         :type: float
         """
-        return self._PlotTopologies_object.time
+        return self.plot_topologies.time
 
     @max_time.setter
     def max_time(self, var):
@@ -513,7 +518,7 @@ class SeafloorGrid(object):
             The new reconstruction time.
         """
         self._max_time = float(max_time)
-        self._PlotTopologies_object.time = float(max_time)
+        self.plot_topologies.time = float(max_time)
 
     def _collect_point_data_in_dataframe(self, feature_collection, zval_ndarray, time):
         """At a given timestep, create a pandas dataframe holding all attributes of point features.
@@ -531,8 +536,8 @@ class SeafloorGrid(object):
         """Generate ocean points by using the icosahedral mesh."""
         # Ensure COB terranes at max time have reconstruction IDs and valid times
         COB_polygons = ensure_polygon_geometry(
-            self._PlotTopologies_object.continents,
-            self.rotation_model,
+            self.plot_topologies.continents,
+            self.plate_reconstruction.rotation_model,
             self._max_time,
         )
 
@@ -546,7 +551,7 @@ class SeafloorGrid(object):
         # Plates to partition with
         plate_partitioner = pygplates.PlatePartitioner(
             COB_polygons,
-            self.rotation_model,
+            self.plate_reconstruction.rotation_model,
         )
 
         # Plate partition the ocean basin points
@@ -655,18 +660,11 @@ class SeafloorGrid(object):
         # Determine age of ocean basin points using their proximity to MOR features
         # and an assumed globally-uniform ocean basin mean spreading rate.
         # We need resolved topologies at the `max_time` to pass into the proximity function
-        resolved_topologies = []
-        shared_boundary_sections = []
-        pygplates.resolve_topologies(
-            self.topology_features,
-            self.rotation_model,
-            resolved_topologies,
-            self._max_time,
-            shared_boundary_sections,
-        )
+        resolved_topologies = self.plate_reconstruction.topological_snapshot(
+            self._max_time
+        ).get_resolved_topologies()
         pX, pY, pZ = tools.find_distance_to_nearest_ridge(
             resolved_topologies,
-            shared_boundary_sections,
             ocean_points,
         )
 
@@ -760,8 +758,8 @@ class SeafloorGrid(object):
                         _generate_mid_ocean_ridge_points,
                         delta_time=self._ridge_time_step,
                         mid_ocean_ridges_file_path=self.mid_ocean_ridges_file_path,
-                        rotation_model=self.rotation_model,
-                        topology_features=self.topology_features,
+                        rotation_model=self.plate_reconstruction.rotation_model,
+                        topology_features=self.plate_reconstruction.topology_features,
                         zvalues_file_basepath=self.zvalues_file_basepath,
                         zval_names=self.zval_names,
                         ridge_sampling=self.ridge_sampling,
@@ -775,8 +773,8 @@ class SeafloorGrid(object):
                     time,
                     delta_time=self._ridge_time_step,
                     mid_ocean_ridges_file_path=self.mid_ocean_ridges_file_path,
-                    rotation_model=self.rotation_model,
-                    topology_features=self.topology_features,
+                    rotation_model=self.plate_reconstruction.rotation_model,
+                    topology_features=self.plate_reconstruction.topology_features,
                     zvalues_file_basepath=self.zvalues_file_basepath,
                     zval_names=self.zval_names,
                     ridge_sampling=self.ridge_sampling,
@@ -800,8 +798,8 @@ class SeafloorGrid(object):
                 )
                 continue
 
-            self._PlotTopologies_object.time = time
-            geoms = self._PlotTopologies_object.continents
+            self.plot_topologies.time = time
+            geoms = self.plot_topologies.continents
             final_grid = grids.rasterise(
                 geoms,
                 key=1.0,
@@ -830,9 +828,9 @@ class SeafloorGrid(object):
             )
             return
 
-        self._PlotTopologies_object.time = time
+        self.plot_topologies.time = time
         final_grid = grids.rasterise(
-            self._PlotTopologies_object.continents,
+            self.plot_topologies.continents,
             key=1.0,
             shape=(self.spacingY, self.spacingX),
             extent=self.extent,
@@ -874,8 +872,8 @@ class SeafloorGrid(object):
                             partial(
                                 _build_continental_mask_with_contouring,
                                 continent_mask_filepath=self.continent_mask_filepath,
-                                rotation_model=self.rotation_model,
-                                continent_features=self._PlotTopologies_object._continents,
+                                rotation_model=self.plate_reconstruction.rotation_model,
+                                continent_features=self.plot_topologies._continents,
                                 overwrite=overwrite,
                             ),
                             self._times,
@@ -885,8 +883,8 @@ class SeafloorGrid(object):
                         _build_continental_mask_with_contouring(
                             time,
                             continent_mask_filepath=self.continent_mask_filepath,
-                            rotation_model=self.rotation_model,
-                            continent_features=self._PlotTopologies_object._continents,
+                            rotation_model=self.plate_reconstruction.rotation_model,
+                            continent_features=self.plot_topologies._continents,
                             overwrite=overwrite,
                         )
             else:
@@ -1112,7 +1110,15 @@ class SeafloorGrid(object):
         # not necessary, but put here for readability purpose only
         self.current_active_points_df = self.initial_ocean_point_df
 
-        time = int(self._max_time)
+        topological_model = pygplates.TopologicalModel(
+            self.plate_reconstruction.topology_features,
+            self.plate_reconstruction.rotation_model,
+            # Only really need to cache 2 snapshots since we progressively move through time (and hence never return to previous times).
+            # Might only need to cache 1 snapshot (not sure). Best to be safe with 2...
+            topological_snapshot_cache_size=2,
+        )
+
+        time = self._max_time
         while True:
             self.current_active_points_df.to_pickle(
                 self.sample_points_file_path.format(time)
@@ -1127,19 +1133,19 @@ class SeafloorGrid(object):
                     time,
                     self.sample_points_dir,
                 )
-            next_time = time - int(self._ridge_time_step)
-            if next_time >= int(self._min_time):
+            next_time = time - self._ridge_time_step
+            if (
+                next_time >= self._min_time - 1e-6
+            ):  # 1e-6 deals with limited floating-point precision, eg, includes 10 Ma even if min time is 10.000001
                 points = [
                     pygplates.PointOnSphere(row.lat, row.lon)
                     for index, row in self.current_active_points_df.iterrows()
                 ]
-                # reconstruct_geometry() needs time to be integral value
-                # https://www.gplates.org/docs/pygplates/generated/pygplates.topologicalmodel#pygplates.TopologicalModel.reconstruct_geometry
-                reconstructed_time_span = self.topological_model.reconstruct_geometry(
+                reconstructed_time_span = topological_model.reconstruct_geometry(
                     points,
                     initial_time=time,
                     youngest_time=next_time,
-                    time_increment=int(self._ridge_time_step),
+                    time_increment=self._ridge_time_step,
                     deactivate_points=pygplates.ReconstructedGeometryTimeSpan.DefaultDeactivatePoints(
                         threshold_velocity_delta=self.subduction_collision_parameters[0]
                         / 10,  # cms/yr
@@ -1206,8 +1212,8 @@ class SeafloorGrid(object):
 
         # Call the reconstruct by topologies object
         topology_reconstruction = _ReconstructByTopologies(
-            self.rotation_model,
-            self.topology_features,
+            self.plate_reconstruction.rotation_model,
+            self.plate_reconstruction.topology_features,
             self._max_time,
             self._min_time,
             self._ridge_time_step,
@@ -1708,7 +1714,7 @@ def _build_continental_mask_with_contouring(
     overwrite=False,
 ):
     """Build the continent mask for a given time using ptt's 'continent contouring' method.
-    For more information about 'Continent Contouring', visit https://gplates.github.io/gplately/dev-doc/ptt/continent_contours.html.
+    For more information about 'Continent Contouring', visit https://github.com/EarthByte/continent-contouring.
     """
     mask_fn = continent_mask_filepath.format(time)
     if os.path.isfile(mask_fn) and not overwrite:
@@ -1784,7 +1790,7 @@ def _build_continental_mask_with_contouring(
     )
     logger.warning(
         f"Finished building a continental mask at {time} Ma using ptt's 'Continent Contouring'!"
-        + " For more information about 'Continent Contouring', visit https://gplates.github.io/gplately/dev-doc/ptt/continent_contours.html."
+        + " For more information about 'Continent Contouring', visit https://github.com/EarthByte/continent-contouring."
     )
 
 
@@ -1812,21 +1818,16 @@ def _generate_mid_ocean_ridge_points(
     point_spreading_rates = []
 
     # Resolve topologies to the current time.
-    resolved_topologies = []
-    shared_boundary_sections = []
-    pygplates.resolve_topologies(
-        topology_features,
-        rotation_model,
-        resolved_topologies,
-        time,
-        shared_boundary_sections,
+    topological_snapshot = pygplates.TopologicalSnapshot(
+        topology_features, rotation_model, time
     )
+    shared_boundary_sections = topological_snapshot.get_resolved_topological_sections()
 
     # pygplates.ResolvedTopologicalSection objects.
     for shared_boundary_section in shared_boundary_sections:
         if (
             shared_boundary_section.get_feature().get_feature_type()
-            == pygplates.FeatureType.create_gpml("MidOceanRidge")
+            == pygplates.FeatureType.gpml_mid_ocean_ridge
         ):
             spreading_feature = shared_boundary_section.get_feature()
 

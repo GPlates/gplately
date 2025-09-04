@@ -2687,8 +2687,8 @@ class Raster(object):
 
 # class TimeRaster(Raster):
 #     """A class for the temporal manipulation of raster data. To be added soon!"""
-#     def __init__(self, PlateReconstruction_object=None, filename=None, array=None, extent=None, resample=None):
+#     def __init__(self, plate_reconstruction=None, filename=None, array=None, extent=None, resample=None):
 #         raise NotImplementedError(
 #             "This class has not been implemented; use `Raster` instead"
 #         )
-#         super(TimeRaster, self).__init__(PlateReconstruction_object)
+#         super(TimeRaster, self).__init__(plate_reconstruction)

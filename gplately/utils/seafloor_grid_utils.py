@@ -93,7 +93,6 @@ def ensure_polygon_geometry(reconstructed_polygons, rotation_model, time):
 
     """
     continent_FeatCol = []
-    # self._PlotTopologies_object.continents
     for n in reconstructed_polygons:
         continent_FeatCol.append(n.get_feature())
 
