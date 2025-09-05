@@ -672,14 +672,15 @@ class SeafloorGrid(object):
         # Divide spreading rate by 2 to use half the mean spreading rate
         pAge = np.array(pZ) / (self.initial_ocean_mean_spreading_rate / 2.0)
 
-        self._update_current_active_points(
-            pX,
-            pY,
-            pAge + self._max_time,
-            [0] * len(pX),
-            [self.initial_ocean_mean_spreading_rate] * len(pX),
+        self.initial_ocean_point_df = pd.DataFrame(
+            {
+                "lon": pX,
+                "lat": pY,
+                "begin_time": pAge + self._max_time,
+                "end_time": [0] * len(pX),
+                "SPREADING_RATE": [self.initial_ocean_mean_spreading_rate] * len(pX),
+            }
         )
-        self.initial_ocean_point_df = self.current_active_points_df
 
         # the code below is for debug purpose only
         if get_debug_level() > 100:
@@ -971,130 +972,12 @@ class SeafloorGrid(object):
 
         return active_points, appearance_time, birth_lat, prev_lat, prev_lon, zvalues
 
-    def _update_current_active_points(
-        self, lons, lats, begin_times, end_times, spread_rates, replace=True
-    ):
-        """If the `replace` is true, use the new data to replace self.current_active_points_df.
-        Otherwise, append the new data to the end of self.current_active_points_df"""
-        data = {
-            "lon": lons,
-            "lat": lats,
-            "begin_time": begin_times,
-            "end_time": end_times,
-            "SPREADING_RATE": spread_rates,
-        }
-        if replace:
-            self.current_active_points_df = pd.DataFrame(data=data)
-        else:
-            self.current_active_points_df = pd.concat(
-                [
-                    self.current_active_points_df,
-                    pd.DataFrame(data=data),
-                ],
-                ignore_index=True,
-            )
-
-    def _update_current_active_points_coordinates(
-        self, reconstructed_points: List[pygplates.PointOnSphere]
-    ):
-        """Update the current active points with the reconstructed coordinates.
-        The length of `reconstructed_points` must be the same with the length of self.current_active_points_df
+    def reconstruct_by_topologies(self):
+        """Obtain all active ocean seed points which are points that have not been consumed at subduction zones
+        or have not collided with continental polygons. Active points' latitudes, longitues, seafloor ages, spreading rates and all
+        other general z-values are saved to a gridding input file (.npz).
         """
-        assert len(reconstructed_points) == len(self.current_active_points_df)
-        lons = []
-        lats = []
-        begin_times = []
-        end_times = []
-        spread_rates = []
-        for i in range(len(reconstructed_points)):
-            if reconstructed_points[i]:
-                lat_lon = reconstructed_points[i].to_lat_lon()
-                lons.append(lat_lon[1])
-                lats.append(lat_lon[0])
-                begin_times.append(self.current_active_points_df.loc[i, "begin_time"])
-                end_times.append(self.current_active_points_df.loc[i, "end_time"])
-                spread_rates.append(
-                    self.current_active_points_df.loc[i, "SPREADING_RATE"]
-                )
-        self._update_current_active_points(
-            lons, lats, begin_times, end_times, spread_rates
-        )
-
-    def _remove_continental_points(self, time):
-        """remove all the points which are inside continents at `time` from self.current_active_points_df"""
-        gridZ, gridX, gridY = grids.read_netcdf_grid(
-            self.continent_mask_filepath.format(time), return_grids=True
-        )
-        ni, nj = gridZ.shape
-        xmin = np.nanmin(gridX)
-        xmax = np.nanmax(gridX)
-        ymin = np.nanmin(gridY)
-        ymax = np.nanmax(gridY)
-
-        # TODO
-        def remove_points_on_continents(row):
-            i = int(round((ni - 1) * ((row.lat - ymin) / (ymax - ymin))))
-            j = int(round((nj - 1) * ((row.lon - xmin) / (xmax - xmin))))
-            i = 0 if i < 0 else i
-            j = 0 if j < 0 else j
-            i = ni - 1 if i > ni - 1 else i
-            j = nj - 1 if j > nj - 1 else j
-
-            if gridZ[i, j] > 0:
-                return False
-            else:
-                return True
-
-        m = self.current_active_points_df.apply(remove_points_on_continents, axis=1)
-        self.current_active_points_df = self.current_active_points_df[m]
-
-    def _load_middle_ocean_ridge_points(self, time):
-        """add middle ocean ridge points at `time` to current_active_points_df"""
-        df = pd.read_pickle(self.mid_ocean_ridges_file_path.format(time))
-        self._update_current_active_points(
-            df["lon"],
-            df["lat"],
-            [time] * len(df),
-            [0] * len(df),
-            df["SPREADING_RATE"],
-            replace=False,
-        )
-
-        # obsolete code. keep here for a while. will delete later. -- 2024-05-30
-        if 0:
-            fc = pygplates.FeatureCollection(
-                self.mid_ocean_ridges_file_path.format(time)
-            )
-            assert len(self.zval_names) > 0
-            lons = []
-            lats = []
-            begin_times = []
-            end_times = []
-            for feature in fc:
-                lat_lon = feature.get_geometry().to_lat_lon()
-                valid_time = feature.get_valid_time()
-                lons.append(lat_lon[1])
-                lats.append(lat_lon[0])
-                begin_times.append(valid_time[0])
-                end_times.append(valid_time[1])
-
-            curr_zvalues = self._extract_zvalues_from_npz_to_ndarray(fc, time)
-            self._update_current_active_points(
-                lons, lats, begin_times, end_times, curr_zvalues[:, 0], replace=False
-            )
-
-    def _save_gridding_input_data(self, time):
-        """save the data into file for creating netcdf file later"""
-        data_len = len(self.current_active_points_df["lon"])
-        np.savez_compressed(
-            self.gridding_input_filepath.format(time),
-            CURRENT_LONGITUDES=self.current_active_points_df["lon"],
-            CURRENT_LATITUDES=self.current_active_points_df["lat"],
-            SEAFLOOR_AGE=self.current_active_points_df["begin_time"] - time,
-            BIRTH_LAT_SNAPSHOT=[0] * data_len,
-            POINT_ID_SNAPSHOT=[0] * data_len,
-            SPREADING_RATE=self.current_active_points_df["SPREADING_RATE"],
-        )
+        self._reconstruct_by_topologies_impl(use_topological_model=False)
 
     def reconstruct_by_topological_model(self):
         """Use `pygplates.TopologicalModel`_ class to reconstruct seed points.
@@ -1102,80 +985,9 @@ class SeafloorGrid(object):
 
         .. _pygplates.TopologicalModel: https://www.gplates.org/docs/pygplates/generated/pygplates.topologicalmodel
         """
-        self.create_initial_ocean_seed_points()
-        logger.info("Finished building initial_ocean_seed_points!")
+        self._reconstruct_by_topologies_impl(use_topological_model=True)
 
-        self.build_all_continental_masks()
-        self.build_all_MOR_seedpoints()
-
-        # not necessary, but put here for readability purpose only
-        self.current_active_points_df = self.initial_ocean_point_df
-
-        topological_model = pygplates.TopologicalModel(
-            self.plate_reconstruction.topology_features,
-            self.plate_reconstruction.rotation_model,
-            # Only really need to cache 2 snapshots since we progressively move through time (and hence never return to previous times).
-            # Might only need to cache 1 snapshot (not sure). Best to be safe with 2...
-            topological_snapshot_cache_size=2,
-        )
-
-        time = self._max_time
-        while True:
-            self.current_active_points_df.to_pickle(
-                self.sample_points_file_path.format(time)
-            )
-            self._save_gridding_input_data(time)
-            # save debug file
-            if get_debug_level() > 100:
-                _save_seed_points_as_multipoint_coverage(
-                    self.current_active_points_df["lon"],
-                    self.current_active_points_df["lat"],
-                    self.current_active_points_df["begin_time"] - time,
-                    time,
-                    self.sample_points_dir,
-                )
-            next_time = time - self._ridge_time_step
-            if (
-                next_time >= self._min_time - 1e-6
-            ):  # 1e-6 deals with limited floating-point precision, eg, includes 10 Ma even if min time is 10.000001
-                points = [
-                    pygplates.PointOnSphere(row.lat, row.lon)
-                    for index, row in self.current_active_points_df.iterrows()
-                ]
-                reconstructed_time_span = topological_model.reconstruct_geometry(
-                    points,
-                    initial_time=time,
-                    youngest_time=next_time,
-                    time_increment=self._ridge_time_step,
-                    deactivate_points=pygplates.ReconstructedGeometryTimeSpan.DefaultDeactivatePoints(
-                        threshold_velocity_delta=self.subduction_collision_parameters[0]
-                        / 10,  # cms/yr
-                        threshold_distance_to_boundary=self.subduction_collision_parameters[
-                            1
-                        ],  # kms/myr
-                        deactivate_points_that_fall_outside_a_network=True,
-                    ),
-                )
-
-                reconstructed_points = reconstructed_time_span.get_geometry_points(
-                    next_time, return_inactive_points=True
-                )
-                logger.info(
-                    f"Finished topological reconstruction of {len(self.current_active_points_df)} points from {time} to {next_time} Ma."
-                )
-                # update the current activate points to prepare for the reconstruction to "next time"
-                self._update_current_active_points_coordinates(reconstructed_points)
-                self._remove_continental_points(next_time)
-                self._load_middle_ocean_ridge_points(next_time)
-                time = next_time
-            else:
-                break
-
-    def reconstruct_by_topologies(self):
-        """Obtain all active ocean seed points which are points that have not been consumed at subduction zones
-        or have not collided with continental polygons. Active points' latitudes, longitues, seafloor ages, spreading rates and all
-        other general z-values are saved to a gridding input file (.npz).
-        """
+    def _reconstruct_by_topologies_impl(self, use_topological_model=False):
         logger.info("Preparing all initial files...")
 
         # Obtain all info from the ocean seed points and all MOR points through time, store in
@@ -1212,16 +1024,29 @@ class SeafloorGrid(object):
         )
 
         # Call the reconstruct by topologies object
-        topology_reconstruction = _ReconstructByTopologiesImpl(
-            self.plate_reconstruction.rotation_model,
-            self.plate_reconstruction.topology_features,
-            self._max_time,
-            self._min_time,
-            self._ridge_time_step,
-            active_points,
-            point_begin_times=appearance_time,
-            detect_collisions=collision_spec,
-        )
+        if use_topological_model:
+            topology_reconstruction = _ReconstructByTopologicalModelImpl(
+                self.plate_reconstruction.rotation_model,
+                self.plate_reconstruction.topology_features,
+                self._max_time,
+                self._min_time,
+                self._ridge_time_step,
+                active_points,
+                point_begin_times=appearance_time,
+                detect_collisions=collision_spec,
+            )
+        else:
+            topology_reconstruction = _ReconstructByTopologiesImpl(
+                self.plate_reconstruction.rotation_model,
+                self.plate_reconstruction.topology_features,
+                self._max_time,
+                self._min_time,
+                self._ridge_time_step,
+                active_points,
+                point_begin_times=appearance_time,
+                detect_collisions=collision_spec,
+            )
+
         # Initialise the reconstruction.
         topology_reconstruction.begin_reconstruction()
 
