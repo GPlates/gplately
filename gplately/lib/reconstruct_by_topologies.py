@@ -14,6 +14,7 @@
 #    with this program; if not, write to Free Software Foundation, Inc.,
 #    51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
+from abc import ABC, abstractmethod
 import logging
 import math
 import os
@@ -379,40 +380,50 @@ class _ContinentCollision(object):
         return False
 
 
-class _ReconstructByTopologies(object):
+class _ReconstructByTopologies(ABC):
     """Reconstruct geometries using topologies. Currently only points are supported."""
 
-    use_plate_partitioner = False
-    """If the use_plate_partitioner is True then use pygplates.PlatePartitioner to partition points,
-        otherwise use faster points_in_polygons.find_polygons()."""
+    @abstractmethod
+    def _begin_reconstruction_impl(self):
+        """Called from 'begin_reconstruction()' and implemented in derived class.
+
+        Derived class should call 'self._activate_deactivate_points_using_their_begin_end_times()' to introduce points
+        whose begin time is equal to (or older than) the initial time.
+
+        Derived class can optionally do anything else needed before starting reconstruction over the time intervals.
+        """
+        pass  # This is an abstract method, no implementation here.
+
+    @abstractmethod
+    def _reconstruct_to_next_time_impl(self):
+        """Called from 'reconstruct_to_next_time()' and implemented in derived class.
+
+        Derived class should reconstruct the current active points in 'self.curr_points' to the next points 'self.next_points' from
+        the current time 'self.get_current_time()' to the next time 'self.get_current_time() + self.reconstruction_time_step'.
+        And collision detected for points should deactivate those points (ie, set None in 'self.next_points').
+
+        Derived class then should cycle the three point arrays in preparation for the next time interval.
+        Essentially do this:
+            self.prev_points, self.curr_points, self.next_points = self.curr_points, self.next_points, self.prev_points
+
+        Derived class then should increment the current time index (to update the current time to the next time).
+        Essentially do this:
+            self.current_time_index += 1
+
+        Finally, derived class needs to call 'self._activate_deactivate_points_using_their_begin_end_times()' to introduce points
+        whose begin time is the new current time, and remove points whose end time is the new current time.
+        """
+        pass  # This is an abstract method, no implementation here.
 
     def __init__(
         self,
-        rotation_features_or_model,
-        topology_features,
         reconstruction_begin_time,
         reconstruction_end_time,
         reconstruction_time_interval,
         points,
         point_begin_times: Union[list, None] = None,
         point_end_times: Union[list, None] = None,
-        point_plate_ids=None,
-        detect_collisions=_DEFAULT_COLLISION,
     ):
-        """
-        rotation_features_or_model: Rotation model or feature collection(s), or list of features, or filename(s).
-
-        topology_features: Topology feature collection(s), or list of features, or filename(s) or any combination of those.
-
-        detect_collisions: Collision detection function, or None. Defaults to _DEFAULT_COLLISION.
-        """
-
-        self.rotation_model = pygplates.RotationModel(rotation_features_or_model)
-
-        # Turn topology data into a list of features (if not already).
-        self.topology_features = pygplates.FeaturesFunctionArgument(
-            topology_features
-        ).get_features()
 
         # Set up an array of reconstruction times covering the reconstruction time span.
         self.reconstruction_begin_time = reconstruction_begin_time
@@ -466,18 +477,6 @@ class _ReconstructByTopologies(object):
                 "Length of 'point_end_times' must match length of 'points'."
             )
 
-        # Use the specified point plate IDs if provided (otherwise use '0').
-        # These plate IDs are only used when a point falls outside all resolved topologies during a time step.
-        self.point_plate_ids = point_plate_ids
-        if self.point_plate_ids is None:
-            self.point_plate_ids = [0] * self.num_points
-        elif len(self.point_plate_ids) != self.num_points:
-            raise ValueError(
-                "Length of 'point_plate_ids' must match length of 'points'."
-            )
-
-        self.detect_collisions = detect_collisions
-
     def reconstruct(self):
         # Initialise the reconstruction.
         self.begin_reconstruction()
@@ -503,20 +502,8 @@ class _ReconstructByTopologies(object):
         self.point_has_been_activated = [False] * self.num_points
         self.num_activated_points = 0
 
-        # Set up topology arrays (corresponding to active/inactive points at same indices).
-        self.prev_topology_plate_ids = [None] * self.num_points
-        self.curr_topology_plate_ids = [None] * self.num_points
-        self.prev_resolved_plate_boundaries = [None] * self.num_points
-        self.curr_resolved_plate_boundaries = [None] * self.num_points
-
-        # Array to store indices of points found in continents
-        self.in_continent_indices = [None] * self.num_points
-        self.in_continent_points = [None] * self.num_points
-
-        self.deletedpoints = []
-
-        self._activate_deactivate_points()
-        self._find_resolved_topologies_containing_points()
+        # Call derived class implementation.
+        self._begin_reconstruction_impl()
 
     def get_current_time(self):
         return (
@@ -531,9 +518,6 @@ class _ReconstructByTopologies(object):
         # Return only the active points (the ones that are not None).
         return [point for point in self.get_all_current_points() if point is not None]
 
-    def get_in_continent_indices(self):
-        return self.in_continent_points, self.in_continent_indices
-
     def reconstruct_to_next_time(self):
         # If we're at the last time then there is no next time to reconstruct to.
         if self.current_time_index == self.last_time_index:
@@ -545,6 +529,124 @@ class _ReconstructByTopologies(object):
         if self.num_activated_points == self.num_points and not any(self.curr_points):
             return False
 
+        # Call derived class implementation.
+        self._reconstruct_to_next_time_impl()
+
+        # We successfully reconstructed to the next time.
+        return True
+
+    def _activate_deactivate_points_using_their_begin_end_times(self):
+        current_time = self.get_current_time()
+
+        # Iterate over all points and activate/deactivate as necessary depending on each point's valid time range.
+        for point_index in range(self.num_points):
+            if self.curr_points[point_index] is None:
+                if not self.point_has_been_activated[point_index]:
+                    assert self.point_begin_times
+                    assert self.point_end_times
+                    # Point is not active and has never been activated, so see if can activate it.
+                    if (
+                        current_time <= self.point_begin_times[point_index]
+                        and current_time >= self.point_end_times[point_index]
+                    ):
+                        # The initial point is assumed to be the position at the current time
+                        # which is typically the point's begin time (approximately).
+                        # But it could be the beginning of the reconstruction time span (specified in constructor)
+                        # if that falls in the middle of the point's valid time range - in this case the
+                        # initial point position is assumed to be in a position that is some time *after*
+                        # it appeared (at its begin time) - and this can happen, for example, if you have a
+                        # uniform grids of points at some intermediate time and want to see how they
+                        # reconstruct to either a younger or older time (remembering that points can
+                        # be subducted forward in time and consumed back into a mid-ocean ridge going
+                        # backward in time).
+                        self.curr_points[point_index] = self.points[point_index]
+                        self.point_has_been_activated[point_index] = True
+                        self.num_activated_points += 1
+            else:
+                assert self.point_begin_times
+                assert self.point_end_times
+                # Point is active, so see if can deactivate it.
+                if not (
+                    current_time <= self.point_begin_times[point_index]
+                    and current_time >= self.point_end_times[point_index]
+                ):
+                    self.curr_points[point_index] = None
+
+
+class _ReconstructByTopologiesImpl(_ReconstructByTopologies):
+    """Reconstruct geometries using topologies. Currently only points are supported."""
+
+    use_plate_partitioner = False
+    """If the use_plate_partitioner is True then use pygplates.PlatePartitioner to partition points,
+        otherwise use faster points_in_polygons.find_polygons()."""
+
+    def __init__(
+        self,
+        rotation_features_or_model,
+        topology_features,
+        reconstruction_begin_time,
+        reconstruction_end_time,
+        reconstruction_time_interval,
+        points,
+        *,
+        point_begin_times: Union[list, None] = None,
+        point_end_times: Union[list, None] = None,
+        point_plate_ids=None,
+        detect_collisions=_DEFAULT_COLLISION,
+    ):
+        """
+        rotation_features_or_model: Rotation model or feature collection(s), or list of features, or filename(s).
+
+        topology_features: Topology feature collection(s), or list of features, or filename(s) or any combination of those.
+
+        detect_collisions: Collision detection function, or None. Defaults to _DEFAULT_COLLISION.
+        """
+
+        super().__init__(
+            reconstruction_begin_time,
+            reconstruction_end_time,
+            reconstruction_time_interval,
+            points,
+            point_begin_times,
+            point_end_times,
+        )
+
+        self.rotation_model = pygplates.RotationModel(rotation_features_or_model)
+
+        # Turn topology data into a list of features (if not already).
+        self.topology_features = pygplates.FeaturesFunctionArgument(
+            topology_features
+        ).get_features()
+
+        # Use the specified point plate IDs if provided (otherwise use '0').
+        # These plate IDs are only used when a point falls outside all resolved topologies during a time step.
+        self.point_plate_ids = point_plate_ids
+        if self.point_plate_ids is None:
+            self.point_plate_ids = [0] * self.num_points
+        elif len(self.point_plate_ids) != self.num_points:
+            raise ValueError(
+                "Length of 'point_plate_ids' must match length of 'points'."
+            )
+
+        self.detect_collisions = detect_collisions
+
+    def _begin_reconstruction_impl(self):
+        # Set up topology arrays (corresponding to active/inactive points at same indices as the point arrays).
+        self.prev_topology_plate_ids = [None] * self.num_points
+        self.curr_topology_plate_ids = [None] * self.num_points
+        self.prev_resolved_plate_boundaries = [None] * self.num_points
+        self.curr_resolved_plate_boundaries = [None] * self.num_points
+
+        # Activate any original points whose begin time is equal to (or older than) the newly updated current time.
+        # Deactivate any activated points whose end time is equal to (or younger than) the newly updated current time.
+        #
+        # Note: This should be done before calling 'self._find_resolved_topologies_containing_points()' so that new
+        #       points just appearing at their begin time will have associated topologies (that contain them).
+        self._activate_deactivate_points_using_their_begin_end_times()
+
+        self._find_resolved_topologies_containing_points()
+
+    def _reconstruct_to_next_time_impl(self):
         # Cache stage rotations by plate ID.
         # Use different dicts since using different rotation models and time steps, etc.
         reconstruct_stage_rotation_dict = {}
@@ -599,6 +701,7 @@ class _ReconstructByTopologies(object):
             self.next_points,
             self.prev_points,
         )
+        #
         # Swap previous and current topology arrays.
         # The new previous will be the old current.
         # The new current will be the old previous (but values are ignored and overridden in next time step; just re-using its memory).
@@ -610,12 +713,18 @@ class _ReconstructByTopologies(object):
             self.curr_resolved_plate_boundaries,
             self.prev_resolved_plate_boundaries,
         )
-
+        #
         # Move the current time to the next time.
         self.current_time_index += 1
         current_time = self.get_current_time()
 
-        self._activate_deactivate_points()
+        # Activate any original points whose begin time is equal to (or older than) the newly updated current time.
+        # Deactivate any activated points whose end time is equal to (or younger than) the newly updated current time.
+        #
+        # Note: This should be done before calling 'self._find_resolved_topologies_containing_points()' so that new
+        #       points just appearing at their begin time will have associated topologies (that contain them).
+        self._activate_deactivate_points_using_their_begin_end_times()
+
         self._find_resolved_topologies_containing_points()
 
         # Iterate over all points to detect collisions.
@@ -653,48 +762,6 @@ class _ReconstructByTopologies(object):
                     # It may have been reconstructed from the previous time step to a valid position
                     # but now we override that result as inactive.
                     self.curr_points[point_index] = None
-                    # self.curr_points.remove(self.curr_points[point_index])
-                    self.deletedpoints.append(point_index)
-
-        # We successfully reconstructed to the next time.
-        return True
-
-    def _activate_deactivate_points(self):
-        current_time = self.get_current_time()
-
-        # Iterate over all points and activate/deactivate as necessary depending on each point's valid time range.
-        for point_index in range(self.num_points):
-            if self.curr_points[point_index] is None:
-                if not self.point_has_been_activated[point_index]:
-                    assert self.point_begin_times
-                    assert self.point_end_times
-                    # Point is not active and has never been activated, so see if can activate it.
-                    if (
-                        current_time <= self.point_begin_times[point_index]
-                        and current_time >= self.point_end_times[point_index]
-                    ):
-                        # The initial point is assumed to be the position at the current time
-                        # which is typically the point's begin time (approximately).
-                        # But it could be the beginning of the reconstruction time span (specified in constructor)
-                        # if that falls in the middle of the point's valid time range - in this case the
-                        # initial point position is assumed to be in a position that is some time *after*
-                        # it appeared (at its begin time) - and this can happen, for example, if you have a
-                        # uniform grids of points at some intermediate time and want to see how they
-                        # reconstruct to either a younger or older time (remembering that points can
-                        # be subducted forward in time and consumed back into a mid-ocean ridge going
-                        # backward in time).
-                        self.curr_points[point_index] = self.points[point_index]
-                        self.point_has_been_activated[point_index] = True
-                        self.num_activated_points += 1
-            else:
-                assert self.point_begin_times
-                assert self.point_end_times
-                # Point is active, so see if can deactivate it.
-                if not (
-                    current_time <= self.point_begin_times[point_index]
-                    and current_time >= self.point_end_times[point_index]
-                ):
-                    self.curr_points[point_index] = None
 
     def _find_resolved_topologies_containing_points(self):
         current_time = self.get_current_time()
@@ -708,7 +775,7 @@ class _ReconstructByTopologies(object):
             current_time,
         )
 
-        if _ReconstructByTopologies.use_plate_partitioner:
+        if _ReconstructByTopologiesImpl.use_plate_partitioner:
             # Create a plate partitioner from the resolved polygons.
             plate_partitioner = pygplates.PlatePartitioner(
                 resolved_topologies, self.rotation_model
@@ -745,7 +812,7 @@ class _ReconstructByTopologies(object):
                 continue
 
             # Find the plate id of the polygon that contains 'curr_point'.
-            if _ReconstructByTopologies.use_plate_partitioner:
+            if _ReconstructByTopologiesImpl.use_plate_partitioner:
                 curr_polygon = plate_partitioner.partition_point(curr_point)  # type: ignore
             else:
                 curr_polygon = resolved_topologies_containing_curr_valid_points[  # type: ignore
@@ -767,6 +834,190 @@ class _ReconstructByTopologies(object):
             )
 
 
+class _ReconstructByTopologicalModelImpl(_ReconstructByTopologies):
+    """Similar to ``_ReconstructByTopologiesImpl`` except uses the ``pygplates.TopologicalModel`` class to reconstruct seed points.
+
+    This is currently just a transition towards using ``pygplates.TopologicalModel``.
+    But note that this still uses Python code, like in class ``_DefaultCollision``, to do the collision detection
+    (as opposed to collision detection built into pyGPlates, which needs to be updated to better support GPlately).
+    Also it's not as fast as ``_ReconstructByTopologiesImpl`` which has faster point-in-polygon testing (since it uses a spatial tree).
+
+    So, for the time being it's probably still better to use class ``_ReconstructByTopologiesImpl`` instead.
+    """
+
+    class CollisionDelegator(pygplates.ReconstructedGeometryTimeSpan.DeactivatePoints):
+        """Delegates collision detection from pyGPlates (pygplates.TopologicalModel) to the collision classes accessed by ``_ReconstructByTopologies``
+        (like class ``_DefaultCollision``).
+
+        Ultimately there should be less (or no) need to delegate once the default pyGPlates collision handler (``DefaultDeactivatePoints``) supports the
+        funcionality of classes like ``_DefaultCollision``. Although ``_ContinentCollision`` might still need to be handled outside pyGPlates (ie, delegated to).
+        """
+
+        def __init__(
+            self, detect_collisions, rotation_model, reconstruction_time_interval
+        ):
+            super().__init__()
+            self.detect_collisions = detect_collisions
+            self.rotation_model = rotation_model
+            self.reconstruction_time_interval = reconstruction_time_interval
+
+        def deactivate(
+            self,
+            prev_point,
+            prev_location,
+            prev_time,
+            curr_point,
+            curr_location,
+            curr_time,
+        ):
+            # Get plate IDs of resolved topology containing previous and current point.
+            #
+            # Note that could be None, so the collision detection needs to handle that.
+            prev_plate_id = None
+            curr_plate_id = None
+
+            # See if previous point is located in a resolved rigid plate or deforming network (or neither).
+            prev_resolved_topology = prev_location.located_in_resolved_boundary()
+            if not prev_resolved_topology:
+                prev_resolved_topology = prev_location.located_in_resolved_network()
+            if prev_resolved_topology:
+                prev_plate_id = (
+                    prev_resolved_topology.get_feature().get_reconstruction_plate_id()
+                )
+
+            # See if current point is located in a resolved rigid plate or deforming network (or neither).
+            curr_resolved_topology = curr_location.located_in_resolved_boundary()
+            if not curr_resolved_topology:
+                curr_resolved_topology = curr_location.located_in_resolved_network()
+            if curr_resolved_topology:
+                curr_plate_id = (
+                    curr_resolved_topology.get_feature().get_reconstruction_plate_id()
+                )
+
+            # Delegate to the Python implementation of collision detection (eg, classes '_DefaultCollision' and '_ContinentCollision').
+            return self.detect_collisions(
+                self.rotation_model,
+                curr_time,
+                self.reconstruction_time_interval,
+                prev_point,
+                curr_point,
+                prev_plate_id,
+                prev_resolved_topology,
+                curr_plate_id,
+                curr_resolved_topology,
+            )
+
+    def __init__(
+        self,
+        rotation_features_or_model,
+        topology_features,
+        reconstruction_begin_time,
+        reconstruction_end_time,
+        reconstruction_time_interval,
+        points,
+        *,
+        point_begin_times: Union[list, None] = None,
+        point_end_times: Union[list, None] = None,
+        detect_collisions=_DEFAULT_COLLISION,
+    ):
+        """
+        rotation_features_or_model: Rotation model or feature collection(s), or list of features, or filename(s).
+
+        topology_features: Topology feature collection(s), or list of features, or filename(s) or any combination of those.
+
+        detect_collisions: Collision detection function, or None. Defaults to _DEFAULT_COLLISION.
+        """
+
+        super().__init__(
+            reconstruction_begin_time,
+            reconstruction_end_time,
+            reconstruction_time_interval,
+            points,
+            point_begin_times,
+            point_end_times,
+        )
+
+        self.topological_model = pygplates.TopologicalModel(
+            topology_features,
+            rotation_features_or_model,
+            # Only really need to cache 2 topological snapshots since we progressively move through time (and hence never return to previous times).
+            # Might only need to cache 1 topological snapshot (not sure). Best to be safe with 2...
+            topological_snapshot_cache_size=2,
+        )
+
+        self.detect_collisions = self.CollisionDelegator(
+            detect_collisions,
+            self.topological_model.get_rotation_model(),
+            self.reconstruction_time_interval,
+        )
+
+    def _begin_reconstruction_impl(self):
+        # Activate any original points whose begin time is equal to (or older than) the newly updated current time.
+        # Deactivate any activated points whose end time is equal to (or younger than) the newly updated current time.
+        self._activate_deactivate_points_using_their_begin_end_times()
+
+    def _reconstruct_to_next_time_impl(self):
+
+        current_time = self.get_current_time()
+        next_time = current_time + self.reconstruction_time_step
+
+        # Find the active points.
+        # These will be reconstructed to the next time step.
+        current_active_points = []
+        current_active_point_indices = []
+        for point_index in range(self.num_points):
+            current_point = self.curr_points[point_index]
+            if not current_point:
+                # Current point is not currently active.
+                # So we cannot reconstruct to next time.
+                self.next_points[point_index] = None
+                continue
+
+            # Keep track of the currently active points.
+            # And their original indices into ALL points (active and inactive).
+            current_active_points.append(current_point)
+            current_active_point_indices.append(point_index)
+
+        # Reconstruct active points to the next time step.
+        reconstructed_time_span = self.topological_model.reconstruct_geometry(
+            current_active_points,
+            initial_time=current_time,
+            youngest_time=next_time,
+            time_increment=self.reconstruction_time_interval,  # must be positive
+            deactivate_points=self.detect_collisions,
+        )
+
+        # Store the next points back to their original locations in ALL points (active and inactive).
+        next_points = reconstructed_time_span.get_geometry_points(
+            next_time, return_inactive_points=True
+        )
+        for next_point_index, next_point in enumerate(next_points):
+            # Get index into ALL points (active and inactive).
+            point_index = current_active_point_indices[next_point_index]
+            # Update next point (note that this can be None if a collision was detected).
+            self.next_points[point_index] = next_point
+
+        #
+        # Set up for next loop iteration.
+        #
+        # Rotate previous, current and next point arrays.
+        # The new previous will be the old current.
+        # The new current will be the old next.
+        # The new next will be the old previous (but values are ignored and overridden in next time step; just re-using its memory).
+        self.prev_points, self.curr_points, self.next_points = (
+            self.curr_points,
+            self.next_points,
+            self.prev_points,
+        )
+        #
+        # Move the current time to the next time.
+        self.current_time_index += 1
+
+        # Activate any original points whose begin time is equal to (or older than) the newly updated current time.
+        # Deactivate any activated points whose end time is equal to (or younger than) the newly updated current time.
+        self._activate_deactivate_points_using_their_begin_end_times()
+
+
 def reconstruct_points_by_topologies(
     rotation_features_or_model,
     topology_features,
@@ -781,17 +1032,17 @@ def reconstruct_points_by_topologies(
 ):
     """Reconstruct points using the topological polygons."""
 
-    topology_reconstruction = _ReconstructByTopologies(
+    topology_reconstruction = _ReconstructByTopologiesImpl(
         rotation_features_or_model,
         topology_features,
         reconstruction_begin_time,
         reconstruction_end_time,
         reconstruction_time_interval,
         points,
-        point_begin_times,
-        point_end_times,
-        point_plate_ids,
-        detect_collisions,
+        point_begin_times=point_begin_times,
+        point_end_times=point_end_times,
+        point_plate_ids=point_plate_ids,
+        detect_collisions=detect_collisions,
     )
 
     return topology_reconstruction.reconstruct()

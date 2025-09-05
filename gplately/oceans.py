@@ -139,7 +139,8 @@ from . import grids, tools
 from .lib.reconstruct_by_topologies import (
     _ContinentCollision,
     _DefaultCollision,
-    _ReconstructByTopologies,
+    _ReconstructByTopologiesImpl,
+    _ReconstructByTopologicalModelImpl,
 )
 from .ptt import continent_contours, separate_ridge_transform_segments
 from .tools import _deg2pixels, _pixels2deg
@@ -1211,7 +1212,7 @@ class SeafloorGrid(object):
         )
 
         # Call the reconstruct by topologies object
-        topology_reconstruction = _ReconstructByTopologies(
+        topology_reconstruction = _ReconstructByTopologiesImpl(
             self.plate_reconstruction.rotation_model,
             self.plate_reconstruction.topology_features,
             self._max_time,
