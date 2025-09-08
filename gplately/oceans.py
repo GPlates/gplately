@@ -549,28 +549,11 @@ class SeafloorGrid(object):
             self.icosahedral_multi_point, COB_polygons
         )
 
-        # Plates to partition with
-        plate_partitioner = pygplates.PlatePartitioner(
-            COB_polygons,
-            self.plate_reconstruction.rotation_model,
+        ocean_pt_feature = pygplates.Feature()
+        ocean_pt_feature.set_geometry(
+            pygplates.MultiPointOnSphere(ocean_basin_point_mesh)
         )
-
-        # Plate partition the ocean basin points
-        meshnode_feature = pygplates.Feature(
-            pygplates.FeatureType.create_from_qualified_string("gpml:MeshNode")
-        )
-        meshnode_feature.set_geometry(
-            ocean_basin_point_mesh
-            # multi_point
-        )
-        ocean_basin_meshnode = pygplates.FeatureCollection(meshnode_feature)
-
-        paleogeography = plate_partitioner.partition_features(
-            ocean_basin_meshnode,
-            partition_return=pygplates.PartitionReturn.separate_partitioned_and_unpartitioned,
-            properties_to_copy=[pygplates.PropertyName.gpml_shapefile_attributes],
-        )
-        return paleogeography[1]  # points in oceans
+        return [ocean_pt_feature]
 
     def _get_ocean_points_from_continent_mask(self):
         """Get the ocean points from continent mask grid."""
