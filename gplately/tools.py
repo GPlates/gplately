@@ -22,6 +22,7 @@ import pandas as pd
 import pygplates
 import scipy
 
+from . import ptt as _ptt
 from .spatial import geocentric_radius, haversine_distance, lonlat2xyz, xyz2lonlat
 
 EARTH_RADIUS = pygplates.Earth.mean_radius_in_kms
@@ -595,78 +596,81 @@ def griddata_sphere(points, values, xi, method="nearest", **kwargs):
         )
 
 
-# From Simon Williams' GPRM
+# Adapted from Simon Williams' GPRM
 def find_distance_to_nearest_ridge(
     resolved_topologies, point_features, fill_value=5000.0
 ):
 
-    all_point_distance_to_ridge = []
+    all_point_distances_to_ridge = []
     all_point_lats = []
     all_point_lons = []
 
-    for topology in resolved_topologies:
+    all_points = []
+    for point_feature in point_features:
+        for multipoint in point_feature.get_geometries():
+            # Expecting a pygplates.MultiPointOnSphere (which is an iterable of points).
+            all_points.extend(multipoint)
 
-        # Isolate the mid-ocean ridge segments that bound the current plate.
-        mid_ocean_ridges_on_plate = []
-        for boundary_sub_segment in topology.get_boundary_sub_segments():
+    # The polygon boundary of each resolved topology.
+    resolved_topology_boundaries = [
+        resolved_topology.get_resolved_boundary()
+        for resolved_topology in resolved_topologies
+    ]
+    # The list of boundary sub-segments coming from mid-ocean ridges, for each resolved topology.
+    resolved_topology_ridge_sub_segments = [
+        [
+            boundary_sub_segment.get_resolved_geometry()
+            for boundary_sub_segment in resolved_topology.get_boundary_sub_segments()
+            if boundary_sub_segment.get_feature().get_feature_type()
+            == pygplates.FeatureType.gpml_mid_ocean_ridge
+        ]
+        for resolved_topology in resolved_topologies
+    ]
 
-            if (
-                boundary_sub_segment.get_feature().get_feature_type()
-                == pygplates.FeatureType.gpml_mid_ocean_ridge
-            ):
-                mid_ocean_ridges_on_plate.append(
-                    boundary_sub_segment.get_resolved_geometry()
+    # For each point find the resolved topology containing it (and hence its list of ridge boundary sub-segments).
+    resolved_topologies_containing_points = _ptt.utils.points_in_polygons.find_polygons(
+        all_points,
+        resolved_topology_boundaries,
+        resolved_topology_ridge_sub_segments,
+    )
+
+    # Iterate over all the points.
+    # Each point will have a list of ridge sub-segments of the resolved topology containing that point.
+    for (
+        point_index,
+        ridge_sub_segments_of_resolved_topology_containing_point,
+    ) in enumerate(resolved_topologies_containing_points):
+
+        point = all_points[point_index]
+        point_lat, point_lon = point.to_lat_lon()
+        all_point_lats.append(point_lat)
+        all_point_lons.append(point_lon)
+
+        if ridge_sub_segments_of_resolved_topology_containing_point:
+
+            min_distance_to_ridge_sub_segment = None
+            for (
+                ridge_sub_segment
+            ) in ridge_sub_segments_of_resolved_topology_containing_point:
+                distance_to_ridge_sub_segment = pygplates.GeometryOnSphere.distance(
+                    point, ridge_sub_segment, min_distance_to_ridge_sub_segment
                 )
+                if distance_to_ridge_sub_segment is not None:
+                    min_distance_to_ridge_sub_segment = distance_to_ridge_sub_segment
 
-        point_distance_to_ridge = []
-        point_lats = []
-        point_lons = []
+            all_point_distances_to_ridge.append(
+                min_distance_to_ridge_sub_segment * pygplates.Earth.mean_radius_in_kms
+            )
 
-        for point_feature in point_features:
+        else:
 
-            for points in point_feature.get_geometries():
-                for point in points:
+            # Current point is either outside all resolved topologies (eg, fell into a crack) or
+            # the resolved topology containing it has no mid-ocean ridges along its boundary.
+            #
+            # So use the default fill value.
+            all_point_distances_to_ridge.append(fill_value)
 
-                    if topology.get_resolved_geometry().is_point_in_polygon(point):
-
-                        if len(mid_ocean_ridges_on_plate) > 0:
-
-                            min_distance_to_ridge = None
-
-                            for ridge in mid_ocean_ridges_on_plate:
-                                distance_to_ridge = pygplates.GeometryOnSphere.distance(
-                                    point, ridge, min_distance_to_ridge
-                                )
-
-                                if distance_to_ridge is not None:
-                                    min_distance_to_ridge = distance_to_ridge
-
-                            point_distance_to_ridge.append(
-                                min_distance_to_ridge
-                                * pygplates.Earth.mean_radius_in_kms
-                            )
-                            point_lats.append(point.to_lat_lon()[0])
-                            point_lons.append(point.to_lat_lon()[1])
-
-                        else:
-
-                            # Originally, give points in plate IDs without MORs a fill value
-                            point_distance_to_ridge.append(fill_value)
-                            point_lats.append(point.to_lat_lon()[0])
-                            point_lons.append(point.to_lat_lon()[1])
-
-                            # Try allocating a NoneType to points instead
-                            # point_lats.append(None)
-                            # point_lons.append(None)
-
-                            # Try skipping the point (this causes the workflow to use nearest neighbour interpolation to fill these regions)
-                            # continue
-
-        all_point_distance_to_ridge.extend(point_distance_to_ridge)
-        all_point_lats.extend(point_lats)
-        all_point_lons.extend(point_lons)
-
-    return all_point_lons, all_point_lats, all_point_distance_to_ridge
+    return all_point_lons, all_point_lats, all_point_distances_to_ridge
 
 
 def calculate_spreading_rates(
