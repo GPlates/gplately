@@ -135,7 +135,7 @@ import numpy as np
 import pandas as pd
 import pygplates
 
-from . import grids, tools
+from . import gpml, grids, tools
 from .lib.reconstruct_by_topologies import (
     _ContinentCollision,
     _DefaultCollision,
@@ -738,13 +738,25 @@ class SeafloorGrid(object):
 
         if num_cpus > 1:
             with multiprocessing.Pool(num_cpus) as pool:
+                #
+                # Temporary hack to avoid a large slowdown due to pickling pygplates.RotationModel and pygplates.FeatureCollection.
+                # It only works when 'self.plate_reconstruction` was created using rotation *filenames* and topology *filenames*
+                # (which is the case for the plate models downloaded by the PlateModelManager).
+                # When they're not filenames then pygplates.RotationModel and pygplates.FeatureCollection get pickled.
+                #
+                # TODO: When pyGPlates can pickle pygplates.RotationModel and pygplates.FeatureCollection noticeably faster (than it currently does in pyGPlates 1.0), then
+                #       change 'self.plate_reconstruction._rotation_model_pickle' back to 'self.plate_reconstruction.rotation_model', and
+                #       change 'self.plate_reconstruction._topology_features_pickle' back to 'self.plate_reconstruction.topology_features', and
+                #       remove 'anchor_plate_id=self.plate_reconstruction.anchor_plate_id', and
+                #       change '_generate_mid_ocean_ridge_points_parallel' back to '_generate_mid_ocean_ridge_points' (and remove the former function definition).
                 pool.map(
                     partial(
-                        _generate_mid_ocean_ridge_points,
+                        _generate_mid_ocean_ridge_points_parallel,
                         delta_time=self._ridge_time_step,
                         mid_ocean_ridges_file_path=self.mid_ocean_ridges_file_path,
-                        rotation_model=self.plate_reconstruction.rotation_model,
-                        topology_features=self.plate_reconstruction.topology_features,
+                        rotation_model_pickle=self.plate_reconstruction._rotation_model_pickle,
+                        anchor_plate_id=self.plate_reconstruction.anchor_plate_id,
+                        topology_features_pickle=self.plate_reconstruction._topology_features_pickle,
                         zvalues_file_basepath=self.zvalues_file_basepath,
                         zval_names=self.zval_names,
                         ridge_sampling=self.ridge_sampling,
@@ -1742,6 +1754,41 @@ def _generate_mid_ocean_ridge_points(
         )
 
     logger.info(f"Finished building MOR seedpoints at {time} Ma!")
+
+
+# TODO: When pyGPlates can pickle pygplates.RotationModel and pygplates.FeatureCollection noticeably faster (than it currently does in pyGPlates 1.0),
+#       then remove this function definition.
+def _generate_mid_ocean_ridge_points_parallel(
+    time: float,
+    delta_time: float,
+    mid_ocean_ridges_file_path: str,
+    rotation_model_pickle,
+    anchor_plate_id,
+    topology_features_pickle,
+    zvalues_file_basepath,
+    zval_names,
+    ridge_sampling,
+    overwrite=True,
+):
+    # 'rotation_model_pickle' is either rotation features/files or a RotationModel.
+    # Both cases are handled by creating a new RotationModel (with the specified anchor plate ID).
+    rotation_model = pygplates.RotationModel(
+        rotation_model_pickle, default_anchor_plate_id=anchor_plate_id
+    )
+    # 'topology_features_pickle' is either features and/or filenames.
+    topology_features = gpml._load_FeatureCollection(topology_features_pickle)
+
+    _generate_mid_ocean_ridge_points(
+        time,
+        delta_time,
+        mid_ocean_ridges_file_path,
+        rotation_model,
+        topology_features,
+        zvalues_file_basepath,
+        zval_names,
+        ridge_sampling,
+        overwrite,
+    )
 
 
 def _collect_point_data_in_dataframe(
