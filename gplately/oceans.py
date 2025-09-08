@@ -135,7 +135,7 @@ import numpy as np
 import pandas as pd
 import pygplates
 
-from . import gpml, grids, tools
+from . import grids, tools
 from .lib.reconstruct_by_topologies import (
     _ContinentCollision,
     _DefaultCollision,
@@ -299,18 +299,17 @@ class SeafloorGrid(object):
             self._max_time, self._min_time - 0.1, -self._ridge_time_step
         )
 
-        # ensure the time for continental masking is consistent.
+        # Get the reconstructed continents at the max time.
+        # But first need to set the max time on 'self.plot_topologies'.
         self.plot_topologies.time = self._max_time
+        reconstructed_continents = self.plot_topologies.continents
 
         # Essential features and meshes for the SeafloorGrid
         self.continental_polygons = ensure_polygon_geometry(
-            self.plot_topologies.continents,
+            reconstructed_continents,
             self.plate_reconstruction.rotation_model,
             self._max_time,
         )
-        self.plot_topologies.continents = (
-            PlotTopologies_object.continents
-        )  # What is this for? Does it do anything?
 
         self.icosahedral_multi_point = create_icosahedral_mesh(self.refinement_levels)
 
@@ -535,9 +534,14 @@ class SeafloorGrid(object):
 
     def _generate_ocean_points(self):
         """Generate ocean points by using the icosahedral mesh."""
+        # Get the reconstructed continents at the max time.
+        # But first need to set the max time on 'self.plot_topologies'.
+        self.plot_topologies.time = self._max_time
+        reconstructed_continents = self.plot_topologies.continents
+
         # Ensure COB terranes at max time have reconstruction IDs and valid times
         COB_polygons = ensure_polygon_geometry(
-            self.plot_topologies.continents,
+            reconstructed_continents,
             self.plate_reconstruction.rotation_model,
             self._max_time,
         )
@@ -740,23 +744,21 @@ class SeafloorGrid(object):
             with multiprocessing.Pool(num_cpus) as pool:
                 #
                 # Temporary hack to avoid a large slowdown due to pickling pygplates.RotationModel and pygplates.FeatureCollection.
-                # It only works when 'self.plate_reconstruction` was created using rotation *filenames* and topology *filenames*
-                # (which is the case for the plate models downloaded by the PlateModelManager).
-                # When they're not filenames then pygplates.RotationModel and pygplates.FeatureCollection get pickled.
+                # Instead of pickling pygplates.RotationModel and pygplates.FeatureCollection we instead pickle 'self.plate_reconstruction'
+                # which already attempts to avoid pickling those pygplates objects.
+                #
+                # Note: It only works when 'self.plate_reconstruction` was created using rotation *filenames* and topology *filenames*
+                #       (which is the case for the plate models downloaded by the PlateModelManager).
+                #       When they're not filenames then pygplates.RotationModel and pygplates.FeatureCollection get pickled anyway.
                 #
                 # TODO: When pyGPlates can pickle pygplates.RotationModel and pygplates.FeatureCollection noticeably faster (than it currently does in pyGPlates 1.0), then
-                #       change 'self.plate_reconstruction._rotation_model_pickle' back to 'self.plate_reconstruction.rotation_model', and
-                #       change 'self.plate_reconstruction._topology_features_pickle' back to 'self.plate_reconstruction.topology_features', and
-                #       remove 'anchor_plate_id=self.plate_reconstruction.anchor_plate_id', and
-                #       change '_generate_mid_ocean_ridge_points_parallel' back to '_generate_mid_ocean_ridge_points' (and remove the former function definition).
+                #       remove '_generate_mid_ocean_ridge_points_parallel()' and instead use '_generate_mid_ocean_ridge_points()'.
                 pool.map(
                     partial(
                         _generate_mid_ocean_ridge_points_parallel,
                         delta_time=self._ridge_time_step,
                         mid_ocean_ridges_file_path=self.mid_ocean_ridges_file_path,
-                        rotation_model_pickle=self.plate_reconstruction._rotation_model_pickle,
-                        anchor_plate_id=self.plate_reconstruction.anchor_plate_id,
-                        topology_features_pickle=self.plate_reconstruction._topology_features_pickle,
+                        plate_reconstruction=self.plate_reconstruction,
                         zvalues_file_basepath=self.zvalues_file_basepath,
                         zval_names=self.zval_names,
                         ridge_sampling=self.ridge_sampling,
@@ -778,71 +780,6 @@ class SeafloorGrid(object):
                     overwrite=overwrite,
                 )
 
-    def _create_continental_mask(self, time_array):
-        """Create a continental mask for each timestep."""
-        if time_array[0] != self._max_time:
-            print(
-                "Masking interrupted - resuming continental mask building at {} Ma!".format(
-                    time_array[0]
-                )
-            )
-
-        for time in time_array:
-            mask_fn = self.continent_mask_filepath.format(time)
-            if os.path.isfile(mask_fn):
-                logger.info(
-                    f"Continent mask file exists and will not create again -- {mask_fn}"
-                )
-                continue
-
-            self.plot_topologies.time = time
-            geoms = self.plot_topologies.continents
-            final_grid = grids.rasterise(
-                geoms,
-                key=1.0,
-                shape=(self.spacingY, self.spacingX),
-                extent=self.extent,
-                origin="lower",
-            )
-            final_grid[np.isnan(final_grid)] = 0.0
-
-            grids.write_netcdf_grid(
-                self.continent_mask_filepath.format(time),
-                final_grid.astype("i1"),
-                extent=(-180, 180, -90, 90),
-                fill_value=None,
-            )
-            logger.info(f"Finished building a continental mask at {time} Ma!")
-
-        return
-
-    def _build_continental_mask(self, time: float, overwrite=False):
-        """Create a continental mask for a given time."""
-        mask_fn = self.continent_mask_filepath.format(time)
-        if os.path.isfile(mask_fn) and not overwrite:
-            logger.info(
-                f"Continent mask file exists and will not create again -- {mask_fn}"
-            )
-            return
-
-        self.plot_topologies.time = time
-        final_grid = grids.rasterise(
-            self.plot_topologies.continents,
-            key=1.0,
-            shape=(self.spacingY, self.spacingX),
-            extent=self.extent,
-            origin="lower",
-        )
-        final_grid[np.isnan(final_grid)] = 0.0
-
-        grids.write_netcdf_grid(
-            self.continent_mask_filepath.format(time),
-            final_grid.astype("i1"),
-            extent=(-180, 180, -90, 90),
-            fill_value=None,
-        )
-        logger.info(f"Finished building a continental mask at {time} Ma!")
-
     def build_all_continental_masks(self):
         """Create a continental mask to define the ocean basin for all times between ``min_time`` and ``max_time``.
 
@@ -857,25 +794,61 @@ class SeafloorGrid(object):
             overwrite = True
             if self.resume_from_checkpoints:
                 overwrite = False
-            if self.use_continent_contouring:
-                try:
-                    num_cpus = multiprocessing.cpu_count() - 1
-                except NotImplementedError:
-                    num_cpus = 1
 
-                if num_cpus > 1:
+            try:
+                num_cpus = multiprocessing.cpu_count() - 1
+            except NotImplementedError:
+                num_cpus = 1
+
+            if num_cpus > 1:
+                #
+                # Temporary hack to avoid a large slowdown due to pickling pygplates.RotationModel and pygplates.FeatureCollection.
+                # Instead of pickling pygplates.RotationModel and pygplates.FeatureCollection we instead pickle 'self.plate_reconstruction'
+                # and 'self.plot_topologies' which both already attempt to avoid pickling those pygplates objects.
+                #
+                # Note: This only works when 'self.plate_reconstruction` and 'self.plot_topologies' were created using rotation *filenames* and topology *filenames*
+                #       (which is the case for the plate models downloaded by the PlateModelManager).
+                #       When they're not filenames then pygplates.RotationModel and pygplates.FeatureCollection get pickled anyway.
+                #
+                # TODO: When pyGPlates can pickle pygplates.RotationModel and pygplates.FeatureCollection noticeably faster (than it currently does in pyGPlates 1.0), then
+                #       remove the '*_parallel()' versions of the function (and instead use the serial versions, but still in parallel).
+                # Note: '_build_continental_mask()', unlike '_build_continental_mask_with_contouring()', passes *reconstructed* continents.
+                #       However, *reconstructed* feature geometries cannot be pickled (by pygplates) - only regular features can.
+                #       This means '_build_continental_mask_parallel()' may still be required in order to pass 'self.plot_topologies' which is pickled and
+                #       then it reconstructs the continents after it is unpickled). Either that or pass the unreconstructed continent features and explicitly
+                #       reconstruct them after unpickling.
+                #
+                if self.use_continent_contouring:
                     with multiprocessing.Pool(num_cpus) as pool:
                         pool.map(
                             partial(
-                                _build_continental_mask_with_contouring,
+                                _build_continental_mask_with_contouring_parallel,
                                 continent_mask_filepath=self.continent_mask_filepath,
-                                rotation_model=self.plate_reconstruction.rotation_model,
-                                continent_features=self.plot_topologies._continents,
+                                plate_reconstruction=self.plate_reconstruction,
+                                plot_topologies=self.plot_topologies,
                                 overwrite=overwrite,
                             ),
                             self._times,
                         )
                 else:
+                    with multiprocessing.Pool(num_cpus) as pool:
+                        pool.map(
+                            partial(
+                                _build_continental_mask_parallel,
+                                continent_mask_filepath=self.continent_mask_filepath,
+                                plate_reconstruction=self.plate_reconstruction,
+                                # Note: We can't pickle 'self.plot_topologies.continents' because they are *reconstructed* pygplates objects.
+                                #       Instead we pickly 'self.plot_topologies' and then ask it to reconstruct the continents after it's unpickled...
+                                plot_topologies=self.plot_topologies,
+                                spacingY=self.spacingY,
+                                spacingX=self.spacingX,
+                                extent=self.extent,
+                                overwrite=overwrite,
+                            ),
+                            self._times,
+                        )
+            else:
+                if self.use_continent_contouring:
                     for time in self._times:
                         _build_continental_mask_with_contouring(
                             time,
@@ -884,9 +857,22 @@ class SeafloorGrid(object):
                             continent_features=self.plot_topologies._continents,
                             overwrite=overwrite,
                         )
-            else:
-                for time in self._times:
-                    self._build_continental_mask(time, overwrite)
+                else:
+                    for time in self._times:
+                        # Get the reconstructed continents at 'time''.
+                        # But first need to set 'time' on 'self.plot_topologies'.
+                        self.plot_topologies.time = time
+                        reconstructed_continents = self.plot_topologies.continents
+                        _build_continental_mask(
+                            time,
+                            continent_mask_filepath=self.continent_mask_filepath,
+                            rotation_model=self.plate_reconstruction.rotation_model,
+                            reconstructed_continents=reconstructed_continents,
+                            spacingY=self.spacingY,
+                            spacingX=self.spacingX,
+                            extent=self.extent,
+                            overwrite=overwrite,
+                        )
 
     def _extract_zvalues_from_npz_to_ndarray(self, featurecollection, time):
         # NPZ file of seedpoint z values that emerged at this time
@@ -1527,6 +1513,73 @@ def _save_seed_points_as_multipoint_coverage(
     )
 
 
+def _build_continental_mask(
+    time: float,
+    continent_mask_filepath,
+    rotation_model,
+    reconstructed_continents,
+    spacingY,
+    spacingX,
+    extent,
+    overwrite=False,
+):
+    """Create a continental mask for a given time."""
+    mask_fn = continent_mask_filepath.format(time)
+    if os.path.isfile(mask_fn) and not overwrite:
+        logger.info(
+            f"Continent mask file exists and will not create again -- {mask_fn}"
+        )
+        return
+
+    final_grid = grids.rasterise(
+        reconstructed_continents,
+        rotation_model,
+        key=1.0,
+        shape=(spacingY, spacingX),
+        extent=extent,
+        origin="lower",
+    )
+    final_grid[np.isnan(final_grid)] = 0.0
+
+    grids.write_netcdf_grid(
+        continent_mask_filepath.format(time),
+        final_grid.astype("i1"),
+        extent=(-180, 180, -90, 90),
+        fill_value=None,
+    )
+    logger.info(f"Finished building a continental mask at {time} Ma!")
+
+
+def _build_continental_mask_parallel(
+    time: float,
+    continent_mask_filepath,
+    plate_reconstruction,
+    plot_topologies,
+    spacingY,
+    spacingX,
+    extent,
+    overwrite,
+):
+    # Get the reconstructed continents at 'time''.
+    # But first need to set 'time' on our unpickled 'plot_topologies'.
+    #
+    # Note: This only affects our unpickled copy of the original 'self.plot_topologies'.
+    #       The original 'self.plot_topologies' will likely still have a different 'time'.
+    plot_topologies.time = time
+    reconstructed_continents = plot_topologies.continents
+
+    _build_continental_mask(
+        time=time,
+        continent_mask_filepath=continent_mask_filepath,
+        rotation_model=plate_reconstruction.rotation_model,
+        reconstructed_continents=reconstructed_continents,
+        spacingY=spacingY,
+        spacingX=spacingX,
+        extent=extent,
+        overwrite=overwrite,
+    )
+
+
 def _build_continental_mask_with_contouring(
     time: float,
     continent_mask_filepath,
@@ -1612,6 +1665,24 @@ def _build_continental_mask_with_contouring(
     logger.warning(
         f"Finished building a continental mask at {time} Ma using ptt's 'Continent Contouring'!"
         + " For more information about 'Continent Contouring', visit https://github.com/EarthByte/continent-contouring."
+    )
+
+
+# TODO: When pyGPlates can pickle pygplates.RotationModel and pygplates.FeatureCollection noticeably faster (than it currently does in pyGPlates 1.0),
+#       then remove this function definition.
+def _build_continental_mask_with_contouring_parallel(
+    time: float,
+    continent_mask_filepath,
+    plate_reconstruction,
+    plot_topologies,
+    overwrite,
+):
+    _build_continental_mask_with_contouring(
+        time=time,
+        continent_mask_filepath=continent_mask_filepath,
+        rotation_model=plate_reconstruction.rotation_model,
+        continent_features=plot_topologies._continents,
+        overwrite=overwrite,
     )
 
 
@@ -1762,32 +1833,22 @@ def _generate_mid_ocean_ridge_points_parallel(
     time: float,
     delta_time: float,
     mid_ocean_ridges_file_path: str,
-    rotation_model_pickle,
-    anchor_plate_id,
-    topology_features_pickle,
+    plate_reconstruction,
     zvalues_file_basepath,
     zval_names,
     ridge_sampling,
-    overwrite=True,
+    overwrite,
 ):
-    # 'rotation_model_pickle' is either rotation features/files or a RotationModel.
-    # Both cases are handled by creating a new RotationModel (with the specified anchor plate ID).
-    rotation_model = pygplates.RotationModel(
-        rotation_model_pickle, default_anchor_plate_id=anchor_plate_id
-    )
-    # 'topology_features_pickle' is either features and/or filenames.
-    topology_features = gpml._load_FeatureCollection(topology_features_pickle)
-
     _generate_mid_ocean_ridge_points(
-        time,
-        delta_time,
-        mid_ocean_ridges_file_path,
-        rotation_model,
-        topology_features,
-        zvalues_file_basepath,
-        zval_names,
-        ridge_sampling,
-        overwrite,
+        time=time,
+        delta_time=delta_time,
+        mid_ocean_ridges_file_path=mid_ocean_ridges_file_path,
+        rotation_model=plate_reconstruction.rotation_model,
+        topology_features=plate_reconstruction.topology_features,
+        zvalues_file_basepath=zvalues_file_basepath,
+        zval_names=zval_names,
+        ridge_sampling=ridge_sampling,
+        overwrite=overwrite,
     )
 
 

@@ -317,7 +317,7 @@ class PlotTopologies(object):
         else:
             self._anchor_plate_id = self._check_anchor_plate_id(anchor_plate_id)
 
-        # Note: This calls 'update_time()' which reconstructs our features and topologies.
+        # Note: This calls '_update_time()' which reconstructs our features and topologies.
         self.time = time
 
     def __reduce__(self):
