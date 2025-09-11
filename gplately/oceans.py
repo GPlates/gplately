@@ -170,7 +170,6 @@ ensure_polygon_geometry.__doc__ = seafloor_grid_utils.ensure_polygon_geometry.__
 point_in_polygon_routine.__doc__ = seafloor_grid_utils.point_in_polygon_routine.__doc__
 
 MOR_PKL_FILE_NAME = "MOR_{:0.2f}_Ma.pkl"
-SAMPLE_POINTS_PKL_FILE_NAME = "sample_points_{:0.2f}_Ma.pkl"
 
 
 class SeafloorGrid(object):
@@ -387,20 +386,6 @@ class SeafloorGrid(object):
 
             self.continent_mask_filepath = os.path.join(
                 self.continent_mask_directory, continent_mask_file_basename
-            )
-
-        # sample points files
-        self.sample_points_dir = os.path.join(self.save_directory, "sample_points")
-        Path(self.sample_points_dir).mkdir(parents=True, exist_ok=True)
-        if self.file_collection:
-            self.sample_points_file_path = os.path.join(
-                self.sample_points_dir,
-                self.file_collection + "_" + SAMPLE_POINTS_PKL_FILE_NAME,
-            )
-
-        else:
-            self.sample_points_file_path = os.path.join(
-                self.sample_points_dir, SAMPLE_POINTS_PKL_FILE_NAME
             )
 
         # gridding input files
@@ -1235,144 +1220,6 @@ class SeafloorGrid(object):
                 )
                 for time in time_arr
             )
-
-    def save_netcdf_files(
-        self,
-        name,
-        times=None,
-        unmasked: bool = False,
-        nprocs: Union[int, None] = None,
-    ):
-        """Interpolate the sample points to create regular grids and save as NetCDF files.
-
-        Parameters
-        ----------
-        name: str
-            The variable name, such as ``SEAFLOOR_AGE`` or ``SPREADING_RATE``.
-        times: list
-            A list of times of interest.
-        unmasked: bool
-            A flag to indicate if the unmasked grids should be saved.
-        nprocs: int
-            The number of processes to use for multiprocessing.
-        """
-        if times is None:
-            times = self._times
-        if nprocs is None:
-            try:
-                nprocs = multiprocessing.cpu_count() - 1
-            except NotImplementedError:
-                nprocs = 1
-
-        if nprocs > 1:
-            with multiprocessing.Pool(nprocs) as pool:
-                pool.map(
-                    partial(
-                        _save_netcdf_file,
-                        name=name,
-                        file_collection=self.file_collection,
-                        save_directory=self.save_directory,
-                        extent=self.extent,
-                        resX=self.spacingX,
-                        resY=self.spacingY,
-                        unmasked=unmasked,
-                        continent_mask_filename=self.continent_mask_filepath,
-                        sample_points_file_path=self.sample_points_file_path,
-                    ),
-                    times,
-                )
-        else:
-            for time in times:
-                _save_netcdf_file(
-                    time,
-                    name=name,
-                    file_collection=self.file_collection,
-                    save_directory=self.save_directory,
-                    extent=self.extent,
-                    resX=self.spacingX,
-                    resY=self.spacingY,
-                    unmasked=unmasked,
-                    continent_mask_filename=self.continent_mask_filepath,
-                    sample_points_file_path=self.sample_points_file_path,
-                )
-
-
-def _save_netcdf_file(
-    time,
-    name,
-    file_collection,
-    save_directory: Union[str, Path],
-    extent,
-    resX,
-    resY,
-    continent_mask_filename: str,
-    sample_points_file_path: str,
-    unmasked=False,
-):
-    df = pd.read_pickle(sample_points_file_path.format(time))
-    # drop invalid data
-    df = df.replace([np.inf, -np.inf], np.nan).dropna()
-    # Drop duplicate latitudes and longitudes
-    unique_data = df.drop_duplicates(subset=["lon", "lat"])
-
-    # Acquire lons, lats and zvalues for each time
-    lons = unique_data["lon"].to_list()
-    lats = unique_data["lat"].to_list()
-    if name == "SEAFLOOR_AGE":
-        zdata = (unique_data["begin_time"] - time).to_numpy()
-    elif name == "SPREADING_RATE":
-        zdata = unique_data["SPREADING_RATE"].to_numpy()
-    else:
-        raise Exception(f"Unknown variable name: {name}")
-
-    # Create a regular grid on which to interpolate lats, lons and zdata
-    extent_globe = extent
-    grid_lon = np.linspace(extent_globe[0], extent_globe[1], resX)
-    grid_lat = np.linspace(extent_globe[2], extent_globe[3], resY)
-    X, Y = np.meshgrid(grid_lon, grid_lat)
-
-    # Interpolate lons, lats and zvals over a regular grid using nearest neighbour interpolation
-    Z = tools.griddata_sphere((lons, lats), zdata, (X, Y), method="nearest")
-    Z = Z.astype("f4")
-
-    unmasked_basename = f"{name}_grid_unmasked_{time:0.2f}_Ma.nc"
-    grid_basename = f"{name}_grid_{time:0.2f}_Ma.nc"
-    if file_collection:
-        unmasked_basename = f"{file_collection}_{unmasked_basename}"
-        grid_basename = f"{file_collection}_{grid_basename}"
-    output_dir = os.path.join(save_directory, name)
-    Path(output_dir).mkdir(parents=True, exist_ok=True)
-    grid_output_unmasked = os.path.join(output_dir, unmasked_basename)
-    grid_output = os.path.join(output_dir, grid_basename)
-
-    if unmasked:
-        grids.write_netcdf_grid(
-            grid_output_unmasked,
-            Z,
-            extent=extent,
-            significant_digits=2,
-            fill_value=None,
-        )
-
-    # Identify regions in the grid in the continental mask
-    # We need the continental mask to match the number of nodes
-    # in the uniform grid defined above. This is important if we
-    # pass our own continental mask to SeafloorGrid
-    cont_mask = grids.read_netcdf_grid(
-        continent_mask_filename.format(time), resize=(resX, resY)
-    )
-
-    # Use the continental mask to mask out continents
-    Z[cont_mask.astype(bool)] = np.nan
-
-    grids.write_netcdf_grid(
-        grid_output,
-        Z,
-        extent=extent,
-        significant_digits=2,
-        fill_value=np.nan,
-    )
-    logger.info(f"Save {name} netCDF grid at {time:0.2f} Ma completed!")
 
 
 def _lat_lon_z_to_netCDF_time(
