@@ -169,9 +169,7 @@ create_icosahedral_mesh.__doc__ = seafloor_grid_utils.create_icosahedral_mesh.__
 ensure_polygon_geometry.__doc__ = seafloor_grid_utils.ensure_polygon_geometry.__doc__
 point_in_polygon_routine.__doc__ = seafloor_grid_utils.point_in_polygon_routine.__doc__
 
-MOR_PKL_FILE_NAME = "MOR_df_{:0.2f}_Ma.pkl"
-MOR_GPMLZ_FILE_NAME = "MOR_plus_one_points_{:0.2f}.gpmlz"
-SAMPLE_POINTS_GPMLZ_FILE_NAME = "sample_points_{:0.2f}_Ma.gpmlz"
+MOR_PKL_FILE_NAME = "MOR_{:0.2f}_Ma.pkl"
 SAMPLE_POINTS_PKL_FILE_NAME = "sample_points_{:0.2f}_Ma.pkl"
 
 
@@ -352,16 +350,6 @@ class SeafloorGrid(object):
         """Create various folders for output files."""
         self.save_directory = Path(save_directory)
 
-        # zvalue files
-        self.zvalues_directory = os.path.join(self.save_directory, "zvalues")
-        Path(self.zvalues_directory).mkdir(parents=True, exist_ok=True)
-        zvalues_file_basename = "point_data_dataframe_{:0.2f}Ma.npz"
-        if self.file_collection:
-            zvalues_file_basename = self.file_collection + "_" + zvalues_file_basename
-        self.zvalues_file_basepath = os.path.join(
-            self.zvalues_directory, zvalues_file_basename
-        )
-
         # middle ocean ridge files
         self.mid_ocean_ridges_dir = os.path.join(
             self.save_directory, "middle_ocean_ridges"
@@ -520,18 +508,6 @@ class SeafloorGrid(object):
         self._max_time = float(max_time)
         self.plot_topologies.time = float(max_time)
 
-    def _collect_point_data_in_dataframe(self, feature_collection, zval_ndarray, time):
-        """At a given timestep, create a pandas dataframe holding all attributes of point features.
-        Rather than store z values as shapefile attributes, store them in a dataframe indexed by feature ID.
-        """
-        return _collect_point_data_in_dataframe(
-            self.zvalues_file_basepath,
-            feature_collection,
-            self.zval_names,
-            zval_ndarray,
-            time,
-        )
-
     def _generate_ocean_points(self):
         """Generate ocean points by using the icosahedral mesh."""
         # Get the reconstructed continents at the max time.
@@ -671,17 +647,26 @@ class SeafloorGrid(object):
 
         # the code below is for debug purpose only
         if get_debug_level() > 100:
-            initial_ocean_point_features = []
-            for point in zip(pX, pY, pAge):
-                point_feature = pygplates.Feature()
-                point_feature.set_geometry(pygplates.PointOnSphere(point[1], point[0]))
+            #
+            # Save initial spreading ages and (constant) spreading rates as a coverage in GPML.
+            #
 
-                # Add 'time' to the age at the time of computation, to get the valid time in Ma
-                point_feature.set_valid_time(point[2] + self._max_time, -1)
-
-                # For now: custom zvals are added as shapefile attributes - will attempt pandas data frames
-                # point_feature = set_shapefile_attribute(point_feature, self.initial_ocean_mean_spreading_rate, "SPREADING_RATE")  # Seems like static data
-                initial_ocean_point_features.append(point_feature)
+            initial_ocean_coverage_feature = pygplates.Feature()
+            initial_ocean_coverage_geometry = pygplates.MultiPointOnSphere(zip(pY, pX))
+            initial_ocean_coverage_scalars = {
+                pygplates.ScalarType.create_gpml("SeafloorAge"): pAge,
+                pygplates.ScalarType.create_gpml(
+                    "SeafloorSpreadingRate"
+                ): self.initial_ocean_point_df["SPREADING_RATE"],
+            }
+            initial_ocean_coverage_feature.set_geometry(
+                (initial_ocean_coverage_geometry, initial_ocean_coverage_scalars)
+            )
+            # Only visible at initial time (max time).
+            initial_ocean_coverage_feature.set_valid_time(
+                self._max_time + 0.5 * self._ridge_time_step,
+                self._max_time - 0.5 * self._ridge_time_step,
+            )  # type: ignore
 
             basename = "ocean_basin_seed_points_{}_RLs_{}Ma.gpmlz".format(
                 self.refinement_levels,
@@ -689,20 +674,9 @@ class SeafloorGrid(object):
             )
             if self.file_collection:
                 basename = "{}_{}".format(self.file_collection, basename)
-            initial_ocean_feature_collection = pygplates.FeatureCollection(
-                initial_ocean_point_features
-            )
-            initial_ocean_feature_collection.write(
-                os.path.join(self.save_directory, basename)
-            )
 
-            # save the zvalue(spreading rate) of the initial ocean points to file "point_data_dataframe_{max_time}Ma.npz"
-            self._collect_point_data_in_dataframe(
-                initial_ocean_feature_collection,
-                np.array(
-                    [self.initial_ocean_mean_spreading_rate] * len(pX)
-                ),  # for now, spreading rate is one zvalue for initial ocean points. will other zvalues need to have a generalised workflow?
-                self._max_time,
+            pygplates.FeatureCollection(initial_ocean_coverage_feature).write(
+                os.path.join(self.save_directory, basename)
             )
 
     def build_all_MOR_seedpoints(self):
@@ -759,8 +733,6 @@ class SeafloorGrid(object):
                         delta_time=self._ridge_time_step,
                         mid_ocean_ridges_file_path=self.mid_ocean_ridges_file_path,
                         plate_reconstruction=self.plate_reconstruction,
-                        zvalues_file_basepath=self.zvalues_file_basepath,
-                        zval_names=self.zval_names,
                         ridge_sampling=self.ridge_sampling,
                         overwrite=overwrite,
                     ),
@@ -774,8 +746,6 @@ class SeafloorGrid(object):
                     mid_ocean_ridges_file_path=self.mid_ocean_ridges_file_path,
                     rotation_model=self.plate_reconstruction.rotation_model,
                     topology_features=self.plate_reconstruction.topology_features,
-                    zvalues_file_basepath=self.zvalues_file_basepath,
-                    zval_names=self.zval_names,
                     ridge_sampling=self.ridge_sampling,
                     overwrite=overwrite,
                 )
@@ -873,17 +843,6 @@ class SeafloorGrid(object):
                             extent=self.extent,
                             overwrite=overwrite,
                         )
-
-    def _extract_zvalues_from_npz_to_ndarray(self, featurecollection, time):
-        # NPZ file of seedpoint z values that emerged at this time
-        loaded_npz = np.load(self.zvalues_file_basepath.format(time))
-
-        curr_zvalues = np.empty([len(featurecollection), len(self.zval_names)])
-        for i in range(len(self.zval_names)):
-            # Account for the 0th index being for point feature IDs
-            curr_zvalues[:, i] = np.array(loaded_npz["arr_{}".format(i)])
-
-        return curr_zvalues
 
     def prepare_for_reconstruction_by_topologies(self):
         """Prepare three main auxiliary files for seafloor data gridding:
@@ -1034,7 +993,6 @@ class SeafloorGrid(object):
         # Loop over the reconstruction times until the end of the reconstruction time span, or until
         # all points have entered their valid time range *and* either exited their time range or
         # have been deactivated (subducted forward in time or consumed by MOR backward in time).
-        reconstruction_data = []
         while True:
             logger.info(
                 f"Reconstruct by topologies: working on time {topology_reconstruction.get_current_time():0.2f} Ma"
@@ -1137,26 +1095,58 @@ class SeafloorGrid(object):
                         gridding_input_dictionary[i] for i in gridding_input_dictionary
                     ]
 
+                gridding_input_filename = self.gridding_input_filepath.format(
+                    topology_reconstruction.get_current_time()
+                )
+                np.savez_compressed(
+                    gridding_input_filename,
+                    *data_to_store,
+                )
+
                 # save debug file
                 if get_debug_level() > 100:
                     seafloor_ages = gridding_input_dictionary["SEAFLOOR_AGE"]
                     logger.debug(
                         f"The max and min values of seafloor age are: {np.max(seafloor_ages)} - {np.min(seafloor_ages)} ({topology_reconstruction.get_current_time()}Ma)"
                     )
-                    _save_seed_points_as_multipoint_coverage(
-                        gridding_input_dictionary["CURRENT_LONGITUDES"],
-                        gridding_input_dictionary["CURRENT_LATITUDES"],
-                        gridding_input_dictionary["SEAFLOOR_AGE"],
-                        topology_reconstruction.get_current_time(),
-                        self.sample_points_dir,
-                    )
 
-                np.savez_compressed(
-                    self.gridding_input_filepath.format(
+                    #
+                    # Save currently active sample points and their spreading ages and rates as a coverage in GPML.
+                    #
+
+                    sample_point_coverage_feature = pygplates.Feature()
+                    sample_point_coverage_geometry = pygplates.MultiPointOnSphere(
+                        zip(
+                            gridding_input_dictionary["CURRENT_LATITUDES"],
+                            gridding_input_dictionary["CURRENT_LONGITUDES"],
+                        )
+                    )
+                    sample_point_coverage_scalars = {
+                        pygplates.ScalarType.create_gpml(
+                            "SeafloorAge"
+                        ): gridding_input_dictionary["SEAFLOOR_AGE"],
+                        pygplates.ScalarType.create_gpml(
+                            "SeafloorSpreadingRate"
+                        ): gridding_input_dictionary["SPREADING_RATE"],
+                    }
+                    sample_point_coverage_feature.set_geometry(
+                        (sample_point_coverage_geometry, sample_point_coverage_scalars)
+                    )
+                    # Only visible at curent time.
+                    sample_point_coverage_feature.set_valid_time(
                         topology_reconstruction.get_current_time()
-                    ),
-                    *data_to_store,
-                )
+                        + 0.5 * self._ridge_time_step,
+                        topology_reconstruction.get_current_time()
+                        - 0.5 * self._ridge_time_step,
+                    )  # type: ignore
+
+                    # Write MOR points at `time` to gpmlz
+                    sample_point_basename, _ = os.path.splitext(
+                        gridding_input_filename
+                    )  # remove extension
+                    pygplates.FeatureCollection(sample_point_coverage_feature).write(
+                        sample_point_basename + ".gpmlz"
+                    )
 
             if not topology_reconstruction.reconstruct_to_next_time():
                 break
@@ -1164,7 +1154,6 @@ class SeafloorGrid(object):
             logger.info(
                 f"Reconstruction has been done for {topology_reconstruction.get_current_time()}!"
             )
-        # return reconstruction_data
 
     def lat_lon_z_to_netCDF(
         self,
@@ -1412,6 +1401,7 @@ def _lat_lon_z_to_netCDF_time(
     curr_data = curr_data.dropna(
         subset=["CURRENT_LONGITUDES", "CURRENT_LATITUDES", zval_name]
     )
+    # Drop points with age greater than 350.
     if "SEAFLOOR_AGE" == zval_name:
         curr_data = curr_data.drop(curr_data[curr_data.SEAFLOOR_AGE > 350].index)
 
@@ -1476,41 +1466,6 @@ def _lat_lon_z_to_netCDF_time(
         fill_value=np.nan,
     )
     logger.info(f"{zval_name} netCDF grids for {time:0.2f} Ma complete!")
-
-
-def _save_age_grid_sample_points_to_gpml(
-    lons, lats, seafloor_ages, paleo_time, output_file_dir
-):
-    """save sample points to .gpmlz for debug purpose"""
-    logger.debug(f"saving age grid sample points to gpml file -- {paleo_time} Ma")
-    features = []
-    for lon, lat, age in zip(lons, lats, seafloor_ages):
-        f = pygplates.Feature()
-        p = pygplates.PointOnSphere(lat, lon)
-        f.set_geometry(p)
-        f.set_valid_time(age + paleo_time, paleo_time)  # type: ignore
-        features.append(f)
-    pygplates.FeatureCollection(features).write(
-        os.path.join(output_file_dir, SAMPLE_POINTS_GPMLZ_FILE_NAME.format(paleo_time))
-    )
-
-
-def _save_seed_points_as_multipoint_coverage(
-    lons, lats, seafloor_ages, paleo_time, output_file_dir
-):
-    """save seed points to .gpmlz as multipoint coverage for debug purpose"""
-    f = pygplates.Feature()
-    coverage_geometry = pygplates.MultiPointOnSphere(zip(lats, lons))
-    coverage_scalars = {
-        pygplates.ScalarType.create_gpml("SeafloorAge"): seafloor_ages,
-    }
-    f.set_geometry((coverage_geometry, coverage_scalars))
-    f.set_valid_time(paleo_time + 0.5, paleo_time - 0.5)  # type: ignore
-    pygplates.FeatureCollection([f]).write(
-        os.path.join(
-            output_file_dir, "seed_points_coverage_{:0.2f}_Ma.gpmlz".format(paleo_time)
-        )
-    )
 
 
 def _build_continental_mask(
@@ -1692,8 +1647,6 @@ def _generate_mid_ocean_ridge_points(
     mid_ocean_ridges_file_path: str,
     rotation_model,
     topology_features,
-    zvalues_file_basepath,
-    zval_names,
     ridge_sampling,
     overwrite=True,
 ):
@@ -1797,32 +1750,33 @@ def _generate_mid_ocean_ridge_points(
                     point_spreading_rates.extend([rate] * 2)
 
     # save the middle ocean ridges points to .pkl file
-    lats_lons = [list(point.to_lat_lon()) for point in shifted_mor_points]
+    lats_lons = [point.to_lat_lon() for point in shifted_mor_points]
     df = pd.DataFrame(lats_lons, columns=["lat", "lon"])
     df["SPREADING_RATE"] = point_spreading_rates
     df.to_pickle(mor_fn)
 
     if get_debug_level() > 100:
-        # Summarising get_isochrons_for_ridge_snapshot;
-        # Write out the ridge point born at 'ridge_time' but their position at 'ridge_time - time_step'.
-        mor_point_features = []
-        for curr_point in shifted_mor_points:
-            feature = pygplates.Feature()
-            feature.set_geometry(curr_point)
-            feature.set_valid_time(time, -999)  # delete - time_step
-            mor_point_features.append(feature)
+        #
+        # Save newly created mid-ocean ridge points and their spreading rates as a coverage in GPML.
+        #
 
-        mor_points = pygplates.FeatureCollection(mor_point_features)
+        mor_coverage_feature = pygplates.Feature()
+        mor_coverage_geometry = pygplates.MultiPointOnSphere(shifted_mor_points)
+        mor_coverage_scalars = {
+            pygplates.ScalarType.create_gpml(
+                "SeafloorSpreadingRate"
+            ): point_spreading_rates,
+        }
+        mor_coverage_feature.set_geometry((mor_coverage_geometry, mor_coverage_scalars))
+        # Only visible at curent time.
+        mor_coverage_feature.set_valid_time(
+            time + 0.5 * delta_time,
+            time - 0.5 * delta_time,
+        )  # type: ignore
 
         # Write MOR points at `time` to gpmlz
-        mor_points.write(
-            os.path.join(os.path.dirname(mor_fn), MOR_GPMLZ_FILE_NAME.format(time))
-        )
-
-        # write zvalue spreading rates to file point_data_dataframe_{time}Ma.npz
-        _collect_point_data_in_dataframe(
-            zvalues_file_basepath, mor_points, zval_names, point_spreading_rates, time
-        )
+        mor_basename, _ = os.path.splitext(mor_fn)  # remove extension
+        pygplates.FeatureCollection(mor_coverage_feature).write(mor_basename + ".gpmlz")
 
     logger.info(f"Finished building MOR seedpoints at {time} Ma!")
 
@@ -1834,8 +1788,6 @@ def _generate_mid_ocean_ridge_points_parallel(
     delta_time: float,
     mid_ocean_ridges_file_path: str,
     plate_reconstruction,
-    zvalues_file_basepath,
-    zval_names,
     ridge_sampling,
     overwrite,
 ):
@@ -1845,37 +1797,6 @@ def _generate_mid_ocean_ridge_points_parallel(
         mid_ocean_ridges_file_path=mid_ocean_ridges_file_path,
         rotation_model=plate_reconstruction.rotation_model,
         topology_features=plate_reconstruction.topology_features,
-        zvalues_file_basepath=zvalues_file_basepath,
-        zval_names=zval_names,
         ridge_sampling=ridge_sampling,
         overwrite=overwrite,
-    )
-
-
-def _collect_point_data_in_dataframe(
-    zvalues_file_basepath, feature_collection, zval_names, zval_ndarray, time
-):
-    """At a given timestep, create a pandas dataframe holding all attributes of point features.
-
-    Rather than store z values as shapefile attributes, store them in a dataframe indexed by feature ID.
-    """
-    # Turn the zval_ndarray into a numPy array
-    zval_ndarray = np.array(zval_ndarray)
-
-    # Prepare the zval ndarray (can be of any shape) to be saved with default point data
-    zvals_to_store = {}
-
-    # If only one zvalue (for now, spreading rate)
-    if zval_ndarray.ndim == 1:
-        zvals_to_store[zval_names[0]] = zval_ndarray
-        data_to_store = [zvals_to_store[i] for i in zvals_to_store]
-    else:
-        for i in zval_ndarray.shape[1]:
-            zvals_to_store[zval_names[i]] = [list(j) for j in zip(*zval_ndarray)][i]
-        data_to_store = [zvals_to_store[i] for i in zvals_to_store]
-
-    np.savez_compressed(
-        zvalues_file_basepath.format(time),
-        FEATURE_ID=[str(feature.get_feature_id()) for feature in feature_collection],
-        *data_to_store,
     )
