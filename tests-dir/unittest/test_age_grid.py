@@ -60,10 +60,10 @@ def main():
         )
         grid.reconstruct_by_topological_model()
         for val in ("SEAFLOOR_AGE", "SPREADING_RATE"):
-            grid.save_netcdf_files(val)
+            grid.lat_lon_z_to_netCDF(val)
 
     if True:
-        # test the old reconstruct_by_topologies method
+        # test the old reconstruct_by_topologies method (*without* continent contouring)
         grid = SeafloorGrid(
             reconstruction,
             gplot,
@@ -85,7 +85,7 @@ def main():
             grid.lat_lon_z_to_netCDF(val, unmasked=False, nprocs=5)
 
     if True:
-        # test the old reconstruct_by_topologies method
+        # test the old reconstruct_by_topologies method (*with* continent contouring)
         grid = SeafloorGrid(
             reconstruction,
             gplot,
@@ -104,7 +104,7 @@ def main():
 
         grid.reconstruct_by_topological_model()
         for val in ("SEAFLOOR_AGE", "SPREADING_RATE"):
-            grid.save_netcdf_files(val)
+            grid.lat_lon_z_to_netCDF(val)
 
 
 if __name__ == "__main__":
