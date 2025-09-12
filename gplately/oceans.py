@@ -201,9 +201,9 @@ class SeafloorGrid(object):
         subduction_collision_parameters=(5.0, 10.0),
         initial_ocean_mean_spreading_rate: float = 75.0,
         resume_from_checkpoints=False,
-        zval_names: List[str] = ["SPREADING_RATE"],
         continent_mask_filename=None,
         use_continent_contouring=False,
+        **kwargs,
     ):
         """Constructor. Create a :class:`SeafloorGrid` object.
 
@@ -249,9 +249,6 @@ class SeafloorGrid(object):
             ``save_directory`` if re-run after interruption, or normally re-run, thus beginning
             gridding preparation from scratch. ``False`` will be useful if data allocated to the
             MOR seed points need to be augmented.
-        zval_names : list of :class:`str`, default=["SPREADING_RATE"]
-            A list containing string labels for the z values to attribute to points.
-            Will be used as column headers for z value point dataframes.
         continent_mask_filename : str, optional
             An optional parameter pointing to the full path to a continental mask for each timestep.
             Assuming the time is in the filename, i.e. ``/path/to/continent_mask_0Ma.nc``, it should be
@@ -261,6 +258,8 @@ class SeafloorGrid(object):
             If ``True`` then builds the continent mask for a given time using ptt's 'continent contouring' method
             (for more information about 'Continent Contouring', visit https://github.com/EarthByte/continent-contouring).
             If ``False`` then builds the continent masks using the continents of ``PlotTopologies_object``.
+        **kwargs
+            Handle deprecated arguments such as ``zval_names``.
 
 
 
@@ -268,6 +267,19 @@ class SeafloorGrid(object):
         .. _pygplates.Feature: https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature
         .. _pygplates.FeatureCollection: https://www.gplates.org/docs/pygplates/generated/pygplates.featurecollection#pygplates.FeatureCollection
         """
+
+        # Handle deprecated arguments.
+        if kwargs.pop("zval_names", None):
+            warnings.warn(
+                "`zval_names` keyword argument has been deprecated, it is no longer used",
+                DeprecationWarning,
+            )
+        for key in kwargs.keys():
+            raise TypeError(
+                "SeafloorGrid.__init__() got an unexpected keyword argument '{}'".format(
+                    key
+                )
+            )
 
         self.plate_reconstruction = PlateReconstruction_object
         self.plot_topologies = PlotTopologies_object
@@ -319,8 +331,6 @@ class SeafloorGrid(object):
         )
 
         self.icosahedral_multi_point = create_icosahedral_mesh(self.refinement_levels)
-
-        self.zval_names = zval_names
 
     def _map_res_to_node_percentage(self, continent_mask_filename):
         """Determine which percentage to use to scale the continent mask resolution at max time."""
