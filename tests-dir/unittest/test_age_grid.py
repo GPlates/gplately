@@ -59,7 +59,10 @@ def main():
             use_continent_contouring=False,
         )
         grid.reconstruct_by_topological_model()
-        for val in ("SEAFLOOR_AGE", "SPREADING_RATE"):
+        for val in (
+            SeafloorGrid.SEAFLOOR_AGE_KEY,
+            SeafloorGrid.SPREADING_RATE_KEY,
+        ):
             grid.lat_lon_z_to_netCDF(val)
 
     if True:
@@ -81,7 +84,10 @@ def main():
         )
 
         grid.reconstruct_by_topologies()
-        for val in ("SEAFLOOR_AGE", "SPREADING_RATE"):
+        for val in (
+            SeafloorGrid.SEAFLOOR_AGE_KEY,
+            SeafloorGrid.SPREADING_RATE_KEY,
+        ):
             grid.lat_lon_z_to_netCDF(val, unmasked=False, nprocs=5)
 
     if True:
@@ -103,7 +109,10 @@ def main():
         )
 
         grid.reconstruct_by_topological_model()
-        for val in ("SEAFLOOR_AGE", "SPREADING_RATE"):
+        for val in (
+            SeafloorGrid.SEAFLOOR_AGE_KEY,
+            SeafloorGrid.SPREADING_RATE_KEY,
+        ):
             grid.lat_lon_z_to_netCDF(val)
 
 

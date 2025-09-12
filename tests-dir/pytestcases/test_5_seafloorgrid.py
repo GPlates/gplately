@@ -27,7 +27,10 @@ These tests will be conducted using the Muller et al. 2019 model, with the gridd
 time step).
 """
 
-zval_names = ["SEAFLOOR_AGE", "SPREADING_RATE"]
+zval_names = [
+    gplately.SeafloorGrid.SEAFLOOR_AGE_KEY,
+    gplately.SeafloorGrid.SPREADING_RATE_KEY,
+]
 
 
 # CALL THE SEAFLOORGRID OBJECT
@@ -67,20 +70,25 @@ def _reconstruct_by_topologies(time, seafloorgrid, clean=False):
         seafloorgrid.gridding_input_directory, seafloorgrid.file_collection, time
     )
 
-    npz_loaded = np.load(npz_gridding_input)
-
-    curr_data = pd.DataFrame.from_dict(
-        {item: npz_loaded[item] for item in npz_loaded.files}, orient="columns"
-    )
-    curr_data.columns = seafloorgrid.total_column_headers
+    with np.load(npz_gridding_input) as npz_loaded:
+        curr_data = pd.DataFrame.from_dict(
+            # The key names become the column headers...
+            {column: npz_loaded[column] for column in npz_loaded.files},
+            orient="columns",
+        )
 
     unique_data = curr_data.drop_duplicates(
-        subset=["CURRENT_LONGITUDES", "CURRENT_LATITUDES"]
+        subset=[
+            gplately.SeafloorGrid.CURRENT_LONGITUDES_KEY,
+            gplately.SeafloorGrid.CURRENT_LATITUDES_KEY,
+        ]
     )
 
     # Gridding input critical data
-    age_data = np.array(unique_data["SEAFLOOR_AGE"].to_list())
-    spreading_rate_data = np.array(unique_data["SPREADING_RATE"].to_list())
+    age_data = np.array(unique_data[gplately.SeafloorGrid.SEAFLOOR_AGE_KEY].to_list())
+    spreading_rate_data = np.array(
+        unique_data[gplately.SeafloorGrid.SPREADING_RATE_KEY].to_list()
+    )
 
     # Ensure spreading rate is sensible at max_time; namely that
     # it is only the initial spreading rate

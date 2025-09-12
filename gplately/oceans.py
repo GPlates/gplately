@@ -169,11 +169,20 @@ create_icosahedral_mesh.__doc__ = seafloor_grid_utils.create_icosahedral_mesh.__
 ensure_polygon_geometry.__doc__ = seafloor_grid_utils.ensure_polygon_geometry.__doc__
 point_in_polygon_routine.__doc__ = seafloor_grid_utils.point_in_polygon_routine.__doc__
 
-MOR_PKL_FILE_NAME = "MOR_{:0.2f}_Ma.pkl"
-
 
 class SeafloorGrid(object):
     """Generate grids that track data atop global ocean basin points (which emerge from mid-ocean ridges) through geological time."""
+
+    # Keys (column headers) of the gridded data.
+    CURRENT_LONGITUDES_KEY = "CURRENT_LONGITUDES"
+    CURRENT_LATITUDES_KEY = "CURRENT_LATITUDES"
+    SEAFLOOR_AGE_KEY = "SEAFLOOR_AGE"
+    SPREADING_RATE_KEY = "SPREADING_RATE"
+    BIRTH_LAT_SNAPSHOT_KEY = "BIRTH_LAT_SNAPSHOT"
+    POINT_ID_SNAPSHOT_KEY = "POINT_ID_SNAPSHOT"
+
+    # Mid-ocean ridge pickle filename format (accepting time).
+    MOR_PKL_FILE_NAME = "MOR_{:0.2f}_Ma.pkl"
 
     def __init__(
         self,
@@ -182,6 +191,7 @@ class SeafloorGrid(object):
         max_time: Union[float, int],
         min_time: Union[float, int],
         ridge_time_step: Union[float, int],
+        *,
         save_directory: Union[str, Path] = "seafloor-grid-output",
         file_collection: str = "",
         refinement_levels: int = 5,
@@ -293,7 +303,7 @@ class SeafloorGrid(object):
         self._min_time = min_time
         self._ridge_time_step = ridge_time_step
         self._times = np.arange(
-            self._max_time, self._min_time - 0.1, -self._ridge_time_step
+            self._max_time, self._min_time - 1e-4, -self._ridge_time_step
         )
 
         # Get the reconstructed continents at the max time.
@@ -310,16 +320,7 @@ class SeafloorGrid(object):
 
         self.icosahedral_multi_point = create_icosahedral_mesh(self.refinement_levels)
 
-        # Z value parameters
         self.zval_names = zval_names
-        self.default_column_headers = [
-            "CURRENT_LONGITUDES",
-            "CURRENT_LATITUDES",
-            "SEAFLOOR_AGE",
-            "BIRTH_LAT_SNAPSHOT",
-            "POINT_ID_SNAPSHOT",
-        ]
-        self.total_column_headers = self.default_column_headers + self.zval_names
 
     def _map_res_to_node_percentage(self, continent_mask_filename):
         """Determine which percentage to use to scale the continent mask resolution at max time."""
@@ -357,11 +358,11 @@ class SeafloorGrid(object):
         if self.file_collection:
             self.mid_ocean_ridges_file_path = os.path.join(
                 self.mid_ocean_ridges_dir,
-                self.file_collection + "_" + MOR_PKL_FILE_NAME,
+                self.file_collection + "_" + self.MOR_PKL_FILE_NAME,
             )
         else:
             self.mid_ocean_ridges_file_path = os.path.join(
-                self.mid_ocean_ridges_dir, MOR_PKL_FILE_NAME
+                self.mid_ocean_ridges_dir, self.MOR_PKL_FILE_NAME
             )
 
         # continent mask files
@@ -568,9 +569,7 @@ class SeafloorGrid(object):
         * inside the polygons (for the continental mask)
 
         Points from the mesh outside the continental polygons make up the ocean basin seed
-        point mesh. The masked mesh is outputted as a compressed GPML (GPMLZ) file with
-        the filename: ``ocean_basin_seed_points_{}Ma.gpmlz`` if a ``save_directory`` is passed.
-        Otherwise, the mesh is returned as a `pygplates.FeatureCollection`_ object.
+        point mesh.
 
         .. note::
 
@@ -584,15 +583,15 @@ class SeafloorGrid(object):
             Ideally, if a reconstruction tree spans a large time range, **all** initial mesh
             points would collide with a continent or be subducted, leaving behind a mesh of
             well-defined MOR-emerged ocean basin points that data can be attributed to.
-            However, some of these initial points situated close to contiental boundaries are
+            However, some of these initial points situated close to continental boundaries are
             retained through time - these form point artefacts with anomalously high ages. Even
             deep-time plate models (e.g. 1 Ga) will have these artefacts - removing them would
             require more detail to be added to the reconstruction model.
 
         Returns
         -------
-        ocean_basin_point_mesh : `pygplates.FeatureCollection`_
-            A `pygplates.FeatureCollection`_ object containing the seed points on the ocean basin.
+        lons, lats, ages, spreading_rates : ndarray
+            The initial ocean seed point locations, ages and spreading rates.
         """
 
         if (
@@ -612,37 +611,34 @@ class SeafloorGrid(object):
         resolved_topologies = self.plate_reconstruction.topological_snapshot(
             self._max_time
         ).get_resolved_topologies()
-        pX, pY, pZ = tools.find_distance_to_nearest_ridge(
+        lons, lats, distances_to_ridge = tools.find_distance_to_nearest_ridge(
             resolved_topologies,
             ocean_points,
         )
 
-        # Divide spreading rate by 2 to use half the mean spreading rate
-        pAge = np.array(pZ) / (self.initial_ocean_mean_spreading_rate / 2.0)
+        lons, lats = np.array(lons), np.array(lats)
 
-        self.initial_ocean_point_df = pd.DataFrame(
-            {
-                "lon": pX,
-                "lat": pY,
-                "begin_time": pAge + self._max_time,
-                "end_time": [0] * len(pX),
-                "SPREADING_RATE": [self.initial_ocean_mean_spreading_rate] * len(pX),
-            }
+        # Divide spreading rate by 2 to use half the mean spreading rate
+        ages = np.array(distances_to_ridge) / (
+            self.initial_ocean_mean_spreading_rate / 2.0
         )
+
+        # Constant initial spreading rate.
+        spreading_rates = np.full(len(lons), self.initial_ocean_mean_spreading_rate)
 
         # the code below is for debug purpose only
         if get_debug_level() > 100:
             #
-            # Save initial spreading ages and (constant) spreading rates as a coverage in GPML.
+            # Save initial spreading ages and (constant) spreading rates as a coverage to GPML.
             #
 
             initial_ocean_coverage_feature = pygplates.Feature()
-            initial_ocean_coverage_geometry = pygplates.MultiPointOnSphere(zip(pY, pX))
+            initial_ocean_coverage_geometry = pygplates.MultiPointOnSphere(
+                zip(lats, lons)
+            )
             initial_ocean_coverage_scalars = {
-                pygplates.ScalarType.create_gpml("SeafloorAge"): pAge,
-                pygplates.ScalarType.create_gpml(
-                    "SeafloorSpreadingRate"
-                ): self.initial_ocean_point_df["SPREADING_RATE"],
+                pygplates.ScalarType.create_gpml("SeafloorAge"): ages,
+                pygplates.ScalarType.create_gpml("SpreadingRate"): spreading_rates,
             }
             initial_ocean_coverage_feature.set_geometry(
                 (initial_ocean_coverage_geometry, initial_ocean_coverage_scalars)
@@ -663,6 +659,8 @@ class SeafloorGrid(object):
             pygplates.FeatureCollection(initial_ocean_coverage_feature).write(
                 os.path.join(self.save_directory, basename)
             )
+
+        return lons, lats, ages, spreading_rates
 
     def build_all_MOR_seedpoints(self):
         """Resolve mid-ocean ridges for all times between ``min_time`` and ``max_time``, divide them
@@ -721,10 +719,10 @@ class SeafloorGrid(object):
                         ridge_sampling=self.ridge_sampling,
                         overwrite=overwrite,
                     ),
-                    self._times[1:],
+                    self._times[1:],  # exclude initial (max) time
                 )
         else:
-            for time in self._times[1:]:
+            for time in self._times[1:]:  # exclude initial (max) time
                 _generate_mid_ocean_ridge_points(
                     time,
                     delta_time=self._ridge_time_step,
@@ -830,7 +828,7 @@ class SeafloorGrid(object):
                         )
 
     def prepare_for_reconstruction_by_topologies(self):
-        """Prepare three main auxiliary files for seafloor data gridding:
+        """Prepare three main input data sets for seafloor data gridding:
 
         * Initial ocean seed points (at ``max_time``)
         * Continental masks (from ``max_time`` to ``min_time``)
@@ -840,62 +838,56 @@ class SeafloorGrid(object):
         all ridge points for all times in the reconstruction time array.
         """
 
-        # INITIAL OCEAN SEED POINT MESH ----------------------------------------------------
-        self.create_initial_ocean_seed_points()
+        # Create initial ocean seed points -------------------------------------------------
+
+        initial_lons, initial_lats, initial_ages, initial_spreading_rates = (
+            self.create_initial_ocean_seed_points()
+        )
         logger.info("Finished building initial_ocean_seed_points!")
 
-        # MOR SEED POINTS AND CONTINENTAL MASKS --------------------------------------------
+        # Create continental masks and mid-ocean ridge seed points -------------------------
 
-        # The start time for seeding is controlled by whether the overwrite_existing_gridding_inputs
-        # parameter is set to `True` (in which case the start time is `max_time`). If it is `False`
-        # and;
-        # - a run of seeding and continental masking was interrupted, and ridge points were
-        # checkpointed at n Ma, seeding resumes at n-1 Ma until `min_time` or another interruption
-        # occurs;
-        # - seeding was completed but the subsequent gridding input creation was interrupted,
-        # seeding is assumed completed and skipped. The workflow automatically proceeds to re-gridding.
+        # If 'self.resume_from_checkpoints' is True then only those continental mask files and
+        # MOR seed point files that don't exist will be generated. This enables a previously
+        # interrupted workflow to be continued.
 
         self.build_all_continental_masks()
 
         self.build_all_MOR_seedpoints()
 
-        # load the initial ocean seed points
-        lons = self.initial_ocean_point_df["lon"].tolist()
-        lats = self.initial_ocean_point_df["lat"].tolist()
-        active_points = [
-            pygplates.PointOnSphere(lat, lon) for lon, lat in zip(lons, lats)
+        # Load the initial ocean seed points (at initial time) -----------------------------
+
+        all_points = [
+            pygplates.PointOnSphere(lat, lon)
+            for lon, lat in zip(initial_lons, initial_lats)
         ]
-        appearance_time = self.initial_ocean_point_df["begin_time"].tolist()
-        birth_lat = lats
-        prev_lat = lats
-        prev_lon = lons
-        zvalues = np.empty((0, len(self.zval_names)))
-        zvalues = np.concatenate(
-            (
-                zvalues,
-                self.initial_ocean_point_df["SPREADING_RATE"].to_numpy()[..., None],
-            ),
-            axis=0,
-        )
+        # Appearance time of initial points is their initial ages plus the initial time (max time).
+        all_appearance_times = self._max_time + initial_ages
+        all_birth_lats = initial_lats
+        all_spreading_rates = initial_spreading_rates
 
-        for time in self._times[1:]:
+        # Load the MOR seed points (at each time step) -------------------------------------
+
+        for time in self._times[1:]:  # exclude initial (max) time
             # load MOR points for each time step
-            df = pd.read_pickle(self.mid_ocean_ridges_file_path.format(time))
-            lons = df["lon"].tolist()
-            lats = df["lat"].tolist()
-            active_points += [
-                pygplates.PointOnSphere(lat, lon) for lon, lat in zip(lons, lats)
-            ]
-            appearance_time += [time] * len(lons)
-            birth_lat += lats
-            prev_lat += lats
-            prev_lon += lons
+            mor_df = pd.read_pickle(self.mid_ocean_ridges_file_path.format(time))
+            mor_lons = mor_df[self.CURRENT_LONGITUDES_KEY].to_numpy()
+            mor_lats = mor_df[self.CURRENT_LATITUDES_KEY].to_numpy()
+            mor_spreading_rates = mor_df[self.SPREADING_RATE_KEY].to_numpy()
 
-            zvalues = np.concatenate(
-                (zvalues, df[self.zval_names[0]].to_numpy()[..., None]), axis=0
+            all_points.extend(
+                pygplates.PointOnSphere(lat, lon)
+                for lon, lat in zip(mor_lons, mor_lats)
+            )
+            all_appearance_times = np.concatenate(
+                (all_appearance_times, np.full(len(mor_lons), time))
+            )
+            all_birth_lats = np.concatenate((all_birth_lats, mor_lats))
+            all_spreading_rates = np.concatenate(
+                (all_spreading_rates, mor_spreading_rates)
             )
 
-        return active_points, appearance_time, birth_lat, prev_lat, prev_lon, zvalues
+        return all_points, all_appearance_times, all_birth_lats, all_spreading_rates
 
     def reconstruct_by_topologies(self):
         """Obtain all active ocean seed points which are points that have not been consumed at subduction zones
@@ -915,20 +907,18 @@ class SeafloorGrid(object):
     def _reconstruct_by_topologies_impl(self, use_topological_model=False):
         logger.info("Preparing all initial files...")
 
-        # Obtain all info from the ocean seed points and all MOR points through time, store in
-        # arrays
+        # Obtain all info from the ocean seed points and all MOR points through time, store in arrays.
         (
-            active_points,
-            appearance_time,
-            birth_lat,
-            prev_lat,
-            prev_lon,
-            zvalues,
+            all_points,
+            all_appearance_times,
+            all_birth_lats,
+            all_spreading_rates,
         ) = self.prepare_for_reconstruction_by_topologies()
 
+        # Indices for all points that have existed from `max_time` to `min_time`.
+        all_point_ids = np.arange(len(all_points))
+
         ####  Begin reconstruction by topology process:
-        # Indices for all points (`active_points`) that have existed from `max_time` to `min_time`.
-        point_id = range(len(active_points))
 
         # Specify the default collision detection region as subduction zones
         default_collision = _DefaultCollision(
@@ -956,8 +946,8 @@ class SeafloorGrid(object):
                 self._max_time,
                 self._min_time,
                 self._ridge_time_step,
-                active_points,
-                point_begin_times=appearance_time,
+                all_points,
+                point_begin_times=all_appearance_times,
                 detect_collisions=collision_spec,
             )
         else:
@@ -967,8 +957,8 @@ class SeafloorGrid(object):
                 self._max_time,
                 self._min_time,
                 self._ridge_time_step,
-                active_points,
-                point_begin_times=appearance_time,
+                all_points,
+                point_begin_times=all_appearance_times,
                 detect_collisions=collision_spec,
             )
 
@@ -983,136 +973,94 @@ class SeafloorGrid(object):
                 f"Reconstruct by topologies: working on time {topology_reconstruction.get_current_time():0.2f} Ma"
             )
 
-            # NOTE:
-            # topology_reconstruction.get_active_current_points() and topology_reconstruction.get_all_current_points()
-            # are different. The former is a subset of the latter, and it represents all points at the timestep that
-            # have not collided with a continental or subduction boundary. The remainders in the latter are inactive
-            # (NoneType) points, which represent the collided points.
+            # Get *all* the points at the current time step.
+            #
+            # This is the same size as 'all_points', which is all initial ocean points at `max_time` and all MOR seed points
+            # that have ever emerged from spreading ridges through `max_time` to `min_time`.
+            # Here 'all_current_points', despite being the same size, differs in that any *inactive* points at the current time
+            # are None and the *active* points are at their reconstructed position at the current time.
+            all_current_points = topology_reconstruction.get_all_current_points()
 
-            # We need to access active point data from topology_reconstruction.get_all_current_points() because it has
-            # the same length as the list of all initial ocean points and MOR seed points that have ever emerged from
-            # spreading ridge topologies through `max_time` to `min_time`. Therefore, it protects the time and space
-            # order in which all MOR points through time were seeded by pyGPlates. At any given timestep, not all these
-            # points will be active, but their indices are retained. Thus, z value allocation, point latitudes and
-            # longitudes of active points will be correctly indexed if taking it from
-            # topology_reconstruction.get_all_current_points().
-            curr_points = topology_reconstruction.get_active_current_points()
-            curr_points_including_inactive = (
-                topology_reconstruction.get_all_current_points()
+            # Get the indices of the currently active points into all the points.
+            #
+            # Note: Points that are None represent currently *inactive* points.
+            #       These are points that have either:
+            #         1) not been activated yet because the current time is older then their appearance time, or
+            #         2) have been deactivated because the current time is younger than their dissappearance time, or
+            #         3) have been deactivated through collision detection (ie, collided with a continent or trench).
+            #       Although the points currently don't have a hardwired disappearance time (it's implicitly '-inf').
+            #       Instead we rely on collision detection to deactivate points.
+            active_point_indices = np.fromiter(
+                (
+                    point_index
+                    for point_index, point in enumerate(all_current_points)
+                    if point is not None
+                ),
+                dtype=int,
             )
-            logger.debug(f"the number of current active points is :{len(curr_points)}")
-            logger.debug(
-                f"the number of all current  points is :{len(curr_points_including_inactive)}"
-            )
 
-            # Collect latitudes and longitudes of currently ACTIVE points in the ocean basin
-            curr_lat_lon_points = [point.to_lat_lon() for point in curr_points]
+            logger.debug(f"The total number of points is :{len(all_current_points)}")
+            logger.debug(f"The number of active points is :{len(active_point_indices)}")
 
-            if curr_lat_lon_points:
-                # Get the number of active points at this timestep.
-                num_current_points = len(curr_points)
+            if len(active_point_indices) > 0:
 
-                # ndarray to fill with active point lats, lons and zvalues
-                # FOR NOW, the number of gridding input columns is 6:
-                # 0 = longitude
-                # 1 = latitude
-                # 2 = seafloor age
-                # 3 = birth latitude snapshot
-                # 4 = point id
+                # Latitudes and longitudes of the active points.
+                active_latitudes = np.empty(len(active_point_indices), dtype=float)
+                active_longitudes = np.empty(len(active_point_indices), dtype=float)
+                for index, point_index in enumerate(active_point_indices):
+                    active_latitudes[index], active_longitudes[index] = (
+                        all_current_points[point_index].to_lat_lon()
+                    )
 
-                # 5 for the default gridding columns above, plus additional zvalues added next
-                total_number_of_columns = 5 + len(self.zval_names)
-                gridding_input_data = np.empty(
-                    [num_current_points, total_number_of_columns]
+                active_seafloor_ages = (
+                    all_appearance_times[active_point_indices]
+                    - topology_reconstruction.get_current_time()
                 )
 
-                # Lons and lats are first and second columns of the ndarray respectively
-                gridding_input_data[:, 1], gridding_input_data[:, 0] = zip(
-                    *curr_lat_lon_points
-                )
+                active_spreading_rates = all_spreading_rates[active_point_indices]
 
-                # NOTE: We need a single index to access data from curr_points_including_inactive AND allocate
-                # this data to an ndarray with a number of rows equal to num_current_points. This index will
-                # append +1 after each loop through curr_points_including_inactive.
-                i = 0
+                active_birth_lats = all_birth_lats[active_point_indices]
 
-                # Get indices and points of all points at `time`, both active and inactive (which are NoneType points that
-                # have undergone continental collision or subduction at `time`).
-                for point_index, current_point in enumerate(
-                    curr_points_including_inactive
-                ):
-                    # Look at all active points (these have not collided with a continent or trench)
-                    if current_point is not None:
-                        # Seafloor age
-                        gridding_input_data[i, 2] = (
-                            appearance_time[point_index]
-                            - topology_reconstruction.get_current_time()
-                        )
-                        # Birth latitude (snapshot)
-                        gridding_input_data[i, 3] = birth_lat[point_index]
-                        # Point ID (snapshot)
-                        gridding_input_data[i, 4] = point_id[
-                            point_index
-                        ]  # The ID of a corresponding point from the original list of all MOR-resolved points
+                active_point_ids = all_point_ids[active_point_indices]
 
-                        # GENERAL Z-VALUE ALLOCATION
-                        # Z values are 1st index onwards; 0th belongs to the point feature ID (thus +1)
-                        for j in range(len(self.zval_names)):
-                            # Adjusted index - and we have to add j to 5 to account for lat, lon, age, birth lat and point ID,
-                            adjusted_index = 5 + j
-
-                            # Spreading rate would be first
-                            # Access current zval from the master list of all zvalues for all points that ever existed in time_array
-                            gridding_input_data[i, adjusted_index] = zvalues[
-                                point_index, j
-                            ]
-
-                        # Go to the next active point
-                        i += 1
-
-                gridding_input_dictionary = {}
-
-                for i in list(range(total_number_of_columns)):
-                    gridding_input_dictionary[self.total_column_headers[i]] = [
-                        list(j) for j in zip(*gridding_input_data)
-                    ][i]
-                    data_to_store = [
-                        gridding_input_dictionary[i] for i in gridding_input_dictionary
-                    ]
+                # Map the key names of the gridding data to their arrays.
+                gridding_input_dict = {
+                    self.CURRENT_LONGITUDES_KEY: active_longitudes,
+                    self.CURRENT_LATITUDES_KEY: active_latitudes,
+                    self.SEAFLOOR_AGE_KEY: active_seafloor_ages,
+                    self.SPREADING_RATE_KEY: active_spreading_rates,
+                    self.BIRTH_LAT_SNAPSHOT_KEY: active_birth_lats,
+                    self.POINT_ID_SNAPSHOT_KEY: active_point_ids,
+                }
 
                 gridding_input_filename = self.gridding_input_filepath.format(
                     topology_reconstruction.get_current_time()
                 )
-                np.savez_compressed(
-                    gridding_input_filename,
-                    *data_to_store,
-                )
+                # Saving arrays using keyword arguments stores the key as the name of the array (rather than just "arr_0", "arr_1", etc).
+                # This way when it's loaded (with 'np.load') the arrays will be indexed by these same keys.
+                np.savez_compressed(gridding_input_filename, **gridding_input_dict)
 
                 # save debug file
                 if get_debug_level() > 100:
-                    seafloor_ages = gridding_input_dictionary["SEAFLOOR_AGE"]
                     logger.debug(
-                        f"The max and min values of seafloor age are: {np.max(seafloor_ages)} - {np.min(seafloor_ages)} ({topology_reconstruction.get_current_time()}Ma)"
+                        f"The max and min values of seafloor age are: {np.max(active_seafloor_ages)} - {np.min(active_seafloor_ages)} ({topology_reconstruction.get_current_time()}Ma)"
                     )
 
                     #
-                    # Save currently active sample points and their spreading ages and rates as a coverage in GPML.
+                    # Save currently active sample points and their seafloor ages and spreading rates as a coverage to GPML.
                     #
 
                     sample_point_coverage_feature = pygplates.Feature()
                     sample_point_coverage_geometry = pygplates.MultiPointOnSphere(
-                        zip(
-                            gridding_input_dictionary["CURRENT_LATITUDES"],
-                            gridding_input_dictionary["CURRENT_LONGITUDES"],
-                        )
+                        zip(active_latitudes, active_longitudes)
                     )
                     sample_point_coverage_scalars = {
                         pygplates.ScalarType.create_gpml(
                             "SeafloorAge"
-                        ): gridding_input_dictionary["SEAFLOOR_AGE"],
+                        ): active_seafloor_ages,
                         pygplates.ScalarType.create_gpml(
-                            "SeafloorSpreadingRate"
-                        ): gridding_input_dictionary["SPREADING_RATE"],
+                            "SpreadingRate"
+                        ): active_spreading_rates,
                     }
                     sample_point_coverage_feature.set_geometry(
                         (sample_point_coverage_geometry, sample_point_coverage_scalars)
@@ -1125,7 +1073,7 @@ class SeafloorGrid(object):
                         - 0.5 * self._ridge_time_step,
                     )  # type: ignore
 
-                    # Write MOR points at `time` to gpmlz
+                    # Write gridded data at `time` to gpmlz.
                     sample_point_basename, _ = os.path.splitext(
                         gridding_input_filename
                     )  # remove extension
@@ -1193,7 +1141,6 @@ class SeafloorGrid(object):
                     zval_name=zval_name,
                     file_collection=self.file_collection,
                     save_directory=self.save_directory,
-                    total_column_headers=self.total_column_headers,
                     extent=self.extent,
                     resX=self.spacingX,
                     resY=self.spacingY,
@@ -1210,7 +1157,6 @@ class SeafloorGrid(object):
                     zval_name=zval_name,
                     file_collection=self.file_collection,
                     save_directory=self.save_directory,
-                    total_column_headers=self.total_column_headers,
                     extent=self.extent,
                     resX=self.spacingX,
                     resY=self.spacingY,
@@ -1227,7 +1173,6 @@ def _lat_lon_z_to_netCDF_time(
     zval_name,
     file_collection,
     save_directory: Union[str, Path],
-    total_column_headers,
     extent,
     resX,
     resY,
@@ -1237,29 +1182,34 @@ def _lat_lon_z_to_netCDF_time(
 ):
     # Read the gridding input made by ReconstructByTopologies:
     # Use pandas to load in lons, lats and z values from npz files
-    npz = np.load(gridding_input_filename.format(time))
-    curr_data = pd.DataFrame.from_dict(
-        {item: npz[item] for item in npz.files}, orient="columns"
-    )
-    curr_data.columns = total_column_headers
+    with np.load(gridding_input_filename.format(time)) as npz_loaded:
+        curr_data = pd.DataFrame.from_dict(
+            # The key names become the column headers...
+            {column: npz_loaded[column] for column in npz_loaded.files},
+            orient="columns",
+        )
 
     # drop invalid data
     curr_data = curr_data.replace([np.inf, -np.inf], np.nan)
     curr_data = curr_data.dropna(
-        subset=["CURRENT_LONGITUDES", "CURRENT_LATITUDES", zval_name]
+        subset=[
+            SeafloorGrid.CURRENT_LONGITUDES_KEY,
+            SeafloorGrid.CURRENT_LATITUDES_KEY,
+            zval_name,
+        ]
     )
     # Drop points with age greater than 350.
-    if "SEAFLOOR_AGE" == zval_name:
+    if SeafloorGrid.SEAFLOOR_AGE_KEY == zval_name:
         curr_data = curr_data.drop(curr_data[curr_data.SEAFLOOR_AGE > 350].index)
 
     # Drop duplicate latitudes and longitudes
     unique_data = curr_data.drop_duplicates(
-        subset=["CURRENT_LONGITUDES", "CURRENT_LATITUDES"]
+        subset=[SeafloorGrid.CURRENT_LONGITUDES_KEY, SeafloorGrid.CURRENT_LATITUDES_KEY]
     )
 
     # Acquire lons, lats and zvalues for each time
-    lons = unique_data["CURRENT_LONGITUDES"].to_list()
-    lats = unique_data["CURRENT_LATITUDES"].to_list()
+    lons = unique_data[SeafloorGrid.CURRENT_LONGITUDES_KEY].to_list()
+    lats = unique_data[SeafloorGrid.CURRENT_LATITUDES_KEY].to_list()
     zdata = np.array(unique_data[zval_name].to_list())
 
     # zdata = np.where(zdata > 375, float("nan"), zdata), to deal with vmax in the future
@@ -1598,21 +1548,25 @@ def _generate_mid_ocean_ridge_points(
 
     # save the middle ocean ridges points to .pkl file
     lats_lons = [point.to_lat_lon() for point in shifted_mor_points]
-    df = pd.DataFrame(lats_lons, columns=["lat", "lon"])
-    df["SPREADING_RATE"] = point_spreading_rates
+    df = pd.DataFrame(
+        lats_lons,
+        columns=[
+            SeafloorGrid.CURRENT_LATITUDES_KEY,
+            SeafloorGrid.CURRENT_LONGITUDES_KEY,
+        ],
+    )
+    df[SeafloorGrid.SPREADING_RATE_KEY] = point_spreading_rates
     df.to_pickle(mor_fn)
 
     if get_debug_level() > 100:
         #
-        # Save newly created mid-ocean ridge points and their spreading rates as a coverage in GPML.
+        # Save newly created mid-ocean ridge points and their spreading rates as a coverage to GPML.
         #
 
         mor_coverage_feature = pygplates.Feature()
         mor_coverage_geometry = pygplates.MultiPointOnSphere(shifted_mor_points)
         mor_coverage_scalars = {
-            pygplates.ScalarType.create_gpml(
-                "SeafloorSpreadingRate"
-            ): point_spreading_rates,
+            pygplates.ScalarType.create_gpml("SpreadingRate"): point_spreading_rates,
         }
         mor_coverage_feature.set_geometry((mor_coverage_geometry, mor_coverage_scalars))
         # Only visible at curent time.

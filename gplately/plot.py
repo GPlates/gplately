@@ -1423,7 +1423,7 @@ class PlotTopologies(object):
         central_meridian=0.0,
         tessellate_degrees=None,
     ):
-        """Return the reconstructed contiental rift lines as a `geopandas.GeoDataFrame`_ object."""
+        """Return the reconstructed continental rift lines as a `geopandas.GeoDataFrame`_ object."""
         return self.get_feature(
             self.continental_rifts,
             central_meridian=central_meridian,
