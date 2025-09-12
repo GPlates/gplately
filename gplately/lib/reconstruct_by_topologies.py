@@ -421,8 +421,8 @@ class _ReconstructByTopologies(ABC):
         reconstruction_end_time,
         reconstruction_time_interval,
         points,
-        point_begin_times: Union[list, None] = None,
-        point_end_times: Union[list, None] = None,
+        point_begin_times: Union[np.ndarray, list, None] = None,
+        point_end_times: Union[np.ndarray, list, None] = None,
     ):
 
         # Set up an array of reconstruction times covering the reconstruction time span.
@@ -460,22 +460,26 @@ class _ReconstructByTopologies(ABC):
         self.num_points = len(points)
 
         # Use the specified point begin times if provided (otherwise use 'inf').
-        self.point_begin_times = point_begin_times
-        if self.point_begin_times is None:
-            self.point_begin_times = [float("inf")] * self.num_points
-        elif len(self.point_begin_times) != self.num_points:
-            raise ValueError(
-                "Length of 'point_begin_times' must match length of 'points'."
-            )
+        if point_begin_times is None:
+            self.point_begin_times = np.full(self.num_points, np.inf)
+        else:
+            # Make sure numpy array (if not already).
+            self.point_begin_times = np.asarray(point_begin_times)
+            if len(self.point_begin_times) != self.num_points:
+                raise ValueError(
+                    "Length of 'point_begin_times' must match length of 'points'."
+                )
 
         # Use the specified point end times if provided (otherwise use '-inf').
-        self.point_end_times = point_end_times
-        if self.point_end_times is None:
-            self.point_end_times = [float("-inf")] * self.num_points
-        elif len(self.point_end_times) != self.num_points:
-            raise ValueError(
-                "Length of 'point_end_times' must match length of 'points'."
-            )
+        if point_end_times is None:
+            self.point_end_times = np.full(self.num_points, -np.inf)
+        else:
+            # Make sure numpy array (if not already).
+            self.point_end_times = np.asarray(point_end_times)
+            if len(self.point_end_times) != self.num_points:
+                raise ValueError(
+                    "Length of 'point_end_times' must match length of 'points'."
+                )
 
     def reconstruct(self):
         # Initialise the reconstruction.
@@ -499,7 +503,7 @@ class _ReconstructByTopologies(ABC):
         self.next_points = [None] * self.num_points
 
         # Each point can only get activated once (after deactivation it cannot be reactivated).
-        self.point_has_been_activated = [False] * self.num_points
+        self.point_has_been_activated = np.zeros(self.num_points, dtype=bool)
         self.num_activated_points = 0
 
         # Call derived class implementation.
@@ -542,8 +546,6 @@ class _ReconstructByTopologies(ABC):
         for point_index in range(self.num_points):
             if self.curr_points[point_index] is None:
                 if not self.point_has_been_activated[point_index]:
-                    assert self.point_begin_times
-                    assert self.point_end_times
                     # Point is not active and has never been activated, so see if can activate it.
                     if (
                         current_time <= self.point_begin_times[point_index]
@@ -563,8 +565,6 @@ class _ReconstructByTopologies(ABC):
                         self.point_has_been_activated[point_index] = True
                         self.num_activated_points += 1
             else:
-                assert self.point_begin_times
-                assert self.point_end_times
                 # Point is active, so see if can deactivate it.
                 if not (
                     current_time <= self.point_begin_times[point_index]
@@ -589,9 +589,9 @@ class _ReconstructByTopologiesImpl(_ReconstructByTopologies):
         reconstruction_time_interval,
         points,
         *,
-        point_begin_times: Union[list, None] = None,
-        point_end_times: Union[list, None] = None,
-        point_plate_ids=None,
+        point_begin_times: Union[np.ndarray, list, None] = None,
+        point_end_times: Union[np.ndarray, list, None] = None,
+        point_plate_ids: Union[np.ndarray, list, None] = None,
         detect_collisions=_DEFAULT_COLLISION,
     ):
         """
@@ -620,13 +620,15 @@ class _ReconstructByTopologiesImpl(_ReconstructByTopologies):
 
         # Use the specified point plate IDs if provided (otherwise use '0').
         # These plate IDs are only used when a point falls outside all resolved topologies during a time step.
-        self.point_plate_ids = point_plate_ids
-        if self.point_plate_ids is None:
-            self.point_plate_ids = [0] * self.num_points
-        elif len(self.point_plate_ids) != self.num_points:
-            raise ValueError(
-                "Length of 'point_plate_ids' must match length of 'points'."
-            )
+        if point_plate_ids is None:
+            self.point_plate_ids = np.zeros(self.num_points, dtype=int)
+        else:
+            # Make sure numpy array (if not already).
+            self.point_plate_ids = np.asarray(point_plate_ids)
+            if len(self.point_plate_ids) != self.num_points:
+                raise ValueError(
+                    "Length of 'point_plate_ids' must match length of 'points'."
+                )
 
         self.detect_collisions = detect_collisions
 
@@ -668,7 +670,6 @@ class _ReconstructByTopologiesImpl(_ReconstructByTopologies):
             if curr_plate_id is None:
                 # Current point is currently active but it fell outside all resolved polygons.
                 # So instead we just reconstruct using its plate ID (that was manually assigned by the user/caller).
-                assert self.point_plate_ids
                 curr_plate_id = self.point_plate_ids[point_index]
 
             # Get the stage rotation that will move the point from where it is at the current time to its
@@ -916,8 +917,8 @@ class _ReconstructByTopologicalModelImpl(_ReconstructByTopologies):
         reconstruction_time_interval,
         points,
         *,
-        point_begin_times: Union[list, None] = None,
-        point_end_times: Union[list, None] = None,
+        point_begin_times: Union[np.ndarray, list, None] = None,
+        point_end_times: Union[np.ndarray, list, None] = None,
         detect_collisions=_DEFAULT_COLLISION,
     ):
         """
