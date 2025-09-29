@@ -203,6 +203,7 @@ class SeafloorGrid(object):
         resume_from_checkpoints=False,
         continent_mask_filename=None,
         use_continent_contouring=False,
+        nprocs=-2,
         **kwargs,
     ):
         """Constructor. Create a :class:`SeafloorGrid` object.
@@ -258,6 +259,15 @@ class SeafloorGrid(object):
             If ``True`` then builds the continent mask for a given time using ptt's 'continent contouring' method
             (for more information about 'Continent Contouring', visit https://github.com/EarthByte/continent-contouring).
             If ``False`` then builds the continent masks using the continents of ``PlotTopologies_object``.
+        nprocs : int, default=-2
+            The number of CPUs to use for parts of the code that are parallelized.
+            Must be an integer or convertible to an integer (eg, float is rounded towards zero).
+            If positive then uses that many CPUs.
+            If ``1`` then executes in serial (ie, is not parallelized).
+            If ``0`` then a ``ValueError`` is raised.
+            If ``-1`` then all available CPUs are used.
+            If ``-2`` then all available CPUs except one are used, etc.
+            Defaults to ``-2`` (ie, uses all available CPUs except one to keep system responsive).
         **kwargs
             Handle deprecated arguments such as ``zval_names``.
 
@@ -280,6 +290,9 @@ class SeafloorGrid(object):
                     key
                 )
             )
+
+        # Determine number of CPUs to use.
+        self.num_cpus = _get_num_cpus(nprocs)
 
         self.plate_reconstruction = PlateReconstruction_object
         self.plot_topologies = PlotTopologies_object
@@ -702,13 +715,8 @@ class SeafloorGrid(object):
         if self.resume_from_checkpoints:
             overwrite = False
 
-        try:
-            num_cpus = multiprocessing.cpu_count() - 1
-        except NotImplementedError:
-            num_cpus = 1
-
-        if num_cpus > 1:
-            with multiprocessing.Pool(num_cpus) as pool:
+        if self.num_cpus > 1:
+            with multiprocessing.Pool(self.num_cpus) as pool:
                 #
                 # Temporary hack to avoid a large slowdown due to pickling pygplates.RotationModel and pygplates.FeatureCollection.
                 # Instead of pickling pygplates.RotationModel and pygplates.FeatureCollection we instead pickle 'self.plate_reconstruction'
@@ -758,12 +766,7 @@ class SeafloorGrid(object):
             if self.resume_from_checkpoints:
                 overwrite = False
 
-            try:
-                num_cpus = multiprocessing.cpu_count() - 1
-            except NotImplementedError:
-                num_cpus = 1
-
-            if num_cpus > 1:
+            if self.num_cpus > 1:
                 #
                 # Temporary hack to avoid a large slowdown due to pickling pygplates.RotationModel and pygplates.FeatureCollection.
                 # Instead of pickling pygplates.RotationModel and pygplates.FeatureCollection we instead pickle 'self.plate_reconstruction'
@@ -782,7 +785,7 @@ class SeafloorGrid(object):
                 #       reconstruct them after unpickling.
                 #
                 if self.use_continent_contouring:
-                    with multiprocessing.Pool(num_cpus) as pool:
+                    with multiprocessing.Pool(self.num_cpus) as pool:
                         pool.map(
                             partial(
                                 _build_continental_mask_with_contouring_parallel,
@@ -794,7 +797,7 @@ class SeafloorGrid(object):
                             self._times,
                         )
                 else:
-                    with multiprocessing.Pool(num_cpus) as pool:
+                    with multiprocessing.Pool(self.num_cpus) as pool:
                         pool.map(
                             partial(
                                 _build_continental_mask_parallel,
@@ -914,7 +917,7 @@ class SeafloorGrid(object):
         """
         self._reconstruct_by_topologies_impl(use_topological_model=True)
 
-    def _reconstruct_by_topologies_impl(self, use_topological_model=False):
+    def _reconstruct_by_topologies_impl(self, use_topological_model):
         logger.info("Preparing all initial files...")
 
         # Obtain all info from the ocean seed points and all MOR points through time, store in arrays.
@@ -991,7 +994,7 @@ class SeafloorGrid(object):
             # are None and the *active* points are at their reconstructed position at the current time.
             all_current_points = topology_reconstruction.get_all_current_points()
 
-            # Get the indices of the currently active points into all the points.
+            # Get the indices of the currently *active* points into all the points.
             #
             # Note: Points that are None represent currently *inactive* points.
             #       These are points that have either:
@@ -1046,7 +1049,7 @@ class SeafloorGrid(object):
                 gridding_input_filename = self.gridding_input_filepath.format(
                     topology_reconstruction.get_current_time()
                 )
-                # Saving arrays using keyword arguments stores the key as the name of the array (rather than just "arr_0", "arr_1", etc).
+                # Saving arrays using *keyword* arguments stores the key as the name of the array (rather than just "arr_0", "arr_1", etc).
                 # This way when it's loaded (with 'np.load') the arrays will be indexed by these same keys.
                 np.savez_compressed(gridding_input_filename, **gridding_input_dict)
 
@@ -1103,7 +1106,7 @@ class SeafloorGrid(object):
         zval_name,
         time_arr=None,
         unmasked=False,
-        nprocs=1,
+        nprocs=None,
     ):
         """Produce a netCDF4 grid of a z-value identified by its ``zval_name`` for a given time range in ``time_arr``.
 
@@ -1122,29 +1125,47 @@ class SeafloorGrid(object):
             ``time_arr`` defaults to the full ``time_array`` provided to :class:`SeafloorGrid`.
         unmasked : bool, default=False
             Save unmasked grids, in addition to masked versions.
-        nprocs : int, defaullt=1
-            Number of processes to use for certain operations (requires joblib).
-            Passed to ``joblib.Parallel``, so -1 means all available processes.
+        nprocs : int, optional
+            Optional number of CPUs to use for producing grids.
+            If not specified then defaults to the number of CPUs specified in :py:meth:`__init__`.
+            If specified then must be an integer or convertible to an integer (eg, float is rounded towards zero).
+            If positive then uses that many CPUs.
+            If ``1`` then executes in serial (ie, is not parallelized).
+            If ``0`` then a ``ValueError`` is raised.
+            If ``-1`` then all available CPUs are used.
+            If ``-2`` then all available CPUs except one are used, etc.
         """
-
-        parallel = None
-        nprocs = int(nprocs)
-        if nprocs != 1:
-            try:
-                from joblib import Parallel
-
-                parallel = Parallel(nprocs)
-            except ImportError:
-                warnings.warn(
-                    "Could not import joblib; falling back to serial execution"
-                )
 
         # User can put any time array within SeafloorGrid bounds, but if none
         # is provided, it defaults to the attributed time array
         if time_arr is None:
             time_arr = self._times
 
-        if parallel is None:
+        if nprocs is None:
+            # Use default number of CPUs (specified in '__init__()').
+            num_cpus = self.num_cpus
+        else:
+            # Determine number of CPUs to use.
+            num_cpus = _get_num_cpus(nprocs)
+
+        if num_cpus > 1:
+            with multiprocessing.Pool(num_cpus) as pool:
+                pool.map(
+                    partial(
+                        _lat_lon_z_to_netCDF_time,
+                        zval_name=zval_name,
+                        file_collection=self.file_collection,
+                        save_directory=self.save_directory,
+                        extent=self.extent,
+                        resX=self.spacingX,
+                        resY=self.spacingY,
+                        unmasked=unmasked,
+                        continent_mask_filename=self.continent_mask_filepath,
+                        gridding_input_filename=self.gridding_input_filepath,
+                    ),
+                    time_arr,
+                )
+        else:
             for time in time_arr:
                 _lat_lon_z_to_netCDF_time(
                     time=time,
@@ -1158,24 +1179,6 @@ class SeafloorGrid(object):
                     continent_mask_filename=self.continent_mask_filepath,
                     gridding_input_filename=self.gridding_input_filepath,
                 )
-        else:
-            from joblib import delayed
-
-            parallel(
-                delayed(_lat_lon_z_to_netCDF_time)(
-                    time=time,
-                    zval_name=zval_name,
-                    file_collection=self.file_collection,
-                    save_directory=self.save_directory,
-                    extent=self.extent,
-                    resX=self.spacingX,
-                    resY=self.spacingY,
-                    unmasked=unmasked,
-                    continent_mask_filename=self.continent_mask_filepath,
-                    gridding_input_filename=self.gridding_input_filepath,
-                )
-                for time in time_arr
-            )
 
 
 def _lat_lon_z_to_netCDF_time(
@@ -1611,3 +1614,44 @@ def _generate_mid_ocean_ridge_points_parallel(
         ridge_sampling=ridge_sampling,
         overwrite=overwrite,
     )
+
+
+def _get_num_cpus(nprocs):
+    """Return number of CPUs to use.
+
+    Parameters
+    ----------
+    nprocs : int
+        The number of CPUs to use for parts of the code that are parallelized.
+        Must be an integer or convertible to an integer (eg, float is rounded towards zero).
+        If positive then uses that many CPUs.
+        If ``1`` then executes in serial (ie, is not parallelized).
+        If ``0`` then a ``ValueError`` is raised.
+        If ``-1`` then all available CPUs are used.
+        If ``-2`` then all available CPUs except one are used, etc.
+    """
+
+    try:
+        nprocs = int(nprocs)
+    except ValueError:
+        raise TypeError('"nprocs" should be an integer, or convertible to integer')
+
+    if nprocs == 0:
+        raise ValueError('"nprocs" should not be zero')
+
+    if nprocs > 0:
+        # A positive integer specifying the number of CPUs to use.
+        num_cpus = nprocs
+    else:  # nprocs < 0
+        #
+        # A negative integer specifying the number of CPUs to NOT use.
+        # '-1' means use all CPUs. '-2' means use all CPUs but one. Etc.
+        try:
+            num_cpus = multiprocessing.cpu_count() + 1 + nprocs
+            # If specified more CPUs to NOT use than there are CPUs available.
+            if num_cpus < 1:
+                num_cpus = 1
+        except NotImplementedError:
+            num_cpus = 1
+
+    return num_cpus
