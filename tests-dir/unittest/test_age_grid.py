@@ -88,7 +88,7 @@ def main():
             SeafloorGrid.SEAFLOOR_AGE_KEY,
             SeafloorGrid.SPREADING_RATE_KEY,
         ):
-            grid.lat_lon_z_to_netCDF(val, unmasked=False, nprocs=5)
+            grid.lat_lon_z_to_netCDF(val, unmasked=False)
 
     if True:
         # test the old reconstruct_by_topologies method (*with* continent contouring)

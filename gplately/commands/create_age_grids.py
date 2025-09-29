@@ -282,6 +282,7 @@ def create_agegrids(
             file_collection=file_collection,
             resume_from_checkpoints=True,
             use_continent_contouring=use_continent_contouring,
+            nprocs=n_jobs,
         )
 
         grid.reconstruct_by_topologies()
@@ -290,7 +291,7 @@ def create_agegrids(
             SeafloorGrid.SEAFLOOR_AGE_KEY,
             SeafloorGrid.SPREADING_RATE_KEY,
         ):
-            grid.lat_lon_z_to_netCDF(val, unmasked=unmasked, nprocs=n_jobs)
+            grid.lat_lon_z_to_netCDF(val, unmasked=unmasked)
 
 
 def _run_create_agegrids(args):
