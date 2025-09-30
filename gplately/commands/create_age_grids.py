@@ -147,6 +147,13 @@ def add_parser(parser):
         dest="unmasked",
     )
     agegrid_cmd.add_argument(
+        "--resume_from_checkpoints",
+        help="flag to indicate whether to resume the gridding preparation stage (continental masking and/or ridge seed building) after interruption; "
+        "default: re-run gridding preparation from scratch",
+        action="store_true",
+        dest="resume_from_checkpoints",
+    )
+    agegrid_cmd.add_argument(
         "--use-continent-contouring",
         help="flag to indicate using ptt's 'continent contouring' to generate continent masks",
         action="store_true",
@@ -180,6 +187,7 @@ def create_agegrids(
     file_collection: str = "",
     unmasked: bool = False,
     plate_model_repo: str = "plate-model-repo",
+    resume_from_checkpoints: bool = False,
     use_continent_contouring: bool = False,
 ) -> None:
     """Create age grids for a plate model."""
@@ -280,7 +288,7 @@ def create_agegrids(
             ridge_sampling=ridge_sampling,
             initial_ocean_mean_spreading_rate=initial_spreadrate,
             file_collection=file_collection,
-            resume_from_checkpoints=True,
+            resume_from_checkpoints=resume_from_checkpoints,
             use_continent_contouring=use_continent_contouring,
             nprocs=n_jobs,
         )
@@ -319,6 +327,7 @@ def _run_create_agegrids(args):
         initial_spreadrate=args.initial_spreadrate,
         file_collection=file_collection,
         unmasked=args.unmasked,
+        resume_from_checkpoints=args.resume_from_checkpoints,
         use_continent_contouring=args.use_continent_contouring,
     )
 
