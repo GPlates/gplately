@@ -1229,15 +1229,40 @@ def _lat_lon_z_to_netCDF_time(
         continent_mask_filename.format(time), resize=(resX, resY)
     )
 
+    # Whether to compress the masked grid, or not (None).
+    #
+    # Note: Previously this was 2 (enabling compression).
+    #       However we want reasonable accuracy for the seafloor age grid
+    #       (for example) and setting significant digits to 3 - since ages
+    #       can be 3 digits (before the decimal point) - doesn't reduce the
+    #       grid file sizes by large amounts. For a 0.1 degree age grid it
+    #       reduces from ~800KB to ~480KB - which is still significant but not
+    #       by a factor of 2 or 3 or 4 or more as reported in
+    #       https://github.com/GPlates/gplately/pull/125 (that was likely for
+    #       data, such as topography, that is less smooth than an age grid).
+    masked_significant_digits = None
+    if masked_significant_digits is None:
+        masked_fill_value = np.nan
+    else:
+        # When compressing, we can't seem to use NaN as a fill value because
+        # reading the written grid does not seem to mask out the NaN regions.
+        # It was reported in https://github.com/GPlates/gplately/pull/125
+        # that 2 significant digits was enough to preserve NaN masks, but
+        # it doesn't seem to work for me (using netCDF4 1.7.2 on Windows).
+        # Even 7 significant digits doesn't work.
+        #
+        # Instead we just use the default '_FillValue' used by netCDF4.
+        masked_fill_value = 9.969209968386869e36
+
     # Use the continental mask to mask out continents
-    Z[cont_mask.astype(bool)] = np.nan
+    Z[cont_mask.astype(bool)] = masked_fill_value
 
     grids.write_netcdf_grid(
         grid_output,
         Z,
         extent=extent,
-        significant_digits=2,
-        fill_value=np.nan,
+        significant_digits=masked_significant_digits,
+        fill_value=masked_fill_value,
     )
     logger.info(f"{zval_name} netCDF grids for {time:0.2f} Ma complete!")
 

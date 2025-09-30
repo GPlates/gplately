@@ -281,11 +281,13 @@ def read_netcdf_grid(
         cdf_lat = cdf[key_lat][:]
 
         # fill missing values
-        if hasattr(cdf[key_z], "missing_value") and np.issubdtype(
-            cdf_grid.dtype, np.floating
-        ):
-            fill_value = cdf[key_z].missing_value
-            cdf_grid[np.isclose(cdf_grid, fill_value, rtol=0.1)] = np.nan
+        if np.issubdtype(cdf_grid.dtype, np.floating):
+            if hasattr(cdf[key_z], "missing_value"):
+                fill_value = cdf[key_z].missing_value
+                cdf_grid[np.isclose(cdf_grid, fill_value, rtol=0.1)] = np.nan
+            elif hasattr(cdf[key_z], "_FillValue"):
+                fill_value = cdf[key_z]._FillValue
+                cdf_grid[np.isclose(cdf_grid, fill_value, rtol=0.1)] = np.nan
 
         # convert to boolean array
         if np.issubdtype(cdf_grid.dtype, np.integer):
@@ -470,12 +472,19 @@ def write_netcdf_grid(
             grid = grid.astype("i1")
             fill_value = None
 
+        # Set the fill value (this can be None).
+        #
+        # Note: It seems better to set the 'fill_value' keyword argument (when creating z variable)
+        #       rather than set the 'missing_value' attribute (on the z variable after creating it).
+        #       This translates to setting the '_FillValue' attribute instead of the 'missing_value' attribute.
+        #       And this appears to work better when compressing/quantizing (eg, with 'significant_digits').
+        #       On an unrelated note, '_FillValue' defaults to 9.969209968386869e+36 for floating-point types.
+        data_kwds["fill_value"] = fill_value
+
         cdf_data = cdf.createVariable("z", grid.dtype, ("lat", "lon"), **data_kwds)
 
-        # netCDF4 uses the missing_value attribute as the default _FillValue
-        # without this, _FillValue defaults to 9.969209968386869e+36
+        # Ensure min and max z values are properly registered.
         if fill_value is not None:
-            cdf_data.missing_value = fill_value
             grid_mask = grid != fill_value
 
             cdf_data.actual_range = [
@@ -484,7 +493,6 @@ def write_netcdf_grid(
             ]
 
         else:
-            # ensure min and max z values are properly registered
             cdf_data.actual_range = [np.nanmin(grid), np.nanmax(grid)]
 
         cdf_data.standard_name = "z"
