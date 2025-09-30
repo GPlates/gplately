@@ -55,7 +55,7 @@ def main():
             ridge_sampling=0.5,
             initial_ocean_mean_spreading_rate=75,
             file_collection=model_name,
-            resume_from_checkpoints=True,
+            resume_from_checkpoints=False,
             use_continent_contouring=False,
         )
         grid.reconstruct_by_topological_model()
@@ -79,7 +79,7 @@ def main():
             ridge_sampling=0.5,
             initial_ocean_mean_spreading_rate=75,
             file_collection=model_name,
-            resume_from_checkpoints=True,
+            resume_from_checkpoints=False,
             use_continent_contouring=False,
         )
 
@@ -104,7 +104,7 @@ def main():
             ridge_sampling=0.5,
             initial_ocean_mean_spreading_rate=75,
             file_collection=model_name,
-            resume_from_checkpoints=True,
+            resume_from_checkpoints=False,
             use_continent_contouring=True,
         )
 
