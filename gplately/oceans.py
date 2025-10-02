@@ -66,8 +66,8 @@ point_in_polygon_routine.__doc__ = seafloor_grid_utils.point_in_polygon_routine.
 class SeafloorGrid(object):
     """Generate grids that track data atop global ocean basin points (which emerge from mid-ocean ridges) through geological time.
 
-    This generates grids of seafloor age, seafloor spreading rate and other oceanic data from the `gplately.PlateReconstruction`
-    and `gplately.plot.PlotTopologies` objects.
+    This generates grids of seafloor age, seafloor spreading rate and other oceanic data from the :class:`gplately.PlateReconstruction`
+    and :class:`gplately.PlotTopologies` objects.
 
     Gridding methods in this class have been adapted from Simon Williams' development repository for an
     [auto-age-gridding workflow](https://github.com/siwill22/agegrid-0.1).
@@ -84,43 +84,41 @@ class SeafloorGrid(object):
 
     The preparation step involves building a:
 
-    * global domain of initial points that populate the seafloor at `max_time`,
+    * global domain of initial points that populate the seafloor at ``max_time``,
     * continental mask that separates ocean points from continent regions per timestep, and
     * set of points that emerge to the left and right of mid-ocean ridge segments per timestep, as well as the z-value to allocate to these points.
 
     First, the global domain of initial points is created using [stripy's](https://github.com/underworldcode/stripy/blob/master/stripy/spherical_meshes.py#L27)
-    icosahedral triangulated mesh. The number of points in this mesh can be controlled using a `refinement_levels` integer (the larger this integer,
+    icosahedral triangulated mesh. The number of points in this mesh can be controlled using a ``refinement_levels`` integer (the larger this integer,
     the more resolved the continent masks will be).
 
     ![RefinementLevels](https://raw.githubusercontent.com/GPlates/gplately/master/Notebooks/NotebookFiles/pdoc_Files/seafloorgrid_refinement.png)
 
-    These points are spatially partitioned by plate ID so they can be passed into a
-    [point-in-polygon routine](https://gplates.github.io/gplately/oceans.html#gplately.oceans.point_in_polygon_routine).
-    This identifies points that lie within continental polygon boundaries and those that are in the ocean. From this,
-    [continental masks are built](https://gplates.github.io/gplately/oceans.html#gplately.oceans.SeafloorGrid.build_all_continental_masks)
-    per timestep, and the initial seed points are allocated ages at the first reconstruction timestep `max_time`. Each point's initial age
+    These points are spatially partitioned by plate ID so they can be passed into a point-in-polygon routine.
+    This identifies points that lie within continental polygon boundaries and those that are in the ocean. From this, continental masks are built
+    per timestep, and the initial seed points are allocated ages at the first reconstruction timestep ``max_time``. Each point's initial age
     is calculated by dividing its proximity to the nearest MOR segment by half its assumed spreading rate. This spreading rate
-    (`initial_ocean_mean_spreading_rate`) is assumed to be uniform for all points.
+    (``initial_ocean_mean_spreading_rate``) is assumed to be uniform for all points.
 
     These initial points momentarily fill the global ocean basin, and all have uniform spreading rates.
-    Thus, the spreading rate grid at `max_time` will be uniformly populated with the `initial_ocean_mean_spreading_rate` (mm/yr).
-    The age grid at `max_time` will look like a series of smooth, linear age gradients clearly partitioned by tectonic plates with unique plate IDs:
+    Thus, the spreading rate grid at ``max_time`` will be uniformly populated with the ``initial_ocean_mean_spreading_rate`` (mm/yr).
+    The age grid at ``max_time`` will look like a series of smooth, linear age gradients clearly partitioned by tectonic plates with unique plate IDs:
 
     ![MaxTimeGrids](https://raw.githubusercontent.com/GPlates/gplately/master/Notebooks/NotebookFiles/pdoc_Files/max_time_grids.png)
 
-    [Ridge "line" topologies](https://gplates.github.io/gplately/oceans.html#gplately.oceans.SeafloorGrid.build_all_MOR_seedpoints)
-    are resolved at each reconstruction time step and partitioned into segments with a valid stage rotation. Each segment is further divided into points
-    at a specified ridge sampling spacing (`ridge_sampling`). Each point is ascribed a latitude, longitude, spreading rate and age (from plate reconstruction
-    model files, as opposed to ages of the initial ocean mesh points), a point index and the general z-value that will be gridded onto it.
+    Ridge "line" topologies are resolved at each reconstruction time step and partitioned into segments with a valid stage rotation.
+    Each segment is further divided into points at a specified ridge sampling spacing (``ridge_sampling``).
+    Each point is ascribed a latitude, longitude, spreading rate and age (from plate reconstruction model files, as opposed to ages of the initial ocean mesh points),
+    a point index and the general z-value that will be gridded onto it.
 
     ![NewRidgePoints](https://raw.githubusercontent.com/GPlates/gplately/master/Notebooks/NotebookFiles/pdoc_Files/new_ridge_points.png)
 
     Reconstruction by topologies involves determining which points are active and inactive (collided with a continent or subducted at a trench)
-    for each reconstruction time step. This is done using a hidden object in `PlateReconstruction` called `ReconstructByTopologies`.
+    for each reconstruction time step. This is done using a hidden object in :class:`PlateReconstruction` called ``ReconstructByTopologies``.
 
     If an ocean point with a certain velocity on one plate ID transitions into another rigid plate ID at another timestep (with another velocity),
     the velocity difference between both plates is calculated. The point may have subducted/collided with a continent if this velocity difference
-    is higher than a specified velocity threshold (which can be controlled with `subduction_collision_parameters`). To ascertain whether the point
+    is higher than a specified velocity threshold (which can be controlled with ``subduction_collision_parameters``). To ascertain whether the point
     should be deactivated, a displacement test is conducted. If the proximity of the point's previous time position to the polygon boundary it is
     approaching is higher than a set distance threshold, then the point is far enough away from the boundary that it cannot be subducted or consumed by it,
     and hence the point is still active. Otherwise, it is deemed inactive and deleted from the ocean basin mesh.
