@@ -445,9 +445,13 @@ class _ReconstructByTopologies(ABC):
                 / self.reconstruction_time_step
             )
         )
-        # It's possible the time step is larger than the time span, in which case we change it to equal the time span.
+        # It's possible the time step is larger than the time span, in which case we change it to equal the time span
+        # unless the reconstruction begin and end times are equal (in which case there'll be only one reconstruction snapshot).
         # This guarantees there'll be at least one time step (which has two times; one at either end of interval).
-        if self.num_times == 1:
+        if (
+            self.num_times == 1
+            and self.reconstruction_end_time != self.reconstruction_begin_time
+        ):
             self.num_times = 2
             self.reconstruction_time_step = (
                 self.reconstruction_end_time - self.reconstruction_begin_time
