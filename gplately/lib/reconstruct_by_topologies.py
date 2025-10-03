@@ -509,6 +509,9 @@ class _ReconstructByTopologies(ABC):
         # Call derived class implementation.
         self._begin_reconstruction_impl()
 
+    def get_current_time_index(self):
+        return self.current_time_index
+
     def get_current_time(self):
         return (
             self.reconstruction_begin_time

@@ -602,8 +602,6 @@ def find_distance_to_nearest_ridge(
 ):
 
     all_point_distances_to_ridge = []
-    all_point_lats = []
-    all_point_lons = []
 
     all_points = []
     for point_feature in point_features:
@@ -642,9 +640,6 @@ def find_distance_to_nearest_ridge(
     ) in enumerate(resolved_topologies_containing_points):
 
         point = all_points[point_index]
-        point_lat, point_lon = point.to_lat_lon()
-        all_point_lats.append(point_lat)
-        all_point_lons.append(point_lon)
 
         if ridge_sub_segments_of_resolved_topology_containing_point:
 
@@ -670,7 +665,7 @@ def find_distance_to_nearest_ridge(
             # So use the default fill value.
             all_point_distances_to_ridge.append(fill_value)
 
-    return all_point_lons, all_point_lats, all_point_distances_to_ridge
+    return all_points, all_point_distances_to_ridge
 
 
 def calculate_spreading_rates(
