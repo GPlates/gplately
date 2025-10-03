@@ -22,7 +22,7 @@ import os
 import warnings
 from functools import partial
 from pathlib import Path
-from typing import List, Tuple, Union
+from typing import Any, List, Tuple, Union
 
 import numpy as np
 import pandas as pd
@@ -140,11 +140,6 @@ class SeafloorGrid(object):
     CURRENT_LATITUDES_KEY = "CURRENT_LATITUDES"
     SEAFLOOR_AGE_KEY = "SEAFLOOR_AGE"
     SPREADING_RATE_KEY = "SPREADING_RATE"
-    BIRTH_LAT_SNAPSHOT_KEY = "BIRTH_LAT_SNAPSHOT"
-    POINT_ID_SNAPSHOT_KEY = "POINT_ID_SNAPSHOT"
-
-    # Mid-ocean ridge pickle filename format (accepting time).
-    MOR_PKL_FILE_NAME = "MOR_{:0.2f}_Ma.pkl"
 
     def __init__(
         self,
@@ -293,20 +288,6 @@ class SeafloorGrid(object):
             self._max_time, self._min_time - 1e-4, -self._ridge_time_step
         )
 
-        # Get the reconstructed continents at the max time.
-        # But first need to set the max time on 'self.plot_topologies'.
-        self.plot_topologies.time = self._max_time
-        reconstructed_continents = self.plot_topologies.continents
-
-        # Essential features and meshes for the SeafloorGrid
-        self.continental_polygons = ensure_polygon_geometry(
-            reconstructed_continents,
-            self.plate_reconstruction.rotation_model,
-            self._max_time,
-        )
-
-        self.icosahedral_multi_point = create_icosahedral_mesh(self.refinement_levels)
-
     def _map_res_to_node_percentage(self, continent_mask_filename):
         """Determine which percentage to use to scale the continent mask resolution at max time."""
         maskY, maskX = grids.read_netcdf_grid(
@@ -334,21 +315,6 @@ class SeafloorGrid(object):
     def _setup_output_paths(self, save_directory):
         """Create various folders for output files."""
         self.save_directory = Path(save_directory)
-
-        # middle ocean ridge files
-        self.mid_ocean_ridges_dir = os.path.join(
-            self.save_directory, "middle_ocean_ridges"
-        )
-        Path(self.mid_ocean_ridges_dir).mkdir(parents=True, exist_ok=True)
-        if self.file_collection:
-            self.mid_ocean_ridges_file_path = os.path.join(
-                self.mid_ocean_ridges_dir,
-                self.file_collection + "_" + self.MOR_PKL_FILE_NAME,
-            )
-        else:
-            self.mid_ocean_ridges_file_path = os.path.join(
-                self.mid_ocean_ridges_dir, self.MOR_PKL_FILE_NAME
-            )
 
         # continent mask files
         # only generate continent mask files if user does not provide them
@@ -386,6 +352,22 @@ class SeafloorGrid(object):
             )
         self.gridding_input_filepath = os.path.join(
             self.gridding_input_directory, gridding_input_basename
+        )
+
+        # Reconstructed seed points files.
+        self.reconstructed_seed_points_directory = os.path.join(
+            self.save_directory, "reconstructed_seed_points"
+        )
+        Path(self.reconstructed_seed_points_directory).mkdir(
+            parents=True, exist_ok=True
+        )
+        reconstructed_seed_points_basename = "reconstructed_seed_points_{:0.2f}Ma.npz"
+        if self.file_collection:
+            reconstructed_seed_points_basename = (
+                self.file_collection + "_" + reconstructed_seed_points_basename
+            )
+        self.reconstructed_seed_points_filepath = os.path.join(
+            self.reconstructed_seed_points_directory, reconstructed_seed_points_basename
         )
 
     def _set_grid_resolution(self, grid_spacing=0.1):
@@ -447,28 +429,20 @@ class SeafloorGrid(object):
     # object, its `time` attribute is not updated.
     @property
     def max_time(self):
-        """The reconstruction time.
+        """The maximum time for age gridding.
 
         :type: float
         """
         return self._max_time
 
-    @property
-    def PlotTopologiesTime(self):
-        """The :attr:`PlotTopologies.time` attribute.
-
-        :type: float
-        """
-        return self.plot_topologies.time
-
     @max_time.setter
     def max_time(self, var):
         if var >= 0:
-            self.update_time(var)
+            self._update_time(var)
         else:
             raise ValueError("Enter a valid time >= 0")
 
-    def update_time(self, max_time: float):
+    def _update_time(self, max_time: float):
         """Set the new reconstruction time.
 
         Parameters
@@ -493,11 +467,13 @@ class SeafloorGrid(object):
             self._max_time,
         )
 
+        icosahedral_multi_point = create_icosahedral_mesh(self.refinement_levels)
+
         # zval is a binary array encoding whether a point
         # coordinate is within a COB terrane polygon or not.
         # Use the icosahedral mesh MultiPointOnSphere attribute
         _, ocean_basin_point_mesh, zvals = point_in_polygon_routine(
-            self.icosahedral_multi_point, COB_polygons
+            icosahedral_multi_point, COB_polygons
         )
 
         ocean_pt_feature = pygplates.Feature()
@@ -540,7 +516,7 @@ class SeafloorGrid(object):
         )
         return [ocean_pt_feature]
 
-    def create_initial_ocean_seed_points(self):
+    def _build_initial_ocean_seed_points(self):
         """Create the initial ocean basin seed point domain (at ``max_time`` only)
         using Stripy's icosahedral triangulation with the specified ``self.refinement_levels``.
 
@@ -575,8 +551,13 @@ class SeafloorGrid(object):
 
         Returns
         -------
-        lons, lats, ages, spreading_rates : ndarray
-            The initial ocean seed point locations, ages and spreading rates.
+        points : list of `pygplates.PointOnSphere`_
+            The initial ocean seed point locations.
+        ages, spreading_rates : ndarray
+            The initial ocean seed point ages and spreading rates.
+
+
+        .. _pygplates.PointOnSphere: https://www.gplates.org/docs/pygplates/generated/pygplates.pointonsphere#pygplates.PointOnSphere
         """
 
         if (
@@ -585,9 +566,9 @@ class SeafloorGrid(object):
         ):
             # If a set of continent masks was passed, we can use max_time's continental
             # mask to build the initial profile of seafloor age.
-            ocean_points = self._get_ocean_points_from_continent_mask()
+            ocean_points_feature = self._get_ocean_points_from_continent_mask()
         else:
-            ocean_points = self._generate_ocean_points()
+            ocean_points_feature = self._generate_ocean_points()
 
         # Now that we have ocean points...
         # Determine age of ocean basin points using their proximity to MOR features
@@ -596,12 +577,10 @@ class SeafloorGrid(object):
         resolved_topologies = self.plate_reconstruction.topological_snapshot(
             self._max_time
         ).get_resolved_topologies()
-        lons, lats, distances_to_ridge = tools.find_distance_to_nearest_ridge(
+        ocean_points, distances_to_ridge = tools.find_distance_to_nearest_ridge(
             resolved_topologies,
-            ocean_points,
+            ocean_points_feature,
         )
-
-        lons, lats = np.array(lons), np.array(lats)
 
         # Divide spreading rate by 2 to use half the mean spreading rate
         ages = np.array(distances_to_ridge) / (
@@ -609,111 +588,17 @@ class SeafloorGrid(object):
         )
 
         # Constant initial spreading rate.
-        spreading_rates = np.full(len(lons), self.initial_ocean_mean_spreading_rate)
+        spreading_rates = np.full(
+            len(ocean_points), self.initial_ocean_mean_spreading_rate
+        )
 
-        # the code below is for debug purpose only
-        if get_debug_level() > 100:
-            #
-            # Save initial spreading ages and (constant) spreading rates as a coverage to GPML.
-            #
+        logger.info(
+            f"Finished building initial ocean seed points at {self._max_time} Ma!"
+        )
 
-            initial_ocean_coverage_feature = pygplates.Feature()
-            initial_ocean_coverage_geometry = pygplates.MultiPointOnSphere(
-                zip(lats, lons)
-            )
-            initial_ocean_coverage_scalars = {
-                pygplates.ScalarType.create_gpml("SeafloorAge"): ages,
-                pygplates.ScalarType.create_gpml("SpreadingRate"): spreading_rates,
-            }
-            initial_ocean_coverage_feature.set_geometry(
-                (initial_ocean_coverage_geometry, initial_ocean_coverage_scalars)
-            )
-            # Only visible at initial time (max time).
-            initial_ocean_coverage_feature.set_valid_time(
-                self._max_time + 0.5 * self._ridge_time_step,
-                self._max_time - 0.5 * self._ridge_time_step,
-            )  # type: ignore
+        return ocean_points, ages, spreading_rates
 
-            basename = "ocean_basin_seed_points_{}_RLs_{}Ma.gpmlz".format(
-                self.refinement_levels,
-                self._max_time,
-            )
-            if self.file_collection:
-                basename = "{}_{}".format(self.file_collection, basename)
-
-            pygplates.FeatureCollection(initial_ocean_coverage_feature).write(
-                os.path.join(self.save_directory, basename)
-            )
-
-        return lons, lats, ages, spreading_rates
-
-    def build_all_MOR_seedpoints(self):
-        """Resolve mid-ocean ridges for all times between ``min_time`` and ``max_time``, divide them
-        into points that make up their shared sub-segments. Rotate these points to the left
-        and right of the ridge using their stage rotation so that they spread from the ridge.
-
-        Z-value allocation to each point is done here. In future, a function (like
-        the spreading rate function) to calculate general z-data will be an input parameter.
-
-        .. note::
-
-            If MOR seed point building is interrupted, progress is safeguarded as long as
-            ``resume_from_checkpoints`` is set to ``True``.
-
-            This assumes that points spread from ridges symmetrically, with the exception of
-            large ridge jumps at successive timesteps. Therefore, z-values allocated to ridge-emerging
-            points will appear symmetrical until changes in spreading ridge geometries create
-            asymmetries.
-
-            In future, this will have a checkpoint save feature so that execution
-            (which occurs during preparation for ``ReconstructByTopologies`` and can take several hours)
-            can be safeguarded against run interruptions.
-
-        .. seealso::
-
-            `Get tessellated points along a mid ocean ridge <https://github.com/siwill22/agegrid-0.1/blob/master/automatic_age_grid_seeding.py#L117>`__.
-        """
-        overwrite = True
-        if self.resume_from_checkpoints:
-            overwrite = False
-
-        if self.num_cpus > 1:
-            with multiprocessing.Pool(self.num_cpus) as pool:
-                #
-                # Temporary hack to avoid a large slowdown due to pickling pygplates.RotationModel and pygplates.FeatureCollection.
-                # Instead of pickling pygplates.RotationModel and pygplates.FeatureCollection we instead pickle 'self.plate_reconstruction'
-                # which already attempts to avoid pickling those pygplates objects.
-                #
-                # Note: It only works when 'self.plate_reconstruction` was created using rotation *filenames* and topology *filenames*
-                #       (which is the case for the plate models downloaded by the PlateModelManager).
-                #       When they're not filenames then pygplates.RotationModel and pygplates.FeatureCollection get pickled anyway.
-                #
-                # TODO: When pyGPlates can pickle pygplates.RotationModel and pygplates.FeatureCollection noticeably faster (than it currently does in pyGPlates 1.0), then
-                #       remove '_generate_mid_ocean_ridge_points_parallel()' and instead use '_generate_mid_ocean_ridge_points()'.
-                pool.map(
-                    partial(
-                        _generate_mid_ocean_ridge_points_parallel,
-                        delta_time=self._ridge_time_step,
-                        mid_ocean_ridges_file_path=self.mid_ocean_ridges_file_path,
-                        plate_reconstruction=self.plate_reconstruction,
-                        ridge_sampling=self.ridge_sampling,
-                        overwrite=overwrite,
-                    ),
-                    self._times[1:],  # exclude initial (max) time
-                )
-        else:
-            for time in self._times[1:]:  # exclude initial (max) time
-                _generate_mid_ocean_ridge_points(
-                    time,
-                    delta_time=self._ridge_time_step,
-                    mid_ocean_ridges_file_path=self.mid_ocean_ridges_file_path,
-                    rotation_model=self.plate_reconstruction.rotation_model,
-                    topology_features=self.plate_reconstruction.topology_features,
-                    ridge_sampling=self.ridge_sampling,
-                    overwrite=overwrite,
-                )
-
-    def build_all_continental_masks(self):
+    def _build_all_continental_masks(self):
         """Create a continental mask to define the ocean basin for all times between ``min_time`` and ``max_time``.
 
         .. note::
@@ -802,67 +687,122 @@ class SeafloorGrid(object):
                             overwrite=overwrite,
                         )
 
-    def prepare_for_reconstruction_by_topologies(self):
-        """Prepare three main input data sets for seafloor data gridding:
+    def _build_mid_ocean_ridge_seed_points(
+        self,
+        time: float,
+    ):
+        """Resolve mid-ocean ridges at ``time`` and divide them into points that make up their shared sub-segments.
+        Rotate these points to the left and right of the ridge using their stage rotation so that they spread from the ridge.
 
-        * Initial ocean seed points (at ``max_time``)
-        * Continental masks (from ``max_time`` to ``min_time``)
-        * MOR points (from ``max_time`` to ``min_time``)
+        .. note::
 
-        Return lists of all attributes for the initial ocean point mesh and
-        all ridge points for all times in the reconstruction time array.
+            This assumes that points spread from ridges symmetrically, with the exception of
+            large ridge jumps at successive timesteps. Therefore, spreading rates of ridge-emerging
+            points will appear symmetrical until changes in spreading ridge geometries create asymmetries.
+
+        .. seealso::
+
+            `Get tessellated points along a mid ocean ridge <https://github.com/siwill22/agegrid-0.1/blob/master/automatic_age_grid_seeding.py#L117>`__.
         """
 
-        # Create initial ocean seed points -------------------------------------------------
+        # Points and their spreading rates that emerge from MORs at this time.
+        shifted_mor_points = []
+        point_spreading_rates = []
 
-        initial_lons, initial_lats, initial_ages, initial_spreading_rates = (
-            self.create_initial_ocean_seed_points()
+        # Resolve topologies to the current time.
+        topological_snapshot = self.plate_reconstruction.topological_snapshot(time)
+        shared_boundary_sections = (
+            topological_snapshot.get_resolved_topological_sections()
         )
-        logger.info("Finished building initial_ocean_seed_points!")
 
-        # Create continental masks and mid-ocean ridge seed points -------------------------
+        # pygplates.ResolvedTopologicalSection objects.
+        for shared_boundary_section in shared_boundary_sections:
+            if (
+                shared_boundary_section.get_feature().get_feature_type()
+                == pygplates.FeatureType.gpml_mid_ocean_ridge
+            ):
+                spreading_feature = shared_boundary_section.get_feature()
 
-        # If 'self.resume_from_checkpoints' is True then only those continental mask files and
-        # MOR seed point files that don't exist will be generated. This enables a previously
-        # interrupted workflow to be continued.
+                # Find the stage rotation of the spreading feature in the
+                # frame of reference of its geometry at the current
+                # reconstruction time (the MOR is currently actively spreading).
+                # The stage pole can then be directly geometrically compared
+                # to the *reconstructed* spreading geometry.
+                stage_rotation = separate_ridge_transform_segments.get_stage_rotation_for_reconstructed_geometry(
+                    spreading_feature, self.plate_reconstruction.rotation_model, time
+                )
+                if not stage_rotation:
+                    # Skip current feature - it's not a spreading feature.
+                    continue
 
-        self.build_all_continental_masks()
+                # Get the stage pole of the stage rotation.
+                # Note that the stage rotation is already in frame of
+                # reference of the *reconstructed* geometry at the spreading time.
+                stage_pole, _ = stage_rotation.get_euler_pole_and_angle()
 
-        self.build_all_MOR_seedpoints()
+                # One way rotates left and the other right, but don't know
+                # which - doesn't matter in our example though.
+                rotate_slightly_off_mor_one_way = pygplates.FiniteRotation(
+                    stage_pole, np.radians(0.01)
+                )
+                rotate_slightly_off_mor_opposite_way = (
+                    rotate_slightly_off_mor_one_way.get_inverse()
+                )
 
-        # Load the initial ocean seed points (at initial time) -----------------------------
+                # Iterate over the shared sub-segments.
+                for (
+                    shared_sub_segment
+                ) in shared_boundary_section.get_shared_sub_segments():
+                    # Tessellate MOR section.
+                    mor_points = pygplates.MultiPointOnSphere(
+                        shared_sub_segment.get_resolved_geometry().to_tessellated(
+                            np.radians(self.ridge_sampling)
+                        )
+                    )
 
-        all_points = [
-            pygplates.PointOnSphere(lat, lon)
-            for lon, lat in zip(initial_lons, initial_lats)
-        ]
-        # Appearance time of initial points is their initial ages plus the initial time (max time).
-        all_appearance_times = self._max_time + initial_ages
-        all_birth_lats = initial_lats
-        all_spreading_rates = initial_spreading_rates
+                    coords = mor_points.to_lat_lon_list()
+                    lats = [i[0] for i in coords]
+                    lons = [i[1] for i in coords]
+                    boundary_feature = shared_boundary_section.get_feature()
+                    left_plate = boundary_feature.get_left_plate(None)
+                    right_plate = boundary_feature.get_right_plate(None)
+                    if left_plate is not None and right_plate is not None:
+                        # Get the spreading rates for all points in this sub segment
+                        (
+                            spreading_rates,
+                            _,
+                        ) = tools.calculate_spreading_rates(
+                            time=time,
+                            lons=lons,
+                            lats=lats,
+                            left_plates=[left_plate] * len(lons),
+                            right_plates=[right_plate] * len(lons),
+                            rotation_model=self.plate_reconstruction.rotation_model,
+                            delta_time=self._ridge_time_step,
+                        )
 
-        # Load the MOR seed points (at each time step) -------------------------------------
+                    else:
+                        spreading_rates = [np.nan] * len(lons)
 
-        for time in self._times[1:]:  # exclude initial (max) time
-            # load MOR points for each time step
-            mor_df = pd.read_pickle(self.mid_ocean_ridges_file_path.format(time))
-            mor_lons = mor_df[self.CURRENT_LONGITUDES_KEY].to_numpy()
-            mor_lats = mor_df[self.CURRENT_LATITUDES_KEY].to_numpy()
-            mor_spreading_rates = mor_df[self.SPREADING_RATE_KEY].to_numpy()
+                    # Loop through all but the 1st and last points in the current sub segment
+                    for point, rate in zip(
+                        mor_points.get_points()[1:-1],
+                        spreading_rates[1:-1],
+                    ):
+                        # Add the point "twice" to the main shifted_mor_points list; once for a L-side
+                        # spread, another for a R-side spread. Then add the same spreading rate twice
+                        # to the list - this therefore assumes spreading rate is symmetric.
+                        shifted_mor_points.append(
+                            rotate_slightly_off_mor_one_way * point
+                        )
+                        shifted_mor_points.append(
+                            rotate_slightly_off_mor_opposite_way * point
+                        )
+                        point_spreading_rates.extend([rate] * 2)
 
-            all_points.extend(
-                pygplates.PointOnSphere(lat, lon)
-                for lon, lat in zip(mor_lons, mor_lats)
-            )
-            all_appearance_times = np.concatenate(
-                (all_appearance_times, np.full(len(mor_lons), time))
-            )
-            all_birth_lats = np.concatenate((all_birth_lats, mor_lats))
-            all_spreading_rates = np.concatenate(
-                (all_spreading_rates, mor_spreading_rates)
-            )
+        logger.info(f"Finished building MOR seedpoints at {time} Ma!")
 
-        return all_points, all_appearance_times, all_birth_lats, all_spreading_rates
+        return shifted_mor_points, np.array(point_spreading_rates)
 
     def reconstruct_by_topologies(self):
         """Obtain all active ocean seed points which are points that have not been consumed at subduction zones
@@ -880,20 +820,217 @@ class SeafloorGrid(object):
         self._reconstruct_by_topologies_impl(use_topological_model=True)
 
     def _reconstruct_by_topologies_impl(self, use_topological_model):
-        logger.info("Preparing all initial files...")
 
-        # Obtain all info from the ocean seed points and all MOR points through time, store in arrays.
-        (
-            all_points,
-            all_appearance_times,
-            all_birth_lats,
-            all_spreading_rates,
-        ) = self.prepare_for_reconstruction_by_topologies()
+        logger.info("Preparing to reconstruct ocean seed points using topologies...")
 
-        # Indices for all points that have existed from `max_time` to `min_time`.
-        all_point_ids = np.arange(len(all_points))
+        #
+        # There are three main input data sets for seafloor data gridding:
+        #
+        # - Initial ocean seed points (at `max_time`)
+        # - Continental masks (from `max_time` to `min_time`)
+        # - Mid-ocean ridge seed points (from `max_time` to `min_time`)
+        #
+        # We create all the continental masks up front.
+        # But the initial ocean seed points and the mid-ocean ridge seed points are created at their respectives times.
+        # For initial ocean seed points this is `max_time`. And for mid-ocean ridge seed points this is a time (where `min_time <= time < max_time`).
+        #
 
-        ####  Begin reconstruction by topology process:
+        # Create a continental mask to define the ocean basin for all times between `min_time` and `max_time`.
+        self._build_all_continental_masks()
+
+        logger.info("Reconstructing ocean seed points using topologies...")
+
+        # At each time (between `min_time` and `max_time`) generate seed points (for that time) and reconstruct them to `min_time`.
+        #
+        # When time is `max_time` the seed points will be the *initial* ocean seed points, and
+        # for later (younger) times the seed points will be the *mid-ocean ridge* seed points created at that time.
+        if self.num_cpus > 1:
+            with multiprocessing.Pool(self.num_cpus) as pool:
+                #
+                # The entire SeafloorGrid object 'self' gets pickled.
+                # We could have instead pickled individual attributes of 'self', but we need so many of them that it's
+                # just easier and cleaner to pickle the entire object 'self'.
+                #
+                # Note: This means any changes to the pickled object will not be reflected back in the original object 'self'.
+                #
+                # Note: Attributes (like 'self.plate_reconstruction' and 'self.plot_topologies') that contain pyGPlates objects can be expensive to pickle
+                #       (since pyGPlates 1.0 currently takes a long time to pickle objects like pygplates.RotationModel and pygplates.FeatureCollection).
+                #       However if 'self.plate_reconstruction` and 'self.plot_topologies' were created using rotation *filenames* and topology *filenames*
+                #       (which is the case for the plate models downloaded by the PlateModelManager) then pickling is much faster.
+                #       When they're not filenames then pygplates.RotationModel and pygplates.FeatureCollection get pickled anyway (ie, slow).
+                #
+                pool.map(
+                    partial(
+                        _build_and_reconstruct_ocean_seed_points_parallel,
+                        seafloor_grid=self,
+                        use_topological_model=use_topological_model,
+                    ),
+                    self._times,
+                )
+        else:
+            for time in self._times:
+                self._build_and_reconstruct_ocean_seed_points(
+                    time, use_topological_model=use_topological_model
+                )
+
+        logger.info("Reading reconstructed ocean seed point data...")
+
+        # List of reconstructed seed point data at each 'time' (indexed by time index).
+        all_reconstructed_seed_point_data = []
+
+        # Iterate from 'max_time' to 'min_time' to read the reconstructed seed point data (at each time) from files.
+        for time in self._times:
+
+            # Load the reconstructed seed point data at the current 'time'.
+            #
+            # This contains the full reconstruction (from 'time' to 'min_time') of seed points created at 'time'.
+            with np.load(
+                self.reconstructed_seed_points_filepath.format(time), allow_pickle=True
+            ) as reconstructed_seed_point_data_file:
+                # A Python dictionary mapping keys to arrays of reconstructed seed point data.
+                reconstructed_seed_point_data = reconstructed_seed_point_data_file[
+                    "data"
+                ].item()
+                # Keep track of reconstructed seed point data at ALL times.
+                all_reconstructed_seed_point_data.append(reconstructed_seed_point_data)
+
+        logger.info("Aggregating reconstructed ocean seed point data...")
+
+        # Iterate from 'max_time' to 'min_time' to aggregrate the reconstructed seed point data (at each time).
+        for time_index, time in enumerate(self._times):
+
+            # Store as 32-bit floating-point to save memory/disk-space.
+            all_active_longitudes_at_time = np.empty(0, dtype=np.float32)
+            all_active_latitudes_at_time = np.empty(0, dtype=np.float32)
+            all_active_seafloor_ages_at_time = np.empty(0, dtype=np.float32)
+            all_active_spreading_rates_at_time = np.empty(0, dtype=np.float32)
+
+            # All reconstructed seed point data for seed points created at any time between 'max_time'
+            # and the current 'time' will contain reconstructed seed points at the current 'time'.
+            # So let's iterate through them and aggregrate their data.
+            for start_time_index in range(0, time_index + 1):
+                start_time = self._times[start_time_index]
+
+                # Reconstructed seed point data for seed points created at 'start_time'.
+                reconstructed_seed_point_data = all_reconstructed_seed_point_data[
+                    start_time_index
+                ]
+
+                # First two arrays are the seafloor ages and spreading rates at 'start_time'.
+                seafloor_ages_at_start_time = reconstructed_seed_point_data[
+                    self.SEAFLOOR_AGE_KEY
+                ]
+                spreading_rates_at_start_time = reconstructed_seed_point_data[
+                    self.SPREADING_RATE_KEY
+                ]
+
+                # Seafloor ages at 'time' equal those at 'start_time' plus 'start_time - time'.
+                seafloor_ages_at_time = seafloor_ages_at_start_time + (
+                    start_time - time
+                )
+                # Spreading rates don't change with time.
+                spreading_rates_at_time = spreading_rates_at_start_time
+
+                # Then we have the reconstructed locations of active points (and their point indices) at all times from 'start_time' to 'min_time'.
+                # They are indexed using integer indices where 0 corresponds to 'start_time', 1 corresponds to 'start_time - time_increment', etc.
+                #
+                # However, we only need them at the current 'time'.
+                # So we need to create a time index that matches 'time'.
+                time_index_relative_to_start = time_index - start_time_index
+                # Get the active reconstructed seed point locations their active point indices at the current time.
+                (
+                    active_point_indices_at_time,
+                    active_longitudes_at_time,
+                    active_latitudes_at_time,
+                ) = reconstructed_seed_point_data[time_index_relative_to_start]
+
+                # Not all the seafloor ages and spreading rates at 'start_time' are active at the current 'time'.
+                active_seafloor_ages_at_time = seafloor_ages_at_time[
+                    active_point_indices_at_time
+                ]
+                active_spreading_rates_at_time = spreading_rates_at_time[
+                    active_point_indices_at_time
+                ]
+
+                # Accumulate the gridding input data (that contains all data for the current 'time').
+                all_active_longitudes_at_time = np.concatenate(
+                    (all_active_longitudes_at_time, active_longitudes_at_time)
+                )
+                all_active_latitudes_at_time = np.concatenate(
+                    (all_active_latitudes_at_time, active_latitudes_at_time)
+                )
+                all_active_seafloor_ages_at_time = np.concatenate(
+                    (all_active_seafloor_ages_at_time, active_seafloor_ages_at_time)
+                )
+                all_active_spreading_rates_at_time = np.concatenate(
+                    (all_active_spreading_rates_at_time, active_spreading_rates_at_time)
+                )
+
+            # Save the gridded input data (for the current time) to a file.
+            gridding_input_filename = self.gridding_input_filepath.format(time)
+            # Save arrays using *keyword* arguments will store each key as the name of its array (rather than just "arr_0", "arr_1", etc).
+            # This way when it's loaded (with 'np.load') the arrays will be indexed by these same keys.
+            gridding_input_dict = {
+                self.CURRENT_LONGITUDES_KEY: all_active_longitudes_at_time,
+                self.CURRENT_LATITUDES_KEY: all_active_latitudes_at_time,
+                self.SEAFLOOR_AGE_KEY: all_active_seafloor_ages_at_time,
+                self.SPREADING_RATE_KEY: all_active_spreading_rates_at_time,
+            }
+            np.savez_compressed(gridding_input_filename, **gridding_input_dict)
+
+    def _build_and_reconstruct_ocean_seed_points(
+        self, from_time, use_topological_model
+    ):
+        """Creates ocean seed points at `from_time` and reconstructs them to `min_time`.
+
+        Ocean seed points can be either the *initial* ocean seed points at `from_time=max_time` or
+        *mid-ocean ridge* seed points at `from_time` (in between `max_time` and `min_time`).
+        """
+
+        # If 'from_time' is 'max_time' then create initial ocean seed points and reconstruct them.
+        # Otherwise create MOR seed points at 'from_time' (where `min_time <= from_time < max_time`).
+        build_and_reconstruct_initial_ocean_seed_points = from_time == self._max_time
+        if build_and_reconstruct_initial_ocean_seed_points:
+            # Create the initial ocean seed points.
+            points, ages, spreading_rates = self._build_initial_ocean_seed_points()
+
+            # Appearance time of initial points is their initial ages plus the initial time ('from_time=max_time').
+            appearance_times = from_time + ages
+
+            logger.info(
+                f"Reconstructing {len(points)} initial ocean seed points from {from_time:.2f} Ma to {self._min_time:.2f} Ma..."
+            )
+
+        else:
+            # Create mid-ocean ridge seed points.
+            points, spreading_rates = self._build_mid_ocean_ridge_seed_points(from_time)
+
+            # All MOR points have zero age at 'from_time'.
+            ages = np.zeros(len(points))
+
+            # All MOR points appear at 'from_time'.
+            appearance_times = np.full(len(points), from_time)
+
+            logger.info(
+                f"Reconstructing {len(points)} mid-ocean ridge seed points from {from_time:.2f} Ma to {self._min_time:.2f} Ma..."
+            )
+
+        # A dictionary mapping keys to arrays of reconstructed seed point data.
+        #
+        # First two arrays are the seafloor ages and spreading rates at 'from_time'.
+        # Later we'll add the reconstructed locations of active points (and their point indices) at each reconstruction time.
+        #
+        # Note: We don't need to store the seafloor ages and spreading rates at each reconstruction 'time' because
+        #       (1) the seafloor ages at 'time' equal those at 'from_time' plus 'from_time - time' and
+        #       (2) the spreading rates don't change over time.
+        reconstructed_seed_point_data: dict[Union[str, int], Any] = {
+            self.SEAFLOOR_AGE_KEY: ages,
+            self.SPREADING_RATE_KEY: spreading_rates,
+        }
+
+        #
+        # Begin the reconstruction by topology process.
+        #
 
         # Specify the default collision detection region as subduction zones
         default_collision = _DefaultCollision(
@@ -918,22 +1055,22 @@ class SeafloorGrid(object):
             topology_reconstruction = _ReconstructByTopologicalModelImpl(
                 self.plate_reconstruction.rotation_model,
                 self.plate_reconstruction.topology_features,
-                self._max_time,
+                from_time,
                 self._min_time,
                 self._ridge_time_step,
-                all_points,
-                point_begin_times=all_appearance_times,
+                points,
+                point_begin_times=appearance_times,
                 detect_collisions=collision_spec,
             )
         else:
             topology_reconstruction = _ReconstructByTopologiesImpl(
                 self.plate_reconstruction.rotation_model,
                 self.plate_reconstruction.topology_features,
-                self._max_time,
+                from_time,
                 self._min_time,
                 self._ridge_time_step,
-                all_points,
-                point_begin_times=all_appearance_times,
+                points,
+                point_begin_times=appearance_times,
                 detect_collisions=collision_spec,
             )
 
@@ -944,123 +1081,83 @@ class SeafloorGrid(object):
         # all points have entered their valid time range *and* either exited their time range or
         # have been deactivated (subducted forward in time or consumed by MOR backward in time).
         while True:
-            logger.info(
-                f"Reconstruct by topologies: working on time {topology_reconstruction.get_current_time():0.2f} Ma"
-            )
 
-            # Get *all* the points at the current time step.
+            # Current time (where `min_time <= time <= from_time`).
+            time = topology_reconstruction.get_current_time()
+
+            # Get *all* (active and inactive) points at the current time step.
             #
-            # This is the same size as 'all_points', which is all initial ocean points at `max_time` and all MOR seed points
-            # that have ever emerged from spreading ridges through `max_time` to `min_time`.
-            # Here 'all_current_points', despite being the same size, differs in that any *inactive* points at the current time
+            # This is the same size as 'points', which is either the initial ocean points at `time=max_time` or the MOR seed points at `time`.
+            # Here 'current_points', despite being the same size, differs in that any *inactive* points at the current time
             # are None and the *active* points are at their reconstructed position at the current time.
-            all_current_points = topology_reconstruction.get_all_current_points()
+            current_points = topology_reconstruction.get_all_current_points()
 
             # Get the indices of the currently *active* points into all the points.
             #
             # Note: Points that are None represent currently *inactive* points.
             #       These are points that have either:
-            #         1) not been activated yet because the current time is older then their appearance time, or
+            #         1) not been activated yet because the current time is older than their appearance time, or
             #         2) have been deactivated because the current time is younger than their dissappearance time, or
             #         3) have been deactivated through collision detection (ie, collided with a continent or trench).
-            #       Although the points currently don't have a hardwired disappearance time (it's implicitly '-inf').
-            #       Instead we rely on collision detection to deactivate points.
+            #       However, note that (2) does not apply here because the points currently don't have a hardwired disappearance time
+            #       (it's implicitly '-inf'). Instead we rely on collision detection to deactivate points.
+            #       And note that (1) does not apply here either, because the initial ocean seed points all exist at 'time=max_time' and
+            #       all MOR seed points created at 'time' also exist at 'time'.
+            #
             active_point_indices = np.fromiter(
                 (
                     point_index
-                    for point_index, point in enumerate(all_current_points)
+                    for point_index, point in enumerate(current_points)
                     if point is not None
                 ),
-                dtype=int,
+                dtype=np.int32,
             )
 
-            logger.debug(f"The total number of points is :{len(all_current_points)}")
-            logger.debug(f"The number of active points is :{len(active_point_indices)}")
+            logger.debug(
+                f"At {time:.2f} Ma, {len(active_point_indices)} of the {len(points)} points created at {from_time:.2f} Ma are still active."
+            )
 
             if len(active_point_indices) > 0:
 
                 # Latitudes and longitudes of the active points.
-                active_latitudes = np.empty(len(active_point_indices), dtype=float)
-                active_longitudes = np.empty(len(active_point_indices), dtype=float)
+                # Store as 32-bit floating-point to save memory/disk-space.
+                active_latitudes = np.empty(len(active_point_indices), dtype=np.float32)
+                active_longitudes = np.empty(
+                    len(active_point_indices), dtype=np.float32
+                )
                 for index, point_index in enumerate(active_point_indices):
-                    active_latitudes[index], active_longitudes[index] = (
-                        all_current_points[point_index].to_lat_lon()
-                    )
+                    active_latitudes[index], active_longitudes[index] = current_points[
+                        point_index
+                    ].to_lat_lon()
 
-                active_seafloor_ages = (
-                    all_appearance_times[active_point_indices]
-                    - topology_reconstruction.get_current_time()
+                # Store the active reconstructed seed point locations their active point indices for the current time.
+                time_index = topology_reconstruction.get_current_time_index()
+                reconstructed_seed_point_data[time_index] = (
+                    active_point_indices,
+                    active_longitudes,
+                    active_latitudes,
                 )
-
-                active_spreading_rates = all_spreading_rates[active_point_indices]
-
-                active_birth_lats = all_birth_lats[active_point_indices]
-
-                active_point_ids = all_point_ids[active_point_indices]
-
-                # Map the key names of the gridding data to their arrays.
-                gridding_input_dict = {
-                    self.CURRENT_LONGITUDES_KEY: active_longitudes,
-                    self.CURRENT_LATITUDES_KEY: active_latitudes,
-                    self.SEAFLOOR_AGE_KEY: active_seafloor_ages,
-                    self.SPREADING_RATE_KEY: active_spreading_rates,
-                    self.BIRTH_LAT_SNAPSHOT_KEY: active_birth_lats,
-                    self.POINT_ID_SNAPSHOT_KEY: active_point_ids,
-                }
-
-                gridding_input_filename = self.gridding_input_filepath.format(
-                    topology_reconstruction.get_current_time()
-                )
-                # Saving arrays using *keyword* arguments stores the key as the name of the array (rather than just "arr_0", "arr_1", etc).
-                # This way when it's loaded (with 'np.load') the arrays will be indexed by these same keys.
-                np.savez_compressed(gridding_input_filename, **gridding_input_dict)
-
-                # save debug file
-                if get_debug_level() > 100:
-                    logger.debug(
-                        f"The max and min values of seafloor age are: {np.max(active_seafloor_ages)} - {np.min(active_seafloor_ages)} ({topology_reconstruction.get_current_time()}Ma)"
-                    )
-
-                    #
-                    # Save currently active sample points and their seafloor ages and spreading rates as a coverage to GPML.
-                    #
-
-                    sample_point_coverage_feature = pygplates.Feature()
-                    sample_point_coverage_geometry = pygplates.MultiPointOnSphere(
-                        zip(active_latitudes, active_longitudes)
-                    )
-                    sample_point_coverage_scalars = {
-                        pygplates.ScalarType.create_gpml(
-                            "SeafloorAge"
-                        ): active_seafloor_ages,
-                        pygplates.ScalarType.create_gpml(
-                            "SpreadingRate"
-                        ): active_spreading_rates,
-                    }
-                    sample_point_coverage_feature.set_geometry(
-                        (sample_point_coverage_geometry, sample_point_coverage_scalars)
-                    )
-                    # Only visible at curent time.
-                    sample_point_coverage_feature.set_valid_time(
-                        topology_reconstruction.get_current_time()
-                        + 0.5 * self._ridge_time_step,
-                        topology_reconstruction.get_current_time()
-                        - 0.5 * self._ridge_time_step,
-                    )  # type: ignore
-
-                    # Write gridded data at `time` to gpmlz.
-                    sample_point_basename, _ = os.path.splitext(
-                        gridding_input_filename
-                    )  # remove extension
-                    pygplates.FeatureCollection(sample_point_coverage_feature).write(
-                        sample_point_basename + ".gpmlz"
-                    )
 
             if not topology_reconstruction.reconstruct_to_next_time():
                 break
 
+        # Save the reconstructed seed point data to file.
+        reconstructed_seed_points_filename = (
+            self.reconstructed_seed_points_filepath.format(from_time)
+        )
+        # Store Python dict as a single-entry NumPy object array, and use the 'data' keyword (we'll use same keyword when loading).
+        np.savez_compressed(
+            reconstructed_seed_points_filename,
+            data=np.array(reconstructed_seed_point_data, dtype=object),
+        )
+
+        if build_and_reconstruct_initial_ocean_seed_points:
             logger.info(
-                f"Reconstruction has been done for {topology_reconstruction.get_current_time()}!"
+                f"...finished reconstructing {len(points)} initial ocean seed points from {from_time:.2f} Ma to {self._min_time:.2f} Ma."
+            )
+        else:
+            logger.info(
+                f"...finished reconstructing {len(points)} mid-ocean ridge seed points from {from_time:.2f} Ma to {self._min_time:.2f} Ma."
             )
 
     def lat_lon_z_to_netCDF(
@@ -1438,168 +1535,14 @@ def _build_continental_mask_with_contouring_parallel(
     )
 
 
-def _generate_mid_ocean_ridge_points(
-    time: float,
-    delta_time: float,
-    mid_ocean_ridges_file_path: str,
-    rotation_model,
-    topology_features,
-    ridge_sampling,
-    overwrite=True,
+def _build_and_reconstruct_ocean_seed_points_parallel(
+    time,
+    seafloor_grid,
+    use_topological_model,
 ):
-    """generate middle ocean ridge seed points at a given time"""
-    mor_fn = mid_ocean_ridges_file_path.format(time)
-    if os.path.isfile(mor_fn) and not overwrite:
-        logger.info(
-            f"Middle ocean ridge file exists and will not create again.\n{mor_fn}"
-        )
-        return
-
-    # Points and their z values that emerge from MORs at this time.
-    shifted_mor_points = []
-    point_spreading_rates = []
-
-    # Resolve topologies to the current time.
-    topological_snapshot = pygplates.TopologicalSnapshot(
-        topology_features, rotation_model, time
-    )
-    shared_boundary_sections = topological_snapshot.get_resolved_topological_sections()
-
-    # pygplates.ResolvedTopologicalSection objects.
-    for shared_boundary_section in shared_boundary_sections:
-        if (
-            shared_boundary_section.get_feature().get_feature_type()
-            == pygplates.FeatureType.gpml_mid_ocean_ridge
-        ):
-            spreading_feature = shared_boundary_section.get_feature()
-
-            # Find the stage rotation of the spreading feature in the
-            # frame of reference of its geometry at the current
-            # reconstruction time (the MOR is currently actively spreading).
-            # The stage pole can then be directly geometrically compared
-            # to the *reconstructed* spreading geometry.
-            stage_rotation = separate_ridge_transform_segments.get_stage_rotation_for_reconstructed_geometry(
-                spreading_feature, rotation_model, time
-            )
-            if not stage_rotation:
-                # Skip current feature - it's not a spreading feature.
-                continue
-
-            # Get the stage pole of the stage rotation.
-            # Note that the stage rotation is already in frame of
-            # reference of the *reconstructed* geometry at the spreading time.
-            stage_pole, _ = stage_rotation.get_euler_pole_and_angle()
-
-            # One way rotates left and the other right, but don't know
-            # which - doesn't matter in our example though.
-            rotate_slightly_off_mor_one_way = pygplates.FiniteRotation(
-                stage_pole, np.radians(0.01)
-            )
-            rotate_slightly_off_mor_opposite_way = (
-                rotate_slightly_off_mor_one_way.get_inverse()
-            )
-
-            # Iterate over the shared sub-segments.
-            for shared_sub_segment in shared_boundary_section.get_shared_sub_segments():
-                # Tessellate MOR section.
-                mor_points = pygplates.MultiPointOnSphere(
-                    shared_sub_segment.get_resolved_geometry().to_tessellated(
-                        np.radians(ridge_sampling)
-                    )
-                )
-
-                coords = mor_points.to_lat_lon_list()
-                lats = [i[0] for i in coords]
-                lons = [i[1] for i in coords]
-                boundary_feature = shared_boundary_section.get_feature()
-                left_plate = boundary_feature.get_left_plate(None)
-                right_plate = boundary_feature.get_right_plate(None)
-                if left_plate is not None and right_plate is not None:
-                    # Get the spreading rates for all points in this sub segment
-                    (
-                        spreading_rates,
-                        _,
-                    ) = tools.calculate_spreading_rates(
-                        time=time,
-                        lons=lons,
-                        lats=lats,
-                        left_plates=[left_plate] * len(lons),
-                        right_plates=[right_plate] * len(lons),
-                        rotation_model=rotation_model,
-                        delta_time=delta_time,
-                    )
-
-                else:
-                    spreading_rates = [np.nan] * len(lons)
-
-                # Loop through all but the 1st and last points in the current sub segment
-                for point, rate in zip(
-                    mor_points.get_points()[1:-1],
-                    spreading_rates[1:-1],
-                ):
-                    # Add the point "twice" to the main shifted_mor_points list; once for a L-side
-                    # spread, another for a R-side spread. Then add the same spreading rate twice
-                    # to the list - this therefore assumes spreading rate is symmetric.
-                    shifted_mor_points.append(rotate_slightly_off_mor_one_way * point)
-                    shifted_mor_points.append(
-                        rotate_slightly_off_mor_opposite_way * point
-                    )
-                    point_spreading_rates.extend([rate] * 2)
-
-    # save the middle ocean ridges points to .pkl file
-    lats_lons = [point.to_lat_lon() for point in shifted_mor_points]
-    df = pd.DataFrame(
-        lats_lons,
-        columns=[
-            SeafloorGrid.CURRENT_LATITUDES_KEY,
-            SeafloorGrid.CURRENT_LONGITUDES_KEY,
-        ],
-    )
-    df[SeafloorGrid.SPREADING_RATE_KEY] = point_spreading_rates
-    df.to_pickle(mor_fn)
-
-    if get_debug_level() > 100:
-        #
-        # Save newly created mid-ocean ridge points and their spreading rates as a coverage to GPML.
-        #
-
-        mor_coverage_feature = pygplates.Feature()
-        mor_coverage_geometry = pygplates.MultiPointOnSphere(shifted_mor_points)
-        mor_coverage_scalars = {
-            pygplates.ScalarType.create_gpml("SpreadingRate"): point_spreading_rates,
-        }
-        mor_coverage_feature.set_geometry((mor_coverage_geometry, mor_coverage_scalars))
-        # Only visible at curent time.
-        mor_coverage_feature.set_valid_time(
-            time + 0.5 * delta_time,
-            time - 0.5 * delta_time,
-        )  # type: ignore
-
-        # Write MOR points at `time` to gpmlz
-        mor_basename, _ = os.path.splitext(mor_fn)  # remove extension
-        pygplates.FeatureCollection(mor_coverage_feature).write(mor_basename + ".gpmlz")
-
-    logger.info(f"Finished building MOR seedpoints at {time} Ma!")
-
-
-# TODO: When pyGPlates can pickle pygplates.RotationModel and pygplates.FeatureCollection noticeably faster (than it currently does in pyGPlates 1.0),
-#       then remove this function definition.
-def _generate_mid_ocean_ridge_points_parallel(
-    time: float,
-    delta_time: float,
-    mid_ocean_ridges_file_path: str,
-    plate_reconstruction,
-    ridge_sampling,
-    overwrite,
-):
-    _generate_mid_ocean_ridge_points(
-        time=time,
-        delta_time=delta_time,
-        mid_ocean_ridges_file_path=mid_ocean_ridges_file_path,
-        rotation_model=plate_reconstruction.rotation_model,
-        topology_features=plate_reconstruction.topology_features,
-        ridge_sampling=ridge_sampling,
-        overwrite=overwrite,
+    # Dispatch from parallel helper function to SeafloorGrid class method.
+    seafloor_grid._build_and_reconstruct_ocean_seed_points(
+        time, use_topological_model=use_topological_model
     )
 
 
