@@ -265,8 +265,6 @@ class SeafloorGrid(object):
 
         self.use_continent_contouring = use_continent_contouring
 
-        self._setup_output_paths(save_directory)
-
         # Topological parameters
         self.refinement_levels = refinement_levels
         self.ridge_sampling = ridge_sampling
@@ -287,6 +285,8 @@ class SeafloorGrid(object):
         self._times = np.arange(
             self._max_time, self._min_time - 1e-4, -self._ridge_time_step
         )
+
+        self._setup_output_paths(save_directory)
 
     def _map_res_to_node_percentage(self, continent_mask_filename):
         """Determine which percentage to use to scale the continent mask resolution at max time."""
@@ -369,6 +369,71 @@ class SeafloorGrid(object):
         self.reconstructed_seed_points_filepath = os.path.join(
             self.reconstructed_seed_points_directory, reconstructed_seed_points_basename
         )
+
+        # Debug files (if debug level is high enough).
+        self._generate_debug_output_files = get_debug_level() > 100
+        if self._generate_debug_output_files:
+            self.debug_dir = os.path.join(self.save_directory, "debug")
+            Path(self.debug_dir).mkdir(parents=True, exist_ok=True)
+
+            # Filename for initial ocean basin seed points created at 'max_time'.
+            debug_initial_ocean_basin_reconstructed_seed_points_file_format = "initial_ocean_basin_reconstructed_seed_points_created_at_{:0.2f}_Ma.gpmlz"
+            if self.file_collection:
+                self.debug_initial_ocean_basin_reconstructed_seed_points_filepath = os.path.join(
+                    self.debug_dir,
+                    self.file_collection
+                    + "_"
+                    + debug_initial_ocean_basin_reconstructed_seed_points_file_format,
+                )
+            else:
+                self.debug_initial_ocean_basin_reconstructed_seed_points_filepath = (
+                    os.path.join(
+                        self.debug_dir,
+                        debug_initial_ocean_basin_reconstructed_seed_points_file_format,
+                    )
+                )
+
+            # Filename format for mid-ocean ridge seed points created at a specific reconstruction time.
+            #
+            # A separate debug file is created for each time that is later (younger) than 'max_time'.
+            debug_mid_ocean_ridge_reconstructed_seed_points_file_format = (
+                "mid_ocean_ridge_reconstructed_seed_points_created_at_{:0.2f}_Ma.gpmlz"
+            )
+            if self.file_collection:
+                self.debug_mid_ocean_ridge_reconstructed_seed_points_filepath = (
+                    os.path.join(
+                        self.debug_dir,
+                        self.file_collection
+                        + "_"
+                        + debug_mid_ocean_ridge_reconstructed_seed_points_file_format,
+                    )
+                )
+            else:
+                self.debug_mid_ocean_ridge_reconstructed_seed_points_filepath = (
+                    os.path.join(
+                        self.debug_dir,
+                        debug_mid_ocean_ridge_reconstructed_seed_points_file_format,
+                    )
+                )
+
+            # Filename for ALL seed points created at ALL reconstruction times.
+            #
+            # A single file containing the initial seed points at the initial time and
+            # the mid-ocean ridges created at later times.
+            debug_all_reconstructed_seed_points_filename = (
+                "all_reconstructed_seed_points.gpmlz"
+            )
+            if self.file_collection:
+                self.debug_all_reconstructed_seed_points_filepath = os.path.join(
+                    self.debug_dir,
+                    self.file_collection
+                    + "_"
+                    + debug_all_reconstructed_seed_points_filename,
+                )
+            else:
+                self.debug_all_reconstructed_seed_points_filepath = os.path.join(
+                    self.debug_dir, debug_all_reconstructed_seed_points_filename
+                )
 
     def _set_grid_resolution(self, grid_spacing=0.1):
         """Determine the output grid resolution."""
@@ -873,19 +938,28 @@ class SeafloorGrid(object):
                     time, use_topological_model=use_topological_model
                 )
 
-        logger.info("Reading reconstructed ocean seed point data...")
+        logger.info(
+            "Aggregating reconstructed ocean seed point data for gridding input..."
+        )
+
+        #
+        # First gather all the reconstructed seed point data.
+        #
 
         # List of reconstructed seed point data at each 'time' (indexed by time index).
         all_reconstructed_seed_point_data = []
 
         # Iterate from 'max_time' to 'min_time' to read the reconstructed seed point data (at each time) from files.
-        for time in self._times:
+        for start_time in self._times:
 
-            # Load the reconstructed seed point data at the current 'time'.
+            # Load the reconstructed seed point data at the current 'start_time'.
             #
-            # This contains the full reconstruction (from 'time' to 'min_time') of seed points created at 'time'.
+            # This contains the full reconstruction (from 'start_time' to 'min_time') of seed points created at 'start_time'.
+            # For initial ocean seed points this from 'max_time' to 'min_time'.
+            # For mid-ocean ridge seed points this is from 'start_time' to 'min_time' (where 'min_time <= start_time < max_time').
             with np.load(
-                self.reconstructed_seed_points_filepath.format(time), allow_pickle=True
+                self.reconstructed_seed_points_filepath.format(start_time),
+                allow_pickle=True,
             ) as reconstructed_seed_point_data_file:
                 # A Python dictionary mapping keys to arrays of reconstructed seed point data.
                 reconstructed_seed_point_data = reconstructed_seed_point_data_file[
@@ -894,89 +968,26 @@ class SeafloorGrid(object):
                 # Keep track of reconstructed seed point data at ALL times.
                 all_reconstructed_seed_point_data.append(reconstructed_seed_point_data)
 
-        logger.info("Aggregating reconstructed ocean seed point data...")
+        #
+        # Then generate gridding input files from the reconstructed seed point data.
+        #
+        self._generate_gridding_input_from_reconstructed_ocean_seed_point_data(
+            all_reconstructed_seed_point_data
+        )
 
-        # Iterate from 'max_time' to 'min_time' to aggregrate the reconstructed seed point data (at each time).
-        for time_index, time in enumerate(self._times):
-
-            # Store as 32-bit floating-point to save memory/disk-space.
-            all_active_longitudes_at_time = np.empty(0, dtype=np.float32)
-            all_active_latitudes_at_time = np.empty(0, dtype=np.float32)
-            all_active_seafloor_ages_at_time = np.empty(0, dtype=np.float32)
-            all_active_spreading_rates_at_time = np.empty(0, dtype=np.float32)
-
-            # All reconstructed seed point data for seed points created at any time between 'max_time'
-            # and the current 'time' will contain reconstructed seed points at the current 'time'.
-            # So let's iterate through them and aggregrate their data.
-            for start_time_index in range(0, time_index + 1):
-                start_time = self._times[start_time_index]
-
-                # Reconstructed seed point data for seed points created at 'start_time'.
-                reconstructed_seed_point_data = all_reconstructed_seed_point_data[
-                    start_time_index
-                ]
-
-                # First two arrays are the seafloor ages and spreading rates at 'start_time'.
-                seafloor_ages_at_start_time = reconstructed_seed_point_data[
-                    self.SEAFLOOR_AGE_KEY
-                ]
-                spreading_rates_at_start_time = reconstructed_seed_point_data[
-                    self.SPREADING_RATE_KEY
-                ]
-
-                # Seafloor ages at 'time' equal those at 'start_time' plus 'start_time - time'.
-                seafloor_ages_at_time = seafloor_ages_at_start_time + (
-                    start_time - time
-                )
-                # Spreading rates don't change with time.
-                spreading_rates_at_time = spreading_rates_at_start_time
-
-                # Then we have the reconstructed locations of active points (and their point indices) at all times from 'start_time' to 'min_time'.
-                # They are indexed using integer indices where 0 corresponds to 'start_time', 1 corresponds to 'start_time - time_increment', etc.
-                #
-                # However, we only need them at the current 'time'.
-                # So we need to create a time index that matches 'time'.
-                time_index_relative_to_start = time_index - start_time_index
-                # Get the active reconstructed seed point locations their active point indices at the current time.
-                (
-                    active_point_indices_at_time,
-                    active_longitudes_at_time,
-                    active_latitudes_at_time,
-                ) = reconstructed_seed_point_data[time_index_relative_to_start]
-
-                # Not all the seafloor ages and spreading rates at 'start_time' are active at the current 'time'.
-                active_seafloor_ages_at_time = seafloor_ages_at_time[
-                    active_point_indices_at_time
-                ]
-                active_spreading_rates_at_time = spreading_rates_at_time[
-                    active_point_indices_at_time
-                ]
-
-                # Accumulate the gridding input data (that contains all data for the current 'time').
-                all_active_longitudes_at_time = np.concatenate(
-                    (all_active_longitudes_at_time, active_longitudes_at_time)
-                )
-                all_active_latitudes_at_time = np.concatenate(
-                    (all_active_latitudes_at_time, active_latitudes_at_time)
-                )
-                all_active_seafloor_ages_at_time = np.concatenate(
-                    (all_active_seafloor_ages_at_time, active_seafloor_ages_at_time)
-                )
-                all_active_spreading_rates_at_time = np.concatenate(
-                    (all_active_spreading_rates_at_time, active_spreading_rates_at_time)
-                )
-
-            # Save the gridded input data (for the current time) to a file.
-            gridding_input_filename = self.gridding_input_filepath.format(time)
-            # Save arrays using *keyword* arguments will store each key as the name of its array (rather than just "arr_0", "arr_1", etc).
-            # This way when it's loaded (with 'np.load') the arrays will be indexed by these same keys.
-            gridding_input_dict = {
-                self.CURRENT_LONGITUDES_KEY: all_active_longitudes_at_time,
-                self.CURRENT_LATITUDES_KEY: all_active_latitudes_at_time,
-                self.SEAFLOOR_AGE_KEY: all_active_seafloor_ages_at_time,
-                self.SPREADING_RATE_KEY: all_active_spreading_rates_at_time,
-            }
-            np.savez_compressed(gridding_input_filename, **gridding_input_dict)
+        #
+        # Finally, if requested, generate debug files containing reconstructed ocean seed point data.
+        #
+        # These are located in the "debug" sub-directory of the save directory.
+        # They can be loaded into GPlates to visualise the reconstruction of the seed points.
+        #
+        if self._generate_debug_output_files:
+            logger.info(
+                "Generating debug files containing reconstructed ocean seed point data..."
+            )
+            self._generate_debug_files_containing_reconstructed_ocean_seed_point_data(
+                all_reconstructed_seed_point_data
+            )
 
     def _build_and_reconstruct_ocean_seed_points(
         self, from_time, use_topological_model
@@ -1117,6 +1128,7 @@ class SeafloorGrid(object):
                 f"At {time:.2f} Ma, {len(active_point_indices)} of the {len(points)} points created at {from_time:.2f} Ma are still active."
             )
 
+            # Store the reconstructed seed point data if any seed points are currently active.
             if len(active_point_indices) > 0:
 
                 # Latitudes and longitudes of the active points.
@@ -1159,6 +1171,236 @@ class SeafloorGrid(object):
             logger.info(
                 f"...finished reconstructing {len(points)} mid-ocean ridge seed points from {from_time:.2f} Ma to {self._min_time:.2f} Ma."
             )
+
+    def _generate_gridding_input_from_reconstructed_ocean_seed_point_data(
+        self, all_reconstructed_seed_point_data
+    ):
+        """Generate gridding input files from the reconstructed seed point data.
+
+        The gridding input files will be used later when the user generates NetCDF grids of seafloor age and spreading rate.
+        """
+
+        # Iterate from 'max_time' to 'min_time' to aggregrate the reconstructed seed point data (at each time).
+        for time_index, time in enumerate(self._times):
+
+            # Store as 32-bit floating-point to save memory/disk-space.
+            all_active_longitudes_at_time = np.empty(0, dtype=np.float32)
+            all_active_latitudes_at_time = np.empty(0, dtype=np.float32)
+            all_active_seafloor_ages_at_time = np.empty(0, dtype=np.float32)
+            all_active_spreading_rates_at_time = np.empty(0, dtype=np.float32)
+
+            # All reconstructed seed point data for seed points created at any time between 'max_time'
+            # and the current 'time' will contain *reconstructed* seed points at the current 'time'.
+            # So let's iterate through them and aggregrate their data.
+            for start_time_index in range(0, time_index + 1):
+                start_time = self._times[start_time_index]
+
+                # Reconstructed seed point data for seed points created at 'start_time'.
+                reconstructed_seed_point_data = all_reconstructed_seed_point_data[
+                    start_time_index
+                ]
+
+                # There are two arrays containing the seafloor ages and spreading rates at 'start_time'.
+                seafloor_ages_at_start_time = reconstructed_seed_point_data[
+                    self.SEAFLOOR_AGE_KEY
+                ]
+                spreading_rates_at_start_time = reconstructed_seed_point_data[
+                    self.SPREADING_RATE_KEY
+                ]
+
+                # Seafloor ages at 'time' equal those at 'start_time' plus 'start_time - time'.
+                seafloor_ages_at_time = seafloor_ages_at_start_time + (
+                    start_time - time
+                )
+                # Spreading rates don't change with time.
+                spreading_rates_at_time = spreading_rates_at_start_time
+
+                # Then we have the reconstructed locations of active points (and their point indices) at all times from 'start_time' to 'min_time'.
+                # They are indexed using integer indices where 0 corresponds to 'start_time', 1 corresponds to 'start_time - time_increment', etc.
+                #
+                # However, we only need them at the current 'time'.
+                # So we need to create a time index that matches 'time'.
+                time_index_relative_to_start = time_index - start_time_index
+                # Get the active reconstructed seed point locations their active point indices at the current time.
+                reconstructed_seed_point_data_at_time = (
+                    reconstructed_seed_point_data.get(time_index_relative_to_start)
+                )
+                # Not all reconstruction times will contain active points.
+                # For example, ALL seed points (created at 'start_time') might have collided with continents and been deactivated by 'time'.
+                if reconstructed_seed_point_data_at_time:
+                    (
+                        active_point_indices_at_time,
+                        active_longitudes_at_time,
+                        active_latitudes_at_time,
+                    ) = reconstructed_seed_point_data_at_time
+
+                    # Not all seed points (and hence their seafloor ages and spreading rates) at 'start_time' are active at the current 'time'.
+                    # Some are still active though - otherwise we couldn't get here.
+                    active_seafloor_ages_at_time = seafloor_ages_at_time[
+                        active_point_indices_at_time
+                    ]
+                    active_spreading_rates_at_time = spreading_rates_at_time[
+                        active_point_indices_at_time
+                    ]
+
+                    # Accumulate the gridding input data (that contains all data for the current 'time').
+                    all_active_longitudes_at_time = np.concatenate(
+                        (all_active_longitudes_at_time, active_longitudes_at_time)
+                    )
+                    all_active_latitudes_at_time = np.concatenate(
+                        (all_active_latitudes_at_time, active_latitudes_at_time)
+                    )
+                    all_active_seafloor_ages_at_time = np.concatenate(
+                        (all_active_seafloor_ages_at_time, active_seafloor_ages_at_time)
+                    )
+                    all_active_spreading_rates_at_time = np.concatenate(
+                        (
+                            all_active_spreading_rates_at_time,
+                            active_spreading_rates_at_time,
+                        )
+                    )
+
+            # Save the gridded input data (for the current time) to a file.
+            gridding_input_filename = self.gridding_input_filepath.format(time)
+            # Save arrays using *keyword* arguments will store each key as the name of its array (rather than just "arr_0", "arr_1", etc).
+            # This way when it's loaded (with 'np.load') the arrays will be indexed by these same keys.
+            gridding_input_dict = {
+                self.CURRENT_LONGITUDES_KEY: all_active_longitudes_at_time,
+                self.CURRENT_LATITUDES_KEY: all_active_latitudes_at_time,
+                self.SEAFLOOR_AGE_KEY: all_active_seafloor_ages_at_time,
+                self.SPREADING_RATE_KEY: all_active_spreading_rates_at_time,
+            }
+            np.savez_compressed(gridding_input_filename, **gridding_input_dict)
+
+    def _generate_debug_files_containing_reconstructed_ocean_seed_point_data(
+        self, all_reconstructed_seed_point_data
+    ):
+        """Generate debug files containing reconstructed ocean seed point data."""
+
+        # All reconstructed seed points at ALL reconstruction times get written to single large debug file.
+        all_reconstructed_seed_point_features = []
+
+        # Iterate from 'max_time' to 'min_time' to read the reconstructed seed point data (at each time) from files.
+        for start_time_index, start_time in enumerate(self._times):
+
+            # All the seed points reconstructed from 'start_time' (to 'min_time') get written to a separate debug file
+            # (with 'start_time' in the filename).
+            seed_point_features_reconstructed_from_start_time = []
+
+            # Reconstructed seed point data for seed points created at 'start_time'.
+            reconstructed_seed_point_data = all_reconstructed_seed_point_data[
+                start_time_index
+            ]
+
+            # There are two arrays containing the seafloor ages and spreading rates at 'start_time'.
+            seafloor_ages_at_start_time = reconstructed_seed_point_data[
+                self.SEAFLOOR_AGE_KEY
+            ]
+            spreading_rates_at_start_time = reconstructed_seed_point_data[
+                self.SPREADING_RATE_KEY
+            ]
+
+            # Iterate from 'start_time' to 'min_time' to collect all reconstructions of the seed points that were created at 'start_time'.
+            for time_index in range(start_time_index, len(self._times)):
+                time = self._times[time_index]
+
+                # Seafloor ages at 'time' equal those at 'start_time' plus 'start_time - time'.
+                seafloor_ages_at_time = seafloor_ages_at_start_time + (
+                    start_time - time
+                )
+                # Spreading rates don't change with time.
+                spreading_rates_at_time = spreading_rates_at_start_time
+
+                # Then we have the reconstructed locations of active points (and their point indices) at all times from 'start_time' to 'min_time'.
+                # They are indexed using integer indices where 0 corresponds to 'start_time', 1 corresponds to 'start_time - time_increment', etc.
+                #
+                # However, we only need them at the current 'time'.
+                # So we need to create a time index that matches 'time'.
+                time_index_relative_to_start = time_index - start_time_index
+                # Get the active reconstructed seed point locations their active point indices at the current time.
+                reconstructed_seed_point_data_at_time = (
+                    reconstructed_seed_point_data.get(time_index_relative_to_start)
+                )
+                # Not all reconstruction times will contain active points.
+                # For example, ALL seed points (created at 'start_time') might have collided with continents and been deactivated by 'time'.
+                if reconstructed_seed_point_data_at_time:
+                    (
+                        active_point_indices_at_time,
+                        active_longitudes_at_time,
+                        active_latitudes_at_time,
+                    ) = reconstructed_seed_point_data_at_time
+
+                    # Not all seed points (and hence their seafloor ages and spreading rates) at 'start_time' are active at the current 'time'.
+                    # Some are still active though - otherwise we couldn't get here.
+                    active_seafloor_ages_at_time = seafloor_ages_at_time[
+                        active_point_indices_at_time
+                    ]
+                    active_spreading_rates_at_time = spreading_rates_at_time[
+                        active_point_indices_at_time
+                    ]
+
+                    #
+                    # Save currently active reconstructed seed points and their seafloor ages and spreading rates as a coverage to GPML.
+                    #
+
+                    seed_points_feature = pygplates.Feature()
+                    seed_points_coverage_geometry = pygplates.MultiPointOnSphere(
+                        zip(active_latitudes_at_time, active_longitudes_at_time)
+                    )
+                    seed_points_coverage_scalars = {
+                        pygplates.ScalarType.create_gpml(
+                            "SeafloorAge"
+                        ): active_seafloor_ages_at_time,
+                        pygplates.ScalarType.create_gpml(
+                            "SpreadingRate"
+                        ): active_spreading_rates_at_time,
+                    }
+                    seed_points_feature.set_geometry(
+                        (seed_points_coverage_geometry, seed_points_coverage_scalars)
+                    )
+                    # Only visible at current time.
+                    seed_points_feature.set_valid_time(
+                        time + 0.5 * self._ridge_time_step,
+                        time - 0.5 * self._ridge_time_step,
+                    )  # type: ignore
+
+                    # The feature name provides clues as to when and where the reconstructed seed points originated.
+                    seed_points_feature.set_name(
+                        f"Seed points created at {start_time} Ma"
+                    )
+
+                    # Store with the seed points reconstructed from 'start_time'.
+                    seed_point_features_reconstructed_from_start_time.append(
+                        seed_points_feature
+                    )
+                    # Store with all reconstructed seed points.
+                    all_reconstructed_seed_point_features.append(seed_points_feature)
+
+            # Write a debug file containing the seed points reconstructed from 'start_time' to 'min_time'.
+            #
+            # When 'start_time' is 'max_time' then this is the initial ocean basin seed points.
+            # Otherwise 'start_time' satisfies 'min_time <= start_time < max_time' and this is the mid-ocean ridge seed points created at 'start_time'.
+            if start_time == self._max_time:
+                # Filename already has 'max_time' in it.
+                debug_reconstructed_seed_points_filename = self.debug_initial_ocean_basin_reconstructed_seed_points_filepath.format(
+                    start_time
+                )
+            else:
+                # Generate a filename with 'start_time' in it.
+                debug_reconstructed_seed_points_filename = self.debug_mid_ocean_ridge_reconstructed_seed_points_filepath.format(
+                    start_time
+                )
+            pygplates.FeatureCollection(
+                seed_point_features_reconstructed_from_start_time
+            ).write(debug_reconstructed_seed_points_filename)
+
+        # Write one big debug file containing ALL seed points at ALL reconstruction times.
+        #
+        # This includes the initial seed points as well as the mid-ocean ridges created at later times.
+        # Including all their reconstructions back to 'min_time'.
+        pygplates.FeatureCollection(all_reconstructed_seed_point_features).write(
+            self.debug_all_reconstructed_seed_points_filepath
+        )
 
     def lat_lon_z_to_netCDF(
         self,
