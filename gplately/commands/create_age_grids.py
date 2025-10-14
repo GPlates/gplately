@@ -85,8 +85,8 @@ def add_parser(parser):
         "--refinement-levels",
         metavar="LEVELS",
         type=int,
-        help="mesh refinement levels; default: 5",
-        default=5,
+        help="mesh refinement levels; default: 6",
+        default=6,
         dest="refinement_levels",
     )
     agegrid_cmd.add_argument(
@@ -180,7 +180,7 @@ def create_agegrids(
     max_time: float,
     ridge_time_step: float = 1,
     n_jobs: int = 1,
-    refinement_levels: int = 5,
+    refinement_levels: int = 6,
     grid_spacing: float = 0.1,
     ridge_sampling: float = 0.5,
     initial_spreadrate: float = 75,
