@@ -147,9 +147,10 @@ def add_parser(parser):
         dest="unmasked",
     )
     agegrid_cmd.add_argument(
-        "--resume_from_checkpoints",
-        help="flag to indicate whether to resume the gridding preparation stage (continental masking and/or ridge seed building) after interruption; "
-        "default: re-run gridding preparation from scratch",
+        "--resume-from-checkpoints",
+        help="flag to indicate whether to resume a previously interrupted gridding run "
+        "(all parameters and input data should remain unchanged); "
+        "default: re-run gridding from scratch",
         action="store_true",
         dest="resume_from_checkpoints",
     )
