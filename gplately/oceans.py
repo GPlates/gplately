@@ -90,7 +90,7 @@ class SeafloorGrid(object):
 
     First, the global domain of initial points is created using [stripy's](https://github.com/underworldcode/stripy/blob/master/stripy/spherical_meshes.py#L27)
     icosahedral triangulated mesh. The number of points in this mesh can be controlled using a ``refinement_levels`` integer (the larger this integer,
-    the more resolved the continent masks will be).
+    the more resolved the initial ocean basin will be).
 
     ![RefinementLevels](https://raw.githubusercontent.com/GPlates/gplately/master/Notebooks/NotebookFiles/pdoc_Files/seafloorgrid_refinement.png)
 
@@ -151,7 +151,7 @@ class SeafloorGrid(object):
         *,
         save_directory: Union[str, Path] = "seafloor-grid-output",
         file_collection: str = "",
-        refinement_levels: int = 5,
+        refinement_levels: int = 6,
         ridge_sampling: float = 0.5,
         extent: Tuple = (-180, 180, -90, 90),
         grid_spacing: float = 0.1,
@@ -182,8 +182,8 @@ class SeafloorGrid(object):
             The top-level directory to save all outputs to.
         file_collection : str, default=""
             A string to identify the plate model used (will be automated later).
-        refinement_levels : int, default=5
-            Control the number of points in the icosahedral mesh (higher integer means higher resolution of continent masks).
+        refinement_levels : int, default=6
+            Control the number of points in the icosahedral mesh (higher integer means higher resolution of initial ocean basin).
         ridge_sampling : float, default=0.5
             Spatial resolution (in degrees) at which points that emerge from ridges are tessellated.
         extent : tuple of 4, default=(-180.,180.,-90.,90.)

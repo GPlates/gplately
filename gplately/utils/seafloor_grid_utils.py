@@ -27,7 +27,7 @@ from ..lib.icosahedron import get_mesh, xyz2lonlat
 def create_icosahedral_mesh(refinement_levels):
     """Return a Icospheres mesh as pygplates.MultiPointOnSphere.
 
-    This global mesh will be masked with a set of continental or COB terrane
+    This global mesh will later be masked with a set of continental or COB terrane
     polygons to define the ocean basin at a given reconstruction time.
     The `refinement_levels` integer is proportional to the resolution of the
     mesh and the ocean/continent boundary.

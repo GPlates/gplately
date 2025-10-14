@@ -531,12 +531,6 @@ class PlotTopologies(object):
             anchor_plate_id=self._anchor_plate_id,
         )
 
-        #
-        # NOTE: If you add a new data member here that's a pygplates reconstructable feature geometry or resolved topological geometry,
-        #       then be sure to also include it in __getstate__/()__setstate__()
-        #       (basically anything reconstructed or resolved by pygplates since those cannot be pickled).
-        #
-
         # Extract (from the topological snapshot) resolved topologies for BOTH rigid boundaries and networks.
         self._topologies = [
             t.get_resolved_feature()

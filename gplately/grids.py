@@ -2118,6 +2118,7 @@ class Raster(object):
         Raster or np.ndarray
             The reconstructed grid. Areas for which no plate ID could be determined will be filled with ``fill_value``.
 
+
         .. note::
 
             For two-dimensional grids, ``fill_value`` should be a single
