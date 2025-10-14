@@ -1608,18 +1608,23 @@ def _lat_lon_z_to_netCDF_time(
         continent_mask_filename.format(time), resize=(resX, resY)
     )
 
-    # Whether to compress the masked grid, or not (None).
+    # Whether to enable *lossy* compression the masked grid, or not (None).
     #
-    # Note: Previously this was 2 (enabling compression).
+    # Lossy compression reduces spreading rate grid file sizes quite significantly.
+    # Not so much for seafloor age.
+    # However we still enable it for both.
+    #
+    # Note: Previously this was quantised to 2 significant digits (lossy compression).
     #       However we want reasonable accuracy for the seafloor age grid
     #       (for example) and setting significant digits to 3 - since ages
-    #       can be 3 digits (before the decimal point) - doesn't reduce the
-    #       grid file sizes by large amounts. For a 0.1 degree age grid it
-    #       reduces from ~800KB to ~480KB - which is still significant but not
-    #       by a factor of 2 or 3 or 4 or more as reported in
-    #       https://github.com/GPlates/gplately/pull/125 (that was likely for
-    #       data, such as topography, that is less smooth than an age grid).
+    #       can be 3 digits (before the decimal point).
+    #       We also use 3 significant digits for spreading rate.
     masked_significant_digits = None
+    if SeafloorGrid.SEAFLOOR_AGE_KEY == zval_name:
+        masked_significant_digits = 3
+    elif SeafloorGrid.SPREADING_RATE_KEY == zval_name:
+        masked_significant_digits = 3
+
     if masked_significant_digits is None:
         masked_fill_value = np.nan
     else:
