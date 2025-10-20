@@ -1591,13 +1591,28 @@ def _lat_lon_z_to_netCDF_time(
     grid_output_unmasked = os.path.join(output_dir, unmasked_basename)
     grid_output = os.path.join(output_dir, grid_basename)
 
+    # Whether to enable *lossy* compression, or not (None).
+    #
+    # Lossy compression reduces *spreading rate* grid file sizes quite significantly.
+    # Not so much for *seafloor age*.
+    # However we still enable it for both.
+    #
+    # Note: Previously this was quantised to 2 significant digits.
+    #       However we want reasonable accuracy for the seafloor age grid, so setting
+    #       it to 3 significant digits since ages can be 3 digits (before the decimal point).
+    #       We also use 3 significant digits for spreading rate.
+    significant_digits = None
+    if SeafloorGrid.SEAFLOOR_AGE_KEY == zval_name:
+        significant_digits = 3
+    elif SeafloorGrid.SPREADING_RATE_KEY == zval_name:
+        significant_digits = 3
+
     if unmasked:
         grids.write_netcdf_grid(
             grid_output_unmasked,
             Z,
             extent=extent,
-            significant_digits=2,
-            fill_value=None,
+            significant_digits=significant_digits,
         )
 
     # Identify regions in the grid in the continental mask
@@ -1608,35 +1623,8 @@ def _lat_lon_z_to_netCDF_time(
         continent_mask_filename.format(time), resize=(resX, resY)
     )
 
-    # Whether to enable *lossy* compression the masked grid, or not (None).
-    #
-    # Lossy compression reduces spreading rate grid file sizes quite significantly.
-    # Not so much for seafloor age.
-    # However we still enable it for both.
-    #
-    # Note: Previously this was quantised to 2 significant digits (lossy compression).
-    #       However we want reasonable accuracy for the seafloor age grid
-    #       (for example) and setting significant digits to 3 - since ages
-    #       can be 3 digits (before the decimal point).
-    #       We also use 3 significant digits for spreading rate.
-    masked_significant_digits = None
-    if SeafloorGrid.SEAFLOOR_AGE_KEY == zval_name:
-        masked_significant_digits = 3
-    elif SeafloorGrid.SPREADING_RATE_KEY == zval_name:
-        masked_significant_digits = 3
-
-    if masked_significant_digits is None:
-        masked_fill_value = np.nan
-    else:
-        # When compressing, we can't seem to use NaN as a fill value because
-        # reading the written grid does not seem to mask out the NaN regions.
-        # It was reported in https://github.com/GPlates/gplately/pull/125
-        # that 2 significant digits was enough to preserve NaN masks, but
-        # it doesn't seem to work for me (using netCDF4 1.7.2 on Windows).
-        # Even 7 significant digits doesn't work.
-        #
-        # Instead we just use the default '_FillValue' used by netCDF4.
-        masked_fill_value = 9.969209968386869e36
+    # The fill value to use for masking out continents.
+    masked_fill_value = grids.default_netcdf_fill_value(Z, significant_digits)
 
     # Use the continental mask to mask out continents
     Z[cont_mask.astype(bool)] = masked_fill_value
@@ -1645,7 +1633,7 @@ def _lat_lon_z_to_netCDF_time(
         grid_output,
         Z,
         extent=extent,
-        significant_digits=masked_significant_digits,
+        significant_digits=significant_digits,
         fill_value=masked_fill_value,
     )
     logger.info(f"{zval_name} netCDF grids for {time:0.2f} Ma complete!")
@@ -1683,7 +1671,7 @@ def _build_continental_mask(
         continent_mask_filepath.format(time),
         final_grid.astype("i1"),
         extent=(-180, 180, -90, 90),
-        fill_value=None,
+        fill_value=False,
     )
     logger.info(f"Finished building a continental mask at {time} Ma!")
 
@@ -1798,7 +1786,7 @@ def _build_continental_mask_with_contouring(
         continent_mask_filepath.format(time),
         continent_mask.astype("i1"),
         extent=(-180, 180, -90, 90),
-        fill_value=None,
+        fill_value=False,
     )
     logger.warning(
         f"Finished building a continental mask at {time} Ma using ptt's 'Continent Contouring'!"

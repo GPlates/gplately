@@ -40,7 +40,13 @@ from plate_model_manager import PlateModel, PlateModelManager, PresentDayRasterM
 
 from . import auxiliary, ptt
 from .download import DataServer
-from .grids import Raster, read_netcdf_grid, reconstruct_grid
+from .grids import (
+    Raster,
+    read_netcdf_grid,
+    write_netcdf_grid,
+    default_netcdf_fill_value,
+    reconstruct_grid,
+)
 from .lib.reconstruct import (
     reconstruct_points,
     reconstruct_points_impl,
@@ -84,6 +90,8 @@ __all__ = [
     "PygmtPlotEngine",
     # functions
     "read_netcdf_grid",
+    "write_netcdf_grid",
+    "default_netcdf_fill_value",
     "reconstruct_grid",
     "reconstruct_points",
     "ridge_spreading_rate",

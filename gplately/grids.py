@@ -67,6 +67,7 @@ __all__ = [
     "fill_raster",
     "read_netcdf_grid",
     "write_netcdf_grid",
+    "default_netcdf_fill_value",
     "RegularGridInterpolator",
     "sample_grid",
     "reconstruct_grid",
@@ -373,27 +374,27 @@ def write_netcdf_grid(
     grid,
     extent: Union[tuple, str] = "global",
     significant_digits=None,
-    fill_value: Union[float, None] = np.nan,
+    fill_value: Union[float, bool, None] = None,
 ):
-    """Write geological data contained in a `grid` to a netCDF4 grid with a specified `filename`.
+    """Write geological data contained in a ``grid`` to a netCDF4 grid with a specified ``filename``.
 
     Notes
     -----
-    The written netCDF4 grid has the same latitudinal and longitudinal (row and column) dimensions as `grid`.
+    The written netCDF4 grid has the same latitudinal and longitudinal (row and column) dimensions as ``grid``.
     It has three variables:
 
-    * Latitudes of `grid` data
-    * Longitudes of `grid` data
-    * The data stored in `grid`
+    * Latitudes of ``grid`` data
+    * Longitudes of ``grid`` data
+    * The data stored in ``grid``
 
     However, the latitudes and longitudes of the grid returned to the user are constrained to those
-    specified in `extent`.
-    By default, `extent` assumes a global latitudinal and longitudinal span: `extent=[-180,180,-90,90]`.
+    specified in ``extent``.
+    By default, ``extent`` assumes a global latitudinal and longitudinal span: `extent=[-180,180,-90,90]`.
 
     Parameters
     ----------
     filename : str
-        The full path (including a filename and the ".nc" extension) to save the created netCDF4 `grid` to.
+        The full path (including a filename and the ".nc" extension) to save the created netCDF4 ``grid`` to.
 
     grid : array-like
         An ndarray grid containing data to be written into a `netCDF` (.nc) file. Note: Rows correspond to
@@ -404,20 +405,33 @@ def write_netcdf_grid(
         variables of the netCDF grid to. If no extents are supplied, full global extent `[-180, 180, -90, 90]`
         is assumed.
 
-    significant_digits : int
-        Applies lossy data compression up to a specified number of significant digits.
+    significant_digits : int, optional
+        Optionally applies lossy data compression up to a specified number of significant digits.
         This significantly reduces file size, but make sure the required precision is preserved in the
         saved netcdf file.
 
-    fill_value : scalar, NoneType, default: np.nan
-        Value used to fill in missing data. By default this is np.nan.
+    fill_value : scalar or False or None, default=None
+        Value used to fill in missing data.
+
+        If ``False`` is specified then no fill value is used, and you must ensure that data was written to *all* elements of ``grid``.
+        And any NaN elements will be written as the raw bit pattern for NaN (rather than automatically converted to a fill value).
+
+        If ``None`` is specified then a default fill value is used, as follows:
+
+        * If ``significant_digits`` is NOT specified and the grid data type is floating-point then the default is `np.nan`.
+          This essentially means that `np.nan` is only used (as the default) when *losslessly* compressing *floating-point* data.
+          This is because *lossy* compression with a NaN fill value appears to *not* always mask out NaN regions.
+        * In all other cases the default is determined by `netCDF` based on the grid type.
+          For example, the default for floating-point types is 9.969209968386869e+36 (see `netCDF4.default_fillvals`) and
+          the default for *signed* integers is the largest negative value supported by the integer type (for *unsigned* its largest value).
+          In this case, please ensure the default is outside the range of your valid grid data, otherwise specify a custom fill value.
+
+        ...and to query the default value associated with ``None`` you can call :func:`default_netcdf_fill_value`.
 
     Returns
     -------
-    A netCDF grid will be saved to the path specified in `filename`.
+    A netCDF grid will be saved to the path specified in ``filename``.
     """
-    import netCDF4
-
     from gplately import __version__ as _version
 
     if extent == "global":
@@ -462,38 +476,60 @@ def write_netcdf_grid(
 
         # add more keyword arguments for quantizing data
         if significant_digits:
-            # significant_digits needs to be >= 2 so that NaNs are preserved
-            data_kwds["significant_digits"] = max(2, int(significant_digits))
+            data_kwds["significant_digits"] = int(significant_digits)
             data_kwds["quantize_mode"] = "GranularBitRound"
 
-        # boolean arrays need to be converted to integers
-        # no such thing as a mask on a boolean array
-        if grid.dtype is np.dtype(bool):
-            grid = grid.astype("i1")
-            fill_value = None
+        # The fill value can be False, but not True.
+        if isinstance(fill_value, bool):
+            if fill_value:
+                raise ValueError(
+                    "'fill_value' cannot be True; it should be False, None or a number"
+                )
 
-        # Set the fill value (this can be None).
+        if grid.dtype is np.dtype(bool):
+            # Boolean arrays need to be converted to integers since
+            # there's no such thing as a mask on a boolean array.
+            grid = grid.astype("i1")
+            fill_value = False  # no pre-filling
+
+        if fill_value is None:
+            # The fill value was not specified, so we'll set it to the default.
+            fill_value = default_netcdf_fill_value(grid, significant_digits)
+            if fill_value is None:
+                raise ValueError(
+                    "Grid type does not have a default fill value (according to netCDF4)"
+                )
+
+        # Set the fill value keyword argument.
+        #
+        # If this is None then netCDF4 will pre-fill using its default fill value (for the grid type).
+        # If this is False then netCDF4 will not pre-fill. Note that True is not really a valid value (it behaves as the value 1).
+        # Otherwise netCDF4 will pre-fill using the specified value.
         #
         # Note: It seems better to set the 'fill_value' keyword argument (when creating z variable)
         #       rather than set the 'missing_value' attribute (on the z variable after creating it).
         #       This translates to setting the '_FillValue' attribute instead of the 'missing_value' attribute.
         #       And this appears to work better when compressing/quantizing (eg, with 'significant_digits').
-        #       On an unrelated note, '_FillValue' defaults to 9.969209968386869e+36 for floating-point types.
         data_kwds["fill_value"] = fill_value
 
         cdf_data = cdf.createVariable("z", grid.dtype, ("lat", "lon"), **data_kwds)
 
         # Ensure min and max z values are properly registered.
-        if fill_value is not None:
+        if isinstance(fill_value, bool):
+            # Fill value is False (note that True is not a valid value/type).
+            # So all values are expected to be valid (note that NaN is a valid floating-point type)
+            cdf_data.actual_range = [np.nanmin(grid), np.nanmax(grid)]
+        elif np.isnan(fill_value):
+            # Fill value is NaN.
+            cdf_data.actual_range = [np.nanmin(grid), np.nanmax(grid)]
+        else:
+            # Fill value is a non-NaN number, so create a grid mask using it.
             grid_mask = grid != fill_value
-
             cdf_data.actual_range = [
+                # Note: grid elements could still contain NaN values (though unlikely)...
                 np.nanmin(grid[grid_mask]),
                 np.nanmax(grid[grid_mask]),
             ]
-
-        else:
-            cdf_data.actual_range = [np.nanmin(grid), np.nanmax(grid)]
 
         cdf_data.standard_name = "z"
 
@@ -503,6 +539,58 @@ def write_netcdf_grid(
 
         # write data
         cdf_data[:, :] = grid
+
+
+def default_netcdf_fill_value(grid, significant_digits=None):
+    """Return the default fill value that would be used when calling ``write_netcdf_grid`` with ``fill_value=None``.
+
+    Notes
+    -----
+    This is useful when you need to set some values in ``grid`` to a fill value (eg, masking out continents from a seafloor age grid)
+    before writing out the grid with ``write_netcdf_grid``.
+
+    If ``significant_digits`` is NOT specified (ie, None) and the grid data type is floating-point then the default is `np.nan`.
+    This essentially means that `np.nan` is only used (as the default) when *losslessly* compressing *floating-point* data.
+    This is because *lossy* compression with a NaN fill value appears to *not* always mask out NaN regions.
+
+    In all other cases the default is determined by `netCDF` based on the grid type.
+    For example, the default for floating-point types is 9.969209968386869e+36 (see `netCDF4.default_fillvals`).
+    In this case, please ensure the default is outside the range of your valid grid data, otherwise you should specify
+    a custom fill value when calling ``write_netcdf_grid``.
+
+    Parameters
+    ----------
+    grid : ndarray
+        The grid that the default fill value will be used for (when writing the grid data to a `netCDF` file).
+
+    significant_digits : int, optional
+        Whether lossy data compression will be applied when writing the grid data to a `netCDF` file.
+        This should be the same value that you will pass to ``write_netcdf_grid``.
+
+    Returns
+    -------
+    The default fill value, or None if the grid type does not have a default value (according to netCDF4).
+    """
+    # If we're NOT using *lossy* compression and the grid type is floating-point
+    # then set the fill value to np.nan.
+    if significant_digits is None and np.issubdtype(grid.dtype, np.floating):
+        return np.nan
+
+    # When using *lossy* compression, we can't seem to use NaN as a fill value
+    # because reading the resultant grid does not seem to mask out the NaN regions.
+    # It was reported in https://github.com/GPlates/gplately/pull/125
+    # that 2 significant digits was enough to preserve NaN masks, but
+    # it doesn't seem to work for me (using netCDF4 1.7.2 on Windows).
+    # Even 7 significant digits doesn't work.
+    #
+    # Instead we just use the default '_FillValue' provided by netCDF4.
+    # These default values differ depending on the grid type, and can be accessed with 'netCDF4.default_fillvals'.
+    # For example, the default for floating-point types is 9.969209968386869e+36.
+    #
+    # Note: This will return None if netCDF4 does not have a default fill value for the grid type.
+    return netCDF4.default_fillvals.get(
+        grid.dtype.str.lstrip("<>=|")  # Remove endianness/alignment prefixes
+    )
 
 
 class RegularGridInterpolator(_RGI):
@@ -2071,7 +2159,7 @@ class Raster(object):
         else:
             return Raster(data, self.plate_reconstruction, self.extent, time=self.time)
 
-    def save_to_netcdf4(self, filename, significant_digits=None, fill_value=np.nan):
+    def save_to_netcdf4(self, filename, significant_digits=None, fill_value=None):
         """Saves the grid attributed to the :class:`Raster` object to the given ``filename`` (including
         the ".nc" extension) in netCDF4 format."""
         write_netcdf_grid(
