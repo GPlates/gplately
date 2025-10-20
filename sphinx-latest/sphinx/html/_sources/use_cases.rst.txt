@@ -65,6 +65,14 @@ The table below provides a list of all available plate reconstruction models.
      - COB
      - Age Grids
      - SR Grids
+   * - Muller2025_
+     - ✅
+     - ✅
+     - ✅
+     - ✅
+     - ✅
+     - ❌
+     - ❌
    * - Shirmard2025_
      - ✅
      - ✅
@@ -78,9 +86,9 @@ The table below provides a list of all available plate reconstruction models.
      - ✅
      - ✅
      - ✅
-     - ❌
-     - ❌
-     - ❌
+     - ✅
+     - ✅
+     - ✅
    * - Cao2024_
      - ✅
      - ✅
@@ -95,7 +103,7 @@ The table below provides a list of all available plate reconstruction models.
      - ✅ 
      - ✅
      - ✅
-     - ❌ 
+     - ✅
      - ❌
    * - Zahirovic2022_ 
      - ✅
@@ -117,16 +125,16 @@ The table below provides a list of all available plate reconstruction models.
      - ✅ 
      - ✅
      - ✅ 
-     - ❌
-     - ❌
+     - ✅ 
+     - ✅ 
      - ✅ 
      - ✅
    * - Clennett2020_M2019_
      - ✅ 
      - ✅ 
      - ✅ 
-     - ❌ 
-     - ❌ 
+     - ✅  
+     - ✅  
      - ✅ 
      - ✅ 
    * - Clennett2020_S2013_
@@ -199,7 +207,7 @@ The table below provides a list of all available plate reconstruction models.
      - ✅ 
      - ✅ 
      - ❌ 
-     - ❌ 
+     - ✅ 
      - ❌ 
    * - Gibbons2015_ 
      - ✅
@@ -250,6 +258,7 @@ The table below provides a list of all available plate reconstruction models.
      - ❌
      - ❌ 
 
+.. _Muller2025: https://zenodo.org/records/15233548
 .. _Shirmard2025: https://zenodo.org/records/15233548
 .. _Cao2024: https://doi.org/10.5281/zenodo.11536686
 .. _Alfonso2024: https://doi.org/10.5281/zenodo.11392268
@@ -279,7 +288,8 @@ The table below provides a list of all available plate reconstruction models.
    - ``COB``: continent-ocean boundary. The COBs are represented as lines along passive margins and do not include data from active margins.
    - ``Age Grids``: numerical grid of seafloor age
    - ``SR Grids``: numerical grid of seafloor spreading rate
-
+   - Model ``Shirmard2025`` is an alias for model ``Muller2025``.
+   - Model ``Clennett2020`` is an alias for model ``Clennett2020_M2019``.
 
 PlateReconstruction
 -------------------
