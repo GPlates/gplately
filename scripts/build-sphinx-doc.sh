@@ -14,7 +14,7 @@ pip-compile pyproject.toml
 pip3 install .
 pip3 install -U sphinx sphinx_rtd_theme
 sphinx-autogen -o sphinx-doc/source/generated sphinx-doc/source/*.rst
-# somehow I have to do this in Powershel 
+# somehow I have to do this in Powershell 
 # & sphinx-autogen -o sphinx-doc/source/generated (Get-ChildItem -Path sphinx-doc/source/*.rst)
 cd sphinx-doc
 make html
