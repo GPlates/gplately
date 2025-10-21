@@ -72,7 +72,7 @@ def reconstruct_points(
 
     """
     _model = PlateModelManager().get_model(model_name)
-    # user must provide a valid plate model name. See https://gplates.github.io/gplately/sphinx-latest/html/use_cases.html#id1
+    # user must provide a valid plate model name. See https://gplates.github.io/gplately/sphinx-latest/html/plate_models.html
     assert _model
 
     static_polygon_fc = pygplates.FeatureCollection()

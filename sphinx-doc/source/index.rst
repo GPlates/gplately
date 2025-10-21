@@ -31,6 +31,7 @@ and more to help you get started with plate reconstructions.
    api
    functions
    secondaries
+   plate_models
 
 Index
 =====
