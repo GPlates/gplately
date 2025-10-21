@@ -65,6 +65,7 @@
 <li class="toctree-l1"><a class="reference internal" href="api.html">Main Classes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="functions.html">Functions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="secondaries.html">Other Classes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="plate_models.html">Plate Models</a></li>
 </ul>
 
         </div>
@@ -95,24 +96,23 @@
 <h1>Common Use Cases<a class="headerlink" href="#common-use-cases" title="Link to this heading"></a></h1>
 <nav class="contents local" id="contents">
 <ul class="simple">
-<li><p><a class="reference internal" href="#dataserver" id="id2">DataServer</a></p></li>
-<li><p><a class="reference internal" href="#platereconstruction" id="id3">PlateReconstruction</a></p></li>
-<li><p><a class="reference internal" href="#points" id="id4">Points</a></p></li>
-<li><p><a class="reference internal" href="#raster" id="id5">Raster</a></p></li>
-<li><p><a class="reference internal" href="#plottopologies" id="id6">PlotTopologies</a></p></li>
-<li><p><a class="reference internal" href="#seafloorgrid" id="id7">SeafloorGrid</a></p></li>
+<li><p><a class="reference internal" href="#dataserver" id="id1">DataServer</a></p></li>
+<li><p><a class="reference internal" href="#platereconstruction" id="id2">PlateReconstruction</a></p></li>
+<li><p><a class="reference internal" href="#points" id="id3">Points</a></p></li>
+<li><p><a class="reference internal" href="#raster" id="id4">Raster</a></p></li>
+<li><p><a class="reference internal" href="#plottopologies" id="id5">PlotTopologies</a></p></li>
+<li><p><a class="reference internal" href="#seafloorgrid" id="id6">SeafloorGrid</a></p></li>
 </ul>
 </nav>
 <section id="dataserver">
-<h2><a class="toc-backref" href="#id2" role="doc-backlink">DataServer</a><a class="headerlink" href="#dataserver" title="Link to this heading"></a></h2>
+<h2><a class="toc-backref" href="#id1" role="doc-backlink">DataServer</a><a class="headerlink" href="#dataserver" title="Link to this heading"></a></h2>
 <p>The <a class="reference internal" href="generated/gplately.DataServer.html#gplately.DataServer" title="gplately.DataServer"><code class="xref py py-class docutils literal notranslate"><span class="pre">gplately.DataServer</span></code></a> class allows users to automatically download and cache the plate reconstruction model files to a designated folder
 on your system. These files include rotation models, topology features, and static geometries such as coastlines, continents, and
 continent-ocean boundaries. Additionally, it supports the retrieval of other data types, including rasters, grids, and feature data.</p>
-<p>The <a class="reference external" href="https://github.com/michaelchin/plate-model-manager">plate-model-manager</a> Python package is a newly developed alternative to the <a class="reference internal" href="generated/gplately.DataServer.html#gplately.DataServer" title="gplately.DataServer"><code class="xref py py-class docutils literal notranslate"><span class="pre">gplately.DataServer</span></code></a> class.
-Users are encouraged to use the newer <a class="reference external" href="https://github.com/michaelchin/plate-model-manager">plate-model-manager</a> whenever possible.</p>
 <div class="admonition seealso">
 <p class="admonition-title">See also</p>
-<p><a class="reference external" href="https://michaelchin.github.io/plate-model-manager/latest/">plate-model-manager documentation</a></p>
+<p>The <a class="reference internal" href="generated/gplately.DataServer.html#gplately.DataServer" title="gplately.DataServer"><code class="xref py py-class docutils literal notranslate"><span class="pre">gplately.DataServer</span></code></a> class is implemented using the <a class="reference external" href="https://pypi.org/project/plate-model-manager/">plate-model-manager</a> Python package.
+To simply access plate model files, you can use the <a class="reference external" href="https://pypi.org/project/plate-model-manager/">plate-model-manager</a> Python package directly.</p>
 </div>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="kn">from</span><span class="w"> </span><span class="nn">gplately</span><span class="w"> </span><span class="kn">import</span> <span class="n">DataServer</span>
 <span class="linenos"> 2</span>
@@ -131,272 +131,13 @@ Users are encouraged to use the newer <a class="reference external" href="https:
 <span class="linenos">15</span><span class="n">etopo</span> <span class="o">=</span> <span class="n">data_server</span><span class="o">.</span><span class="n">get_raster</span><span class="p">(</span><span class="s2">&quot;ETOPO1_tif&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>The table below provides a list of all available plate reconstruction models.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<ul class="simple">
-<li><p>Use horizontal scrolling to see all the columns in the table.</p></li>
-<li><p>All models include rotation data.</p></li>
-</ul>
-</div>
-<table class="docutils align-left" id="id1" style="width: 100%">
-<caption><span class="caption-text">Plate Reconstruction Models</span><a class="headerlink" href="#id1" title="Link to this table"></a></caption>
-<colgroup>
-<col style="width: 30.0%" />
-<col style="width: 10.0%" />
-<col style="width: 10.0%" />
-<col style="width: 10.0%" />
-<col style="width: 10.0%" />
-<col style="width: 10.0%" />
-<col style="width: 10.0%" />
-<col style="width: 10.0%" />
-</colgroup>
-<thead>
-<tr class="row-odd"><th class="head"><p>Model Name</p></th>
-<th class="head"><p>Topology</p></th>
-<th class="head"><p>Static Polygons</p></th>
-<th class="head"><p>Coasts</p></th>
-<th class="head"><p>Continents</p></th>
-<th class="head"><p>COB</p></th>
-<th class="head"><p>Age Grids</p></th>
-<th class="head"><p>SR Grids</p></th>
-</tr>
-</thead>
-<tbody>
-<tr class="row-even"><td><p><a class="reference external" href="https://zenodo.org/records/15233548">Muller2025</a></p></td>
-<td><p>✅</p></td>
-<td><p>✅</p></td>
-<td><p>✅</p></td>
-<td><p>✅</p></td>
-<td><p>✅</p></td>
-<td><p>❌</p></td>
-<td><p>❌</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference external" href="https://zenodo.org/records/15233548">Shirmard2025</a></p></td>
-<td><p>✅</p></td>
-<td><p>✅</p></td>
-<td><p>✅</p></td>
-<td><p>✅</p></td>
-<td><p>✅</p></td>
-<td><p>❌</p></td>
-<td><p>❌</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference external" href="https://doi.org/10.5281/zenodo.11392268">Alfonso2024</a></p></td>
-<td><p>✅</p></td>
-<td><p>✅</p></td>
-<td><p>✅</p></td>
-<td><p>✅</p></td>
-<td><p>✅</p></td>
-<td><p>✅</p></td>
-<td><p>✅</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference external" href="https://doi.org/10.5281/zenodo.11536686">Cao2024</a></p></td>
-<td><p>✅</p></td>
-<td><p>✅</p></td>
-<td><p>✅</p></td>
-<td><p>✅</p></td>
-<td><p>✅</p></td>
-<td><p>❌</p></td>
-<td><p>❌</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference external" href="https://doi.org/10.5281/zenodo.10297173">Muller2022</a></p></td>
-<td><p>✅</p></td>
-<td><p>✅</p></td>
-<td><p>✅</p></td>
-<td><p>✅</p></td>
-<td><p>✅</p></td>
-<td><p>✅</p></td>
-<td><p>❌</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference external" href="https://zenodo.org/records/4729045">Zahirovic2022</a></p></td>
-<td><p>✅</p></td>
-<td><p>✅</p></td>
-<td><p>✅</p></td>
-<td><p>✅</p></td>
-<td><p>❌</p></td>
-<td><p>✅</p></td>
-<td><p>✅</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference external" href="https://doi.org/10.5281/zenodo.10346399">Merdith2021</a></p></td>
-<td><p>✅</p></td>
-<td><p>✅</p></td>
-<td><p>✅</p></td>
-<td><p>✅</p></td>
-<td><p>❌</p></td>
-<td><p>❌</p></td>
-<td><p>❌</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference external" href="https://doi.org/10.5281/zenodo.10348270">Clennett2020</a></p></td>
-<td><p>✅</p></td>
-<td><p>✅</p></td>
-<td><p>✅</p></td>
-<td><p>✅</p></td>
-<td><p>✅</p></td>
-<td><p>✅</p></td>
-<td><p>✅</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference external" href="https://doi.org/10.5281/zenodo.10348270">Clennett2020_M2019</a></p></td>
-<td><p>✅</p></td>
-<td><p>✅</p></td>
-<td><p>✅</p></td>
-<td><p>✅</p></td>
-<td><p>✅</p></td>
-<td><p>✅</p></td>
-<td><p>✅</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference external" href="https://doi.org/10.5281/zenodo.10348270">Clennett2020_S2013</a></p></td>
-<td><p>✅</p></td>
-<td><p>✅</p></td>
-<td><p>✅</p></td>
-<td><p>❌</p></td>
-<td><p>❌</p></td>
-<td><p>❌</p></td>
-<td><p>❌</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference external" href="https://doi.org/10.5281/zenodo.10525286">Muller2019</a></p></td>
-<td><p>✅</p></td>
-<td><p>✅</p></td>
-<td><p>✅</p></td>
-<td><p>✅</p></td>
-<td><p>✅</p></td>
-<td><p>✅</p></td>
-<td><p>❌</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference external" href="https://doi.org/10.5281/zenodo.10525369">Young2018</a></p></td>
-<td><p>✅</p></td>
-<td><p>✅</p></td>
-<td><p>✅</p></td>
-<td><p>✅</p></td>
-<td><p>❌</p></td>
-<td><p>❌</p></td>
-<td><p>❌</p></td>
-</tr>
-<tr class="row-even"><td><p>TorsvikCocks2017</p></td>
-<td><p>❌</p></td>
-<td><p>✅</p></td>
-<td><p>✅</p></td>
-<td><p>❌</p></td>
-<td><p>❌</p></td>
-<td><p>❌</p></td>
-<td><p>❌</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference external" href="https://doi.org/10.5281/zenodo.10526156">Matthews2016</a></p></td>
-<td><p>✅</p></td>
-<td><p>✅</p></td>
-<td><p>✅</p></td>
-<td><p>✅</p></td>
-<td><p>❌</p></td>
-<td><p>❌</p></td>
-<td><p>❌</p></td>
-</tr>
-<tr class="row-even"><td><p>Matthews2016_pmag_ref</p></td>
-<td><p>❌</p></td>
-<td><p>✅</p></td>
-<td><p>✅</p></td>
-<td><p>✅</p></td>
-<td><p>❌</p></td>
-<td><p>❌</p></td>
-<td><p>❌</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference external" href="https://doi.org/10.5281/zenodo.10565444">Muller2016</a></p></td>
-<td><p>✅</p></td>
-<td><p>✅</p></td>
-<td><p>✅</p></td>
-<td><p>❌</p></td>
-<td><p>✅</p></td>
-<td><p>✅</p></td>
-<td><p>❌</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference external" href="https://doi.org/10.5281/zenodo.10596609">Scotese2016</a></p></td>
-<td><p>❌</p></td>
-<td><p>✅</p></td>
-<td><p>✅</p></td>
-<td><p>❌</p></td>
-<td><p>❌</p></td>
-<td><p>❌</p></td>
-<td><p>❌</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference external" href="https://doi.org/10.5281/zenodo.10531296">Zahirovic2016</a></p></td>
-<td><p>✅</p></td>
-<td><p>✅</p></td>
-<td><p>✅</p></td>
-<td><p>✅</p></td>
-<td><p>❌</p></td>
-<td><p>✅</p></td>
-<td><p>❌</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference external" href="https://doi.org/10.5281/zenodo.10595658">Gibbons2015</a></p></td>
-<td><p>✅</p></td>
-<td><p>✅</p></td>
-<td><p>✅</p></td>
-<td><p>❌</p></td>
-<td><p>❌</p></td>
-<td><p>❌</p></td>
-<td><p>❌</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference external" href="https://doi.org/10.5281/zenodo.10595658">Zahirovic2014</a></p></td>
-<td><p>❌</p></td>
-<td><p>✅</p></td>
-<td><p>✅</p></td>
-<td><p>❌</p></td>
-<td><p>❌</p></td>
-<td><p>❌</p></td>
-<td><p>❌</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference external" href="https://doi.org/10.5281/zenodo.10595888">Shephard2013</a></p></td>
-<td><p>✅</p></td>
-<td><p>✅</p></td>
-<td><p>✅</p></td>
-<td><p>❌</p></td>
-<td><p>❌</p></td>
-<td><p>❌</p></td>
-<td><p>❌</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference external" href="https://doi.org/10.5281/zenodo.10596349">Gurnis2012</a></p></td>
-<td><p>✅</p></td>
-<td><p>✅</p></td>
-<td><p>✅</p></td>
-<td><p>❌</p></td>
-<td><p>❌</p></td>
-<td><p>❌</p></td>
-<td><p>❌</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference external" href="https://doi.org/10.5281/zenodo.10596049">Seton2012</a></p></td>
-<td><p>✅</p></td>
-<td><p>✅</p></td>
-<td><p>✅</p></td>
-<td><p>✅</p></td>
-<td><p>✅</p></td>
-<td><p>✅</p></td>
-<td><p>❌</p></td>
-</tr>
-<tr class="row-odd"><td><p>Muller2008</p></td>
-<td><p>❌</p></td>
-<td><p>✅</p></td>
-<td><p>❌</p></td>
-<td><p>❌</p></td>
-<td><p>❌</p></td>
-<td><p>❌</p></td>
-<td><p>❌</p></td>
-</tr>
-</tbody>
-</table>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">Topology</span></code>: topological plate polygons and plate boundaries</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">Coasts</span></code>: coastlines. The Greenland coastline uses the Danish Geological Survey dataset. The rest of the world uses the World Vector Shoreline from the Global Self-consistent Hierarchical High-resolution Geography (GSHHG) dataset.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">Continents</span></code>: continental polygons, derived from the Static Polygons, containing continental crust and volcanically-modified oceanic crust (including island arcs).</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">COB</span></code>: continent-ocean boundary. The COBs are represented as lines along passive margins and do not include data from active margins.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">Age</span> <span class="pre">Grids</span></code>: numerical grid of seafloor age</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">SR</span> <span class="pre">Grids</span></code>: numerical grid of seafloor spreading rate</p></li>
-<li><p>Model <code class="docutils literal notranslate"><span class="pre">Shirmard2025</span></code> is an alias for model <code class="docutils literal notranslate"><span class="pre">Muller2025</span></code>.</p></li>
-<li><p>Model <code class="docutils literal notranslate"><span class="pre">Clennett2020</span></code> is an alias for model <code class="docutils literal notranslate"><span class="pre">Clennett2020_M2019</span></code>.</p></li>
-</ul>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference external" href="plate_models.html">This page</a> contains a list of all available plate reconstruction models.</p>
 </div>
 </section>
 <section id="platereconstruction">
-<h2><a class="toc-backref" href="#id3" role="doc-backlink">PlateReconstruction</a><a class="headerlink" href="#platereconstruction" title="Link to this heading"></a></h2>
+<h2><a class="toc-backref" href="#id2" role="doc-backlink">PlateReconstruction</a><a class="headerlink" href="#platereconstruction" title="Link to this heading"></a></h2>
 <p>The <a class="reference internal" href="generated/gplately.PlateReconstruction.html#gplately.PlateReconstruction" title="gplately.PlateReconstruction"><code class="xref py py-class docutils literal notranslate"><span class="pre">gplately.PlateReconstruction</span></code></a> class contains tools to reconstruct geological features like tectonic plates and plate boundaries,
 and to interrogate plate kinematic data like plate motion velocities, and rates of subduction and seafloor spreading.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="kn">from</span><span class="w"> </span><span class="nn">gplately</span><span class="w"> </span><span class="kn">import</span> <span class="n">PlateReconstruction</span><span class="p">,</span> <span class="n">PlateModelManager</span>
@@ -422,7 +163,7 @@ and to interrogate plate kinematic data like plate motion velocities, and rates 
 The <a class="reference external" href="https://github.com/GPlates/gplately/blob/master/Notebooks/02-PlateReconstructions.ipynb">02-PlateReconstructions.ipynb</a> Jupyter Notebook is available in the GitHub GPlately repository.</p>
 </section>
 <section id="points">
-<h2><a class="toc-backref" href="#id4" role="doc-backlink">Points</a><a class="headerlink" href="#points" title="Link to this heading"></a></h2>
+<h2><a class="toc-backref" href="#id3" role="doc-backlink">Points</a><a class="headerlink" href="#points" title="Link to this heading"></a></h2>
 <p>The methods in the <a class="reference internal" href="generated/gplately.Points.html#gplately.Points" title="gplately.Points"><code class="xref py py-class docutils literal notranslate"><span class="pre">gplately.Points</span></code></a> class track the motion of a point (or group of points) represented by a latitude and longitude
 through geologic time. This motion can be visualised using flowlines or motion paths and quantified with point motion velocities.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
@@ -452,7 +193,7 @@ The <a class="reference external" href="https://github.com/GPlates/gplately/blob
 </a>
 </section>
 <section id="raster">
-<h2><a class="toc-backref" href="#id5" role="doc-backlink">Raster</a><a class="headerlink" href="#raster" title="Link to this heading"></a></h2>
+<h2><a class="toc-backref" href="#id4" role="doc-backlink">Raster</a><a class="headerlink" href="#raster" title="Link to this heading"></a></h2>
 <p>The <a class="reference internal" href="generated/gplately.Raster.html#gplately.Raster" title="gplately.Raster"><code class="xref py py-class docutils literal notranslate"><span class="pre">gplately.Raster</span></code></a> class contains methods to work with netCDF4 or MaskedArray gridded data. Grids may be filled,
 resized, resampled, and reconstructed back and forwards through geologic time. Other array data can also be
 interpolated onto Raster grids.</p>
@@ -485,7 +226,7 @@ The <a class="reference external" href="https://github.com/GPlates/gplately/blob
 </a>
 </section>
 <section id="plottopologies">
-<h2><a class="toc-backref" href="#id6" role="doc-backlink">PlotTopologies</a><a class="headerlink" href="#plottopologies" title="Link to this heading"></a></h2>
+<h2><a class="toc-backref" href="#id5" role="doc-backlink">PlotTopologies</a><a class="headerlink" href="#plottopologies" title="Link to this heading"></a></h2>
 <p>The <a class="reference internal" href="generated/gplately.PlotTopologies.html#gplately.PlotTopologies" title="gplately.PlotTopologies"><code class="xref py py-class docutils literal notranslate"><span class="pre">gplately.PlotTopologies</span></code></a> class works with the aforementioned <a class="reference internal" href="generated/gplately.PlateReconstruction.html#gplately.PlateReconstruction" title="gplately.PlateReconstruction"><code class="xref py py-class docutils literal notranslate"><span class="pre">gplately.PlateReconstruction</span></code></a> class to plot
 geologic features of different types, such as coastlines, continents and continent-ocean boundaries reconstructed through time using pyGPlates.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="kn">from</span><span class="w"> </span><span class="nn">gplately</span><span class="w"> </span><span class="kn">import</span> <span class="n">PlateModelManager</span><span class="p">,</span> <span class="n">PlotTopologies</span><span class="p">,</span> <span class="n">auxiliary</span>
@@ -515,7 +256,7 @@ The <a class="reference external" href="https://github.com/GPlates/gplately/blob
 </a>
 </section>
 <section id="seafloorgrid">
-<h2><a class="toc-backref" href="#id7" role="doc-backlink">SeafloorGrid</a><a class="headerlink" href="#seafloorgrid" title="Link to this heading"></a></h2>
+<h2><a class="toc-backref" href="#id6" role="doc-backlink">SeafloorGrid</a><a class="headerlink" href="#seafloorgrid" title="Link to this heading"></a></h2>
 <p>The <a class="reference internal" href="generated/gplately.SeafloorGrid.html#gplately.SeafloorGrid" title="gplately.SeafloorGrid"><code class="xref py py-class docutils literal notranslate"><span class="pre">gplately.SeafloorGrid</span></code></a> class wraps an automatic workflow to grid seafloor ages and seafloor spreading rates
 as encoded by a plate reconstruction model.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
