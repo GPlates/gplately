@@ -1145,6 +1145,15 @@ class DataServer(object):
                 self.pmm.get_rotation_model()
             )
             self._rotation_model.reconstruction_identifier = self.file_collection
+            # Setting an attribute on a pyGPlates object produces the following error in version 1.0 of pyGPlates:
+            #   RuntimeError: Incomplete pickle support (__getstate_manages_dict__ not set)
+            #
+            # This is fixed in pyGPlates 1.1 (which implements __getstate__ to copy __dict__ just to be sure),
+            # but until that's released we can just set __getstate_manages_dict__ to True.
+            #
+            # This is because it turns out that Boost.Python (used in pyGPlates) copies the __dict__ in its default __getstate__
+            # so we can just manually set __getstate_manages_dict__ to True (I'm not sure why Boost.Python doesn't set it).
+            self._rotation_model.__getstate_manages_dict__ = True
         return self._rotation_model
 
     @property

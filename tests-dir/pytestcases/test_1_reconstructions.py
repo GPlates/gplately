@@ -256,6 +256,44 @@ def test_pickle_reconstruction(model, muller_2019_model):
         assert pickled_static_polygons_snapshot.get_anchor_plate_id() == plate_id
 
 
+def test_deepcopy_reconstruction(model, muller_2019_model):
+    import copy
+
+    #
+    # This test adds an attribute to a pyGPlates object (RotationModel) and then
+    # pickles it (via deep copying a PlateReconstruction).
+    #
+    # Version 1.0 of pyGPlates produces the error:
+    #   RuntimeError: Incomplete pickle support (__getstate_manages_dict__ not set)
+    # ...which is fixed in pyGPlates 1.1.
+    #
+
+    # Create a model from actual pygplates objects (instead of filenames).
+    pygplates_rotation_model = RotationModel(muller_2019_model.get_rotation_model())
+    pygplates_rotation_model.reconstruction_identifier = "RotationModel"
+    # Turns out Boost.Python (used in pyGPlates) copies the __dict__ in its default __getstate__ so we
+    # can just manually set __getstate_manages_dict__ to True (I'm not sure why Boost.Python doesn't set it).
+    # However, PyGPlates 1.1 will implement __getstate__ to copy __dict__ just to be sure.
+    pygplates_rotation_model.__getstate_manages_dict__ = True
+    pygplates_topology_features = [
+        FeatureCollection(f) for f in muller_2019_model.get_topologies()
+    ]
+    pygplates_static_polygons = [
+        FeatureCollection(f) for f in muller_2019_model.get_static_polygons()
+    ]
+    reconstruction_model = gplately.PlateReconstruction(
+        rotation_model=pygplates_rotation_model,
+        topology_features=pygplates_topology_features,
+        static_polygons=pygplates_static_polygons,
+    )
+
+    reconstruction_model_copy = copy.deepcopy(reconstruction_model)
+    assert (
+        reconstruction_model_copy.rotation_model.reconstruction_identifier  # type: ignore
+        == "RotationModel"
+    )
+
+
 def test_auxiliary_get_plate_reconstruction():
     from gplately import auxiliary
 
