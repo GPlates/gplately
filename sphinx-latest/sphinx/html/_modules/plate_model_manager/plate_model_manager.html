@@ -99,9 +99,9 @@
 <div class="viewcode-block" id="PlateModelManager">
 <a class="viewcode-back" href="../../generated/gplately.PlateModelManager.html#gplately.PlateModelManager">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">PlateModelManager</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Manage a set of public available plate reconstruction models.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Manage a set of publicly available plate reconstruction models.</span>
 <span class="sd">    The model files are hosted on EarthByte servers.</span>
-<span class="sd">    You need Internet connection to download the files.</span>
+<span class="sd">    You need Internet connection to use this class and download the files.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="c1"># Load a models.json file and manage plate models.</span>
@@ -111,6 +111,9 @@
 <a class="viewcode-back" href="../../generated/gplately.PlateModelManager.html#gplately.PlateModelManager.__init__">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model_manifest</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">)):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Constructor. Create a :class:`PlateModelManager` instance.</span>
+<span class="sd">        You need Internet connection to create an instance of this class.</span>
+<span class="sd">        If you don&#39;t have Internet connection, use :class:`PlateModel` class directly in ``readonly`` mode.</span>
+<span class="sd">        Visit `this page &lt;examples.html#use-without-internet&gt;`__ to see an example.</span>
 
 <span class="sd">        :param model_manifest: The URL to a ``models.json`` metadata file.</span>
 <span class="sd">                               Normally you don&#39;t need to provide this parameter unless</span>
@@ -204,15 +207,15 @@
     <span class="k">def</span><span class="w"> </span><span class="nf">get_model</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">model_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;default&quot;</span><span class="p">,</span> <span class="n">data_dir</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;.&quot;</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">PlateModel</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return a :class:`PlateModel` object for a given model name.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return a :class:`PlateModel` object for a given plate model name.</span>
 
-<span class="sd">        Call :meth:`get_available_model_names()` to see a list of available model names.</span>
+<span class="sd">        Call :meth:`get_available_model_names()` to see a list of available plate model names.</span>
 
-<span class="sd">        :param model_name: the model name of interest</span>
-<span class="sd">        :param data_dir: The folder to save the model files.</span>
+<span class="sd">        :param model_name: the plate model name of interest</span>
+<span class="sd">        :param data_dir: The folder to save the plate model files.</span>
 <span class="sd">                         This ``data_dir`` can be changed with :meth:`PlateModel.set_data_dir()` later.</span>
 
-<span class="sd">        :returns: a :class:`PlateModel` object or ``None`` if the model name is no good.</span>
+<span class="sd">        :returns: a :class:`PlateModel` object or ``None`` if the plate model name is no good.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">model_name</span> <span class="o">=</span> <span class="n">model_name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
@@ -281,10 +284,16 @@
                 <span class="k">if</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">200</span><span class="p">:</span>
                     <span class="k">return</span> <span class="n">url</span>
                 <span class="k">else</span><span class="p">:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;Unable to fetch </span><span class="si">{</span><span class="n">url</span><span class="si">}</span><span class="s2">. status_code=</span><span class="si">{</span><span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="si">}</span><span class="s2">&quot;</span>
+                    <span class="p">)</span>
                     <span class="k">continue</span>
             <span class="k">except</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unable to fetch </span><span class="si">{</span><span class="n">url</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
                 <span class="k">continue</span>
-        <span class="k">raise</span> <span class="n">ServerUnavailable</span><span class="p">()</span></div>
+        <span class="k">raise</span> <span class="n">ServerUnavailable</span><span class="p">(</span>
+<span class="w">            </span><span class="sd">&quot;&quot;&quot;Cannot connect to the servers. Either the servers are currently unavailable, or there is a problem with your internet connection.&quot;&quot;&quot;</span>
+        <span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="PlateModelManager.download_all_models">
