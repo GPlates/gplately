@@ -993,8 +993,10 @@ class _ReconstructByTopologiesImplV2(_ReconstructByTopologies):
             # Increment to the next active point.
             curr_active_point_index += 1
 
-        # All topology features and their referenced topological section features resolved at the next time step.
-        next_topology_features = []
+        # All topology *boundary* features and their referenced topological *section* features resolved at the next time step.
+        #
+        # Note: Topological *section* features can include topological lines.
+        next_topological_boundary_features = []
         next_topological_section_features = []
 
         # Map of each current topological section feature to its corresponding *next* topological section feature.
@@ -1006,78 +1008,184 @@ class _ReconstructByTopologiesImplV2(_ReconstructByTopologies):
 
             # Iterate over the boundary sub-segments of the current resolved topology and create a new topological
             # section feature for each one (if its topological section feature hasn't been encountered yet).
-            next_topological_section_property_values = []
+            next_boundary_section_property_values = []
             for (
                 curr_boundary_sub_segment
             ) in curr_resolved_topology.get_boundary_sub_segments():  # type: ignore
 
-                curr_topological_section_recon_geom = (
-                    curr_boundary_sub_segment.get_topological_section()
-                )
-                # Topological section is either a ReconstructedFeatureGeometry or a ResolvedTopologicalLine.
-                if isinstance(
-                    curr_topological_section_recon_geom, pygplates.ReconstructedFeatureGeometry  # type: ignore
+                curr_boundary_section_feature = curr_boundary_sub_segment.get_feature()
+                # If the current boundary section feature hasn't been encountered yet then create an associated
+                # *next* boundary section feature that is either the same as the current boundary section feature
+                # (if it's still valid at the *next* time) or a clone of the current boundary section feature with
+                # the valid time range modified to be valid at the *next* time.
+                if (
+                    curr_boundary_section_feature
+                    not in map_curr_to_next_topological_section_feature
                 ):
-                    curr_topological_section_feature = (
-                        curr_topological_section_recon_geom.get_feature()
+                    curr_boundary_section_recon_geom = (
+                        curr_boundary_sub_segment.get_topological_section()
                     )
-                    # If the current topological section feature hasn't been encountered yet then create an associated
-                    # *next* topological section feature that is either the same as the current topological section feature
-                    # (if it's still valid at the *next* time) or a clone of the current topological section feature with
-                    # the valid time range modified to be valid at the *next* time.
-                    if (
-                        curr_topological_section_feature
-                        not in map_curr_to_next_topological_section_feature
+                    # Boundary section is either a ReconstructedFeatureGeometry or a ResolvedTopologicalLine.
+                    #
+                    # If it's a ResolvedTopologicalLine then we need to iterate through its sub-segments and create a
+                    # new line section for each one, and finally create a new topological line feature from them.
+                    if isinstance(
+                        curr_boundary_section_recon_geom, pygplates.ResolvedTopologicalLine  # type: ignore
                     ):
+
+                        # Iterate over the sub-segments of the current resolved topological line and create a new line
+                        # section feature for each one (if its topological section feature hasn't been encountered yet).
+                        next_line_section_property_values = []
+                        for (
+                            curr_line_sub_segment
+                        ) in curr_boundary_section_recon_geom.get_line_sub_segments():  # type: ignore
+                            curr_line_section_feature = (
+                                curr_line_sub_segment.get_feature()
+                            )
+                            # If the current line section feature hasn't been encountered yet then create an associated
+                            # *next* line section feature that is either the same as the current line section feature
+                            # (if it's still valid at the *next* time) or a clone of the current line section feature with
+                            # the valid time range modified to be valid at the *next* time.
+                            if (
+                                curr_line_section_feature
+                                not in map_curr_to_next_topological_section_feature
+                            ):
+                                # Line section must be a ReconstructedFeatureGeometry (ie, can't be ResolvedTopologicalLine)
+                                # since a topological line cannot have sections that are also topological lines.
+
+                                # If feature is not valid at 'next_time' then clone the feature and set a valid time that includes 'next_time'.
+                                if not curr_line_section_feature.is_valid_at_time(
+                                    next_time
+                                ):
+                                    next_line_section_feature = (
+                                        curr_line_section_feature.clone()
+                                    )
+                                    next_line_section_feature.set_valid_time(
+                                        pygplates.GeoTimeInstant.create_distant_past(), 0.0  # type: ignore
+                                    )
+                                else:
+                                    next_line_section_feature = (
+                                        curr_line_section_feature
+                                    )
+
+                                next_topological_section_features.append(
+                                    next_line_section_feature
+                                )
+
+                                # Map the current to the next (line section feature).
+                                map_curr_to_next_topological_section_feature[
+                                    curr_line_section_feature
+                                ] = next_line_section_feature
+
+                            # Get the next line section feature associated with the current one.
+                            next_line_section_feature = (
+                                map_curr_to_next_topological_section_feature[
+                                    curr_line_section_feature
+                                ]
+                            )
+
+                            # The property name of the geometry referenced by the next line section.
+                            next_line_section_geometry_property_name = (
+                                curr_line_sub_segment.get_topological_section()
+                                .get_property()
+                                .get_name()
+                            )
+                            # Whether to reverse the geometry referenced by the next line section.
+                            next_line_section_reverse_order = (
+                                curr_line_sub_segment.was_geometry_reversed_in_topology()
+                            )
+
+                            # Create the *next* line section associated with the current one.
+                            next_line_section_property_value = pygplates.GpmlTopologicalSection.create(  # type: ignore
+                                next_line_section_feature,
+                                geometry_property_name=next_line_section_geometry_property_name,
+                                reverse_order=next_line_section_reverse_order,
+                                topological_geometry_type=pygplates.GpmlTopologicalLine,  # type: ignore
+                            )
+                            if next_line_section_property_value:
+                                next_line_section_property_values.append(
+                                    next_line_section_property_value
+                                )
+
+                        # Create a topological line feature that enables the current topological line
+                        # to be resolved to the *next* time step.
+                        #
+                        # Note: 'valid_time' argument is not specified which means valid for all time.
+                        #       This works for us since we only need it to be valid at the *next* time step.
+                        next_line_feature = pygplates.Feature(  # type: ignore
+                            pygplates.FeatureType.gpml_unclassified_feature  # type: ignore
+                        )
+                        next_line_feature.set_topological_geometry(
+                            pygplates.GpmlTopologicalLine(  # type: ignore
+                                next_line_section_property_values
+                            ),
+                            # Use the same geometry property name as the current boundary sub-segment so
+                            # that it can be found by the topological polygon(s) that will reference it...
+                            curr_boundary_sub_segment.get_topological_section()
+                            .get_property()
+                            .get_name(),
+                        )
+
+                        next_boundary_section_feature = next_line_feature
+
+                    else:  # boundary section is a ReconstructedFeatureGeometry ...
+
                         # If feature is not valid at 'next_time' then clone the feature and set a valid time that includes 'next_time'.
-                        if not curr_topological_section_feature.is_valid_at_time(
+                        if not curr_boundary_section_feature.is_valid_at_time(
                             next_time
                         ):
-                            next_topological_section_feature = (
-                                curr_topological_section_feature.clone()
+                            next_boundary_section_feature = (
+                                curr_boundary_section_feature.clone()
                             )
-                            next_topological_section_feature.set_valid_time(
+                            next_boundary_section_feature.set_valid_time(
                                 pygplates.GeoTimeInstant.create_distant_past(), 0.0  # type: ignore
                             )
                         else:
-                            next_topological_section_feature = (
-                                curr_topological_section_feature
+                            next_boundary_section_feature = (
+                                curr_boundary_section_feature
                             )
 
-                        next_topological_section_features.append(
-                            next_topological_section_feature
-                        )
-
-                        # Map the current to the next (topological section feature).
-                        map_curr_to_next_topological_section_feature[
-                            curr_topological_section_feature
-                        ] = next_topological_section_feature
-
-                    # Get the next topological section feature associated with the current one.
-                    next_topological_section_feature = (
-                        map_curr_to_next_topological_section_feature[
-                            curr_topological_section_feature
-                        ]
+                    next_topological_section_features.append(
+                        next_boundary_section_feature
                     )
 
-                    # Create the *next* topological section associated with the current one.
-                    next_topological_section_property_value = pygplates.GpmlTopologicalSection.create(  # type: ignore
-                        next_topological_section_feature,
-                        geometry_property_name=curr_topological_section_recon_geom.get_property().get_name(),
-                        reverse_order=curr_boundary_sub_segment.was_geometry_reversed_in_topology(),
-                        topological_geometry_type=pygplates.GpmlTopologicalPolygon,  # type: ignore
+                    # Map the current to the next (boundary section feature).
+                    map_curr_to_next_topological_section_feature[
+                        curr_boundary_section_feature
+                    ] = next_boundary_section_feature
+
+                # Get the next boundary section feature associated with the current one.
+                next_boundary_section_feature = (
+                    map_curr_to_next_topological_section_feature[
+                        curr_boundary_section_feature
+                    ]
+                )
+
+                # The property name of the geometry referenced by the next boundary section.
+                next_boundary_section_geometry_property_name = (
+                    curr_boundary_sub_segment.get_topological_section()
+                    .get_property()
+                    .get_name()
+                )
+                # Whether to reverse the geometry referenced by the next boundary section.
+                next_boundary_section_reverse_order = (
+                    curr_boundary_sub_segment.was_geometry_reversed_in_topology()
+                )
+
+                # Create the *next* boundary section associated with the current one.
+                next_boundary_section_property_value = pygplates.GpmlTopologicalSection.create(  # type: ignore
+                    next_boundary_section_feature,
+                    geometry_property_name=next_boundary_section_geometry_property_name,
+                    reverse_order=next_boundary_section_reverse_order,
+                    topological_geometry_type=pygplates.GpmlTopologicalPolygon,  # type: ignore
+                )
+                if next_boundary_section_property_value:
+                    next_boundary_section_property_values.append(
+                        next_boundary_section_property_value
                     )
-                    if next_topological_section_property_value:
-                        next_topological_section_property_values.append(
-                            next_topological_section_property_value
-                        )
 
-                else:
-                    # TODO: Handle topological sections that are topological lines.
-                    pass
-
-            # Create a topological boundary feature that is essentially the current topological boundary
-            # resolved to the *next* time step.
+            # Create a topological boundary feature that enables the current topological boundary
+            # to be resolved to the *next* time step.
             #
             # Note: If the current topology is a deforming network we still create a topological closed plate boundary
             #       (which is normally used for rigid plates) because we only need to detect if a seed point
@@ -1085,29 +1193,30 @@ class _ReconstructByTopologiesImplV2(_ReconstructByTopologies):
             #
             # Note: 'valid_time' argument is not specified which means valid for all time.
             #       This works for us since we only need it to be valid at the *next* time step.
-            next_topology_feature = pygplates.Feature.create_topological_feature(  # type: ignore
+            next_boundary_feature = pygplates.Feature.create_topological_feature(  # type: ignore
                 pygplates.FeatureType.gpml_topological_closed_plate_boundary,  # type: ignore
                 pygplates.GpmlTopologicalPolygon(  # type: ignore
-                    next_topological_section_property_values
+                    next_boundary_section_property_values
                 ),
             )
-
-            next_topology_features.append(next_topology_feature)
+            next_topological_boundary_features.append(next_boundary_feature)
 
         # Resolved the topologies to the *next* time step.
         next_topological_snapshot = pygplates.TopologicalSnapshot(  # type: ignore
-            next_topology_features + next_topological_section_features,
+            next_topological_section_features + next_topological_boundary_features,
             self.rotation_model,
             next_time,
         )
         next_resolved_topologies = next_topological_snapshot.get_resolved_topologies()
 
-        # Map the next topology features to their indices into 'next_topology_features'.
+        # Map the next topology *boundary* features to their indices into 'next_topological_boundary_features'.
         #
         # This will also be the indices into 'curr_unique_resolved_topologies' and 'next_unique_resolved_topologies'.
         map_next_topology_feature_to_index = {
             next_topology_feature: index
-            for index, next_topology_feature in enumerate(next_topology_features)
+            for index, next_topology_feature in enumerate(
+                next_topological_boundary_features
+            )
         }
         #
         # List of all topologies (that currently active points fall within) but resolved to the *next* time step.
@@ -1165,7 +1274,7 @@ class _ReconstructByTopologiesImplV2(_ReconstructByTopologies):
             # See if the location (of the current active point) reconstructed to the *next* time step
             # is inside the current topology resolved to the *next* time step.
             #
-            # If it is then is was not subducting going forward in time (or consumed by a mid-ocean ridge going backward in time).
+            # If it is outside then it is subducting going forward in time (or consumed by a mid-ocean ridge going backward in time).
             if next_active_point_resolved_topology.get_point_location(
                 next_active_point
             ).not_located_in_resolved_topology():
