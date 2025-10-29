@@ -33,6 +33,7 @@ from .lib.reconstruct_by_topologies import (
     _ContinentCollision,
     _DefaultCollision,
     _ReconstructByTopologiesImpl,
+    _ReconstructByTopologiesImplV2,
     _ReconstructByTopologicalModelImpl,
 )
 from .ptt import continent_contours, separate_ridge_transform_segments
@@ -1161,7 +1162,7 @@ class SeafloorGrid(object):
                 detect_collisions=collision_spec,
             )
         else:
-            topology_reconstruction = _ReconstructByTopologiesImpl(
+            topology_reconstruction = _ReconstructByTopologiesImplV2(
                 self.plate_reconstruction.rotation_model,
                 self.plate_reconstruction.topology_features,
                 from_time,
@@ -1169,7 +1170,6 @@ class SeafloorGrid(object):
                 self._ridge_time_step,
                 points,
                 point_begin_times=appearance_times,
-                detect_collisions=collision_spec,
             )
 
         # Initialise the reconstruction.
