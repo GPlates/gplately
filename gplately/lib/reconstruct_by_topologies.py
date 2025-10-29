@@ -842,6 +842,361 @@ class _ReconstructByTopologiesImpl(_ReconstructByTopologies):
             )
 
 
+class _ReconstructByTopologiesImplV2(_ReconstructByTopologies):
+    """An improved version of _ReconstructByTopologiesImpl.
+
+    This uses a different approach to collision detection of seed points
+    (to determine if they get subducted going forward in time and hence deactivated).
+    Previously we detected if the velocity delta of a seed point exceeded a threshold (when that point
+    transitioned from one plate to another) - and the point had to be close enough to the boundary.
+    Instead, we now take the plate containing a seed point at the current time and resolve it at the next time
+    (ie, current time plus time step) and see if its resolved shape still contains that seed point
+    (reconstructed to the next time). If it does then the seed point remains active (otherwise it's deactivated).
+    Note that the *same* plate is resolved at the current and next times. Usually when you resolve topologies
+    at a different time you will get different plates (eg, there could be plate merges or splits).
+    So, to resolve the *same* plate, some fenagling is required to ensure that a resolved plate boundary at the
+    current time can also be resolved at the next time. The end result is that any boundary around a plate that
+    converges will naturally deactivate seed points near that boundary (without having to use thresholds, etc).
+    And this doesn't require plate boundaries to be labelled as converging (ie, subduction zones).
+    """
+
+    def __init__(
+        self,
+        rotation_features_or_model,
+        topology_features,
+        reconstruction_begin_time,
+        reconstruction_end_time,
+        reconstruction_time_interval,
+        points,
+        *,
+        point_begin_times: Union[np.ndarray, list, None] = None,
+        point_end_times: Union[np.ndarray, list, None] = None,
+    ):
+
+        super().__init__(
+            reconstruction_begin_time,
+            reconstruction_end_time,
+            reconstruction_time_interval,
+            points,
+            point_begin_times,
+            point_end_times,
+        )
+
+        self.rotation_model = pygplates.RotationModel(rotation_features_or_model)  # type: ignore
+
+        # Turn topology data into a list of features (if not already).
+        self.topology_features = pygplates.FeaturesFunctionArgument(  # type: ignore
+            topology_features
+        ).get_features()
+
+    def _begin_reconstruction_impl(self):
+        # Activate any original points whose begin time is equal to (or older than) the newly updated current time.
+        # Deactivate any activated points whose end time is equal to (or younger than) the newly updated current time.
+        self._activate_deactivate_points_using_their_begin_end_times()
+
+    def _reconstruct_to_next_time_impl(self):
+
+        current_time = self.get_current_time()
+        # Positive/negative time step means reconstructing backward/forward in time.
+        next_time = current_time + self.reconstruction_time_step
+
+        curr_topological_snapshot = pygplates.TopologicalSnapshot(  # type: ignore
+            self.topology_features, self.rotation_model, current_time
+        )
+        curr_resolved_topologies = curr_topological_snapshot.get_resolved_topologies()
+
+        # Some of 'curr_points' will be None, so 'curr_active_points' contains only the active (not None)
+        # points, and 'curr_active_points_indices' is the same length as 'curr_active_points' but indexes
+        # into 'curr_points' so we can quickly find which point in 'curr_points' is associated with a
+        # particular point in 'curr_active_points'.
+        curr_active_points = []
+        curr_active_points_indices = []
+        for point_index, curr_point in enumerate(self.curr_points):
+            if curr_point is None:
+                # Current point is not currently active, so we cannot reconstruct it to the next point.
+                self.next_points[point_index] = None
+                continue
+            curr_active_points.append(curr_point)
+            curr_active_points_indices.append(point_index)
+
+        # For each active current point find the resolved topology containing it.
+        curr_active_point_resolved_topologies = (
+            _ptt.utils.points_in_polygons.find_polygons(
+                curr_active_points,
+                [
+                    resolved_topology.get_resolved_boundary()
+                    for resolved_topology in curr_resolved_topologies
+                ],
+                curr_resolved_topologies,
+            )
+        )
+
+        # List of all unique resolved topologies that the currently active points fall within (in the current time step).
+        curr_unique_resolved_topologies = []
+        # List of indices into 'curr_unique_resolved_topologies' for each currently active point.
+        active_point_resolved_topology_indices = []
+        # Map of current resolved topologies to their index into 'curr_unique_resolved_topologies'.
+        map_curr_resolved_topology_to_index = {}
+
+        # Iterate over the resolved topologies containing all currently active points and get a list of the unique resolved topologies.
+        #
+        # Note: A resolved topology for a currently active point can be None if it fell outside all resolved topologies.
+        #       In this case we'll just deactivate the point. Previously we would keep it active but just not reconstruct it
+        #       (ie, the current and next positions would be the same). However the point might end up in weird locations.
+        #       So it's best to just remove it. And this shouldn't happen very often at all for topologies with global coverage.
+        curr_active_point_index = 0
+        while curr_active_point_index < len(curr_active_points):
+
+            curr_active_point_resolved_topology = curr_active_point_resolved_topologies[
+                curr_active_point_index
+            ]
+            # See if current active point fell outside all current resolved topologies.
+            if curr_active_point_resolved_topology is None:
+                # Index into the active and inactive points 'self.curr_points'.
+                curr_point_index = curr_active_points_indices[curr_active_point_index]
+
+                # Current point is currently active but it fell outside all resolved topologies.
+                # So we deactivate it.
+                self.next_points[curr_point_index] = None
+
+                # Also remove evidence that the current point is active.
+                del curr_active_points[curr_active_point_index]
+                del curr_active_points_indices[curr_active_point_index]
+                del curr_active_point_resolved_topologies[curr_active_point_index]
+
+                # Continue to next active point.
+                #
+                # Note: We don't increment the active point index.
+                #       We just removed an active point which essentially does the same thing.
+                continue
+
+            # If resolved topology has not been encountered yet then add it to our list of unique resolved topologies.
+            if (
+                curr_active_point_resolved_topology
+                not in map_curr_resolved_topology_to_index
+            ):
+                curr_active_point_resolved_topology_index = len(
+                    curr_unique_resolved_topologies
+                )
+                curr_unique_resolved_topologies.append(
+                    curr_active_point_resolved_topology
+                )
+                map_curr_resolved_topology_to_index[
+                    curr_active_point_resolved_topology
+                ] = curr_active_point_resolved_topology_index
+
+            # The index of resolved topology (containing current point) into 'curr_unique_resolved_topologies'.
+            active_point_resolved_topology_indices.append(
+                map_curr_resolved_topology_to_index[curr_active_point_resolved_topology]
+            )
+
+            # Increment to the next active point.
+            curr_active_point_index += 1
+
+        # All topology features and their referenced topological section features resolved at the next time step.
+        next_topology_features = []
+        next_topological_section_features = []
+
+        # Map of each current topological section feature to its corresponding *next* topological section feature.
+        map_curr_to_next_topological_section_feature = {}
+
+        # For each current resolved topology, create a corresponding *next* topological boundary feature and
+        # all the topological section features referenced by them.
+        for curr_resolved_topology in curr_unique_resolved_topologies:
+
+            # Iterate over the boundary sub-segments of the current resolved topology and create a new topological
+            # section feature for each one (if its topological section feature hasn't been encountered yet).
+            next_topological_section_property_values = []
+            for (
+                curr_boundary_sub_segment
+            ) in curr_resolved_topology.get_boundary_sub_segments():  # type: ignore
+
+                curr_topological_section_recon_geom = (
+                    curr_boundary_sub_segment.get_topological_section()
+                )
+                # Topological section is either a ReconstructedFeatureGeometry or a ResolvedTopologicalLine.
+                if isinstance(
+                    curr_topological_section_recon_geom, pygplates.ReconstructedFeatureGeometry  # type: ignore
+                ):
+                    curr_topological_section_feature = (
+                        curr_topological_section_recon_geom.get_feature()
+                    )
+                    # If the current topological section feature hasn't been encountered yet then create an associated
+                    # *next* topological section feature that is either the same as the current topological section feature
+                    # (if it's still valid at the *next* time) or a clone of the current topological section feature with
+                    # the valid time range modified to be valid at the *next* time.
+                    if (
+                        curr_topological_section_feature
+                        not in map_curr_to_next_topological_section_feature
+                    ):
+                        # If feature is not valid at 'next_time' then clone the feature and set a valid time that includes 'next_time'.
+                        if not curr_topological_section_feature.is_valid_at_time(
+                            next_time
+                        ):
+                            next_topological_section_feature = (
+                                curr_topological_section_feature.clone()
+                            )
+                            next_topological_section_feature.set_valid_time(
+                                pygplates.GeoTimeInstant.create_distant_past(), 0.0  # type: ignore
+                            )
+                        else:
+                            next_topological_section_feature = (
+                                curr_topological_section_feature
+                            )
+
+                        next_topological_section_features.append(
+                            next_topological_section_feature
+                        )
+
+                        # Map the current to the next (topological section feature).
+                        map_curr_to_next_topological_section_feature[
+                            curr_topological_section_feature
+                        ] = next_topological_section_feature
+
+                    # Get the next topological section feature associated with the current one.
+                    next_topological_section_feature = (
+                        map_curr_to_next_topological_section_feature[
+                            curr_topological_section_feature
+                        ]
+                    )
+
+                    # Create the *next* topological section associated with the current one.
+                    next_topological_section_property_value = pygplates.GpmlTopologicalSection.create(  # type: ignore
+                        next_topological_section_feature,
+                        geometry_property_name=curr_topological_section_recon_geom.get_property().get_name(),
+                        reverse_order=curr_boundary_sub_segment.was_geometry_reversed_in_topology(),
+                        topological_geometry_type=pygplates.GpmlTopologicalPolygon,  # type: ignore
+                    )
+                    if next_topological_section_property_value:
+                        next_topological_section_property_values.append(
+                            next_topological_section_property_value
+                        )
+
+                else:
+                    # TODO: Handle topological sections that are topological lines.
+                    pass
+
+            # Create a topological boundary feature that is essentially the current topological boundary
+            # resolved to the *next* time step.
+            #
+            # Note: If the current topology is a deforming network we still create a topological closed plate boundary
+            #       (which is normally used for rigid plates) because we only need to detect if a seed point
+            #       reconstructed to the next time step is contained within the network's *boundary*.
+            #
+            # Note: 'valid_time' argument is not specified which means valid for all time.
+            #       This works for us since we only need it to be valid at the *next* time step.
+            next_topology_feature = pygplates.Feature.create_topological_feature(  # type: ignore
+                pygplates.FeatureType.gpml_topological_closed_plate_boundary,  # type: ignore
+                pygplates.GpmlTopologicalPolygon(  # type: ignore
+                    next_topological_section_property_values
+                ),
+            )
+
+            next_topology_features.append(next_topology_feature)
+
+        # Resolved the topologies to the *next* time step.
+        next_topological_snapshot = pygplates.TopologicalSnapshot(  # type: ignore
+            next_topology_features + next_topological_section_features,
+            self.rotation_model,
+            next_time,
+        )
+        next_resolved_topologies = next_topological_snapshot.get_resolved_topologies()
+
+        # Map the next topology features to their indices into 'next_topology_features'.
+        #
+        # This will also be the indices into 'curr_unique_resolved_topologies' and 'next_unique_resolved_topologies'.
+        map_next_topology_feature_to_index = {
+            next_topology_feature: index
+            for index, next_topology_feature in enumerate(next_topology_features)
+        }
+        #
+        # List of all topologies (that currently active points fall within) but resolved to the *next* time step.
+        #
+        # Note: This is a one-to-one mapping with 'curr_unique_resolved_topologies'.
+        next_unique_resolved_topologies = [None] * len(curr_unique_resolved_topologies)
+        #
+        # Store each next resolved topology in 'next_unique_resolved_topologies'.
+        #
+        # Each resolved topology in 'curr_unique_resolved_topologies' will be associated with
+        # the same index into 'next_unique_resolved_topologies'.
+        for next_resolved_topology in next_resolved_topologies:
+            next_topology_feature_index = map_next_topology_feature_to_index.get(
+                next_resolved_topology.get_feature()
+            )
+            # It's possible that the next topology could not get resolved at the next time step.
+            # This generally shouldn't happen though.
+            if next_topology_feature_index is not None:
+                next_unique_resolved_topologies[next_topology_feature_index] = (
+                    next_resolved_topology
+                )
+
+        # Iterate over all currently active points to reconstruct them to the next time step and
+        # see if they've been consumed by a convergent plate boundary.
+        for curr_active_point_index, curr_active_point in enumerate(curr_active_points):
+
+            # Index into the active and inactive points 'self.curr_points'.
+            curr_point_index = curr_active_points_indices[curr_active_point_index]
+
+            # Index into 'curr_unique_resolved_topologies' and 'next_unique_resolved_topologies' for the currently active point.
+            unique_resolved_topologies_index = active_point_resolved_topology_indices[
+                curr_active_point_index
+            ]
+
+            # Resolved topology containing the currently active point at the current time step.
+            curr_active_point_resolved_topology = curr_unique_resolved_topologies[
+                unique_resolved_topologies_index
+            ]
+
+            # Topology containing the currently active point at the current but resolved to the next time step.
+            next_active_point_resolved_topology = next_unique_resolved_topologies[
+                unique_resolved_topologies_index
+            ]
+            if next_active_point_resolved_topology is None:
+                # The topology (containing the currently active point) could not be resolved to the next time step.
+                # So we deactivate it. This generally shouldn't happen though.
+                self.next_points[curr_point_index] = None
+                continue
+
+            # Reconstruct the currently active point from its position at current time to its position at the next time step.
+            next_active_point = curr_active_point_resolved_topology.reconstruct_point(
+                curr_active_point, next_time
+            )
+
+            # See if the location (of the current active point) reconstructed to the *next* time step
+            # is inside the current topology resolved to the *next* time step.
+            #
+            # If it is then is was not subducting going forward in time (or consumed by a mid-ocean ridge going backward in time).
+            if next_active_point_resolved_topology.get_point_location(
+                next_active_point
+            ).not_located_in_resolved_topology():
+                self.next_points[curr_point_index] = None
+                continue
+
+            # The current active point was not consumed by a plate boundary.
+            self.next_points[curr_point_index] = next_active_point
+
+        #
+        # Set up for next loop iteration.
+        #
+        # Rotate previous, current and next point arrays.
+        # The new previous will be the old current.
+        # The new current will be the old next.
+        # The new next will be the old previous (but values are ignored and overridden in next time step; just re-using its memory).
+        self.prev_points, self.curr_points, self.next_points = (
+            self.curr_points,
+            self.next_points,
+            self.prev_points,
+        )
+        #
+        # Move the current time to the next time.
+        self.current_time_index += 1
+        current_time = self.get_current_time()
+
+        # Activate any original points whose begin time is equal to (or older than) the newly updated current time.
+        # Deactivate any activated points whose end time is equal to (or younger than) the newly updated current time.
+        self._activate_deactivate_points_using_their_begin_end_times()
+
+
 class _ReconstructByTopologicalModelImpl(_ReconstructByTopologies):
     """Similar to ``_ReconstructByTopologiesImpl`` except uses the ``pygplates.TopologicalModel`` class to reconstruct seed points.
 
@@ -990,7 +1345,8 @@ class _ReconstructByTopologicalModelImpl(_ReconstructByTopologies):
         reconstructed_time_span = self.topological_model.reconstruct_geometry(
             current_active_points,
             initial_time=current_time,
-            youngest_time=next_time,
+            oldest_time=max(current_time, next_time),
+            youngest_time=min(current_time, next_time),
             time_increment=self.reconstruction_time_interval,  # must be positive
             deactivate_points=self.detect_collisions,
         )
