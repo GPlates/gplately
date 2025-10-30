@@ -1560,8 +1560,10 @@ class Raster(object):
 
         Parameters
         ----------
-        data : str or array-like
-            The raster data, either as a file path (:class:`str`) or array data.
+        data : str or array-like or :class:`Raster`
+            The raster data, either as a file path (:class:`str`) or array data or a ``Raster`` object.
+            If a ``Raster`` object is specified then all other arguments are ignored except ``plate_reconstruction``
+            which, if it is not ``None``, will override the plate reconstruction of the ``Raster`` object.
 
         plate_reconstruction : PlateReconstruction
             A :class:`PlateReconstruction` object to provide the following essential components for reconstructing points.
@@ -1608,13 +1610,6 @@ class Raster(object):
         **kwargs
             Handle deprecated arguments such as ``PlateReconstruction_object``, ``filename``, and ``array``.
         """
-        if isinstance(data, self.__class__):
-            self._data = data._data.copy()
-            self.plate_reconstruction = data.plate_reconstruction
-            self._lons = data._lons
-            self._lats = data._lats
-            self._time = data._time
-            return
 
         if "PlateReconstruction_object" in kwargs.keys():
             warnings.warn(
@@ -1649,6 +1644,21 @@ class Raster(object):
                 "Raster.__init__() got an unexpected keyword argument "
                 + "'{}'".format(key)
             )
+
+        if isinstance(data, self.__class__):
+            self._data = data._data.copy()
+            # Use specified plate reconstruction (if specified),
+            # otherwise use the plate reconstruction from 'data'.
+            if plate_reconstruction is not None:
+                self.plate_reconstruction = plate_reconstruction
+            else:
+                self.plate_reconstruction = data.plate_reconstruction
+            self._lons = data._lons
+            self._lats = data._lats
+            self._time = data._time
+            self._filename = data._filename
+            return
+
         self.plate_reconstruction = plate_reconstruction
 
         if time < 0.0:
