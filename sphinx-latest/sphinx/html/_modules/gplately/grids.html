@@ -1654,8 +1654,10 @@
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        data : str or array-like</span>
-<span class="sd">            The raster data, either as a file path (:class:`str`) or array data.</span>
+<span class="sd">        data : str or array-like or :class:`Raster`</span>
+<span class="sd">            The raster data, either as a file path (:class:`str`) or array data or a ``Raster`` object.</span>
+<span class="sd">            If a ``Raster`` object is specified then all other arguments are ignored except ``plate_reconstruction``</span>
+<span class="sd">            which, if it is not ``None``, will override the plate reconstruction of the ``Raster`` object.</span>
 
 <span class="sd">        plate_reconstruction : PlateReconstruction</span>
 <span class="sd">            A :class:`PlateReconstruction` object to provide the following essential components for reconstructing points.</span>
@@ -1702,13 +1704,6 @@
 <span class="sd">        **kwargs</span>
 <span class="sd">            Handle deprecated arguments such as ``PlateReconstruction_object``, ``filename``, and ``array``.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">_data</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">plate_reconstruction</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">plate_reconstruction</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_lons</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">_lons</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_lats</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">_lats</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_time</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">_time</span>
-            <span class="k">return</span>
 
         <span class="k">if</span> <span class="s2">&quot;PlateReconstruction_object&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
             <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
@@ -1743,6 +1738,21 @@
                 <span class="s2">&quot;Raster.__init__() got an unexpected keyword argument &quot;</span>
                 <span class="o">+</span> <span class="s2">&quot;&#39;</span><span class="si">{}</span><span class="s2">&#39;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
             <span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">_data</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <span class="c1"># Use specified plate reconstruction (if specified),</span>
+            <span class="c1"># otherwise use the plate reconstruction from &#39;data&#39;.</span>
+            <span class="k">if</span> <span class="n">plate_reconstruction</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">plate_reconstruction</span> <span class="o">=</span> <span class="n">plate_reconstruction</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">plate_reconstruction</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">plate_reconstruction</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_lons</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">_lons</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_lats</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">_lats</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_time</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">_time</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_filename</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">_filename</span>
+            <span class="k">return</span>
+
         <span class="bp">self</span><span class="o">.</span><span class="n">plate_reconstruction</span> <span class="o">=</span> <span class="n">plate_reconstruction</span>
 
         <span class="k">if</span> <span class="n">time</span> <span class="o">&lt;</span> <span class="mf">0.0</span><span class="p">:</span>
