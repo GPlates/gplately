@@ -141,6 +141,15 @@ class SeafloorGrid(object):
     SEAFLOOR_AGE_KEY = "SEAFLOOR_AGE"
     SPREADING_RATE_KEY = "SPREADING_RATE"
 
+    # Enum for which debug files to create for reconstructed ocean seed point data.
+    #
+    # All debug files (single and individual).
+    _GENERATE_ALL_DEBUG_FILES_CONTAINING_RECONSTRUCTED_SEED_POINTS = 0
+    # Only single debug file with all seeds.
+    _GENERATE_SINGLE_DEBUG_FILE_CONTAINING_ALL_RECONSTRUCTED_SEEDS = 1
+    # Only individual debug files (for each time).
+    _GENERATE_INDIVIDUAL_DEBUG_FILES_CONTAINING_RECONSTRUCTED_SEEDS = 2
+
     def __init__(
         self,
         PlateReconstruction_object,
@@ -1012,9 +1021,42 @@ class SeafloorGrid(object):
             logger.info(
                 "Generating debug files containing reconstructed ocean seed point data..."
             )
-            self._generate_debug_files_containing_reconstructed_ocean_seed_point_data(
-                all_reconstructed_seed_point_data
-            )
+
+            if self.num_cpus > 1:
+                # Use two parallel processes.
+                #
+                # One to write out the single large debug file containing all reconstructed seed point data.
+                # And one to write out all the individual debug files containing seed point data reconstructed from each time.
+                #
+                # Writing out the single large debug file takes a long time.
+                # So much so that writing out all the individual files takes a comparable amount of time.
+                single_debug_file_process = multiprocessing.Process(
+                    target=_generate_debug_files_containing_reconstructed_ocean_seed_point_data_parallel,
+                    args=(
+                        self,
+                        all_reconstructed_seed_point_data,
+                        self._GENERATE_SINGLE_DEBUG_FILE_CONTAINING_ALL_RECONSTRUCTED_SEEDS,
+                    ),
+                )
+                individual_debug_files_process = multiprocessing.Process(
+                    target=_generate_debug_files_containing_reconstructed_ocean_seed_point_data_parallel,
+                    args=(
+                        self,
+                        all_reconstructed_seed_point_data,
+                        self._GENERATE_INDIVIDUAL_DEBUG_FILES_CONTAINING_RECONSTRUCTED_SEEDS,
+                    ),
+                )
+
+                single_debug_file_process.start()
+                individual_debug_files_process.start()
+
+                single_debug_file_process.join()
+                individual_debug_files_process.join()
+
+            else:
+                self._generate_debug_files_containing_reconstructed_ocean_seed_point_data(
+                    all_reconstructed_seed_point_data
+                )
 
     def _build_and_reconstruct_ocean_seed_points(
         self, from_time, use_topological_model
@@ -1315,9 +1357,26 @@ class SeafloorGrid(object):
             np.savez_compressed(gridding_input_filename, **gridding_input_dict)
 
     def _generate_debug_files_containing_reconstructed_ocean_seed_point_data(
-        self, all_reconstructed_seed_point_data
+        self,
+        all_reconstructed_seed_point_data,
+        generate_debug_files=_GENERATE_ALL_DEBUG_FILES_CONTAINING_RECONSTRUCTED_SEED_POINTS,
     ):
         """Generate debug files containing reconstructed ocean seed point data."""
+
+        # Whether to generate the single debug file with all reconstructed seed point data.
+        generate_single_debug_file_containing_all_reconstructed_seeds = (
+            generate_debug_files
+            == self._GENERATE_ALL_DEBUG_FILES_CONTAINING_RECONSTRUCTED_SEED_POINTS
+            or generate_debug_files
+            == self._GENERATE_SINGLE_DEBUG_FILE_CONTAINING_ALL_RECONSTRUCTED_SEEDS
+        )
+        # Whether to generate the individual debug files (for each start time).
+        generate_individual_debug_files_containing_reconstructed_seeds = (
+            generate_debug_files
+            == self._GENERATE_ALL_DEBUG_FILES_CONTAINING_RECONSTRUCTED_SEED_POINTS
+            or generate_debug_files
+            == self._GENERATE_INDIVIDUAL_DEBUG_FILES_CONTAINING_RECONSTRUCTED_SEEDS
+        )
 
         # All reconstructed seed points at ALL reconstruction times get written to single large debug file.
         all_reconstructed_seed_point_features = []
@@ -1385,15 +1444,15 @@ class SeafloorGrid(object):
                     # Save currently active reconstructed seed points and their seafloor ages and spreading rates as a coverage to GPML.
                     #
 
-                    seed_points_feature = pygplates.Feature()
-                    seed_points_coverage_geometry = pygplates.MultiPointOnSphere(
+                    seed_points_feature = pygplates.Feature()  # type: ignore
+                    seed_points_coverage_geometry = pygplates.MultiPointOnSphere(  # type: ignore
                         zip(active_latitudes_at_time, active_longitudes_at_time)
                     )
                     seed_points_coverage_scalars = {
-                        pygplates.ScalarType.create_gpml(
+                        pygplates.ScalarType.create_gpml(  # type: ignore
                             "SeafloorAge"
                         ): active_seafloor_ages_at_time,
-                        pygplates.ScalarType.create_gpml(
+                        pygplates.ScalarType.create_gpml(  # type: ignore
                             "SpreadingRate"
                         ): active_spreading_rates_at_time,
                     }
@@ -1412,37 +1471,42 @@ class SeafloorGrid(object):
                     )
 
                     # Store with the seed points reconstructed from 'start_time'.
-                    seed_point_features_reconstructed_from_start_time.append(
-                        seed_points_feature
-                    )
+                    if generate_individual_debug_files_containing_reconstructed_seeds:
+                        seed_point_features_reconstructed_from_start_time.append(
+                            seed_points_feature
+                        )
                     # Store with all reconstructed seed points.
-                    all_reconstructed_seed_point_features.append(seed_points_feature)
+                    if generate_single_debug_file_containing_all_reconstructed_seeds:
+                        all_reconstructed_seed_point_features.append(
+                            seed_points_feature
+                        )
 
             # Write a debug file containing the seed points reconstructed from 'start_time' to 'min_time'.
-            #
-            # When 'start_time' is 'max_time' then this is the initial ocean basin seed points.
-            # Otherwise 'start_time' satisfies 'min_time <= start_time < max_time' and this is the mid-ocean ridge seed points created at 'start_time'.
-            if start_time == self._max_time:
-                # Filename already has 'max_time' in it.
-                debug_reconstructed_seed_points_filename = self.debug_initial_ocean_basin_reconstructed_seed_points_filepath.format(
-                    start_time
-                )
-            else:
-                # Generate a filename with 'start_time' in it.
-                debug_reconstructed_seed_points_filename = self.debug_mid_ocean_ridge_reconstructed_seed_points_filepath.format(
-                    start_time
-                )
-            pygplates.FeatureCollection(
-                seed_point_features_reconstructed_from_start_time
-            ).write(debug_reconstructed_seed_points_filename)
+            if generate_individual_debug_files_containing_reconstructed_seeds:
+                # When 'start_time' is 'max_time' then this is the initial ocean basin seed points.
+                # Otherwise 'start_time' satisfies 'min_time <= start_time < max_time' and this is the mid-ocean ridge seed points created at 'start_time'.
+                if start_time == self._max_time:
+                    # Filename already has 'max_time' in it.
+                    debug_reconstructed_seed_points_filename = self.debug_initial_ocean_basin_reconstructed_seed_points_filepath.format(
+                        start_time
+                    )
+                else:
+                    # Generate a filename with 'start_time' in it.
+                    debug_reconstructed_seed_points_filename = self.debug_mid_ocean_ridge_reconstructed_seed_points_filepath.format(
+                        start_time
+                    )
+                pygplates.FeatureCollection(  # type: ignore
+                    seed_point_features_reconstructed_from_start_time
+                ).write(debug_reconstructed_seed_points_filename)
 
-        # Write one big debug file containing ALL seed points at ALL reconstruction times.
-        #
-        # This includes the initial seed points as well as the mid-ocean ridges created at later times.
-        # Including all their reconstructions back to 'min_time'.
-        pygplates.FeatureCollection(all_reconstructed_seed_point_features).write(
-            self.debug_all_reconstructed_seed_points_filepath
-        )
+        if generate_single_debug_file_containing_all_reconstructed_seeds:
+            # Write one big debug file containing ALL seed points at ALL reconstruction times.
+            #
+            # This includes the initial seed points as well as the mid-ocean ridges created at later times.
+            # Including all their reconstructions back to 'min_time'.
+            pygplates.FeatureCollection(  # type:ignore
+                all_reconstructed_seed_point_features
+            ).write(self.debug_all_reconstructed_seed_points_filepath)
 
     def lat_lon_z_to_netCDF(
         self,
@@ -1809,6 +1873,17 @@ def _build_continental_mask_with_contouring_parallel(
         rotation_model=plate_reconstruction.rotation_model,
         continent_features=plot_topologies._continents,
         overwrite=overwrite,
+    )
+
+
+def _generate_debug_files_containing_reconstructed_ocean_seed_point_data_parallel(
+    seafloor_grid,
+    all_reconstructed_seed_point_data,
+    generate_debug_files,
+):
+    # Dispatch from parallel helper function to SeafloorGrid class method.
+    seafloor_grid._generate_debug_files_containing_reconstructed_ocean_seed_point_data(
+        all_reconstructed_seed_point_data, generate_debug_files
     )
 
 
