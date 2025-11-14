@@ -1054,6 +1054,14 @@ class _ReconstructByTopologiesImplV2(_ReconstructByTopologies):
                     self.next_points[curr_point_index] = None
                 continue
 
+            # Get the boundary polygon of the next resolved topology.
+            #
+            # If the next resolved topology is consistent with the current resolved topology then we're fine,
+            # otherwise we need to replace the boundary of the next resolved topology with something more consistent.
+            next_resolved_topology_boundary = self._NextTopologicalBoundary(
+                curr_resolved_topology, next_resolved_topology
+            ).get_next_resolved_topology_boundary()
+
             # Iterate over the currently active points contained by the current resolved topology.
             for curr_active_point_index in curr_resolved_topology_active_point_indices:
 
@@ -1072,9 +1080,9 @@ class _ReconstructByTopologiesImplV2(_ReconstructByTopologies):
                 # If it is outside then it is subducting going forward in time (or consumed by a mid-ocean ridge going backward in time).
                 # It doesn't necessarily have to happen at a subduction zone (or mid-ocean ridge). It can be any part of a plate boundary
                 # that is convergent forward in time (or divergent forward in time; which is convergent backward in time).
-                if next_resolved_topology.get_point_location(
+                if not next_resolved_topology_boundary.is_point_in_polygon(
                     next_active_point
-                ).not_located_in_resolved_topology():
+                ):
                     self.next_points[curr_point_index] = None
                     continue
 
@@ -1323,6 +1331,298 @@ class _ReconstructByTopologiesImplV2(_ReconstructByTopologies):
                 ),
             )
             self.next_topological_boundary_features.append(next_boundary_feature)
+
+    class _NextTopologicalBoundary(object):
+        """The next resolved topology boundary.
+
+        If the next resolved topology is NOT consistent with the current resolved topology then we need to replace
+        the boundary of the next topology with the boundary of the current topology moved to the next time.
+        This involves taking the *clipped* boundary sub-segments of the current topology, moving them to the next time, and
+        joining them together. This is not as good as actually resolving the *unclipped* boundary sections of the
+        current topology at the next time, which would produce a more accurate plate boundary for the next resolved topology.
+        But this case shouldn't happen very often.
+
+        The next resolved topology is not consistent with the current resolved topology if its boundary sections don't have
+        the same number of intersections with neighbouring sections. For example, a boundary section of the current resolved topology
+        intersects its neighbour once (as expected) but the same boundary section of the next resolved topology (which is really
+        just the same topology resolved to the next time) intersects the same neighbour twice. In this case, the next resolved topology
+        would likely have an unexpectedly different plate boundary shape than the current resolved topology, which might deactivate
+        a bunch of points that it shouldn't. This happens because pyGPlates only considers the first intersection (if there are two or more).
+        Usually the topological model is built such that each neighbouring section only intersects once. However, when you resolve
+        that same topology at a different time (even if it's just 1 Myr different) then the intersections may not be what the
+        model builder intended (especially if the current topology's time period does not include the *next* time).
+        """
+
+        # Distance from a polyline-polyline intersection such that if we clipped that much distance off the polylines
+        # around that intersection then the clipped polylines are unlikely to intersect (unless they're almost parallel).
+        #
+        # We are a little conversative on this (ie, a little big) to ensure we don't get too close.
+        INTERSECTION_THRESHOLD_RADIANS = 1e-4  # approx 600 metres
+
+        # Maximum number of intersections to test between two intersecting polylines.
+        #
+        # If two polylines reach the max number of intersections then we've likely detected a partial overlap
+        # between the two polylines (where a segment from each polyline are on top of each other and
+        # hence essentially have an infinite number of intersections).
+        MAX_NUM_INTERSECTIONS = 5
+
+        def __init__(self, curr_resolved_topology, next_resolved_topology):
+
+            self.curr_resolved_topology = curr_resolved_topology
+            self.next_resolved_topology = next_resolved_topology
+
+        def get_next_resolved_topology_boundary(self):
+
+            if self._are_current_and_next_resolved_topologies_consistent():
+                return self.next_resolved_topology.get_resolved_boundary()
+
+            # TODO: Replace this with taking the *clipped* boundary sub-segments of the current topology,
+            #       moving them to the next time, and joining them together.
+            return self.next_resolved_topology.get_resolved_boundary()
+
+        def _are_current_and_next_resolved_topologies_consistent(self):
+
+            curr_boundary_sub_segments = (
+                self.curr_resolved_topology.get_boundary_sub_segments()
+            )
+            next_boundary_sub_segments = (
+                self.next_resolved_topology.get_boundary_sub_segments()
+            )
+            if len(curr_boundary_sub_segments) != len(next_boundary_sub_segments):
+                raise RuntimeError(
+                    "Current and next topologies have a different number of boundary sub-segments."
+                )
+            num_boundary_sub_segments = len(curr_boundary_sub_segments)
+
+            # If there's only 1 sub-segment then it cannot intersect with itself (but it can still be converted to a polygon).
+            #
+            # Note: If there's 2 sub-segments then they can intersect each other twice (to form a closed polygon).
+            #       We will still process them to make sure they stay consistent (same number of intersections at current and next times).
+            if num_boundary_sub_segments <= 1:
+                return True
+
+            # Compare number of neighbour intersections for the current and next boundary sub-segments.
+            for boundary_sub_segment_index in range(num_boundary_sub_segments):
+                curr_boundary_sub_segment = curr_boundary_sub_segments[
+                    boundary_sub_segment_index
+                ]
+                next_boundary_sub_segment = next_boundary_sub_segments[
+                    boundary_sub_segment_index
+                ]
+
+                prev_boundary_sub_segment_index = boundary_sub_segment_index - 1
+                if prev_boundary_sub_segment_index < 0:
+                    prev_boundary_sub_segment_index += num_boundary_sub_segments
+
+                # Previous neighbour sub-segment (for the current and next resolved topologies).
+                prev_curr_boundary_sub_segment = curr_boundary_sub_segments[
+                    prev_boundary_sub_segment_index
+                ]
+                prev_next_boundary_sub_segment = next_boundary_sub_segments[
+                    prev_boundary_sub_segment_index
+                ]
+
+                # Number of neighbour intersections of sub-segment (for the current and next resolved topologies).
+                curr_num_intersections = self._get_num_intersections(
+                    prev_curr_boundary_sub_segment.get_topological_section_geometry(),
+                    curr_boundary_sub_segment.get_topological_section_geometry(),
+                )
+                next_num_intersections = self._get_num_intersections(
+                    prev_next_boundary_sub_segment.get_topological_section_geometry(),
+                    next_boundary_sub_segment.get_topological_section_geometry(),
+                )
+
+                # If the number of intersections differ then the current and next resolved topologies are inconsistent.
+                if curr_num_intersections != next_num_intersections:
+                    return False
+
+            return True
+
+        def _get_num_intersections(self, polyline1, polyline2, num_intersections=0):
+
+            distance_tuple = pygplates.GeometryOnSphere.distance(  # type: ignore
+                polyline1,
+                polyline2,
+                # We're only detecting zero distance (an intersection), so as an optimisation we
+                # don't need to calculate an accurate non-zero distance (instead just return None)...
+                distance_threshold_radians=self.INTERSECTION_THRESHOLD_RADIANS,
+                return_closest_positions=True,
+                return_closest_indices=True,
+            )
+
+            if distance_tuple is not None:
+                (
+                    distance,
+                    polyline1_intersection,
+                    polyline2_intersection,
+                    polyline1_segment_index,
+                    polyline2_segment_index,
+                ) = distance_tuple
+
+                if distance == 0.0:
+                    # We found an intersection (between 'polyline1' and 'polyline2').
+                    num_intersections += 1
+
+                    # If we reached the max number of intersections then we've likely detected a partial overlap
+                    # between the two polylines (where a segment from each polyline are on top of each other and
+                    # hence essentially have an infinite number of intersections).
+                    #
+                    # In this case we'll just return the maximum number of intersections. This means if both the
+                    # polylines overlap at both the current and next times then they'll return the same number
+                    # of intersections (max) and compare equal and hence be considered consistent.
+                    if num_intersections == self.MAX_NUM_INTERSECTIONS:
+                        return num_intersections
+
+                    # Split 'polyline1' into two polylines at its intersection point.
+                    polyline1a = self._pre_split_polyline(
+                        polyline1, polyline1_segment_index, polyline1_intersection
+                    )
+                    polyline1b = self._post_split_polyline(
+                        polyline1, polyline1_segment_index, polyline1_intersection
+                    )
+
+                    # Split 'polyline2' into two polylines at its intersection point.
+                    polyline2a = self._pre_split_polyline(
+                        polyline2, polyline2_segment_index, polyline2_intersection
+                    )
+                    polyline2b = self._post_split_polyline(
+                        polyline2, polyline2_segment_index, polyline2_intersection
+                    )
+
+                    # Test for intersections among the four combinations of split polylines.
+                    #
+                    # Note: It's possible there may be less than four split polylines if
+                    #       either (or both) polylines were intersected at one of their end points.
+                    if polyline1a:
+                        if polyline2a:
+                            num_intersections = self._get_num_intersections(
+                                polyline1a, polyline2a, num_intersections
+                            )
+                            if num_intersections == self.MAX_NUM_INTERSECTIONS:
+                                return num_intersections
+                        if polyline2b:
+                            num_intersections = self._get_num_intersections(
+                                polyline1a, polyline2b, num_intersections
+                            )
+                            if num_intersections == self.MAX_NUM_INTERSECTIONS:
+                                return num_intersections
+                    if polyline1b:
+                        if polyline2a:
+                            num_intersections = self._get_num_intersections(
+                                polyline1b, polyline2a, num_intersections
+                            )
+                            if num_intersections == self.MAX_NUM_INTERSECTIONS:
+                                return num_intersections
+                        if polyline2b:
+                            num_intersections = self._get_num_intersections(
+                                polyline1b, polyline2b, num_intersections
+                            )
+                            if num_intersections == self.MAX_NUM_INTERSECTIONS:
+                                return num_intersections
+
+            return num_intersections
+
+        def _pre_split_polyline(
+            self, polyline, polyline_segment_index, polyline_intersection
+        ):
+            # Get the points *before* the intersection (including the intersection).
+            # This will have at least two points (needed for creating a polyline).
+            pre_split_points = list(polyline[: polyline_segment_index + 1])
+            pre_split_points.append(polyline_intersection)
+
+            # Remove any zero length segments next to the intersected end of the polyline.
+            # Because we've already detected the intersection and don't want it detected in subsequent intersection tests.
+            while True:
+                pre_split_last_segment = pygplates.GreatCircleArc(  # type: ignore
+                    pre_split_points[-2],
+                    pre_split_points[-1],
+                )
+                if not pre_split_last_segment.is_zero_length():
+                    break
+
+                # Remove the last segment (by removing last point).
+                del pre_split_points[-1]
+                if len(pre_split_points) < 2:
+                    # All segments before the intersection are zero length.
+                    # So there's no pre-split polyline.
+                    return None
+
+            # We've encountered a non-zero length segment. Let's shorten it such that it will no longer intersect the intersection point.
+            # Because we've already detected the intersection and don't want it detected in subsequent intersection tests.
+            if (
+                self.INTERSECTION_THRESHOLD_RADIANS
+                < pre_split_last_segment.get_arc_length()
+            ):
+                # Last segment is *longer* than the intersection threshold, so shorten it by that amount.
+                # Replace last point with rotated point.
+                pre_split_points[-1] = (
+                    pygplates.FiniteRotation(  # type: ignore
+                        pre_split_last_segment.get_rotation_axis(),
+                        -self.INTERSECTION_THRESHOLD_RADIANS,  # negative rotates away from segment *end* point
+                    )
+                    * pre_split_points[-1]
+                )
+            else:
+                # Last segment is *shorter* than the intersection threshold. But we know it's not a zero length segment,
+                # so it should be far enough away from the intersection point. So just remove the segment (by removing last point).
+                del pre_split_points[-1]
+                if len(pre_split_points) < 2:
+                    # There are no segments before the intersection.
+                    # So there's no pre-split polyline.
+                    return None
+
+            return pygplates.PolylineOnSphere(pre_split_points)  # type: ignore
+
+        def _post_split_polyline(
+            self, polyline, polyline_segment_index, polyline_intersection
+        ):
+            # Get the points *after* the intersection (including the intersection).
+            # This will have at least two points (needed for creating a polyline).
+            post_split_points = [polyline_intersection]
+            post_split_points.extend(polyline[polyline_segment_index + 1 :])
+
+            # Remove any zero length segments next to the intersected start of the polyline.
+            # Because we've already detected the intersection and don't want it detected in subsequent intersection tests.
+            while True:
+                post_split_first_segment = pygplates.GreatCircleArc(  # type: ignore
+                    post_split_points[0],
+                    post_split_points[1],
+                )
+                if not post_split_first_segment.is_zero_length():
+                    break
+
+                # Remove the first segment (by removing first point).
+                del post_split_points[0]
+                if len(post_split_points) < 2:
+                    # All segments after the intersection are zero length.
+                    # So there's no post-split polyline.
+                    return None
+
+            # We've encountered a non-zero length segment. Let's shorten it such that it will no longer intersect the intersection point.
+            # Because we've already detected the intersection and don't want it detected in subsequent intersection tests.
+            if (
+                self.INTERSECTION_THRESHOLD_RADIANS
+                < post_split_first_segment.get_arc_length()
+            ):
+                # First segment is *longer* than the intersection threshold, so shorten it by that amount.
+                # Replace first point with rotated point.
+                post_split_points[0] = (
+                    pygplates.FiniteRotation(  # type: ignore
+                        post_split_first_segment.get_rotation_axis(),
+                        self.INTERSECTION_THRESHOLD_RADIANS,
+                    )
+                    * post_split_points[0]
+                )
+            else:
+                # First segment is *shorter* than the intersection threshold. But we know it's not a zero length segment,
+                # so it should be far enough away from the intersection point. So just remove the segment (by removing first point).
+                del post_split_points[0]
+                if len(post_split_points) < 2:
+                    # There are no segments after the intersection.
+                    # So there's no post-split polyline.
+                    return None
+
+            return pygplates.PolylineOnSphere(post_split_points)  # type: ignore
 
 
 class _ReconstructByTopologicalModelImpl(_ReconstructByTopologies):
