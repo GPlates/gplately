@@ -1059,7 +1059,9 @@ class _ReconstructByTopologiesImplV2(_ReconstructByTopologies):
             # If the next resolved topology is consistent with the current resolved topology then we're fine,
             # otherwise we need to replace the boundary of the next resolved topology with something more consistent.
             next_resolved_topology_boundary = self._NextTopologicalBoundary(
-                curr_resolved_topology, next_resolved_topology
+                curr_resolved_topology,
+                next_resolved_topology,
+                self.rotation_model,
             ).get_next_resolved_topology_boundary()
 
             # Iterate over the currently active points contained by the current resolved topology.
@@ -1366,19 +1368,143 @@ class _ReconstructByTopologiesImplV2(_ReconstructByTopologies):
         # hence essentially have an infinite number of intersections).
         MAX_NUM_INTERSECTIONS = 5
 
-        def __init__(self, curr_resolved_topology, next_resolved_topology):
+        def __init__(
+            self, curr_resolved_topology, next_resolved_topology, rotation_model
+        ):
 
             self.curr_resolved_topology = curr_resolved_topology
             self.next_resolved_topology = next_resolved_topology
+            self.curr_time = curr_resolved_topology.get_reconstruction_time()
+            self.next_time = next_resolved_topology.get_reconstruction_time()
+            self.rotation_model = rotation_model
 
         def get_next_resolved_topology_boundary(self):
 
+            # If the current and next resolved topologies are consistent then
+            # just return the resolved boundary of the next resolved topology.
             if self._are_current_and_next_resolved_topologies_consistent():
                 return self.next_resolved_topology.get_resolved_boundary()
 
-            # TODO: Replace this with taking the *clipped* boundary sub-segments of the current topology,
-            #       moving them to the next time, and joining them together.
-            return self.next_resolved_topology.get_resolved_boundary()
+            # Instead of returning the boundary of the next resolved topology, return the boundary
+            # sub-segments of the current resolved topology moved to the next time and joined together.
+            return self._get_next_boundary_from_current_boundary_sub_segments()
+
+        def _get_next_boundary_from_current_boundary_sub_segments(self):
+
+            #
+            # Instead of the resolved boundary of the *next* resolved topology we'll:
+            # - take the *clipped* boundary sub-segments of the *current* resolved topology,
+            # - move them to the next time, and
+            # - join them together into a polygon boundary.
+            #
+
+            # Collect the current boundary sub-segment features to use for the next boundary.
+            next_boundary_sub_segment_features = []
+            next_boundary_sub_segment_reversals = []
+            for (
+                curr_boundary_sub_segment
+            ) in self.curr_resolved_topology.get_boundary_sub_segments():
+                # See if the current boundary sub-segment is from a topological *line*.
+                #
+                # If it is then we need to iterate over its sub-segments. This is because we need features that are *reconstructable*.
+                # Topological lines are not reconstructable (because they're topologies linking reconstructable features).
+                # Only the sub-segments of topological lines are reconstructable.
+                sub_sub_segments = curr_boundary_sub_segment.get_sub_segments()
+                if sub_sub_segments:
+                    curr_boundary_sub_segment_reversal = (
+                        curr_boundary_sub_segment.was_geometry_reversed_in_topology()
+                    )
+                    # Each sub-segment of the resolved topological *line* will contribute to the current boundary sub-segment.
+                    #
+                    # Note: Only a sub-section of the full resolved topological *line* will contribute
+                    #       to the boundary of the current resolved topological boundary/network.
+                    #       Hence not all the sub-segments of the resolved topological *line* will contribute
+                    #       to the boundary of the current resolved topological boundary/network.
+                    #
+                    # Note: We need to reverse the order of sub-sub-segments if the resolved topological *line* is reversed
+                    #       in the current resolved boundary.
+                    next_boundary_sub_segment_features.extend(
+                        sub_sub_segment.get_resolved_feature()
+                        for sub_sub_segment in (
+                            reversed(sub_sub_segments)
+                            if curr_boundary_sub_segment_reversal
+                            else sub_sub_segments
+                        )
+                    )
+                    # If a sub-sub-segment is reversed in the resolved topological *line* which is, in turn, reversed in the
+                    # current resolved boundary then the sub-sub-segment is NOT reversed in the current resolved boundary.
+                    next_boundary_sub_segment_reversals.extend(
+                        curr_boundary_sub_segment_reversal
+                        ^ sub_sub_segment.was_geometry_reversed_in_topology()
+                        for sub_sub_segment in (
+                            reversed(sub_sub_segments)
+                            if curr_boundary_sub_segment_reversal
+                            else sub_sub_segments
+                        )
+                    )
+                else:
+                    next_boundary_sub_segment_features.append(
+                        curr_boundary_sub_segment.get_resolved_feature()
+                    )
+                    next_boundary_sub_segment_reversals.append(
+                        curr_boundary_sub_segment.was_geometry_reversed_in_topology()
+                    )
+
+            # The sub-segment resolved features are already reconstructed to 'curr_time'.
+            # So we need to reverse reconstruct them to present day (before we can reconstruct them to 'next_time').
+            #
+            # Note: We don't need to clone these features before modifying them because they were already essentially cloned
+            #       when 'ResolvedTopologicalSubSegment.get_resolved_feature()' was called.
+            pygplates.reverse_reconstruct(  # type:ignore
+                next_boundary_sub_segment_features,
+                self.rotation_model,
+                self.curr_time,
+            )
+
+            # The resolved sub-segment features are valid at the 'curr_time' but not necessarily at 'next_time'.
+            # If not valid at 'next_time' then set a valid time that includes 'next_time'.
+            for feature in next_boundary_sub_segment_features:
+                if not feature.is_valid_at_time(self.next_time):
+                    feature.set_valid_time(
+                        pygplates.GeoTimeInstant.create_distant_past(), 0.0  # type: ignore
+                    )
+
+            # Reconstruct to 'next_time' (from present day).
+            next_boundary_sub_segment_reconstructed_geometries = (
+                pygplates.ReconstructSnapshot(  # type:ignore
+                    next_boundary_sub_segment_features,
+                    self.rotation_model,
+                    self.next_time,
+                ).get_reconstructed_geometries(
+                    same_order_as_reconstructable_features=True
+                )
+            )
+
+            # The order and length of reconstructed geometries should match that of the features.
+            if len(next_boundary_sub_segment_reconstructed_geometries) != len(
+                next_boundary_sub_segment_features
+            ):
+                raise RuntimeError(
+                    "Expected number of reconstructed geometries to match number of features."
+                )
+
+            # Iterate over the next boundary sub-segments and join them to form a polygon boundary.
+            next_boundary_polygon_points = []
+            for (
+                feature_index,
+                next_boundary_sub_segment_reconstructed_geometry,
+            ) in enumerate(next_boundary_sub_segment_reconstructed_geometries):
+                next_boundary_polygon_points.extend(
+                    reversed(
+                        next_boundary_sub_segment_reconstructed_geometry.get_reconstructed_geometry_points()
+                    )
+                    if next_boundary_sub_segment_reversals[feature_index]
+                    else next_boundary_sub_segment_reconstructed_geometry.get_reconstructed_geometry_points()
+                )
+
+            return pygplates.PolygonOnSphere(  # type:ignore
+                next_boundary_polygon_points
+            )
 
         def _are_current_and_next_resolved_topologies_consistent(self):
 
