@@ -1168,6 +1168,8 @@ class SeafloorGrid(object):
                 from_time,
                 self._min_time,
                 self._ridge_time_step,
+                # This filename string should not have a time formatted into it - this is taken care of later...
+                self.continent_mask_filepath,
                 points,
                 point_begin_times=appearance_times,
             )

@@ -867,11 +867,17 @@ class _ReconstructByTopologiesImplV2(_ReconstructByTopologies):
         reconstruction_begin_time,
         reconstruction_end_time,
         reconstruction_time_interval,
+        continent_mask_filepath_format,
         points,
         *,
         point_begin_times: Union[np.ndarray, list, None] = None,
         point_end_times: Union[np.ndarray, list, None] = None,
     ):
+        """
+        continent_mask_filepath_format: str
+            The format of the file path of the continental mask grids that is converted to a
+            file path using ``continent_mask_filepath_format.format(time)``.
+        """
 
         super().__init__(
             reconstruction_begin_time,
@@ -888,6 +894,8 @@ class _ReconstructByTopologiesImplV2(_ReconstructByTopologies):
         self.topology_features = pygplates.FeaturesFunctionArgument(  # type: ignore
             topology_features
         ).get_features()
+
+        self.continent_mask_filepath_format = continent_mask_filepath_format
 
     def _begin_reconstruction_impl(self):
         # Activate any original points whose begin time is equal to (or older than) the newly updated current time.
@@ -1091,6 +1099,9 @@ class _ReconstructByTopologiesImplV2(_ReconstructByTopologies):
                 # The current active point was not consumed by a plate boundary.
                 self.next_points[curr_point_index] = next_active_point
 
+        # See if any 'next' points collide with the continents and deactivate those that do.
+        self._detect_continent_collisions(next_time)
+
         #
         # Set up for next loop iteration.
         #
@@ -1111,6 +1122,50 @@ class _ReconstructByTopologiesImplV2(_ReconstructByTopologies):
         # Activate any original points whose begin time is equal to (or older than) the newly updated current time.
         # Deactivate any activated points whose end time is equal to (or younger than) the newly updated current time.
         self._activate_deactivate_points_using_their_begin_end_times()
+
+    def _detect_continent_collisions(self, next_time):
+        # Get those 'next' points that are active.
+        next_active_points = []
+        next_active_points_indices = []
+        for point_index, next_point in enumerate(self.next_points):
+            if next_point:
+                next_active_points.append(next_point)
+                next_active_points_indices.append(point_index)
+
+        # Convert points to lat/lon.
+        points_lat = np.empty(len(next_active_points))
+        points_lon = np.empty(len(next_active_points))
+        for active_point_index, point in enumerate(next_active_points):
+            point_lat, point_lon = point.to_lat_lon()
+            points_lat[active_point_index] = point_lat
+            points_lon[active_point_index] = point_lon
+
+        # Read the continent mask at 'next_time'.
+        continent_mask_filepath = self.continent_mask_filepath_format.format(next_time)
+        gridZ, gridX, gridY = read_netcdf_grid(
+            continent_mask_filepath, return_grids=True
+        )
+        ni, nj = gridZ.shape
+        xmin = np.nanmin(gridX)
+        xmax = np.nanmax(gridX)
+        ymin = np.nanmin(gridY)
+        ymax = np.nanmax(gridY)
+
+        # Sample continent mask grid, which is one over continents and zero over oceans.
+        points_i = (ni - 1) * ((points_lat - ymin) / (ymax - ymin))
+        points_j = (nj - 1) * ((points_lon - xmin) / (xmax - xmin))
+        points_i_uint = np.rint(points_i).astype(np.uint)
+        points_j_uint = np.rint(points_j).astype(np.uint)
+        try:
+            mask_values = gridZ[points_i_uint, points_j_uint]
+        except IndexError:
+            points_i = np.clip(np.rint(points_i), 0, ni - 1).astype(np.int_)
+            points_j = np.clip(np.rint(points_j), 0, nj - 1).astype(np.int_)
+            mask_values = gridZ[points_i, points_j]
+
+        # Deactivate any points that sampled inside the continent mask.
+        for active_point_index in np.where(mask_values >= 0.5)[0]:
+            self.next_points[next_active_points_indices[active_point_index]] = None
 
     class _NextTopologicalFeatures(object):
         """The *next* topology boundary features and their topological section features.
