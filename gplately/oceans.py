@@ -30,11 +30,7 @@ import pygplates
 
 from . import grids, tools
 from .lib.reconstruct_by_topologies import (
-    _ContinentCollision,
-    _DefaultCollision,
-    _ReconstructByTopologiesImpl,
-    _ReconstructByTopologiesImplV2,
-    _ReconstructByTopologicalModelImpl,
+    ReconstructByTopologies,
 )
 from .ptt import continent_contours, separate_ridge_transform_segments
 from .tools import _deg2pixels, _pixels2deg
@@ -906,22 +902,23 @@ class SeafloorGrid(object):
 
         return shifted_mor_points, np.array(point_spreading_rates)
 
+    def reconstruct_by_topological_model(self):
+        """Alias for :meth:`reconstruct_by_topologies`.
+
+        Introduced in version ``2.0``, this method used to use `pygplates.TopologicalModel`_ class to reconstruct seed points.
+        Now it's just an alias for :meth:`reconstruct_by_topologies` and is deprecated.
+
+        .. deprecated:: 2.1
+
+            Use :meth:`reconstruct_by_topologies` instead.
+        """
+        self.reconstruct_by_topologies()
+
     def reconstruct_by_topologies(self):
         """Obtain all active ocean seed points which are points that have not been consumed at subduction zones
         or have not collided with continental polygons. Active points' latitudes, longitues, seafloor ages, spreading rates and all
         other general z-values are saved to a gridding input file (.npz).
         """
-        self._reconstruct_by_topologies_impl(use_topological_model=False)
-
-    def reconstruct_by_topological_model(self):
-        """Use `pygplates.TopologicalModel`_ class to reconstruct seed points.
-        This method is an alternative to :meth:`reconstruct_by_topologies()` which uses Python code to do the reconstruction.
-
-        .. _pygplates.TopologicalModel: https://www.gplates.org/docs/pygplates/generated/pygplates.topologicalmodel
-        """
-        self._reconstruct_by_topologies_impl(use_topological_model=True)
-
-    def _reconstruct_by_topologies_impl(self, use_topological_model):
 
         logger.info("Preparing to reconstruct ocean seed points using topologies...")
 
@@ -965,15 +962,12 @@ class SeafloorGrid(object):
                     partial(
                         _build_and_reconstruct_ocean_seed_points_parallel,
                         seafloor_grid=self,
-                        use_topological_model=use_topological_model,
                     ),
                     self._times,
                 )
         else:
             for time in self._times:
-                self._build_and_reconstruct_ocean_seed_points(
-                    time, use_topological_model=use_topological_model
-                )
+                self._build_and_reconstruct_ocean_seed_points(time)
 
         logger.info(
             "Aggregating reconstructed ocean seed point data for gridding input..."
@@ -1059,9 +1053,7 @@ class SeafloorGrid(object):
                     all_reconstructed_seed_point_data
                 )
 
-    def _build_and_reconstruct_ocean_seed_points(
-        self, from_time, use_topological_model
-    ):
+    def _build_and_reconstruct_ocean_seed_points(self, from_time):
         """Creates ocean seed points at `from_time` and reconstructs them to `min_time`.
 
         Ocean seed points can be either the *initial* ocean seed points at `from_time=max_time` or
@@ -1131,48 +1123,18 @@ class SeafloorGrid(object):
         # Begin the reconstruction by topology process.
         #
 
-        # Specify the default collision detection region as subduction zones
-        default_collision = _DefaultCollision(
-            feature_specific_collision_parameters=[
-                (
-                    pygplates.FeatureType.gpml_subduction_zone,
-                    self.subduction_collision_parameters,
-                )
-            ]
+        # Call the reconstruct-by-topologies object.
+        topology_reconstruction = ReconstructByTopologies(
+            self.plate_reconstruction.rotation_model,
+            self.plate_reconstruction.topology_features,
+            from_time,
+            self._min_time,
+            self._ridge_time_step,
+            points,
+            point_begin_times=appearance_times,
+            # This filename string should not have a time formatted into it - this is taken care of later...
+            continent_mask_filepath_format=self.continent_mask_filepath,
         )
-        # In addition to the default subduction detection, also detect continental collisions
-        collision_spec = _ContinentCollision(
-            # This filename string should not have a time formatted into it - this is
-            # taken care of later.
-            self.continent_mask_filepath,
-            default_collision,
-            verbose=False,
-        )
-
-        # Call the reconstruct by topologies object
-        if use_topological_model:
-            topology_reconstruction = _ReconstructByTopologicalModelImpl(
-                self.plate_reconstruction.rotation_model,
-                self.plate_reconstruction.topology_features,
-                from_time,
-                self._min_time,
-                self._ridge_time_step,
-                points,
-                point_begin_times=appearance_times,
-                detect_collisions=collision_spec,
-            )
-        else:
-            topology_reconstruction = _ReconstructByTopologiesImplV2(
-                self.plate_reconstruction.rotation_model,
-                self.plate_reconstruction.topology_features,
-                from_time,
-                self._min_time,
-                self._ridge_time_step,
-                # This filename string should not have a time formatted into it - this is taken care of later...
-                self.continent_mask_filepath,
-                points,
-                point_begin_times=appearance_times,
-            )
 
         # Initialise the reconstruction.
         topology_reconstruction.begin_reconstruction()
@@ -1892,12 +1854,9 @@ def _generate_debug_files_containing_reconstructed_ocean_seed_point_data_paralle
 def _build_and_reconstruct_ocean_seed_points_parallel(
     time,
     seafloor_grid,
-    use_topological_model,
 ):
     # Dispatch from parallel helper function to SeafloorGrid class method.
-    seafloor_grid._build_and_reconstruct_ocean_seed_points(
-        time, use_topological_model=use_topological_model
-    )
+    seafloor_grid._build_and_reconstruct_ocean_seed_points(time)
 
 
 def _get_num_cpus(nprocs):
