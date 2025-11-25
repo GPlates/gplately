@@ -48,8 +48,7 @@ class ReconstructByTopologies(object):
 
     def __init__(
         self,
-        rotation_features_or_model,
-        topology_features,
+        plate_reconstruction,
         reconstruction_begin_time,
         reconstruction_end_time,
         reconstruction_time_interval,
@@ -65,12 +64,7 @@ class ReconstructByTopologies(object):
             file path using ``continent_mask_filepath_format.format(time)``.
         """
 
-        self.rotation_model = pygplates.RotationModel(rotation_features_or_model)  # type: ignore
-
-        # Turn topology data into a list of features (if not already).
-        self.topology_features = pygplates.FeaturesFunctionArgument(  # type: ignore
-            topology_features
-        ).get_features()
+        self.plate_reconstruction = plate_reconstruction
 
         # Set up an array of reconstruction times covering the reconstruction time span.
         self.reconstruction_begin_time = reconstruction_begin_time
@@ -226,10 +220,10 @@ class ReconstructByTopologies(object):
         # Positive/negative time step means reconstructing backward/forward in time.
         next_time = current_time + self._reconstruction_time_step
 
-        curr_topological_snapshot = pygplates.TopologicalSnapshot(  # type: ignore
-            self.topology_features, self.rotation_model, current_time
-        )
-        curr_resolved_topologies = curr_topological_snapshot.get_resolved_topologies()
+        # Resolved the topologies at the current time.
+        curr_resolved_topologies = self.plate_reconstruction.topological_snapshot(
+            current_time, include_topological_slab_boundaries=False
+        ).get_resolved_topologies()
 
         # Get the currently active points and their indices (into the original points).
         curr_active_point_indices = self.get_current_active_point_indices()
@@ -310,7 +304,7 @@ class ReconstructByTopologies(object):
         next_topological_snapshot = pygplates.TopologicalSnapshot(  # type: ignore
             next_topological_features.next_topological_section_features
             + next_topological_features.next_topological_boundary_features,
-            self.rotation_model,
+            self.plate_reconstruction.rotation_model,
             next_time,
         )
 
@@ -368,7 +362,7 @@ class ReconstructByTopologies(object):
             next_resolved_topology_boundary = self._NextTopologicalBoundary(
                 curr_resolved_topology,
                 next_resolved_topology,
-                self.rotation_model,
+                self.plate_reconstruction.rotation_model,
             ).get_next_resolved_topology_boundary()
 
             # Iterate over the currently active points contained by the current resolved topology.
@@ -1235,8 +1229,7 @@ class ReconstructByTopologies(object):
 
 
 def reconstruct_points_by_topologies(
-    rotation_features_or_model,
-    topology_features,
+    plate_reconstruction,
     reconstruction_begin_time,
     reconstruction_end_time,
     reconstruction_time_interval,
@@ -1249,8 +1242,7 @@ def reconstruct_points_by_topologies(
     """Reconstruct points using topologies."""
 
     topology_reconstruction = ReconstructByTopologies(
-        rotation_features_or_model,
-        topology_features,
+        plate_reconstruction,
         reconstruction_begin_time,
         reconstruction_end_time,
         reconstruction_time_interval,

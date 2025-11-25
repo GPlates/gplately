@@ -1125,8 +1125,7 @@ class SeafloorGrid(object):
 
         # Call the reconstruct-by-topologies object.
         topology_reconstruction = ReconstructByTopologies(
-            self.plate_reconstruction.rotation_model,
-            self.plate_reconstruction.topology_features,
+            self.plate_reconstruction,
             from_time,
             self._min_time,
             self._ridge_time_step,
