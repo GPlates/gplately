@@ -1149,48 +1149,41 @@ class SeafloorGrid(object):
             # This is the same size as 'points', which is either the initial ocean points at `time=max_time` or the MOR seed points at `time`.
             # Here 'current_points', despite being the same size, differs in that any *inactive* points at the current time
             # are None and the *active* points are at their reconstructed position at the current time.
-            current_points = topology_reconstruction.get_all_current_points()
-
-            # Get the indices of the currently *active* points into all the points.
-            #
-            # Note: Points that are None represent currently *inactive* points.
-            #       These are points that have either:
-            #         1) not been activated yet because the current time is older than their appearance time, or
-            #         2) have been deactivated because the current time is younger than their dissappearance time, or
-            #         3) have been deactivated through collision detection (ie, collided with a continent or trench).
-            #       However, note that (2) does not apply here because the points currently don't have a hardwired disappearance time
-            #       (it's implicitly '-inf'). Instead we rely on collision detection to deactivate points.
-            #       And note that (1) does not apply here either, because the initial ocean seed points all exist at 'time=max_time' and
-            #       all MOR seed points created at 'time' also exist at 'time'.
-            #
-            active_point_indices = np.fromiter(
-                (
-                    point_index
-                    for point_index, point in enumerate(current_points)
-                    if point is not None
-                ),
-                dtype=np.int32,
-            )
+            active_points = topology_reconstruction.get_current_active_points()
 
             # logger.debug(
-            #    f"At {time:.2f} Ma, {len(active_point_indices)} of the {len(points)} points created at {from_time:.2f} Ma are still active."
+            #    f"At {time:.2f} Ma, {len(active_points)} of the {len(points)} points created at {from_time:.2f} Ma are still active."
             # )
 
             # Store the reconstructed seed point data if any seed points are currently active.
-            if len(active_point_indices) > 0:
+            if active_points:
 
                 # Latitudes and longitudes of the active points.
                 # Store as 32-bit floating-point to save memory/disk-space.
-                active_latitudes = np.empty(len(active_point_indices), dtype=np.float32)
-                active_longitudes = np.empty(
-                    len(active_point_indices), dtype=np.float32
-                )
-                for index, point_index in enumerate(active_point_indices):
-                    active_latitudes[index], active_longitudes[index] = current_points[
-                        point_index
-                    ].to_lat_lon()
+                active_latitudes = np.empty(len(active_points), dtype=np.float32)
+                active_longitudes = np.empty(len(active_points), dtype=np.float32)
+                for index, active_point in enumerate(active_points):
+                    active_latitudes[index], active_longitudes[index] = (
+                        active_point.to_lat_lon()
+                    )
 
-                # Store the active reconstructed seed point locations their active point indices for the current time.
+                # Get the indices of the currently *active* points into all the points (active and inactive).
+                #
+                # Note: Points that are None represent currently *inactive* points.
+                #       These are points that have either:
+                #         1) not been activated yet because the current time is older than their appearance time, or
+                #         2) have been deactivated because the current time is younger than their dissappearance time, or
+                #         3) have been deactivated through collision detection (ie, collided with a continent or trench).
+                #       However, note that (2) does not apply here because the points currently don't have a hardwired disappearance time
+                #       (it's implicitly '-inf'). Instead we rely on collision detection to deactivate points.
+                #       And note that (1) does not really apply here either, because the initial ocean seed points all exist at the
+                #       start time 'from_time=max_time' and all MOR seed points created at 'from_time' also exist at 'from_time'.
+                #
+                active_point_indices = (
+                    topology_reconstruction.get_current_active_point_indices()
+                )
+
+                # Store the active reconstructed seed point locations and their active point indices for the current time.
                 #
                 # Use a time "index" (associated with the current time - in the range `min_time <= time <= from_time`).
                 time_index = topology_reconstruction.get_current_time_index()

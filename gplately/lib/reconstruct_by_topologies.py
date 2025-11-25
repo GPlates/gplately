@@ -79,33 +79,33 @@ class ReconstructByTopologies(object):
             raise ValueError("'reconstruction_time_interval' must be positive.")
         # Reconstruction can go forward or backward in time.
         if self.reconstruction_begin_time > self.reconstruction_end_time:
-            self.reconstruction_time_step = -reconstruction_time_interval
+            self._reconstruction_time_step = -reconstruction_time_interval
         else:
-            self.reconstruction_time_step = reconstruction_time_interval
+            self._reconstruction_time_step = reconstruction_time_interval
         # Get number of times including end time if time span is a multiple of time step.
         # The '1' is because, for example, 2 time intervals is 3 times.
         # The '1e-6' deals with limited floating-point precision, eg, we want (3.0 - 0.0) / 1.0 to be 3.0 and not 2.999999 (which gets truncated to 2).
-        self.num_times = 1 + int(
+        self._num_times = 1 + int(
             math.floor(
                 1e-6
                 + float(self.reconstruction_end_time - self.reconstruction_begin_time)
-                / self.reconstruction_time_step
+                / self._reconstruction_time_step
             )
         )
         # It's possible the time step is larger than the time span, in which case we change it to equal the time span
         # unless the reconstruction begin and end times are equal (in which case there'll be only one reconstruction snapshot).
         # This guarantees there'll be at least one time step (which has two times; one at either end of interval).
         if (
-            self.num_times == 1
+            self._num_times == 1
             and self.reconstruction_end_time != self.reconstruction_begin_time
         ):
-            self.num_times = 2
-            self.reconstruction_time_step = (
+            self._num_times = 2
+            self._reconstruction_time_step = (
                 self.reconstruction_end_time - self.reconstruction_begin_time
             )
-        self.reconstruction_time_interval = math.fabs(self.reconstruction_time_step)
+        self._reconstruction_time_interval = math.fabs(self._reconstruction_time_step)
 
-        self.last_time_index = self.num_times - 1
+        self._last_time_index = self._num_times - 1
 
         self.points = points
         self.num_points = len(points)
@@ -132,7 +132,7 @@ class ReconstructByTopologies(object):
                     "Length of 'point_end_times' must match length of 'points'."
                 )
 
-        self.continent_mask_filepath_format = continent_mask_filepath_format
+        self._continent_mask_filepath_format = continent_mask_filepath_format
 
     def reconstruct(self):
         # Initialise the reconstruction.
@@ -144,54 +144,78 @@ class ReconstructByTopologies(object):
         while self.reconstruct_to_next_time():
             pass
 
-        return self.get_active_current_points()
+        return self.get_current_active_points()
 
     def begin_reconstruction(self):
-        self.current_time_index = 0
+        self._current_time_index = 0
 
-        # Set up point arrays.
-        # Store active and inactive points here (inactive points have None in corresponding entries).
-        self.prev_points = [None] * self.num_points
-        self.curr_points = [None] * self.num_points
-        self.next_points = [None] * self.num_points
+        # Store active and inactive points here.
+        #
+        # NOTE: Deactivated points will NOT get reset to None - we'll just ignore them.
+        self._all_current_points = [None] * self.num_points
+
+        # A boolean array indicating which points (in 'self._all_current_points') are active.
+        self._point_is_currently_active = np.zeros(self.num_points, dtype=bool)
 
         # Each point can only get activated once (after deactivation it cannot be reactivated).
-        self.point_has_been_activated = np.zeros(self.num_points, dtype=bool)
-        self.num_activated_points = 0
+        self._point_has_been_activated = np.zeros(self.num_points, dtype=bool)
 
         # Activate any original points whose begin time is equal to (or older than) the newly updated current time.
         # Deactivate any activated points whose end time is equal to (or younger than) the newly updated current time.
         self._activate_deactivate_points_using_their_begin_end_times()
 
+        # Deactivate any newly actived points that are masked by the continents.
+        self._deactivate_continent_masked_points()
+
     def get_current_time_index(self):
-        return self.current_time_index
+        return self._current_time_index
 
     def get_current_time(self):
         return (
             self.reconstruction_begin_time
-            + self.current_time_index * self.reconstruction_time_step
+            + self._current_time_index * self._reconstruction_time_step
         )
 
-    def get_all_current_points(self):
-        return self.curr_points
+    def get_current_active_points(self):
+        """Return those points that are currently active."""
+        return [
+            self._all_current_points[point_index]
+            for point_index in self.get_current_active_point_indices()
+        ]
 
-    def get_active_current_points(self):
-        # Return only the active points (the ones that are not None).
-        return [point for point in self.get_all_current_points() if point is not None]
+    def get_current_active_point_indices(self):
+        """Return the indices of the currently active points (into the original points)."""
+        return np.where(self._point_is_currently_active)[0]
 
     def reconstruct_to_next_time(self):
         # If we're at the last time then there is no next time to reconstruct to.
-        if self.current_time_index == self.last_time_index:
+        if self._current_time_index == self._last_time_index:
             return False
 
         # If all points have been previously activated, but none are currently active then we're finished.
         # This means all points have entered their valid time range *and* either exited their time range or
         # have been deactivated (subducted forward in time or consumed by MOR backward in time).
-        if self.num_activated_points == self.num_points and not any(self.curr_points):
+        if np.all(self._point_has_been_activated) and not np.any(
+            self._point_is_currently_active
+        ):
             return False
 
         # Call the main implementation.
         self._reconstruct_to_next_time_impl()
+
+        # Move the current time to the next time.
+        self._current_time_index += 1
+
+        # Activate any original points whose begin time is equal to (or older than) the newly updated current time.
+        # Deactivate any activated points whose end time is equal to (or younger than) the newly updated current time.
+        self._activate_deactivate_points_using_their_begin_end_times()
+
+        # Deactivate any active points that are masked by the continents.
+        #
+        # This includes deactivating any newly activated points.
+        #
+        # Note: This is done at the newly updated current time.
+        self._deactivate_continent_masked_points()
 
         # We successfully reconstructed to the next time.
         return True
@@ -200,26 +224,19 @@ class ReconstructByTopologies(object):
 
         current_time = self.get_current_time()
         # Positive/negative time step means reconstructing backward/forward in time.
-        next_time = current_time + self.reconstruction_time_step
+        next_time = current_time + self._reconstruction_time_step
 
         curr_topological_snapshot = pygplates.TopologicalSnapshot(  # type: ignore
             self.topology_features, self.rotation_model, current_time
         )
         curr_resolved_topologies = curr_topological_snapshot.get_resolved_topologies()
 
-        # Some of 'curr_points' will be None, so 'curr_active_points' contains only the active (not None)
-        # points, and 'curr_active_points_indices' is the same length as 'curr_active_points' but indexes
-        # into 'curr_points' so we can quickly find which point in 'curr_points' is associated with a
-        # particular point in 'curr_active_points'.
-        curr_active_points = []
-        curr_active_points_indices = []
-        for point_index, curr_point in enumerate(self.curr_points):
-            if curr_point is None:
-                # Current point is not currently active, so we cannot reconstruct it to the next point.
-                self.next_points[point_index] = None
-                continue
-            curr_active_points.append(curr_point)
-            curr_active_points_indices.append(point_index)
+        # Get the currently active points and their indices (into the original points).
+        curr_active_point_indices = self.get_current_active_point_indices()
+        curr_active_points = [
+            self._all_current_points[point_index]
+            for point_index in curr_active_point_indices
+        ]
 
         # For each active current point find the resolved topology containing it.
         curr_active_point_resolved_topologies = (
@@ -233,7 +250,7 @@ class ReconstructByTopologies(object):
             )
         )
 
-        # Map of current resolved topologies to the active points contained within them (their active point indices).
+        # Map of current resolved topologies to the active points contained within them (their point indices).
         map_curr_resolved_topology_to_active_point_indices = {}
 
         # Iterate over the resolved topologies containing all currently active points and get a list of the unique resolved topologies.
@@ -242,33 +259,23 @@ class ReconstructByTopologies(object):
         #       In this case we'll just deactivate the point. Previously we would keep it active but just not reconstruct it
         #       (ie, the current and next positions would be the same). However the point might end up in weird locations.
         #       So it's best to just remove it. And this shouldn't happen very often at all (for topologies with global coverage).
-        curr_active_point_index = 0
-        while curr_active_point_index < len(curr_active_points):
+        for index, curr_active_point_resolved_topology in enumerate(
+            curr_active_point_resolved_topologies
+        ):
 
-            curr_active_point_resolved_topology = curr_active_point_resolved_topologies[
-                curr_active_point_index
-            ]
+            # Index into the active and inactive points 'self._all_current_points'.
+            curr_point_index = curr_active_point_indices[index]
+
             # See if current active point fell outside all current resolved topologies.
             if curr_active_point_resolved_topology is None:
-                # Index into the active and inactive points 'self.curr_points'.
-                curr_point_index = curr_active_points_indices[curr_active_point_index]
-
                 # Current point is currently active but it fell outside all resolved topologies.
                 # So we deactivate it.
-                self.next_points[curr_point_index] = None
-
-                # Also remove evidence that the current point is active.
-                del curr_active_points[curr_active_point_index]
-                del curr_active_points_indices[curr_active_point_index]
-                del curr_active_point_resolved_topologies[curr_active_point_index]
+                self._point_is_currently_active[curr_point_index] = False
 
                 # Continue to next active point.
-                #
-                # Note: We don't increment the active point index.
-                #       We just removed an active point which essentially does the same thing.
                 continue
 
-            # If resolved topology has not been encountered yet then give it an empty list of active point indices.
+            # If resolved topology has not been encountered yet then give it an empty list of point indices.
             if (
                 curr_active_point_resolved_topology
                 not in map_curr_resolved_topology_to_active_point_indices
@@ -280,10 +287,12 @@ class ReconstructByTopologies(object):
             # Add the index of the currently active point to the resolved topology containing it.
             map_curr_resolved_topology_to_active_point_indices[
                 curr_active_point_resolved_topology
-            ].append(curr_active_point_index)
+            ].append(curr_point_index)
 
-            # Increment to the next active point.
-            curr_active_point_index += 1
+        # Prevent usage since might no longer be representative of the active points because
+        # we might've just deactivated some points that fell outside all resolved topologies.
+        del curr_active_points
+        del curr_active_point_indices
 
         # The current resolved topologies that contain active points.
         curr_active_resolved_topologies = list(
@@ -347,13 +356,9 @@ class ReconstructByTopologies(object):
             if next_resolved_topology is None:
                 # The current topology could not be resolved to the next time step.
                 # So we deactivate all points that it contains. This generally shouldn't happen though.
-                for (
-                    curr_active_point_index
-                ) in curr_resolved_topology_active_point_indices:
-                    curr_point_index = curr_active_points_indices[
-                        curr_active_point_index
-                    ]
-                    self.next_points[curr_point_index] = None
+                self._point_is_currently_active[
+                    curr_resolved_topology_active_point_indices
+                ] = False
                 continue
 
             # Get the boundary polygon of the next resolved topology.
@@ -367,16 +372,13 @@ class ReconstructByTopologies(object):
             ).get_next_resolved_topology_boundary()
 
             # Iterate over the currently active points contained by the current resolved topology.
-            for curr_active_point_index in curr_resolved_topology_active_point_indices:
+            for point_index in curr_resolved_topology_active_point_indices:
 
                 # Reconstruct the currently active point from its position at current time to its position at the next time step.
-                curr_active_point = curr_active_points[curr_active_point_index]
+                curr_active_point = self._all_current_points[point_index]
                 next_active_point = curr_resolved_topology.reconstruct_point(
                     curr_active_point, next_time
                 )
-
-                # Index into the active and inactive points 'self.curr_points'.
-                curr_point_index = curr_active_points_indices[curr_active_point_index]
 
                 # See if the location (of the current active point) reconstructed to the *next* time step
                 # is inside the current topology resolved to the *next* time step.
@@ -387,92 +389,80 @@ class ReconstructByTopologies(object):
                 if not next_resolved_topology_boundary.is_point_in_polygon(
                     next_active_point
                 ):
-                    self.next_points[curr_point_index] = None
+                    self._point_is_currently_active[point_index] = False
                     continue
 
                 # The current active point was not consumed by a plate boundary.
-                self.next_points[curr_point_index] = next_active_point
-
-        # See if any 'next' points collide with the continents and deactivate those that do.
-        self._detect_continent_collisions(next_time)
-
-        #
-        # Set up for next loop iteration.
-        #
-        # Rotate previous, current and next point arrays.
-        # The new previous will be the old current.
-        # The new current will be the old next.
-        # The new next will be the old previous (but values are ignored and overridden in next time step; just re-using its memory).
-        self.prev_points, self.curr_points, self.next_points = (
-            self.curr_points,
-            self.next_points,
-            self.prev_points,
-        )
-        #
-        # Move the current time to the next time.
-        self.current_time_index += 1
-        current_time = self.get_current_time()
-
-        # Activate any original points whose begin time is equal to (or older than) the newly updated current time.
-        # Deactivate any activated points whose end time is equal to (or younger than) the newly updated current time.
-        self._activate_deactivate_points_using_their_begin_end_times()
+                # So update its position.
+                self._all_current_points[point_index] = next_active_point
 
     def _activate_deactivate_points_using_their_begin_end_times(self):
         current_time = self.get_current_time()
 
-        # Iterate over all points and activate/deactivate as necessary depending on each point's valid time range.
-        for point_index in range(self.num_points):
-            if self.curr_points[point_index] is None:
-                if not self.point_has_been_activated[point_index]:
-                    # Point is not active and has never been activated, so see if can activate it.
-                    if (
-                        current_time <= self.point_begin_times[point_index]
-                        and current_time >= self.point_end_times[point_index]
-                    ):
-                        # The initial point is assumed to be the position at the current time
-                        # which is typically the point's begin time (approximately).
-                        # But it could be the beginning of the reconstruction time span (specified in constructor)
-                        # if that falls in the middle of the point's valid time range - in this case the
-                        # initial point position is assumed to be in a position that is some time *after*
-                        # it appeared (at its begin time) - and this can happen, for example, if you have a
-                        # uniform grids of points at some intermediate time and want to see how they
-                        # reconstruct to either a younger or older time (remembering that points can
-                        # be subducted forward in time and consumed back into a mid-ocean ridge going
-                        # backward in time).
-                        self.curr_points[point_index] = self.points[point_index]
-                        self.point_has_been_activated[point_index] = True
-                        self.num_activated_points += 1
-            else:
-                # Point is active, so see if can deactivate it.
-                if not (
-                    current_time <= self.point_begin_times[point_index]
-                    and current_time >= self.point_end_times[point_index]
-                ):
-                    self.curr_points[point_index] = None
+        # Get indices of points that are not active and have never been activated.
+        curr_inactive_and_not_yet_activated_point_indices = np.where(
+            ~self._point_is_currently_active & ~self._point_has_been_activated
+        )[0]
+        # See which of those points we can activate.
+        activate_point_indices = curr_inactive_and_not_yet_activated_point_indices[
+            (
+                current_time
+                <= self.point_begin_times[
+                    curr_inactive_and_not_yet_activated_point_indices
+                ]
+            )
+            & (
+                current_time
+                >= self.point_end_times[
+                    curr_inactive_and_not_yet_activated_point_indices
+                ]
+            )
+        ]
+        # Activate those points.
+        self._point_is_currently_active[activate_point_indices] = True
+        # Copy original point into currently active points array.
+        for point_index in activate_point_indices:
+            self._all_current_points[point_index] = self.points[point_index]
+        # Mark those points as having been activated.
+        self._point_has_been_activated[activate_point_indices] = True
 
-    def _detect_continent_collisions(self, next_time):
+        # Get indices of points that are active (and hence must have been previously activated).
+        curr_active_point_indices = np.where(self._point_is_currently_active)[0]
+        # See which of those points we can deactivate.
+        deactivate_point_indices = curr_active_point_indices[
+            ~(
+                (current_time <= self.point_begin_times[curr_active_point_indices])
+                & (current_time >= self.point_end_times[curr_active_point_indices])
+            )
+        ]
+        # Deactivate those points.
+        self._point_is_currently_active[deactivate_point_indices] = False
+        # Leave deactivated points in the currently active points array (we'll just ignore them).
+
+    def _deactivate_continent_masked_points(self):
         # If no continental collision detection requested then just return.
-        if self.continent_mask_filepath_format is None:
+        if self._continent_mask_filepath_format is None:
             return
 
-        # Get those 'next' points that are active.
-        next_active_points = []
-        next_active_points_indices = []
-        for point_index, next_point in enumerate(self.next_points):
-            if next_point:
-                next_active_points.append(next_point)
-                next_active_points_indices.append(point_index)
+        # Get the currently active points and their indices (into the original points).
+        curr_active_point_indices = self.get_current_active_point_indices()
+        curr_active_points = [
+            self._all_current_points[point_index]
+            for point_index in curr_active_point_indices
+        ]
 
         # Convert points to lat/lon.
-        points_lat = np.empty(len(next_active_points))
-        points_lon = np.empty(len(next_active_points))
-        for active_point_index, point in enumerate(next_active_points):
+        curr_points_lat = np.empty(len(curr_active_points))
+        curr_points_lon = np.empty(len(curr_active_points))
+        for index, point in enumerate(curr_active_points):
             point_lat, point_lon = point.to_lat_lon()
-            points_lat[active_point_index] = point_lat
-            points_lon[active_point_index] = point_lon
+            curr_points_lat[index] = point_lat
+            curr_points_lon[index] = point_lon
 
-        # Read the continent mask at 'next_time'.
-        continent_mask_filepath = self.continent_mask_filepath_format.format(next_time)
+        # Read the continent mask at the current time.
+        continent_mask_filepath = self._continent_mask_filepath_format.format(
+            self.get_current_time()
+        )
         gridZ, gridX, gridY = read_netcdf_grid(
             continent_mask_filepath, return_grids=True
         )
@@ -483,8 +473,8 @@ class ReconstructByTopologies(object):
         ymax = np.nanmax(gridY)
 
         # Sample continent mask grid, which is one over continents and zero over oceans.
-        points_i = (ni - 1) * ((points_lat - ymin) / (ymax - ymin))
-        points_j = (nj - 1) * ((points_lon - xmin) / (xmax - xmin))
+        points_i = (ni - 1) * ((curr_points_lat - ymin) / (ymax - ymin))
+        points_j = (nj - 1) * ((curr_points_lon - xmin) / (xmax - xmin))
         points_i_uint = np.rint(points_i).astype(np.uint)
         points_j_uint = np.rint(points_j).astype(np.uint)
         try:
@@ -495,8 +485,9 @@ class ReconstructByTopologies(object):
             mask_values = gridZ[points_i, points_j]
 
         # Deactivate any points that sampled inside the continent mask.
-        for active_point_index in np.where(mask_values >= 0.5)[0]:
-            self.next_points[next_active_points_indices[active_point_index]] = None
+        self._point_is_currently_active[
+            curr_active_point_indices[np.where(mask_values >= 0.5)[0]]
+        ] = False
 
     class _NextTopologicalFeatures(object):
         """The *next* topology boundary features and their topological section features.
