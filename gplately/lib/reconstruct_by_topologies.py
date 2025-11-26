@@ -221,9 +221,17 @@ class ReconstructByTopologies(object):
         next_time = current_time + self._reconstruction_time_step
 
         # Resolved the topologies at the current time.
-        curr_resolved_topologies = self.plate_reconstruction.topological_snapshot(
+        curr_topological_snapshot = self.plate_reconstruction.topological_snapshot(
             current_time, include_topological_slab_boundaries=False
-        ).get_resolved_topologies()
+        )
+
+        # Get the resolved networks and rigid plates.
+        curr_resolved_networks = curr_topological_snapshot.get_resolved_topologies(
+            pygplates.ResolveTopologyType.network  # type:ignore
+        )
+        curr_resolved_boundaries = curr_topological_snapshot.get_resolved_topologies(
+            pygplates.ResolveTopologyType.boundary  # type:ignore
+        )
 
         # Get the currently active points and their indices (into the original points).
         curr_active_point_indices = self.get_current_active_point_indices()
@@ -232,17 +240,39 @@ class ReconstructByTopologies(object):
             for point_index in curr_active_point_indices
         ]
 
-        # For each active current point find the resolved topology containing it.
-        curr_active_point_resolved_topologies = (
-            _ptt.utils.points_in_polygons.find_polygons(
+        # For each active current point find the resolved topology network or rigid plate containing it.
+        curr_active_points_spatial_tree = (
+            _ptt.utils.points_spatial_tree.PointsSpatialTree(curr_active_points)
+        )
+        curr_active_point_resolved_networks = (
+            _ptt.utils.points_in_polygons.find_polygons_using_points_spatial_tree(
                 curr_active_points,
+                curr_active_points_spatial_tree,
                 [
                     resolved_topology.get_resolved_boundary()
-                    for resolved_topology in curr_resolved_topologies
+                    for resolved_topology in curr_resolved_networks
                 ],
-                curr_resolved_topologies,
+                curr_resolved_networks,
             )
         )
+        curr_active_point_resolved_boundaries = (
+            _ptt.utils.points_in_polygons.find_polygons_using_points_spatial_tree(
+                curr_active_points,
+                curr_active_points_spatial_tree,
+                [
+                    resolved_topology.get_resolved_boundary()
+                    for resolved_topology in curr_resolved_boundaries
+                ],
+                curr_resolved_boundaries,
+            )
+        )
+
+        if len(curr_active_point_resolved_networks) != len(
+            curr_active_point_resolved_boundaries
+        ):
+            raise RuntimeError(
+                "Unexpected length mismatch of arrays of resolved topologies containing points."
+            )
 
         # Map of current resolved topologies to the active points contained within them (their point indices).
         map_curr_resolved_topology_to_active_point_indices = {}
@@ -253,12 +283,20 @@ class ReconstructByTopologies(object):
         #       In this case we'll just deactivate the point. Previously we would keep it active but just not reconstruct it
         #       (ie, the current and next positions would be the same). However the point might end up in weird locations.
         #       So it's best to just remove it. And this shouldn't happen very often at all (for topologies with global coverage).
-        for index, curr_active_point_resolved_topology in enumerate(
-            curr_active_point_resolved_topologies
-        ):
+        for index in range(len(curr_active_points)):
 
             # Index into the active and inactive points 'self._all_current_points'.
             curr_point_index = curr_active_point_indices[index]
+
+            # If point is inside a resolved *network* then prefer that, otherwise see if it's inside a rigid plate.
+            # This is because deforming networks can overlay rigid plates.
+            curr_active_point_resolved_topology = curr_active_point_resolved_networks[
+                index
+            ]
+            if curr_active_point_resolved_topology is None:
+                curr_active_point_resolved_topology = (
+                    curr_active_point_resolved_boundaries[index]
+                )
 
             # See if current active point fell outside all current resolved topologies.
             if curr_active_point_resolved_topology is None:
