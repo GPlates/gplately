@@ -103,13 +103,6 @@ class SeafloorGrid(object):
     Reconstruction by topologies involves determining which points are active and inactive (collided with a continent or subducted at a trench)
     for each reconstruction time step. This is done using a hidden object in :class:`PlateReconstruction` called ``ReconstructByTopologies``.
 
-    If an ocean point with a certain velocity on one plate ID transitions into another rigid plate ID at another timestep (with another velocity),
-    the velocity difference between both plates is calculated. The point may have subducted/collided with a continent if this velocity difference
-    is higher than a specified velocity threshold (which can be controlled with ``subduction_collision_parameters``). To ascertain whether the point
-    should be deactivated, a displacement test is conducted. If the proximity of the point's previous time position to the polygon boundary it is
-    approaching is higher than a set distance threshold, then the point is far enough away from the boundary that it cannot be subducted or consumed by it,
-    and hence the point is still active. Otherwise, it is deemed inactive and deleted from the ocean basin mesh.
-
     With each reconstruction time step, points from mid-ocean ridges (which have more accurate spreading rates and attributed valid times) will spread across
     the ocean floor. Eventually, points will be pushed into continental boundaries or subduction zones, where they are deleted. Ideally, all initial ocean points
     (from the Stripy icosahedral mesh) should be deleted over time. However, not all will be deleted - such points typically reside near continental boundaries.
@@ -217,7 +210,6 @@ class SeafloorGrid(object):
         ridge_sampling: float = 0.5,
         extent: Tuple = (-180, 180, -90, 90),
         grid_spacing: float = 0.1,
-        subduction_collision_parameters=(5.0, 10.0),
         initial_ocean_mean_spreading_rate: float = 75.0,
         resume_from_checkpoints=False,
         continent_polygon_features=None,
@@ -255,8 +247,6 @@ class SeafloorGrid(object):
         grid_spacing : float, default=0.1
             The degree spacing/interval with which to space grid points across all masking and
             final grids. If ``grid_spacing`` is provided, all grids will use it. If not, ``grid_spacing`` defaults to 0.1.
-        subduction_collision_parameters : len-2 tuple of float, default=(5.0, 10.0)
-            A 2-tuple of (threshold velocity delta in kms/my, threshold distance to boundary per My in kms/my)
         initial_ocean_mean_spreading_rate : float, default=75.
             A spreading rate to uniformly allocate to points that define the initial ocean
             basin. These points will have inaccurate ages, but most of them will be phased
@@ -324,7 +314,6 @@ class SeafloorGrid(object):
         # Topological parameters
         self.refinement_levels = refinement_levels
         self.ridge_sampling = ridge_sampling
-        self.subduction_collision_parameters = subduction_collision_parameters
         self.initial_ocean_mean_spreading_rate = initial_ocean_mean_spreading_rate
 
         # Gridding parameters
