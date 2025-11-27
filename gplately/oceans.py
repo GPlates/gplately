@@ -33,6 +33,7 @@ from .lib.reconstruct_by_topologies import (
     ReconstructByTopologies,
 )
 from .ptt import continent_contours, separate_ridge_transform_segments
+from .ptt.utils import points_in_polygons
 from .tools import _deg2pixels, _pixels2deg
 from .utils import seafloor_grid_utils
 from .utils.log_utils import get_debug_level
@@ -45,19 +46,7 @@ def create_icosahedral_mesh(refinement_levels):
     return seafloor_grid_utils.create_icosahedral_mesh(refinement_levels)
 
 
-def ensure_polygon_geometry(reconstructed_polygons, rotation_model, time):
-    return seafloor_grid_utils.ensure_polygon_geometry(
-        reconstructed_polygons, rotation_model, time
-    )
-
-
-def point_in_polygon_routine(multi_point, COB_polygons):
-    return seafloor_grid_utils.point_in_polygon_routine(multi_point, COB_polygons)
-
-
 create_icosahedral_mesh.__doc__ = seafloor_grid_utils.create_icosahedral_mesh.__doc__
-ensure_polygon_geometry.__doc__ = seafloor_grid_utils.ensure_polygon_geometry.__doc__
-point_in_polygon_routine.__doc__ = seafloor_grid_utils.point_in_polygon_routine.__doc__
 
 
 class SeafloorGrid(object):
@@ -558,27 +547,27 @@ class SeafloorGrid(object):
         self.plot_topologies.time = self._max_time
         reconstructed_continents = self.plot_topologies.continents
 
-        # Ensure COB terranes at max time have reconstruction IDs and valid times
-        COB_polygons = ensure_polygon_geometry(
-            reconstructed_continents,
-            self.plate_reconstruction.rotation_model,
-            self._max_time,
-        )
-
         icosahedral_multi_point = create_icosahedral_mesh(self.refinement_levels)
 
-        # zval is a binary array encoding whether a point
-        # coordinate is within a COB terrane polygon or not.
-        # Use the icosahedral mesh MultiPointOnSphere attribute
-        _, ocean_basin_point_mesh, zvals = point_in_polygon_routine(
-            icosahedral_multi_point, COB_polygons
+        # Find which reconstructed continent (if any) each point is ine.
+        points_in_continent = points_in_polygons.find_polygons(
+            icosahedral_multi_point,
+            [
+                reconstructed_continent.get_reconstructed_geometry()
+                for reconstructed_continent in reconstructed_continents
+            ],
         )
 
-        ocean_pt_feature = pygplates.Feature()
-        ocean_pt_feature.set_geometry(
-            pygplates.MultiPointOnSphere(ocean_basin_point_mesh)
+        # Extract the points in ocean (ie, not in continent).
+        ocean_basin_point_mesh = pygplates.MultiPointOnSphere(  # type:ignore
+            icosahedral_multi_point[index]
+            for index, point_in_continent in enumerate(points_in_continent)
+            if not point_in_continent
         )
-        return [ocean_pt_feature]
+
+        ocean_pt_feature = pygplates.Feature()  # type:ignore
+        ocean_pt_feature.set_geometry(ocean_basin_point_mesh)
+        return ocean_pt_feature
 
     def _get_ocean_points_from_continent_mask(self):
         """Get the ocean points from continent mask grid."""
@@ -608,11 +597,11 @@ class SeafloorGrid(object):
         mask_lon = llon.flatten()[mask_inds]
         mask_lat = llat.flatten()[mask_inds]
 
-        ocean_pt_feature = pygplates.Feature()
+        ocean_pt_feature = pygplates.Feature()  # type:ignore
         ocean_pt_feature.set_geometry(
-            pygplates.MultiPointOnSphere(zip(mask_lat, mask_lon))
+            pygplates.MultiPointOnSphere(zip(mask_lat, mask_lon))  # type:ignore
         )
-        return [ocean_pt_feature]
+        return ocean_pt_feature
 
     def _build_initial_ocean_seed_points(self):
         """Create the initial ocean basin seed point domain (at ``max_time`` only)
@@ -677,7 +666,7 @@ class SeafloorGrid(object):
         ).get_resolved_topologies()
         ocean_points, distances_to_ridge = tools.find_distance_to_nearest_ridge(
             resolved_topologies,
-            ocean_points_feature,
+            [ocean_points_feature],  # must be a sequence of features
         )
 
         # Divide spreading rate by 2 to use half the mean spreading rate
