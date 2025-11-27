@@ -26,7 +26,7 @@ from typing import List
 from plate_model_manager import PlateModel, PlateModelManager
 from pygplates import FeaturesFunctionArgument  # type: ignore
 
-from gplately import PlateReconstruction, PlotTopologies, SeafloorGrid
+from gplately import PlateReconstruction, SeafloorGrid
 
 logger = logging.getLogger("gplately")
 
@@ -272,14 +272,9 @@ def create_agegrids(
             rotation_model=rotation_files,
             topology_features=topology_files,
         )
-        gplot = PlotTopologies(
-            reconstruction,
-            continents=continent_files,
-        )
 
         grid = SeafloorGrid(
             reconstruction,
-            gplot,
             min_time=min_time,
             max_time=max_time,
             save_directory=output_dir,
@@ -290,12 +285,12 @@ def create_agegrids(
             initial_ocean_mean_spreading_rate=initial_spreadrate,
             file_collection=file_collection,
             resume_from_checkpoints=resume_from_checkpoints,
+            continent_polygon_features=continent_files,
             use_continent_contouring=use_continent_contouring,
             nprocs=n_jobs,
         )
 
         grid.reconstruct_by_topologies()
-        # grid.reconstruct_by_topological_model()
         for val in (
             SeafloorGrid.SEAFLOOR_AGE_KEY,
             SeafloorGrid.SPREADING_RATE_KEY,
