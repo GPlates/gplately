@@ -20,7 +20,7 @@ import math
 import multiprocessing
 import os
 import warnings
-from functools import partial
+from functools import partial, wraps
 from pathlib import Path
 from typing import Any, List, Tuple, Union
 
@@ -29,6 +29,7 @@ import pandas as pd
 import pygplates
 
 from . import grids, tools
+from .gpml import _load_FeatureCollection
 from .lib.reconstruct_by_topologies import (
     ReconstructByTopologies,
 )
@@ -52,8 +53,8 @@ create_icosahedral_mesh.__doc__ = seafloor_grid_utils.create_icosahedral_mesh.__
 class SeafloorGrid(object):
     """Generate grids that track data atop global ocean basin points (which emerge from mid-ocean ridges) through geological time.
 
-    This generates grids of seafloor age, seafloor spreading rate and other oceanic data from the :class:`gplately.PlateReconstruction`
-    and :class:`gplately.PlotTopologies` objects.
+    This generates grids of seafloor age, seafloor spreading rate and other oceanic data from the :class:`gplately.PlateReconstruction` object.
+    By default, continental polygons are reconstructed to mask out continental regions.
 
     Gridding methods in this class have been adapted from Simon Williams' development repository for an
     [auto-age-gridding workflow](https://github.com/siwill22/agegrid-0.1).
@@ -136,10 +137,76 @@ class SeafloorGrid(object):
     # Only individual debug files (for each time).
     _GENERATE_INDIVIDUAL_DEBUG_FILES_CONTAINING_RECONSTRUCTED_SEEDS = 2
 
+    # Handle deprecated arguments in __init__().
+    @staticmethod
+    def _deprecated_init_args_decorator(init):
+        @wraps(init)
+        def wrapper(self, *args, **kwargs):
+
+            #
+            # Handle the deprecated 'PlateReconstruction_object' argument.
+            #
+            if "PlateReconstruction_object" in kwargs:
+                warnings.warn(
+                    "`PlateReconstruction_object` argument has been deprecated, use `plate_reconstruction` instead",
+                    DeprecationWarning,
+                )
+                # See if 'plate_reconstruction' is also specified (as first positional argument or a keyword argument).
+                if len(args) >= 1 or "plate_reconstruction" in kwargs:
+                    raise TypeError(
+                        "Cannot specify both the 'PlateReconstruction_object' and 'plate_reconstruction' arguments"
+                    )
+                kwargs["plate_reconstruction"] = kwargs.pop(
+                    "PlateReconstruction_object"
+                )
+
+            #
+            # Handle the deprecated 'PlotTopologies_object' argument.
+            #
+            # If a deprecated PlotTopologies object was specified then replace it with a 'continent_polygon_features' argument.
+            #
+            _plot_topologies = None
+            if len(args) >= 2:
+                from .plot import PlotTopologies
+
+                # Previously the second positional argument could be of type PlotTopologies.
+                # It has since been removed and replaced by the keyword-only argument 'continent_polygon_features'.
+                if isinstance(args[1], PlotTopologies):
+                    _plot_topologies = args[1]
+                    args = args[:1] + args[2:]  # remove it as a positional arg
+            elif "PlotTopologies_object" in kwargs:
+                _plot_topologies = kwargs.pop("PlotTopologies_object")
+            if _plot_topologies:
+                warnings.warn(
+                    "`PlotTopologies_object` argument has been deprecated, use `continent_polygon_features` instead",
+                    DeprecationWarning,
+                )
+                # Get the features from the PlotTopologies object
+                # (not the reconstructed geometries at a specific time, as it was previously used for).
+                continent_polygon_features = _plot_topologies._continents
+                if "continent_polygon_features" in kwargs:
+                    raise TypeError(
+                        "Cannot specify a PlotTopologies object and use the 'continent_polygon_features' argument"
+                    )
+                kwargs["continent_polygon_features"] = continent_polygon_features
+
+            #
+            # Handle the deprecated 'zval_names' argument.
+            #
+            if kwargs.pop("zval_names", None):
+                warnings.warn(
+                    "`zval_names` keyword argument has been deprecated, it is no longer used",
+                    DeprecationWarning,
+                )
+
+            init(self, *args, **kwargs)
+
+        return wrapper
+
+    @_deprecated_init_args_decorator
     def __init__(
         self,
-        PlateReconstruction_object,
-        PlotTopologies_object,
+        plate_reconstruction,
         max_time: Union[float, int],
         min_time: Union[float, int],
         ridge_time_step: Union[float, int],
@@ -153,20 +220,21 @@ class SeafloorGrid(object):
         subduction_collision_parameters=(5.0, 10.0),
         initial_ocean_mean_spreading_rate: float = 75.0,
         resume_from_checkpoints=False,
-        continent_mask_filename=None,
+        continent_polygon_features=None,
         use_continent_contouring=False,
+        continent_mask_filename=None,
         nprocs=-2,
-        **kwargs,
     ):
         """Constructor. Create a :class:`SeafloorGrid` object.
 
         Parameters
         ----------
-        PlateReconstruction_object : PlateReconstruction
-            A :class:`PlateReconstruction` object with a `pygplates.RotationModel`_ and
-            a `pygplates.FeatureCollection`_ containing topology features.
-        PlotTopologies_object : PlotTopologies
-            A :class:`PlotTopologies` object with a continental polygon or COB terrane polygon file to mask grids with.
+        plate_reconstruction : PlateReconstruction
+            A :class:`PlateReconstruction` object to provide the following essential components for seafloor gridding.
+
+            * :py:attr:`PlateReconstruction.rotation_model`
+            * :py:attr:`PlateReconstruction.topology_featues`
+
         max_time : float
             The maximum time for age gridding.
         min_time : float
@@ -198,15 +266,20 @@ class SeafloorGrid(object):
             If set to ``True``, and gridding was interrupted in a previous run, then SeafloorGrids will resume gridding.
             All other parameters and input data should remain unchanged when resuming (otherwise the results will be indeterminate).
             If set to ``False``, SeafloorGrids will start gridding from scratch.
-        continent_mask_filename : str, optional
-            An optional parameter pointing to the full path to a continental mask for each timestep.
-            Assuming the time is in the filename, i.e. ``/path/to/continent_mask_0Ma.nc``, it should be
-            passed as ``/path/to/continent_mask_{}Ma.nc`` with curly brackets. Include decimal formatting if needed.
+        continent_polygon_features : str/`os.PathLike`, or a sequence (eg, `list` or `tuple`) of instances of `pygplates.Feature`_, or a single instance of `pygplates.Feature`_, or an instance of `pygplates.FeatureCollection`_, or a sequence of any combination of those four types, optional
+            Note that this is ignored if ``continent_mask_filename`` is specified, otherwise this argument must be specified.
+            These are the continental polygon or COB terrane polygon features to mask the seafloor grids with.
+            Can be provided as a continental polygon filename, or a sequence of continental polygon features, or a single continental polygon feature,
+            or a continental polygon feature collection, or a sequence (eg, a list or tuple) of any combination of those four types.
         use_continent_contouring: bool, default=False
             Note that this is ignored if ``continent_mask_filename`` is specified.
             If ``True`` then builds the continent mask for a given time using ptt's 'continent contouring' method
             (for more information about 'Continent Contouring', visit https://github.com/EarthByte/continent-contouring).
-            If ``False`` then builds the continent masks using the continents of ``PlotTopologies_object``.
+            If ``False`` then builds the continent masks using the continents of ``continent_polygon_features``.
+        continent_mask_filename : str, optional
+            An optional parameter pointing to the full path to a continental mask for each timestep.
+            Assuming the time is in the filename, i.e. ``/path/to/continent_mask_0Ma.nc``, it should be
+            passed as ``/path/to/continent_mask_{}Ma.nc`` with curly brackets. Include decimal formatting if needed.
         nprocs : int, default=-2
             The number of CPUs to use for parts of the code that are parallelized.
             Must be an integer or convertible to an integer (eg, float is rounded towards zero).
@@ -216,8 +289,6 @@ class SeafloorGrid(object):
             If ``-1`` then all available CPUs are used.
             If ``-2`` then all available CPUs except one are used, etc.
             Defaults to ``-2`` (ie, uses all available CPUs except one to keep system responsive).
-        **kwargs
-            Handle deprecated arguments such as ``zval_names``.
 
 
 
@@ -226,24 +297,10 @@ class SeafloorGrid(object):
         .. _pygplates.FeatureCollection: https://www.gplates.org/docs/pygplates/generated/pygplates.featurecollection#pygplates.FeatureCollection
         """
 
-        # Handle deprecated arguments.
-        if kwargs.pop("zval_names", None):
-            warnings.warn(
-                "`zval_names` keyword argument has been deprecated, it is no longer used",
-                DeprecationWarning,
-            )
-        for key in kwargs.keys():
-            raise TypeError(
-                "SeafloorGrid.__init__() got an unexpected keyword argument '{}'".format(
-                    key
-                )
-            )
-
         # Determine number of CPUs to use.
         self.num_cpus = _get_num_cpus(nprocs)
 
-        self.plate_reconstruction = PlateReconstruction_object
-        self.plot_topologies = PlotTopologies_object
+        self.plate_reconstruction = plate_reconstruction
 
         self.file_collection = file_collection
 
@@ -254,7 +311,15 @@ class SeafloorGrid(object):
         else:
             self.continent_mask_is_provided = False
 
-        self.use_continent_contouring = use_continent_contouring
+        if not self.continent_mask_is_provided:
+            self.use_continent_contouring = use_continent_contouring
+            self.continent_polygon_features = _load_FeatureCollection(
+                continent_polygon_features
+            )
+            if not self.continent_polygon_features:
+                raise ValueError(
+                    "'continent_polygon_features' must be specified since 'continent_mask_filename' was not specified"
+                )
 
         # Topological parameters
         self.refinement_levels = refinement_levels
@@ -511,9 +576,7 @@ class SeafloorGrid(object):
                     f"The provided grid_spacing of {grid_spacing} does not cleanly divide into the global extent. A degree spacing of {self.grid_spacing} has been employed instead."
                 )
 
-    # Allow SeafloorGrid time to be updated, and to update the internally-used
-    # PlotTopologies' time attribute too. If PlotTopologies is used outside the
-    # object, its `time` attribute is not updated.
+    # Allow SeafloorGrid max time to be updated.
     @property
     def max_time(self):
         """The maximum time for age gridding.
@@ -525,27 +588,17 @@ class SeafloorGrid(object):
     @max_time.setter
     def max_time(self, var):
         if var >= 0:
-            self._update_time(var)
+            self._max_time = float(var)
         else:
             raise ValueError("Enter a valid time >= 0")
 
-    def _update_time(self, max_time: float):
-        """Set the new reconstruction time.
-
-        Parameters
-        ----------
-        max_time: float
-            The new reconstruction time.
-        """
-        self._max_time = float(max_time)
-        self.plot_topologies.time = float(max_time)
-
     def _generate_ocean_points(self):
         """Generate ocean points by using the icosahedral mesh."""
+
         # Get the reconstructed continents at the max time.
-        # But first need to set the max time on 'self.plot_topologies'.
-        self.plot_topologies.time = self._max_time
-        reconstructed_continents = self.plot_topologies.continents
+        reconstructed_continents = self.plate_reconstruction.reconstruct(
+            self.continent_polygon_features, self._max_time
+        )
 
         icosahedral_multi_point = create_icosahedral_mesh(self.refinement_levels)
 
@@ -608,16 +661,10 @@ class SeafloorGrid(object):
         using Stripy's icosahedral triangulation with the specified ``self.refinement_levels``.
 
         The ocean mesh starts off as a global-spanning Stripy icosahedral mesh.
-        ``create_initial_ocean_seed_points`` passes the automatically-resolved-to-current-time
-        continental polygons from the :attr:`PlotTopologies.continents` attribute
+        ``create_initial_ocean_seed_points`` passes the continental polygons
         (which can be from a COB terrane file or a continental polygon file) into
-        Plate Tectonic Tools' point-in-polygon routine. It identifies ocean basin points that lie:
-
-        * outside the polygons (for the ocean basin point domain)
-        * inside the polygons (for the continental mask)
-
-        Points from the mesh outside the continental polygons make up the ocean basin seed
-        point mesh.
+        Plate Tectonic Tools' point-in-polygon routine. It identifies ocean basin points
+        that lie outside the reconstructed continental polygons (the ocean basin point domain).
 
         .. note::
 
@@ -647,9 +694,8 @@ class SeafloorGrid(object):
         .. _pygplates.PointOnSphere: https://www.gplates.org/docs/pygplates/generated/pygplates.pointonsphere#pygplates.PointOnSphere
         """
 
-        if (
-            os.path.isfile(self.continent_mask_filepath.format(self._max_time))
-            and self.continent_mask_is_provided
+        if self.continent_mask_is_provided and os.path.isfile(
+            self.continent_mask_filepath.format(self._max_time)
         ):
             # If a set of continent masks was passed, we can use max_time's continental
             # mask to build the initial profile of seafloor age.
@@ -704,19 +750,14 @@ class SeafloorGrid(object):
                 #
                 # Temporary hack to avoid a large slowdown due to pickling pygplates.RotationModel and pygplates.FeatureCollection.
                 # Instead of pickling pygplates.RotationModel and pygplates.FeatureCollection we instead pickle 'self.plate_reconstruction'
-                # and 'self.plot_topologies' which both already attempt to avoid pickling those pygplates objects.
+                # which already attempts to avoid pickling those pygplates objects.
                 #
-                # Note: This only works when 'self.plate_reconstruction` and 'self.plot_topologies' were created using rotation *filenames* and topology *filenames*
+                # Note: This only works when 'self.plate_reconstruction` was created using rotation *filenames* and topology *filenames*
                 #       (which is the case for the plate models downloaded by the PlateModelManager).
                 #       When they're not filenames then pygplates.RotationModel and pygplates.FeatureCollection get pickled anyway.
                 #
                 # TODO: When pyGPlates can pickle pygplates.RotationModel and pygplates.FeatureCollection noticeably faster (than it currently does in pyGPlates 1.0), then
                 #       remove the '*_parallel()' versions of the function (and instead use the serial versions, but still in parallel).
-                # Note: '_build_continental_mask()', unlike '_build_continental_mask_with_contouring()', passes *reconstructed* continents.
-                #       However, *reconstructed* feature geometries cannot be pickled (by pygplates) - only regular features can.
-                #       This means '_build_continental_mask_parallel()' may still be required in order to pass 'self.plot_topologies' which is pickled and
-                #       then it reconstructs the continents after it is unpickled). Either that or pass the unreconstructed continent features and explicitly
-                #       reconstruct them after unpickling.
                 #
                 if self.use_continent_contouring:
                     with multiprocessing.Pool(self.num_cpus) as pool:
@@ -724,8 +765,8 @@ class SeafloorGrid(object):
                             partial(
                                 _build_continental_mask_with_contouring_parallel,
                                 continent_mask_filepath=self.continent_mask_filepath,
+                                continent_polygon_features=self.continent_polygon_features,
                                 plate_reconstruction=self.plate_reconstruction,
-                                plot_topologies=self.plot_topologies,
                                 overwrite=overwrite,
                             ),
                             self._times,
@@ -735,14 +776,7 @@ class SeafloorGrid(object):
                         pool.map(
                             partial(
                                 _build_continental_mask_parallel,
-                                continent_mask_filepath=self.continent_mask_filepath,
-                                plate_reconstruction=self.plate_reconstruction,
-                                # Note: We can't pickle 'self.plot_topologies.continents' because they are *reconstructed* pygplates objects.
-                                #       Instead we pickly 'self.plot_topologies' and then ask it to reconstruct the continents after it's unpickled...
-                                plot_topologies=self.plot_topologies,
-                                spacingY=self.spacingY,
-                                spacingX=self.spacingX,
-                                extent=self.extent,
+                                seafloor_grid=self,
                                 overwrite=overwrite,
                             ),
                             self._times,
@@ -753,26 +787,49 @@ class SeafloorGrid(object):
                         _build_continental_mask_with_contouring(
                             time,
                             continent_mask_filepath=self.continent_mask_filepath,
+                            continent_polygon_features=self.continent_polygon_features,
                             rotation_model=self.plate_reconstruction.rotation_model,
-                            continent_features=self.plot_topologies._continents,
                             overwrite=overwrite,
                         )
                 else:
                     for time in self._times:
-                        # Get the reconstructed continents at 'time''.
-                        # But first need to set 'time' on 'self.plot_topologies'.
-                        self.plot_topologies.time = time
-                        reconstructed_continents = self.plot_topologies.continents
-                        _build_continental_mask(
-                            time,
-                            continent_mask_filepath=self.continent_mask_filepath,
-                            rotation_model=self.plate_reconstruction.rotation_model,
-                            reconstructed_continents=reconstructed_continents,
-                            spacingY=self.spacingY,
-                            spacingX=self.spacingX,
-                            extent=self.extent,
-                            overwrite=overwrite,
-                        )
+                        self._build_continental_mask(time, overwrite=overwrite)
+
+    def _build_continental_mask(
+        self,
+        time: float,
+        overwrite=False,
+    ):
+        """Create a continental mask for a given time."""
+        mask_fn = self.continent_mask_filepath.format(time)
+        if os.path.isfile(mask_fn) and not overwrite:
+            logger.info(
+                f"Continent mask file exists and will not create again -- {mask_fn}"
+            )
+            return
+
+        # Get the reconstructed continents at the requested time.
+        reconstructed_continents = self.plate_reconstruction.reconstruct(
+            self.continent_polygon_features, time
+        )
+
+        final_grid = grids.rasterise(
+            reconstructed_continents,
+            self.plate_reconstruction.rotation_model,
+            key=1.0,
+            shape=(self.spacingY, self.spacingX),
+            extent=self.extent,
+            origin="lower",
+        )
+        final_grid[np.isnan(final_grid)] = 0.0
+
+        grids.write_netcdf_grid(
+            self.continent_mask_filepath.format(time),
+            final_grid.astype("i1"),
+            extent=(-180, 180, -90, 90),
+            fill_value=False,
+        )
+        logger.info(f"Finished building a continental mask at {time} Ma!")
 
     def _build_mid_ocean_ridge_seed_points(
         self,
@@ -941,9 +998,9 @@ class SeafloorGrid(object):
                 #
                 # Note: This means any changes to the pickled object will not be reflected back in the original object 'self'.
                 #
-                # Note: Attributes (like 'self.plate_reconstruction' and 'self.plot_topologies') that contain pyGPlates objects can be expensive to pickle
+                # Note: Attributes (like 'self.plate_reconstruction') that contain pyGPlates objects can be expensive to pickle
                 #       (since pyGPlates 1.0 currently takes a long time to pickle objects like pygplates.RotationModel and pygplates.FeatureCollection).
-                #       However if 'self.plate_reconstruction` and 'self.plot_topologies' were created using rotation *filenames* and topology *filenames*
+                #       However if 'self.plate_reconstruction` was created using rotation *filenames* and topology *filenames*
                 #       (which is the case for the plate models downloaded by the PlateModelManager) then pickling is much faster.
                 #       When they're not filenames then pygplates.RotationModel and pygplates.FeatureCollection get pickled anyway (ie, slow).
                 #
@@ -1648,78 +1705,20 @@ def _lat_lon_z_to_netCDF_time(
     logger.info(f"{zval_name} netCDF grids for {time:0.2f} Ma complete!")
 
 
-def _build_continental_mask(
-    time: float,
-    continent_mask_filepath,
-    rotation_model,
-    reconstructed_continents,
-    spacingY,
-    spacingX,
-    extent,
-    overwrite=False,
-):
-    """Create a continental mask for a given time."""
-    mask_fn = continent_mask_filepath.format(time)
-    if os.path.isfile(mask_fn) and not overwrite:
-        logger.info(
-            f"Continent mask file exists and will not create again -- {mask_fn}"
-        )
-        return
-
-    final_grid = grids.rasterise(
-        reconstructed_continents,
-        rotation_model,
-        key=1.0,
-        shape=(spacingY, spacingX),
-        extent=extent,
-        origin="lower",
-    )
-    final_grid[np.isnan(final_grid)] = 0.0
-
-    grids.write_netcdf_grid(
-        continent_mask_filepath.format(time),
-        final_grid.astype("i1"),
-        extent=(-180, 180, -90, 90),
-        fill_value=False,
-    )
-    logger.info(f"Finished building a continental mask at {time} Ma!")
-
-
 def _build_continental_mask_parallel(
     time: float,
-    continent_mask_filepath,
-    plate_reconstruction,
-    plot_topologies,
-    spacingY,
-    spacingX,
-    extent,
+    seafloor_grid,
     overwrite,
 ):
-    # Get the reconstructed continents at 'time''.
-    # But first need to set 'time' on our unpickled 'plot_topologies'.
-    #
-    # Note: This only affects our unpickled copy of the original 'self.plot_topologies'.
-    #       The original 'self.plot_topologies' will likely still have a different 'time'.
-    plot_topologies.time = time
-    reconstructed_continents = plot_topologies.continents
-
-    _build_continental_mask(
-        time=time,
-        continent_mask_filepath=continent_mask_filepath,
-        rotation_model=plate_reconstruction.rotation_model,
-        reconstructed_continents=reconstructed_continents,
-        spacingY=spacingY,
-        spacingX=spacingX,
-        extent=extent,
-        overwrite=overwrite,
-    )
+    # Dispatch from parallel helper function to SeafloorGrid class method.
+    seafloor_grid._build_continental_mask(time=time, overwrite=overwrite)
 
 
 def _build_continental_mask_with_contouring(
     time: float,
     continent_mask_filepath,
+    continent_polygon_features,
     rotation_model,
-    continent_features,
     overwrite=False,
 ):
     """Build the continent mask for a given time using ptt's 'continent contouring' method.
@@ -1781,7 +1780,7 @@ def _build_continental_mask_with_contouring(
 
     continent_contouring = continent_contours.ContinentContouring(
         rotation_model,
-        continent_features,
+        continent_polygon_features,
         continent_contouring_point_spacing_degrees,
         continent_contouring_area_threshold_steradians,
         continent_contouring_buffer_and_gap_distance_radians,
@@ -1808,15 +1807,15 @@ def _build_continental_mask_with_contouring(
 def _build_continental_mask_with_contouring_parallel(
     time: float,
     continent_mask_filepath,
+    continent_polygon_features,
     plate_reconstruction,
-    plot_topologies,
     overwrite,
 ):
     _build_continental_mask_with_contouring(
         time=time,
         continent_mask_filepath=continent_mask_filepath,
+        continent_polygon_features=continent_polygon_features,
         rotation_model=plate_reconstruction.rotation_model,
-        continent_features=plot_topologies._continents,
         overwrite=overwrite,
     )
 

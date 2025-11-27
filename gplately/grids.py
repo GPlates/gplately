@@ -1233,7 +1233,7 @@ def reconstruct_grid(
 def rasterise(
     features,
     rotation_model=None,
-    key="plate_id",
+    key: Union[str, float, int] = "plate_id",
     time=None,
     resx=1.0,
     resy=1.0,

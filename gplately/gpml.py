@@ -262,7 +262,23 @@ def _parse_features_function_arguments(features):
 
 
 def _load_FeatureCollection(features_or_files):
-    """Return a pygplates.FeatureCollection containing features loaded from one or more files or pygplates.FeatureCollection(s)."""
+    """Return a single `pygplates.FeatureCollection`_ containing all features loaded from one or more files and/or pyGPlates features and feature collections.
+
+    Parameters
+    ----------
+    features_or_files : str/`os.PathLike`, or a sequence (eg, `list` or `tuple`) of instances of `pygplates.Feature`_, or a single instance of `pygplates.Feature`_, or an instance of `pygplates.FeatureCollection`_, or a sequence of any combination of those four types
+        Can be provided as a filename, or a sequence of features, or a single feature,
+        or a feature collection, or a sequence (eg, a list or tuple) of any combination of those four types.
+
+    Returns
+    -------
+    `pygplates.FeatureCollection`_
+        A single feature collection containing all features.
+
+
+    .. _pygplates.Feature: https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature
+    .. _pygplates.FeatureCollection: https://www.gplates.org/docs/pygplates/generated/pygplates.featurecollection#pygplates.FeatureCollection
+    """
     if features_or_files is None:
         return None
 

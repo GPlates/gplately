@@ -56,21 +56,22 @@ class PlateReconstruction(object):
         """
         Parameters
         ----------
-        rotation_model : str/`os.PathLike`, or instance of `pygplates.FeatureCollection`_, or `pygplates.Feature`_, or sequence of `pygplates.Feature`_, or instance of `pygplates.RotationModel`_
+        rotation_model : str/`os.PathLike`, or a sequence (eg, `list` or `tuple`) of instances of `pygplates.Feature`_, or a single instance of `pygplates.Feature`_, or an instance of `pygplates.FeatureCollection`_, or a sequence of any combination of those four types, or an instance of `pygplates.RotationModel`_
             A rotation model to query equivalent and/or relative topological plate rotations
-            from a time in the past relative to another time in the past or to present day. Can be
-            provided as a rotation filename, or rotation feature collection, or rotation feature, or
-            sequence of rotation features, or a sequence (eg, a list or tuple) of any combination of
-            those four types.
-        topology_features : str/`os.PathLike`, or a sequence (eg, `list` or `tuple`) of instances of `pygplates.Feature`_, or a single instance of `pygplates.Feature`_, or an instance of `pygplates.FeatureCollection`_, default None
-            Reconstructable topological features like trenches, ridges and transforms. Can be provided
-            as an optional topology-feature filename, or sequence of features, or a single feature.
-        static_polygons : str/`os.PathLike`, or instance of `pygplates.Feature`_, or sequence of `pygplates.Feature`_, or an instance of `pygplates.FeatureCollection`_, default None
+            from a time in the past relative to another time in the past or to present day.
+            Can be provided as a rotation filename, or a sequence of rotation features, or a single rotation feature,
+            or a rotation feature collection, or a sequence (eg, a list or tuple) of any combination of those four types,
+            or a rotation model.
+        topology_features : str/`os.PathLike`, or a sequence (eg, `list` or `tuple`) of instances of `pygplates.Feature`_, or a single instance of `pygplates.Feature`_, or an instance of `pygplates.FeatureCollection`_, or a sequence of any combination of those four types, default None
+            Reconstructable topological features like trenches, ridges and transforms.
+            Can be provided as a topology filename, or a sequence of topology features, or a single topology feature,
+            or a topology feature collection, or a sequence (eg, a list or tuple) of any combination of those four types.
+        static_polygons : str/`os.PathLike`, or a sequence (eg, `list` or `tuple`) of instances of `pygplates.Feature`_, or a single instance of `pygplates.Feature`_, or an instance of `pygplates.FeatureCollection`_, or a sequence of any combination of those four types, default None
             Present-day polygons whose shapes do not change through geological time. They are
             used to cookie-cut dynamic polygons into identifiable topological plates (assigned
-            an ID) according to their present-day locations. Can be provided as a static polygon feature
-            collection, or optional filename, or a single feature, or a sequence of
-            features.
+            an ID) according to their present-day locations.
+            Can be provided as a static polygon filename, or a sequence of static polygon features, or a single static polygon feature,
+            or a static polygon feature collection, or a sequence (eg, a list or tuple) of any combination of those four types.
         anchor_plate_id : int, optional
             Default anchor plate ID for reconstruction.
             If not specified then uses the default anchor plate of :py:attr:`~rotation_model`.
