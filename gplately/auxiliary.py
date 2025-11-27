@@ -35,6 +35,40 @@ from .plot import PlotTopologies
 from .reconstruction import PlateReconstruction
 
 
+def get_plate_model(model: Union[str, PlateModel], model_repo_dir: str = "./"):
+    """Return a :py:class:`gplately.PlateModel` object for a given model name.
+
+    If ``model`` is a :class:`gplately.PlateModel` object then it is simply returned.
+
+    Parameters
+    ----------
+    model : str or PlateModel
+        model name or a :class:`gplately.PlateModel` object
+    model_repo_dir: str, default="./"
+        the folder in which you would like to keep the model files
+
+    Returns
+    -------
+    PlateModel
+        a :class:`gplately.PlateModel` object
+    """
+    if isinstance(model, str):
+        model_name: str = model
+        try:
+            plate_model = PlateModelManager().get_model(
+                model_name, data_dir=model_repo_dir
+            )
+        except:
+            plate_model = PlateModel(model_name, data_dir=model_repo_dir, readonly=True)
+
+        if plate_model is None:
+            raise Exception(f"Unable to get model ({model_name})")
+    else:
+        plate_model = model
+
+    return plate_model
+
+
 def get_plate_reconstruction(model: Union[str, PlateModel], model_repo_dir: str = "./"):
     """Return a :py:class:`gplately.PlateReconstruction` object for a given model name or :class:`gplately.PlateModel` object.
 
@@ -55,19 +89,7 @@ def get_plate_reconstruction(model: Union[str, PlateModel], model_repo_dir: str 
 
         `usage example <https://github.com/GPlates/gplately/blob/master/Notebooks/Examples/use_auxiliary_functions.py>`__
     """
-    if isinstance(model, str):
-        model_name: str = model
-        try:
-            plate_model = PlateModelManager().get_model(
-                model_name, data_dir=model_repo_dir
-            )
-        except:
-            plate_model = PlateModel(model_name, data_dir=model_repo_dir, readonly=True)
-
-        if plate_model is None:
-            raise Exception(f"Unable to get model ({model_name})")
-    else:
-        plate_model = model
+    plate_model = get_plate_model(model, model_repo_dir)
 
     topology_features = None
     static_polygons = None
@@ -116,19 +138,7 @@ def get_gplot(
 
         `usage example <https://github.com/GPlates/gplately/blob/master/Notebooks/Examples/use_auxiliary_functions.py>`__
     """
-    if isinstance(model, str):
-        model_name: str = model
-        try:
-            plate_model = PlateModelManager().get_model(
-                model_name, data_dir=model_repo_dir
-            )
-        except:
-            plate_model = PlateModel(model_name, data_dir=model_repo_dir, readonly=True)
-
-        if plate_model is None:
-            raise Exception(f"Unable to get model ({model_name})")
-    else:
-        plate_model = model
+    plate_model = get_plate_model(model, model_repo_dir)
 
     m = get_plate_reconstruction(plate_model)
 

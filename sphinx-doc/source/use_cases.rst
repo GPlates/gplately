@@ -329,16 +329,14 @@ through geologic time. This motion can be visualised using flowlines or motion p
 
 .. code-block:: python
    :linenos:
-   :emphasize-lines: 15
+   :emphasize-lines: 13
 
    import numpy as np
 
-   from gplately import PlateModelManager, Points, auxiliary
-
-   model = PlateModelManager().get_model("Muller2019")
+   from gplately import Points, auxiliary
 
    # Create a plate reconstruction model using a rotation model, a set of topology features and static polygons
-   recon_model = auxiliary.get_plate_reconstruction(model)
+   recon_model = auxiliary.get_plate_reconstruction("Muller2019")
 
    # Define some points using their latitude and longitude coordinates so we can track them through time!
    pt_lons = np.array([140.0, 150.0, 160.0])
@@ -379,11 +377,11 @@ interpolated onto Raster grids.
    :linenos:
    :emphasize-lines: 8, 16
 
-   from gplately import PlateModelManager, PresentDayRasterManager, Raster, auxiliary
+   from gplately import PresentDayRasterManager, Raster, auxiliary
 
-   model_name = "Muller2019"
+   model = auxiliary.get_plate_model("Muller2019")
    # Create a plate reconstruction model using a rotation model, a set of topology features and static polygons
-   recon_model = auxiliary.get_plate_reconstruction(model_name)
+   recon_model = auxiliary.get_plate_reconstruction(model)
 
    # Any numpy array can be turned into a Raster object!
    raster = Raster(
@@ -396,9 +394,7 @@ interpolated onto Raster grids.
    # Reconstruct the raster data to 50 million years ago!
    reconstructed_raster = raster.reconstruct(
       time=50,
-      partitioning_features=PlateModelManager()
-      .get_model(model_name)
-      .get_layer("ContinentalPolygons"),
+      partitioning_features=model.get_layer("ContinentalPolygons"),
    )
 
 
@@ -422,9 +418,9 @@ geologic features of different types, such as coastlines, continents and contine
    :linenos:
    :emphasize-lines: 6
 
-   from gplately import PlateModelManager, PlotTopologies, auxiliary
+   from gplately import PlotTopologies, auxiliary
 
-   model = PlateModelManager().get_model("Muller2019")
+   model = auxiliary.get_plate_model("Muller2019")
    recon_model = auxiliary.get_plate_reconstruction(model)
 
    gplot = PlotTopologies(
@@ -470,20 +466,20 @@ as encoded by a plate reconstruction model.
 
    from gplately import SeafloorGrid, auxiliary
 
-   if __name__ == "__main__":
-      gplot = auxiliary.get_gplot("Muller2019")
+   model = auxiliary.get_plate_model("Muller2019")
+   plate_reconstruction = auxiliary.get_plate_reconstruction(model)
 
-      # Set up automatic gridding from 5Ma to present day
-      seafloorgrid = SeafloorGrid(
-         PlateReconstruction_object=gplot.plate_reconstruction,  # The PlateReconstruction object
-         PlotTopologies_object=gplot,  # The PlotTopologies object
-         max_time=5,  # start time (Ma)
-         min_time=0,  # end time (Ma)
-         ridge_time_step=1,  # time increment (Myr)
-      )
+   # Set up automatic gridding from 5Ma to present day
+   seafloorgrid = SeafloorGrid(
+      plate_reconstruction=plate_reconstruction,  # the PlateReconstruction object
+      max_time=5,  # start time (Ma)
+      min_time=0,  # end time (Ma)
+      ridge_time_step=1,  # time increment (Myr)
+      continent_polygon_features=model.get_layer("ContinentalPolygons"),  # the continent polygons
+   )
 
-      # Begin automatic gridding!
-      seafloorgrid.reconstruct_by_topologies()
+    # Begin automatic gridding!
+    seafloorgrid.reconstruct_by_topologies()
 
 The `SeafloorGrids example`_ is a tutorial notebook that demonstrates
 how to set up and use the :py:class:`gplately.SeafloorGrid` object, and shows a sample set of output grids. 
