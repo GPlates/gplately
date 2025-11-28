@@ -176,7 +176,9 @@ class SeafloorGrid(object):
                 )
                 # Get the features from the PlotTopologies object
                 # (not the reconstructed geometries at a specific time, as it was previously used for).
-                continent_polygon_features = _plot_topologies._continents
+                #
+                # Note: Prefer filenames over feature collections since it's faster to pickle (see __getstate__/__setstate__ for details).
+                continent_polygon_features = _plot_topologies._continents_pickle
                 if "continent_polygon_features" in kwargs:
                     raise TypeError(
                         "Cannot specify a PlotTopologies object and use the 'continent_polygon_features' argument"
@@ -295,14 +297,15 @@ class SeafloorGrid(object):
         self.file_collection = file_collection
 
         if continent_mask_filename:
+            self.continent_mask_is_provided = True
+
             # Filename for continental masks that the user can provide instead of building it here
             self.continent_mask_filepath = continent_mask_filename
-            self.continent_mask_is_provided = True
         else:
             self.continent_mask_is_provided = False
 
-        if not self.continent_mask_is_provided:
             self.use_continent_contouring = use_continent_contouring
+            self._continent_polygon_features_pickle = continent_polygon_features  # Pickle the __init__ argument (see __getstate__/__setstate__ for details).
             self.continent_polygon_features = _load_FeatureCollection(
                 continent_polygon_features
             )
@@ -332,6 +335,44 @@ class SeafloorGrid(object):
         )
 
         self._setup_output_paths(save_directory)
+
+    def __getstate__(self):
+        # Save the instance data variables.
+        state = self.__dict__.copy()
+
+        # Set 'continent_polygon_features' to None to avoid pickling it.
+        #
+        # Instead we're pickling '_continent_polygon_features_pickle'.
+        # If they are just filenames then it's faster to rebuild FeatureCollection's (from files when unpickling)
+        # than it is to pickle/unpickle FeatureCollection's.
+        state["continent_polygon_features"] = None
+
+        # Remove the unpicklable entries.
+        #
+        # This includes pygplates reconstructed feature geometries and resolved topological geometries.
+        # Note: PyGPlates features and features collections (and rotation models) can be pickled though.
+        #
+
+        return state
+
+    def __setstate__(self, state):
+        # Restore the instance data variables.
+        self.__dict__.update(state)
+
+        # Load the continent polygon features.
+        #
+        # The pickled attributes could be features and/or filesnames.
+        # If they are just filenames then it's faster to reload FeatureCollection's
+        # from files than it is to pickle/unpickle FeatureCollection's.
+        self.continent_polygon_features = _load_FeatureCollection(
+            self._continent_polygon_features_pickle
+        )
+
+        # Restore the unpicklable entries.
+        #
+        # This includes pygplates reconstructed feature geometries and resolved topological geometries.
+        # Note: PyGPlates features and features collections (and rotation models) can be pickled though.
+        #
 
     def _map_res_to_node_percentage(self, continent_mask_filename):
         """Determine which percentage to use to scale the continent mask resolution at max time."""
