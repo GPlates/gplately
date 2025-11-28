@@ -29,10 +29,8 @@ import pandas as pd
 import pygplates
 
 from . import grids, tools
-from .gpml import _load_FeatureCollection
-from .lib.reconstruct_by_topologies import (
-    ReconstructByTopologies,
-)
+from .lib.reconstruct_by_topologies import ReconstructByTopologies
+from .lib.reconstruct_continents import ReconstructContinents
 from .ptt import continent_contours, separate_ridge_transform_segments
 from .ptt.utils import points_in_polygons
 from .tools import _deg2pixels, _pixels2deg
@@ -305,14 +303,14 @@ class SeafloorGrid(object):
             self.continent_mask_is_provided = False
 
             self.use_continent_contouring = use_continent_contouring
-            self._continent_polygon_features_pickle = continent_polygon_features  # Pickle the __init__ argument (see __getstate__/__setstate__ for details).
-            self.continent_polygon_features = _load_FeatureCollection(
-                continent_polygon_features
-            )
-            if not self.continent_polygon_features:
+            # Create an object to reconstruct the continental polygons (and deforming them if topological model is deforming).
+            if not continent_polygon_features:
                 raise ValueError(
                     "'continent_polygon_features' must be specified since 'continent_mask_filename' was not specified"
                 )
+            self.reconstruct_continents = ReconstructContinents(
+                plate_reconstruction, continent_polygon_features
+            )
 
         # Topological parameters
         self.refinement_levels = refinement_levels
@@ -335,44 +333,6 @@ class SeafloorGrid(object):
         )
 
         self._setup_output_paths(save_directory)
-
-    def __getstate__(self):
-        # Save the instance data variables.
-        state = self.__dict__.copy()
-
-        # Set 'continent_polygon_features' to None to avoid pickling it.
-        #
-        # Instead we're pickling '_continent_polygon_features_pickle'.
-        # If they are just filenames then it's faster to rebuild FeatureCollection's (from files when unpickling)
-        # than it is to pickle/unpickle FeatureCollection's.
-        state["continent_polygon_features"] = None
-
-        # Remove the unpicklable entries.
-        #
-        # This includes pygplates reconstructed feature geometries and resolved topological geometries.
-        # Note: PyGPlates features and features collections (and rotation models) can be pickled though.
-        #
-
-        return state
-
-    def __setstate__(self, state):
-        # Restore the instance data variables.
-        self.__dict__.update(state)
-
-        # Load the continent polygon features.
-        #
-        # The pickled attributes could be features and/or filesnames.
-        # If they are just filenames then it's faster to reload FeatureCollection's
-        # from files than it is to pickle/unpickle FeatureCollection's.
-        self.continent_polygon_features = _load_FeatureCollection(
-            self._continent_polygon_features_pickle
-        )
-
-        # Restore the unpicklable entries.
-        #
-        # This includes pygplates reconstructed feature geometries and resolved topological geometries.
-        # Note: PyGPlates features and features collections (and rotation models) can be pickled though.
-        #
 
     def _map_res_to_node_percentage(self, continent_mask_filename):
         """Determine which percentage to use to scale the continent mask resolution at max time."""
@@ -626,8 +586,8 @@ class SeafloorGrid(object):
         """Generate ocean points by using the icosahedral mesh."""
 
         # Get the reconstructed continents at the max time.
-        reconstructed_continents = self.plate_reconstruction.reconstruct(
-            self.continent_polygon_features, self._max_time
+        reconstructed_continents = (
+            self.reconstruct_continents.get_reconstructed_continents(self._max_time)
         )
 
         icosahedral_multi_point = create_icosahedral_mesh(self.refinement_levels)
@@ -795,7 +755,7 @@ class SeafloorGrid(object):
                             partial(
                                 _build_continental_mask_with_contouring_parallel,
                                 continent_mask_filepath=self.continent_mask_filepath,
-                                continent_polygon_features=self.continent_polygon_features,
+                                continent_polygon_features=self.reconstruct_continents.continent_features,
                                 plate_reconstruction=self.plate_reconstruction,
                                 overwrite=overwrite,
                             ),
@@ -817,7 +777,7 @@ class SeafloorGrid(object):
                         _build_continental_mask_with_contouring(
                             time,
                             continent_mask_filepath=self.continent_mask_filepath,
-                            continent_polygon_features=self.continent_polygon_features,
+                            continent_polygon_features=self.reconstruct_continents.continent_features,
                             rotation_model=self.plate_reconstruction.rotation_model,
                             overwrite=overwrite,
                         )
@@ -839,8 +799,8 @@ class SeafloorGrid(object):
             return
 
         # Get the reconstructed continents at the requested time.
-        reconstructed_continents = self.plate_reconstruction.reconstruct(
-            self.continent_polygon_features, time
+        reconstructed_continents = (
+            self.reconstruct_continents.get_reconstructed_continents(time)
         )
 
         final_grid = grids.rasterise(
