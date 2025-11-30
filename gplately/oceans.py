@@ -17,10 +17,10 @@
 
 import logging
 import math
-import multiprocessing
 import os
 import warnings
 from functools import partial, wraps
+from multiprocessing import Pool, Process
 from pathlib import Path
 from typing import Any, List, Tuple, Union
 
@@ -738,31 +738,30 @@ class SeafloorGrid(object):
 
             if self.num_cpus > 1:
                 #
-                # Temporary hack to avoid a large slowdown due to pickling pygplates.RotationModel and pygplates.FeatureCollection.
-                # Instead of pickling pygplates.RotationModel and pygplates.FeatureCollection we instead pickle 'self.plate_reconstruction'
-                # which already attempts to avoid pickling those pygplates objects.
+                # Temporary modification to avoid a large slowdown due to pickling pygplates.RotationModel and pygplates.FeatureCollection.
+                # Instead of pickling pygplates.RotationModel and pygplates.FeatureCollection we instead pickle 'self' which pickles
+                # 'self.plate_reconstruction' in turn which already attempts to avoid pickling those pygplates objects.
                 #
                 # Note: This only works when 'self.plate_reconstruction` was created using rotation *filenames* and topology *filenames*
                 #       (which is the case for the plate models downloaded by the PlateModelManager).
                 #       When they're not filenames then pygplates.RotationModel and pygplates.FeatureCollection get pickled anyway.
                 #
-                # TODO: When pyGPlates can pickle pygplates.RotationModel and pygplates.FeatureCollection noticeably faster (than it currently does in pyGPlates 1.0), then
-                #       remove the '*_parallel()' versions of the function (and instead use the serial versions, but still in parallel).
+                # TODO: When pyGPlates can pickle pygplates.RotationModel and pygplates.FeatureCollection noticeably faster
+                #       (than it currently does in pyGPlates 1.0), then we could go back to pickling only the parts of 'self' that
+                #       are actually needed. For example, the topology features aren't needed here, so no point pickling them.
                 #
                 if self.use_continent_contouring:
-                    with multiprocessing.Pool(self.num_cpus) as pool:
+                    with Pool(self.num_cpus) as pool:
                         pool.map(
                             partial(
                                 _build_continental_mask_with_contouring_parallel,
-                                continent_mask_filepath=self.continent_mask_filepath,
-                                continent_polygon_features=self.reconstruct_continents.continent_features,
-                                plate_reconstruction=self.plate_reconstruction,
+                                seafloor_grid=self,
                                 overwrite=overwrite,
                             ),
                             self._times,
                         )
                 else:
-                    with multiprocessing.Pool(self.num_cpus) as pool:
+                    with Pool(self.num_cpus) as pool:
                         pool.map(
                             partial(
                                 _build_continental_mask_parallel,
@@ -774,11 +773,8 @@ class SeafloorGrid(object):
             else:
                 if self.use_continent_contouring:
                     for time in self._times:
-                        _build_continental_mask_with_contouring(
+                        self._build_continental_mask_with_contouring(
                             time,
-                            continent_mask_filepath=self.continent_mask_filepath,
-                            continent_polygon_features=self.reconstruct_continents.continent_features,
-                            rotation_model=self.plate_reconstruction.rotation_model,
                             overwrite=overwrite,
                         )
                 else:
@@ -820,6 +816,97 @@ class SeafloorGrid(object):
             fill_value=False,
         )
         logger.info(f"Finished building a continental mask at {time} Ma!")
+
+    def _build_continental_mask_with_contouring(
+        self,
+        time: float,
+        overwrite=False,
+    ):
+        """Build the continent mask for a given time using ptt's 'continent contouring' method.
+        For more information about 'Continent Contouring', visit https://github.com/EarthByte/continent-contouring.
+        """
+        mask_fn = self.continent_mask_filepath.format(time)
+        if os.path.isfile(mask_fn) and not overwrite:
+            logger.info(
+                f"Continent mask file exists and will not create again -- {mask_fn}"
+            )
+            return
+
+        continent_contouring_point_spacing_degrees = 0.25
+        continent_contouring_area_threshold_square_kms = 0
+        continent_contouring_area_threshold_steradians = (
+            continent_contouring_area_threshold_square_kms
+            / (pygplates.Earth.mean_radius_in_kms * pygplates.Earth.mean_radius_in_kms)
+        )
+        continent_exclusion_area_threshold_square_kms = 800000
+        continent_exclusion_area_threshold_steradians = (
+            continent_exclusion_area_threshold_square_kms
+            / (pygplates.Earth.mean_radius_in_kms * pygplates.Earth.mean_radius_in_kms)
+        )
+        continent_separation_distance_threshold_radians = (
+            continent_contours.DEFAULT_CONTINENT_SEPARATION_DISTANCE_THRESHOLD_RADIANS
+        )
+
+        def continent_contouring_buffer_and_gap_distance_radians(
+            time, contoured_continent
+        ):
+            # One distance for time interval [1000, 300] and another for time interval [250, 0].
+            # And linearly interpolate between them over the time interval [300, 250].
+            pre_pangea_distance_radians = math.radians(
+                2.5
+            )  # convert degrees to radians
+            post_pangea_distance_radians = math.radians(
+                0.0
+            )  # convert degrees to radians
+            if time > 300:
+                buffer_and_gap_distance_radians = pre_pangea_distance_radians
+            elif time < 250:
+                buffer_and_gap_distance_radians = post_pangea_distance_radians
+            else:
+                # Linearly interpolate between 250 and 300 Ma.
+                interp = float(time - 250) / (300 - 250)
+                buffer_and_gap_distance_radians = (
+                    interp * pre_pangea_distance_radians
+                    + (1 - interp) * post_pangea_distance_radians
+                )
+
+            # Area of the contoured continent.
+            area_steradians = contoured_continent.get_area()
+
+            # Linearly reduce the buffer/gap distance for contoured continents with area smaller than 1 million km^2.
+            area_threshold_square_kms = 500000
+            area_threshold_steradians = area_threshold_square_kms / (
+                pygplates.Earth.mean_radius_in_kms * pygplates.Earth.mean_radius_in_kms
+            )
+            if area_steradians < area_threshold_steradians:
+                buffer_and_gap_distance_radians *= (
+                    area_steradians / area_threshold_steradians
+                )
+
+            return buffer_and_gap_distance_radians
+
+        continent_contouring = continent_contours.ContinentContouring(
+            self.plate_reconstruction.rotation_model,
+            self.reconstruct_continents.continent_features,
+            continent_contouring_point_spacing_degrees,
+            continent_contouring_area_threshold_steradians,
+            continent_contouring_buffer_and_gap_distance_radians,
+            continent_exclusion_area_threshold_steradians,
+            continent_separation_distance_threshold_radians,
+        )
+        continent_mask, _ = (
+            continent_contouring.get_continent_mask_and_contoured_continents(time)
+        )
+        grids.write_netcdf_grid(
+            self.continent_mask_filepath.format(time),
+            continent_mask.astype("i1"),
+            extent=(-180, 180, -90, 90),
+            fill_value=False,
+        )
+        logger.warning(
+            f"Finished building a continental mask at {time} Ma using ptt's 'Continent Contouring'!"
+            + " For more information about 'Continent Contouring', visit https://github.com/EarthByte/continent-contouring."
+        )
 
     def _build_mid_ocean_ridge_seed_points(
         self,
@@ -980,7 +1067,7 @@ class SeafloorGrid(object):
         # When time is `max_time` the seed points will be the *initial* ocean seed points, and
         # for later (younger) times the seed points will be the *mid-ocean ridge* seed points created at that time.
         if self.num_cpus > 1:
-            with multiprocessing.Pool(self.num_cpus) as pool:
+            with Pool(self.num_cpus) as pool:
                 #
                 # The entire SeafloorGrid object 'self' gets pickled.
                 # We could have instead pickled individual attributes of 'self', but we need so many of them that it's
@@ -1061,7 +1148,7 @@ class SeafloorGrid(object):
                 #
                 # Writing out the single large debug file takes a long time.
                 # So much so that writing out all the individual files takes a comparable amount of time.
-                single_debug_file_process = multiprocessing.Process(
+                single_debug_file_process = Process(
                     target=_generate_debug_files_containing_reconstructed_ocean_seed_point_data_parallel,
                     args=(
                         self,
@@ -1069,7 +1156,7 @@ class SeafloorGrid(object):
                         self._GENERATE_SINGLE_DEBUG_FILE_CONTAINING_ALL_RECONSTRUCTED_SEEDS,
                     ),
                 )
-                individual_debug_files_process = multiprocessing.Process(
+                individual_debug_files_process = Process(
                     target=_generate_debug_files_containing_reconstructed_ocean_seed_point_data_parallel,
                     args=(
                         self,
@@ -1548,7 +1635,7 @@ class SeafloorGrid(object):
             num_cpus = _get_num_cpus(nprocs)
 
         if num_cpus > 1:
-            with multiprocessing.Pool(num_cpus) as pool:
+            with Pool(num_cpus) as pool:
                 pool.map(
                     partial(
                         _lat_lon_z_to_netCDF_time,
@@ -1704,109 +1791,14 @@ def _build_continental_mask_parallel(
     seafloor_grid._build_continental_mask(time=time, overwrite=overwrite)
 
 
-def _build_continental_mask_with_contouring(
-    time: float,
-    continent_mask_filepath,
-    continent_polygon_features,
-    rotation_model,
-    overwrite=False,
-):
-    """Build the continent mask for a given time using ptt's 'continent contouring' method.
-    For more information about 'Continent Contouring', visit https://github.com/EarthByte/continent-contouring.
-    """
-    mask_fn = continent_mask_filepath.format(time)
-    if os.path.isfile(mask_fn) and not overwrite:
-        logger.info(
-            f"Continent mask file exists and will not create again -- {mask_fn}"
-        )
-        return
-
-    continent_contouring_point_spacing_degrees = 0.25
-    continent_contouring_area_threshold_square_kms = 0
-    continent_contouring_area_threshold_steradians = (
-        continent_contouring_area_threshold_square_kms
-        / (pygplates.Earth.mean_radius_in_kms * pygplates.Earth.mean_radius_in_kms)
-    )
-    continent_exclusion_area_threshold_square_kms = 800000
-    continent_exclusion_area_threshold_steradians = (
-        continent_exclusion_area_threshold_square_kms
-        / (pygplates.Earth.mean_radius_in_kms * pygplates.Earth.mean_radius_in_kms)
-    )
-    continent_separation_distance_threshold_radians = (
-        continent_contours.DEFAULT_CONTINENT_SEPARATION_DISTANCE_THRESHOLD_RADIANS
-    )
-
-    def continent_contouring_buffer_and_gap_distance_radians(time, contoured_continent):
-        # One distance for time interval [1000, 300] and another for time interval [250, 0].
-        # And linearly interpolate between them over the time interval [300, 250].
-        pre_pangea_distance_radians = math.radians(2.5)  # convert degrees to radians
-        post_pangea_distance_radians = math.radians(0.0)  # convert degrees to radians
-        if time > 300:
-            buffer_and_gap_distance_radians = pre_pangea_distance_radians
-        elif time < 250:
-            buffer_and_gap_distance_radians = post_pangea_distance_radians
-        else:
-            # Linearly interpolate between 250 and 300 Ma.
-            interp = float(time - 250) / (300 - 250)
-            buffer_and_gap_distance_radians = (
-                interp * pre_pangea_distance_radians
-                + (1 - interp) * post_pangea_distance_radians
-            )
-
-        # Area of the contoured continent.
-        area_steradians = contoured_continent.get_area()
-
-        # Linearly reduce the buffer/gap distance for contoured continents with area smaller than 1 million km^2.
-        area_threshold_square_kms = 500000
-        area_threshold_steradians = area_threshold_square_kms / (
-            pygplates.Earth.mean_radius_in_kms * pygplates.Earth.mean_radius_in_kms
-        )
-        if area_steradians < area_threshold_steradians:
-            buffer_and_gap_distance_radians *= (
-                area_steradians / area_threshold_steradians
-            )
-
-        return buffer_and_gap_distance_radians
-
-    continent_contouring = continent_contours.ContinentContouring(
-        rotation_model,
-        continent_polygon_features,
-        continent_contouring_point_spacing_degrees,
-        continent_contouring_area_threshold_steradians,
-        continent_contouring_buffer_and_gap_distance_radians,
-        continent_exclusion_area_threshold_steradians,
-        continent_separation_distance_threshold_radians,
-    )
-    continent_mask, _ = (
-        continent_contouring.get_continent_mask_and_contoured_continents(time)
-    )
-    grids.write_netcdf_grid(
-        continent_mask_filepath.format(time),
-        continent_mask.astype("i1"),
-        extent=(-180, 180, -90, 90),
-        fill_value=False,
-    )
-    logger.warning(
-        f"Finished building a continental mask at {time} Ma using ptt's 'Continent Contouring'!"
-        + " For more information about 'Continent Contouring', visit https://github.com/EarthByte/continent-contouring."
-    )
-
-
-# TODO: When pyGPlates can pickle pygplates.RotationModel and pygplates.FeatureCollection noticeably faster (than it currently does in pyGPlates 1.0),
-#       then remove this function definition.
 def _build_continental_mask_with_contouring_parallel(
     time: float,
-    continent_mask_filepath,
-    continent_polygon_features,
-    plate_reconstruction,
+    seafloor_grid,
     overwrite,
 ):
-    _build_continental_mask_with_contouring(
-        time=time,
-        continent_mask_filepath=continent_mask_filepath,
-        continent_polygon_features=continent_polygon_features,
-        rotation_model=plate_reconstruction.rotation_model,
-        overwrite=overwrite,
+    # Dispatch from parallel helper function to SeafloorGrid class method.
+    seafloor_grid._build_continental_mask_with_contouring(
+        time=time, overwrite=overwrite
     )
 
 
