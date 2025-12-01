@@ -48,7 +48,6 @@ class ReconstructByTopologies(object):
 
     def __init__(
         self,
-        plate_reconstruction,
         reconstruction_begin_time,
         reconstruction_end_time,
         reconstruction_time_interval,
@@ -63,8 +62,6 @@ class ReconstructByTopologies(object):
             The format of the file path of the continental mask grids that is converted to a
             file path using ``continent_mask_filepath_format.format(time)``.
         """
-
-        self.plate_reconstruction = plate_reconstruction
 
         # Set up an array of reconstruction times covering the reconstruction time span.
         self.reconstruction_begin_time = reconstruction_begin_time
@@ -128,14 +125,14 @@ class ReconstructByTopologies(object):
 
         self._continent_mask_filepath_format = continent_mask_filepath_format
 
-    def reconstruct(self):
+    def reconstruct(self, plate_reconstruction):
         # Initialise the reconstruction.
         self.begin_reconstruction()
 
         # Loop over the reconstruction times until reached end of the reconstruction time span, or
         # all points have entered their valid time range *and* either exited their time range or
         # have been deactivated (subducted forward in time or consumed by MOR backward in time).
-        while self.reconstruct_to_next_time():
+        while self.reconstruct_to_next_time(plate_reconstruction):
             pass
 
         return self.get_current_active_points()
@@ -181,7 +178,7 @@ class ReconstructByTopologies(object):
         """Return the indices of the currently active points (into the original points)."""
         return np.where(self._point_is_currently_active)[0]
 
-    def reconstruct_to_next_time(self):
+    def reconstruct_to_next_time(self, plate_reconstruction):
         # If we're at the last time then there is no next time to reconstruct to.
         if self._current_time_index == self._last_time_index:
             return False
@@ -195,7 +192,7 @@ class ReconstructByTopologies(object):
             return False
 
         # Call the main implementation.
-        self._reconstruct_to_next_time_impl()
+        self._reconstruct_to_next_time_impl(plate_reconstruction)
 
         # Move the current time to the next time.
         self._current_time_index += 1
@@ -214,14 +211,14 @@ class ReconstructByTopologies(object):
         # We successfully reconstructed to the next time.
         return True
 
-    def _reconstruct_to_next_time_impl(self):
+    def _reconstruct_to_next_time_impl(self, plate_reconstruction):
 
         current_time = self.get_current_time()
         # Positive/negative time step means reconstructing backward/forward in time.
         next_time = current_time + self._reconstruction_time_step
 
         # Resolved the topologies at the current time.
-        curr_topological_snapshot = self.plate_reconstruction.topological_snapshot(
+        curr_topological_snapshot = plate_reconstruction.topological_snapshot(
             current_time, include_topological_slab_boundaries=False
         )
 
@@ -342,7 +339,7 @@ class ReconstructByTopologies(object):
         next_topological_snapshot = pygplates.TopologicalSnapshot(  # type: ignore
             next_topological_features.next_topological_section_features
             + next_topological_features.next_topological_boundary_features,
-            self.plate_reconstruction.rotation_model,
+            plate_reconstruction.rotation_model,
             next_time,
         )
 
@@ -400,7 +397,7 @@ class ReconstructByTopologies(object):
             next_resolved_topology_boundary = self._NextTopologicalBoundary(
                 curr_resolved_topology,
                 next_resolved_topology,
-                self.plate_reconstruction.rotation_model,
+                plate_reconstruction.rotation_model,
             ).get_next_resolved_topology_boundary()
 
             # Iterate over the currently active points contained by the current resolved topology.
@@ -1280,7 +1277,6 @@ def reconstruct_points_by_topologies(
     """Reconstruct points using topologies."""
 
     topology_reconstruction = ReconstructByTopologies(
-        plate_reconstruction,
         reconstruction_begin_time,
         reconstruction_end_time,
         reconstruction_time_interval,
@@ -1290,4 +1286,4 @@ def reconstruct_points_by_topologies(
         continent_mask_filepath_format=continent_mask_filepath_format,
     )
 
-    return topology_reconstruction.reconstruct()
+    return topology_reconstruction.reconstruct(plate_reconstruction)

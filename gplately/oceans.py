@@ -31,6 +31,7 @@ import pygplates
 from . import grids, tools
 from .lib.reconstruct_by_topologies import ReconstructByTopologies
 from .lib.reconstruct_continents import ReconstructContinents
+from .parallel import get_num_cpus
 from .ptt import continent_contours, separate_ridge_transform_segments
 from .ptt.utils import points_in_polygons
 from .tools import _deg2pixels, _pixels2deg
@@ -288,7 +289,7 @@ class SeafloorGrid(object):
         """
 
         # Determine number of CPUs to use.
-        self.num_cpus = _get_num_cpus(nprocs)
+        self.num_cpus = get_num_cpus(nprocs)
 
         self.plate_reconstruction = plate_reconstruction
 
@@ -309,7 +310,10 @@ class SeafloorGrid(object):
                     "'continent_polygon_features' must be specified since 'continent_mask_filename' was not specified"
                 )
             self.reconstruct_continents = ReconstructContinents(
-                plate_reconstruction, continent_polygon_features
+                continent_polygon_features,
+                max_time,
+                min_time,
+                ridge_time_step,
             )
 
         # Topological parameters
@@ -587,7 +591,9 @@ class SeafloorGrid(object):
 
         # Get the reconstructed continents at the max time.
         reconstructed_continents = (
-            self.reconstruct_continents.get_reconstructed_continents(self._max_time)
+            self.reconstruct_continents.get_reconstructed_continents(
+                self._max_time, self.plate_reconstruction
+            )
         )
 
         icosahedral_multi_point = create_icosahedral_mesh(self.refinement_levels)
@@ -796,7 +802,9 @@ class SeafloorGrid(object):
 
         # Get the reconstructed continents at the requested time.
         reconstructed_continents = (
-            self.reconstruct_continents.get_reconstructed_continents(time)
+            self.reconstruct_continents.get_reconstructed_continents(
+                time, self.plate_reconstruction
+            )
         )
 
         final_grid = grids.rasterise(
@@ -1248,7 +1256,6 @@ class SeafloorGrid(object):
 
         # Call the reconstruct-by-topologies object.
         topology_reconstruction = ReconstructByTopologies(
-            self.plate_reconstruction,
             from_time,
             self._min_time,
             self._ridge_time_step,
@@ -1315,7 +1322,9 @@ class SeafloorGrid(object):
                     active_latitudes,
                 )
 
-            if not topology_reconstruction.reconstruct_to_next_time():
+            if not topology_reconstruction.reconstruct_to_next_time(
+                self.plate_reconstruction
+            ):
                 break
 
         # Save the reconstructed seed point data to file.
@@ -1632,7 +1641,7 @@ class SeafloorGrid(object):
             num_cpus = self.num_cpus
         else:
             # Determine number of CPUs to use.
-            num_cpus = _get_num_cpus(nprocs)
+            num_cpus = get_num_cpus(nprocs)
 
         if num_cpus > 1:
             with Pool(num_cpus) as pool:
@@ -1819,44 +1828,3 @@ def _build_and_reconstruct_ocean_seed_points_parallel(
 ):
     # Dispatch from parallel helper function to SeafloorGrid class method.
     seafloor_grid._build_and_reconstruct_ocean_seed_points(time)
-
-
-def _get_num_cpus(nprocs):
-    """Return number of CPUs to use.
-
-    Parameters
-    ----------
-    nprocs : int
-        The number of CPUs to use for parts of the code that are parallelized.
-        Must be an integer or convertible to an integer (eg, float is rounded towards zero).
-        If positive then uses that many CPUs.
-        If ``1`` then executes in serial (ie, is not parallelized).
-        If ``0`` then a ``ValueError`` is raised.
-        If ``-1`` then all available CPUs are used.
-        If ``-2`` then all available CPUs except one are used, etc.
-    """
-
-    try:
-        nprocs = int(nprocs)
-    except ValueError:
-        raise TypeError('"nprocs" should be an integer, or convertible to integer')
-
-    if nprocs == 0:
-        raise ValueError('"nprocs" should not be zero')
-
-    if nprocs > 0:
-        # A positive integer specifying the number of CPUs to use.
-        num_cpus = nprocs
-    else:  # nprocs < 0
-        #
-        # A negative integer specifying the number of CPUs to NOT use.
-        # '-1' means use all CPUs. '-2' means use all CPUs but one. Etc.
-        try:
-            num_cpus = multiprocessing.cpu_count() + 1 + nprocs
-            # If specified more CPUs to NOT use than there are CPUs available.
-            if num_cpus < 1:
-                num_cpus = 1
-        except NotImplementedError:
-            num_cpus = 1
-
-    return num_cpus

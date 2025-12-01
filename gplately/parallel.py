@@ -109,3 +109,44 @@ class Parallel(object):
             res = function(*input_args, **kwargs)
             q_out.put((pos, res))
         return
+
+
+def get_num_cpus(nprocs):
+    """Return number of CPUs to use.
+
+    Parameters
+    ----------
+    nprocs : int
+        The number of CPUs to use for parts of the code that are parallelized.
+        Must be an integer or convertible to an integer (eg, float is rounded towards zero).
+        If positive then uses that many CPUs.
+        If ``1`` then executes in serial (ie, is not parallelized).
+        If ``0`` then a ``ValueError`` is raised.
+        If ``-1`` then all available CPUs are used.
+        If ``-2`` then all available CPUs except one are used, etc.
+    """
+
+    try:
+        nprocs = int(nprocs)
+    except ValueError:
+        raise TypeError('"nprocs" should be an integer, or convertible to integer')
+
+    if nprocs == 0:
+        raise ValueError('"nprocs" should not be zero')
+
+    if nprocs > 0:
+        # A positive integer specifying the number of CPUs to use.
+        num_cpus = nprocs
+    else:  # nprocs < 0
+        #
+        # A negative integer specifying the number of CPUs to NOT use.
+        # '-1' means use all CPUs. '-2' means use all CPUs but one. Etc.
+        try:
+            num_cpus = cpu_count() + 1 + nprocs
+            # If specified more CPUs to NOT use than there are CPUs available.
+            if num_cpus < 1:
+                num_cpus = 1
+        except NotImplementedError:
+            num_cpus = 1
+
+    return num_cpus
