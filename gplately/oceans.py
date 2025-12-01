@@ -33,7 +33,7 @@ from .lib.reconstruct_by_topologies import ReconstructByTopologies
 from .lib.reconstruct_continents import ReconstructContinents
 from .parallel import get_num_cpus
 from .ptt import continent_contours, separate_ridge_transform_segments
-from .ptt.utils import points_in_polygons
+from .ptt.utils import points_in_polygons, points_spatial_tree
 from .tools import _deg2pixels, _pixels2deg
 from .utils import seafloor_grid_utils
 from .utils.log_utils import get_debug_level
@@ -586,8 +586,10 @@ class SeafloorGrid(object):
         else:
             raise ValueError("Enter a valid time >= 0")
 
-    def _generate_ocean_points(self):
-        """Generate ocean points by using the icosahedral mesh."""
+    def _generate_initial_ocean_points_from_built_continent_mask(
+        self, icosahedral_multi_point
+    ):
+        """Generate ocean points (using the icosahedral mesh) from a continental mask built at the initial time."""
 
         # Get the reconstructed continents at the max time.
         reconstructed_continents = (
@@ -595,8 +597,6 @@ class SeafloorGrid(object):
                 self._max_time, self.plate_reconstruction
             )
         )
-
-        icosahedral_multi_point = create_icosahedral_mesh(self.refinement_levels)
 
         # Find which reconstructed continent (if any) each point is ine.
         points_in_continent = points_in_polygons.find_polygons(
@@ -618,8 +618,45 @@ class SeafloorGrid(object):
         ocean_pt_feature.set_geometry(ocean_basin_point_mesh)
         return ocean_pt_feature
 
-    def _get_ocean_points_from_continent_mask(self):
-        """Get the ocean points from continent mask grid."""
+    def _generate_initial_ocean_points_from_built_continent_mask_with_contouring(
+        self, icosahedral_multi_point
+    ):
+        """Generate ocean points (using the icosahedral mesh) from the contoured continents built at the initial time."""
+
+        # Get the reconstructed continent contours at the max time.
+        continent_contouring = self._get_continent_contouring()
+        contoured_continents = continent_contouring.get_contoured_continents(
+            self._max_time
+        )
+
+        icosahedral_multi_point_spatial_tree = points_spatial_tree.PointsSpatialTree(
+            icosahedral_multi_point
+        )
+
+        # Test all points against each contoured continent.
+        points_in_continent = np.full(len(icosahedral_multi_point), False)
+        for contoured_continent in contoured_continents:
+            points_inside_contoured_continent = contoured_continent.are_points_inside(
+                icosahedral_multi_point,
+                icosahedral_multi_point_spatial_tree,
+            )
+
+            # Combine the results of current contoured continent with previous contoured continents.
+            points_in_continent[points_inside_contoured_continent] = True
+
+        # Extract the points in ocean (ie, not in continent).
+        ocean_basin_point_mesh = pygplates.MultiPointOnSphere(  # type:ignore
+            icosahedral_multi_point[index]
+            for index, point_in_continent in enumerate(points_in_continent)
+            if not point_in_continent
+        )
+
+        ocean_pt_feature = pygplates.Feature()  # type:ignore
+        ocean_pt_feature.set_geometry(ocean_basin_point_mesh)
+        return ocean_pt_feature
+
+    def _generate_initial_ocean_points_from_provided_continent_mask(self):
+        """Get the ocean points from the user-provided continent mask grid."""
         max_time_cont_mask = grids.Raster(
             self.continent_mask_filepath.format(self._max_time)
         )
@@ -695,9 +732,24 @@ class SeafloorGrid(object):
         ):
             # If a set of continent masks was passed, we can use max_time's continental
             # mask to build the initial profile of seafloor age.
-            ocean_points_feature = self._get_ocean_points_from_continent_mask()
+            ocean_points_feature = (
+                self._generate_initial_ocean_points_from_provided_continent_mask()
+            )
         else:
-            ocean_points_feature = self._generate_ocean_points()
+            # A uniform distribution of points across the globe.
+            icosahedral_multi_point = create_icosahedral_mesh(self.refinement_levels)
+
+            # Generate the initial ocean points from the continental mask at 'max_time'.
+            if self.use_continent_contouring:
+                ocean_points_feature = self._generate_initial_ocean_points_from_built_continent_mask_with_contouring(
+                    icosahedral_multi_point
+                )
+            else:
+                ocean_points_feature = (
+                    self._generate_initial_ocean_points_from_built_continent_mask(
+                        icosahedral_multi_point
+                    )
+                )
 
         # Now that we have ocean points...
         # Determine age of ocean basin points using their proximity to MOR features
@@ -742,21 +794,25 @@ class SeafloorGrid(object):
             if self.resume_from_checkpoints:
                 overwrite = False
 
-            if self.num_cpus > 1:
-                #
-                # Temporary modification to avoid a large slowdown due to pickling pygplates.RotationModel and pygplates.FeatureCollection.
-                # Instead of pickling pygplates.RotationModel and pygplates.FeatureCollection we instead pickle 'self' which pickles
-                # 'self.plate_reconstruction' in turn which already attempts to avoid pickling those pygplates objects.
-                #
-                # Note: This only works when 'self.plate_reconstruction` was created using rotation *filenames* and topology *filenames*
-                #       (which is the case for the plate models downloaded by the PlateModelManager).
-                #       When they're not filenames then pygplates.RotationModel and pygplates.FeatureCollection get pickled anyway.
-                #
-                # TODO: When pyGPlates can pickle pygplates.RotationModel and pygplates.FeatureCollection noticeably faster
-                #       (than it currently does in pyGPlates 1.0), then we could go back to pickling only the parts of 'self' that
-                #       are actually needed. For example, the topology features aren't needed here, so no point pickling them.
-                #
-                if self.use_continent_contouring:
+            #
+            # Temporary parallelisation modification to avoid a large slowdown due to pickling pygplates.RotationModel and pygplates.FeatureCollection.
+            # Instead of pickling pygplates.RotationModel and pygplates.FeatureCollection we instead pickle 'self' which pickles
+            # 'self.plate_reconstruction' in turn which already attempts to avoid pickling those pygplates objects.
+            #
+            # Note: This only works when 'self.plate_reconstruction` was created using rotation *filenames* and topology *filenames*
+            #       (which is the case for the plate models downloaded by the PlateModelManager).
+            #       When they're not filenames then pygplates.RotationModel and pygplates.FeatureCollection get pickled anyway.
+            #
+            # TODO: When pyGPlates can pickle pygplates.RotationModel and pygplates.FeatureCollection noticeably faster
+            #       (than it currently does in pyGPlates 1.0), then we could go back to pickling only the parts of 'self' that
+            #       are actually needed. For example, the topology features aren't needed here, so no point pickling them.
+            #
+            if self.use_continent_contouring:
+                # Note: When continent contouring we currently don't reconstruct (and deform) the continental polygons before
+                #       building the continent masks. This is because the continent contouring reconstructs the continental polygons
+                #       itself (although it doesn't deform them). An update would be to enable the continent contouring to use
+                #       the reconstructed continental polygons provided by class ReconstructContinents (which would include deformation).
+                if self.num_cpus > 1:
                     with Pool(self.num_cpus) as pool:
                         pool.map(
                             partial(
@@ -767,6 +823,14 @@ class SeafloorGrid(object):
                             self._times,
                         )
                 else:
+                    for time in self._times:
+                        self._build_continental_mask_with_contouring(
+                            time,
+                            overwrite=overwrite,
+                        )
+            else:
+                # Build the continental masks from the reconstructed continental polygons.
+                if self.num_cpus > 1:
                     with Pool(self.num_cpus) as pool:
                         pool.map(
                             partial(
@@ -775,13 +839,6 @@ class SeafloorGrid(object):
                                 overwrite=overwrite,
                             ),
                             self._times,
-                        )
-            else:
-                if self.use_continent_contouring:
-                    for time in self._times:
-                        self._build_continental_mask_with_contouring(
-                            time,
-                            overwrite=overwrite,
                         )
                 else:
                     for time in self._times:
@@ -840,16 +897,41 @@ class SeafloorGrid(object):
             )
             return
 
+        # Get the reconstructed continent contours mask at the max time.
+        continent_contouring = self._get_continent_contouring()
+        continent_mask, _ = (
+            continent_contouring.get_continent_mask_and_contoured_continents(time)
+        )
+
+        grids.write_netcdf_grid(
+            self.continent_mask_filepath.format(time),
+            continent_mask.astype("i1"),
+            extent=(-180, 180, -90, 90),
+            fill_value=False,
+        )
+        logger.warning(
+            f"Finished building a continental mask at {time} Ma using ptt's 'Continent Contouring'!"
+            + " For more information about 'Continent Contouring', visit https://github.com/EarthByte/continent-contouring."
+        )
+
+    def _get_continent_contouring(self):
+        """Create a ``continent_contours.ContinentContouring`` object that can be used to generate continent contours."""
         continent_contouring_point_spacing_degrees = 0.25
         continent_contouring_area_threshold_square_kms = 0
         continent_contouring_area_threshold_steradians = (
             continent_contouring_area_threshold_square_kms
-            / (pygplates.Earth.mean_radius_in_kms * pygplates.Earth.mean_radius_in_kms)
+            / (
+                pygplates.Earth.mean_radius_in_kms  # type:ignore
+                * pygplates.Earth.mean_radius_in_kms  # type:ignore
+            )
         )
         continent_exclusion_area_threshold_square_kms = 800000
         continent_exclusion_area_threshold_steradians = (
             continent_exclusion_area_threshold_square_kms
-            / (pygplates.Earth.mean_radius_in_kms * pygplates.Earth.mean_radius_in_kms)
+            / (
+                pygplates.Earth.mean_radius_in_kms  # type:ignore
+                * pygplates.Earth.mean_radius_in_kms  # type:ignore
+            )
         )
         continent_separation_distance_threshold_radians = (
             continent_contours.DEFAULT_CONTINENT_SEPARATION_DISTANCE_THRESHOLD_RADIANS
@@ -884,7 +966,8 @@ class SeafloorGrid(object):
             # Linearly reduce the buffer/gap distance for contoured continents with area smaller than 1 million km^2.
             area_threshold_square_kms = 500000
             area_threshold_steradians = area_threshold_square_kms / (
-                pygplates.Earth.mean_radius_in_kms * pygplates.Earth.mean_radius_in_kms
+                pygplates.Earth.mean_radius_in_kms  # type:ignore
+                * pygplates.Earth.mean_radius_in_kms  # type:ignore
             )
             if area_steradians < area_threshold_steradians:
                 buffer_and_gap_distance_radians *= (
@@ -893,7 +976,7 @@ class SeafloorGrid(object):
 
             return buffer_and_gap_distance_radians
 
-        continent_contouring = continent_contours.ContinentContouring(
+        return continent_contours.ContinentContouring(
             self.plate_reconstruction.rotation_model,
             self.reconstruct_continents.continent_features,
             continent_contouring_point_spacing_degrees,
@@ -901,19 +984,6 @@ class SeafloorGrid(object):
             continent_contouring_buffer_and_gap_distance_radians,
             continent_exclusion_area_threshold_steradians,
             continent_separation_distance_threshold_radians,
-        )
-        continent_mask, _ = (
-            continent_contouring.get_continent_mask_and_contoured_continents(time)
-        )
-        grids.write_netcdf_grid(
-            self.continent_mask_filepath.format(time),
-            continent_mask.astype("i1"),
-            extent=(-180, 180, -90, 90),
-            fill_value=False,
-        )
-        logger.warning(
-            f"Finished building a continental mask at {time} Ma using ptt's 'Continent Contouring'!"
-            + " For more information about 'Continent Contouring', visit https://github.com/EarthByte/continent-contouring."
         )
 
     def _build_mid_ocean_ridge_seed_points(
@@ -1064,6 +1134,13 @@ class SeafloorGrid(object):
         # But the initial ocean seed points and the mid-ocean ridge seed points are created at their respectives times.
         # For initial ocean seed points this is `max_time`. And for mid-ocean ridge seed points this is a time (where `min_time <= time < max_time`).
         #
+
+        # If we're building continental masks from reconstructed continental polygons (without contouring) then
+        # we first need to reconstruct the continental polygons (and deform them if topological model is deforming).
+        if not self.continent_mask_is_provided and not self.use_continent_contouring:
+            self.reconstruct_continents.reconstruct_continent_features(
+                self.plate_reconstruction, self.num_cpus
+            )
 
         # Create a continental mask to define the ocean basin for all times between `min_time` and `max_time`.
         self._build_all_continental_masks()
