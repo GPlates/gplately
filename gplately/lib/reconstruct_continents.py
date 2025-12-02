@@ -17,6 +17,7 @@
 
 from ..gpml import _load_FeatureCollection
 from ..parallel import get_num_cpus
+from ..ptt.utils import points_in_polygons
 
 import numpy as np
 import pygplates
@@ -56,6 +57,21 @@ class ReconstructContinents(object):
         self.max_time = max_time
         self.min_time = min_time
         self.time_step = time_step
+
+        # The times from min to max time.
+        self._times = np.arange(min_time, max_time + 1e-6, time_step)
+        # A dict mapping times to their indices (into 'self._times').
+        self._time_indices = {
+            time: time_index for time_index, time in enumerate(self._times)
+        }
+        # time_index = 0
+        # while True:
+        #    time = self.min_time + time_index * self.time_step
+        #    if time > self.max_time + 1e-6:
+        #        break
+        #
+        #    self._reconstruction_time_indices[time_index] = time
+        #    time_index += 1
 
         # Make sure the continent features all reconstruct by plate ID only.
         if not self._do_all_continent_features_reconstruct_by_plate_id():
@@ -120,26 +136,25 @@ class ReconstructContinents(object):
             If ``-2`` then all available CPUs except one are used, etc.
             Defaults to ``-2`` (ie, uses all available CPUs except one to keep system responsive).
         """
-        # See if model has any topological network features.
-        self._topological_model_is_deforming = self._is_topological_model_deforming(
-            plate_reconstruction
-        )
+        self._reconstructed_continents = None
+
+        if not self.continent_features:
+            return
 
         # If the topological model has deforming networks then reconstruct and deform the continent features from min to max time.
         # Otherwise don't do anything - we'll just rigidly reconstruct them when the user asks for them.
-        if self._topological_model_is_deforming:
+        if self._has_deforming_network_features(plate_reconstruction):
             # Determine number of CPUs to use.
             num_cpus = get_num_cpus(nprocs)
 
-            self._valid_reconstructions = (
+            self._reconstructed_continents = (
                 self._reconstruct_and_deform_continent_features(
-                    plate_reconstruction, num_cpus
+                    plate_reconstruction,
+                    num_cpus,
                 )
             )
         else:
-            self._valid_reconstruction_times = set(
-                np.arange(self.max_time, self.min_time - 1e-4, -self.time_step)
-            )
+            self._reconstructed_continents = None
 
     def get_reconstructed_continents(self, time, plate_reconstruction):
         """Retrieve the reconstructed continent features.
@@ -151,22 +166,52 @@ class ReconstructContinents(object):
         plate_reconstruction : PlateReconstruction
             A :class:`PlateReconstruction` object for reconstruction.
         """
-        if self._topological_model_is_deforming:
-            # Get the already-reconstructed-and-deformed continents (indexed by time).
-            reconstructed_continents = self._valid_reconstructions.get(time, None)
-            if reconstructed_continents is not None:
-                return reconstructed_continents
-        else:
-            # If the time is one of the valid times then rigidly reconstruct the present-day continent features to 'time'.
-            if time in self._valid_reconstruction_times:
-                if not self.continent_features:
-                    return []
-                return plate_reconstruction.reconstruct(self.continent_features, time)
+        if not self.continent_features:
+            return []
 
-        # The requested 'time' was not one of the valid times.
-        raise ValueError(
-            f"{time} is not a valid time in the range [{self.max_time}, {self.min_time}] with interval {self.time_step}"
-        )
+        # Ensure 'time' is one of the valid reconstruction times.
+        time_index = self._time_indices.get(time, None)
+        if time_index is None:
+            # The requested 'time' was not one of the valid times.
+            raise ValueError(
+                f"{time} is not a valid time in the range [{self.max_time}, {self.min_time}] with interval {self.time_step}"
+            )
+
+        if self._reconstructed_continents:
+            continent_features = []
+
+            # Get the already-reconstructed-and-deformed continental polygons.
+            for feature_index, reconstructed_continent in enumerate(
+                self._reconstructed_continents
+            ):
+                continent_feature = self.continent_features[feature_index].clone()
+
+                for (
+                    property_name,
+                    reconstructed_geometry_time_spans,
+                ) in reconstructed_continent.items():
+                    reconstructed_geometries = [
+                        pygplates.PolygonOnSphere(time_span[time_index])
+                        for time_span in reconstructed_geometry_time_spans
+                    ]
+
+                    continent_feature.set_geometry(
+                        reconstructed_geometries,
+                        property_name,
+                        verify_information_model=pygplates.VerifyInformationModel.no,  # type:ignore
+                    )
+
+                continent_features.append(continent_feature)
+
+            pygplates.reverse_reconstruct(  # type:ignore
+                continent_features, plate_reconstruction.rotation_model, time
+            )
+
+        else:
+            continent_features = self.continent_features
+
+        # If the time is one of the valid times then rigidly reconstruct the present-day continent features to 'time'.
+        return plate_reconstruction.reconstruct(continent_features, time)
 
     def _do_all_continent_features_reconstruct_by_plate_id(self):
         if not self.continent_features:
@@ -190,8 +235,8 @@ class ReconstructContinents(object):
 
         return True
 
-    def _is_topological_model_deforming(self, plate_reconstruction):
-        # See if model has any topological network features.
+    def _has_deforming_network_features(self, plate_reconstruction):
+        # See if topological model has any deforming network features.
         return any(
             feature.get_feature_type()
             == pygplates.FeatureType.gpml_topological_network  # type:ignore
@@ -201,15 +246,127 @@ class ReconstructContinents(object):
     def _reconstruct_and_deform_continent_features(
         self, plate_reconstruction, num_cpus
     ):
-        # If there are no continent features then just return an empty list for each reconstruction time.
         if not self.continent_features:
-            return {
-                time: []
-                for time in np.arange(
-                    self.max_time, self.min_time - 1e-4, -self.time_step
+            return None
+
+        reconstructed_continents = [{} for _ in range(len(self.continent_features))]
+        for feature_index, feature in enumerate(self.continent_features):
+            reconstructed_continent = reconstructed_continents[feature_index]
+            for property in feature:
+                property_value = property.get_value()
+                if property_value:
+                    geometry = property_value.get_geometry()
+                    if geometry:
+                        property_name = property.get_name()
+                        if property_name not in reconstructed_continent:
+                            reconstructed_continent[property_name] = []
+                        reconstructed_continent[property_name].append(geometry)
+
+        topological_model = pygplates.TopologicalModel(  # type:ignore
+            plate_reconstruction.topology_features, plate_reconstruction.rotation_model
+        )
+
+        initial_times = np.arange(self.time_step, self.min_time - 1e-6, self.time_step)
+        reconstruction_times = np.concatenate((initial_times, self._times))
+
+        for feature_index, reconstructed_continent in enumerate(
+            reconstructed_continents
+        ):
+            continent_plate_id = self.continent_features[
+                feature_index
+            ].get_reconstruction_plate_id()
+
+            for property_name, geometries in reconstructed_continent.items():
+
+                reconstructed_geometry_time_spans = []
+
+                for geometry in geometries:
+                    # Adjust present day geometry if present day rotation is non-zero
+                    # (generally it shouldn't be though).
+                    present_day_rotation = (
+                        plate_reconstruction.rotation_model.get_rotation(
+                            0.0, continent_plate_id
+                        )
+                    )
+                    geometry = present_day_rotation * geometry
+
+                    if isinstance(geometry, pygplates.PolygonOnSphere):  # type:ignore
+                        reconstructed_geometry_points = list(
+                            geometry.get_exterior_ring_points()
+                        )
+                    else:
+                        reconstructed_geometry_points = list(geometry.get_points())
+
+                    reconstructed_geometry_time_span = np.empty(
+                        (len(self._times), len(reconstructed_geometry_points), 2),
+                        dtype=float,
+                    )
+
+                    previous_time = 0.0
+                    time_index = 0
+                    for time in reconstruction_times:
+
+                        topological_snapshot = topological_model.topological_snapshot(
+                            time
+                        )
+                        resolved_networks = (
+                            topological_snapshot.get_resolved_topologies(
+                                pygplates.ResolveTopologyType.network  # type:ignore
+                            )
+                        )
+
+                        reconstructed_geometry_point_resolved_networks = (
+                            points_in_polygons.find_polygons(
+                                reconstructed_geometry_points,
+                                [
+                                    resolved_topology.get_resolved_boundary()
+                                    for resolved_topology in resolved_networks
+                                ],
+                                resolved_networks,
+                            )
+                        )
+
+                        stage_rotation = (
+                            plate_reconstruction.rotation_model.get_rotation(
+                                time, continent_plate_id, previous_time
+                            )
+                        )
+
+                        for point_index, resolved_network in enumerate(
+                            reconstructed_geometry_point_resolved_networks
+                        ):
+                            if resolved_network:
+                                reconstructed_geometry_points[point_index] = (
+                                    resolved_network.reconstruct_point(
+                                        reconstructed_geometry_points[point_index], time
+                                    )
+                                )
+                            else:
+                                reconstructed_geometry_points[point_index] = (
+                                    stage_rotation
+                                    * reconstructed_geometry_points[point_index]
+                                )
+
+                        # Record the reconstructed geometry points if we're in the [min_time, max_time] time range.
+                        if time >= self.min_time:
+                            reconstructed_geometry_time_span[time_index] = np.fromiter(
+                                (
+                                    point.to_lat_lon()
+                                    for point in reconstructed_geometry_points
+                                ),
+                                dtype=np.dtype((float, 2)),
+                                count=len(reconstructed_geometry_points),
+                            )
+                            time_index += 1
+
+                        previous_time = time
+
+                    reconstructed_geometry_time_spans.append(
+                        reconstructed_geometry_time_span
+                    )
+
+                reconstructed_continent[property_name] = (
+                    reconstructed_geometry_time_spans
                 )
-            }
 
-        # TODO: Implement reconstruction and deformation of continental polygons.
-
-        return {}
+        return reconstructed_continents
