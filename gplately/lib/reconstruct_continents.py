@@ -24,7 +24,7 @@ from multiprocessing import Pool
 
 from ..gpml import _load_FeatureCollection
 from ..parallel import get_num_cpus
-from ..ptt.utils import points_in_polygons
+from ..ptt.utils import points_in_polygons, points_spatial_tree
 
 
 class ReconstructContinents(object):
@@ -41,7 +41,7 @@ class ReconstructContinents(object):
         Parameters
         ----------
         continent_features : str/`os.PathLike`, or a sequence (eg, `list` or `tuple`) of instances of `pygplates.Feature`_, or a single instance of `pygplates.Feature`_, or an instance of `pygplates.FeatureCollection`_, or a sequence of any combination of those four types
-            These are any features on continental crust (eg, continental polygons).
+            These are any features on continental crust that are polygons (eg, continental polygons).
             Can be provided as a filename, or a sequence of features, or a single feature, or a feature collection, or a sequence (eg, a list or tuple) of any combination of those four types.
         max_time : float
             The maximum time for reconstructing continent features.
@@ -69,10 +69,10 @@ class ReconstructContinents(object):
             time: time_index for time_index, time in enumerate(self._times)
         }
 
-        # Make sure the continent features all reconstruct by plate ID only.
-        if not self._do_all_continent_features_reconstruct_by_plate_id():
+        # Make sure the continent features are polygons and that they reconstruct by plate ID only.
+        if not self._all_continent_features_are_polygons_that_reconstruct_by_plate_id():
             raise ValueError(
-                "All continent features must reconstruct by plate ID only (excludes by half-stage, motion paths, flowlines, etc)"
+                "Each continent feature must contain a polygon and must reconstruct by plate ID only (excludes by half-stage, motion paths, flowlines, etc)"
             )
 
     def __getstate__(self):
@@ -202,11 +202,11 @@ class ReconstructContinents(object):
 
                 for (
                     property_name,
-                    reconstructed_geometry_time_spans,
+                    reconstructed_polygon_time_spans,
                 ) in reconstructed_continent.items():
                     reconstructed_geometries = [
-                        pygplates.PolygonOnSphere(time_span[time_index])
-                        for time_span in reconstructed_geometry_time_spans
+                        pygplates.PolygonOnSphere(time_span[time_index])  # type:ignore
+                        for time_span in reconstructed_polygon_time_spans
                     ]
 
                     continent_feature.set_geometry(
@@ -227,11 +227,11 @@ class ReconstructContinents(object):
         # If the time is one of the valid times then rigidly reconstruct the present-day continent features to 'time'.
         return plate_reconstruction.reconstruct(continent_features, time)
 
-    def _do_all_continent_features_reconstruct_by_plate_id(self):
+    def _all_continent_features_are_polygons_that_reconstruct_by_plate_id(self):
         if not self.continent_features:
             return True
 
-        # Make sure all the continent features reconstruct by plate ID only.
+        # Make sure all the continent features reconstruct by plate ID only and contain a polygon.
         for feature in self.continent_features:
             # Exclude features that reconstruct by half-stage rotation.
             if feature.get_reconstruction_method().startswith("HalfStageRotation"):
@@ -244,6 +244,13 @@ class ReconstructContinents(object):
                 or feature_type == pygplates.FeatureType.gpml_flowline  # type:ignore
                 or feature_type
                 == pygplates.FeatureType.gpml_virtual_geomagnetic_pole  # type:ignore
+            ):
+                return False
+
+            # Exclude features that don't have any polygon geometries.
+            if not any(
+                isinstance(geometry, pygplates.PolygonOnSphere)  # type:ignore
+                for geometry in feature.get_all_geometries()
             ):
                 return False
 
@@ -307,118 +314,392 @@ class ReconstructContinents(object):
             )
 
 
+class _ContinentalPolygon(object):
+
+    def __init__(self, feature_index, property_name, present_day_polygon, times):
+        self.feature_index = feature_index
+        self.property_name = property_name
+        self.reconstructed_polygon = present_day_polygon
+
+        # Get the polygon boundary points (exterior ring).
+        self.reconstructed_points = list(
+            self.reconstructed_polygon.get_exterior_ring_points()
+        )
+
+        # Storage for the reconstructed geometry points (as lat/lon) over the time range.
+        self.reconstructed_polygon_time_span = np.empty(
+            (len(times), len(self.reconstructed_points), 2),
+            dtype=float,
+        )
+
+    def update_polygon(self):
+        self.reconstructed_polygon = pygplates.PolygonOnSphere(  # type:ignore
+            self.reconstructed_points
+        )
+
+
+class _ContinentAggregate(object):
+    def __init__(self, stage_rotation, continental_polygon):
+        self.stage_rotation = stage_rotation
+        self.continental_polygons = [continental_polygon]
+        self.attached_resolved_networks = []
+
+    def add(self, new_continental_polygon, new_stage_rotation):
+        # new_stage_rotation_pole, new_stage_rotation_angle_radians = (
+        #    new_stage_rotation.get_euler_pole_and_angle()
+        # )
+        # stage_rotation_pole, stage_rotation_angle_radians = (
+        #    self.stage_rotation.get_euler_pole_and_angle()
+        # )
+        # if (
+        #    pygplates.Vector3D.angle_between(  # type:ignore
+        #        new_stage_rotation_pole.to_xyz(), stage_rotation_pole.to_xyz()
+        #    )
+        #    < math.radians(0.01)
+        #    and new_stage_rotation == self.stage_rotation
+        # ):
+        if pygplates.FiniteRotation.are_equal(  # type:ignore
+            new_stage_rotation, self.stage_rotation, threshold_degrees=0.01
+        ):
+            for continental_polygon in self.continental_polygons:
+                if (
+                    pygplates.GeometryOnSphere.distance(  # type:ignore
+                        new_continental_polygon.reconstructed_polygon,
+                        continental_polygon.reconstructed_polygon,
+                        distance_threshold_radians=1e-4,
+                        geometry1_is_solid=True,
+                        geometry2_is_solid=True,
+                    )
+                    is None
+                ):
+                    self.continental_polygons.append(new_continental_polygon)
+                    return True
+
+        return False
+
+    def find_attached_networks(
+        self,
+        resolved_networks,
+        all_resolved_network_points,
+        all_resolved_network_points_spatial_tree,
+        all_resolved_network_point_velocities,
+        resolved_network_point_ranges,
+    ):
+        #
+        # Find all networks that are attached to this continent aggregrate:
+        # - For each network find any boundary points that are inside any continent polygons in this aggregrate.
+        # - If any two consecutive boundary points have the same velocity (at same location) as rigid continent velocity:
+        #   + then that network is attached to this aggregrate.
+        #
+
+        resolved_network_boundary_points_inside_aggregate = (
+            points_in_polygons.find_polygons_using_points_spatial_tree(
+                all_resolved_network_points,
+                all_resolved_network_points_spatial_tree,
+                [
+                    continental_polygon.reconstructed_polygon
+                    for continental_polygon in self.continental_polygons
+                ],
+            )
+        )
+
+        resolved_network_index = 0
+        point_index = 0
+        while point_index < len(all_resolved_network_points):
+            _, resolved_network_point_end_index = resolved_network_point_ranges[
+                resolved_network_index
+            ]
+
+            resolved_network_is_attached = False
+            if (
+                resolved_network_boundary_points_inside_aggregate[point_index]
+                is not None
+            ):
+                resolved_network_point = all_resolved_network_points[point_index]
+                resolved_network_point_velocity = all_resolved_network_point_velocities[
+                    point_index
+                ]
+                aggregrate_velocity_at_point = pygplates.calculate_velocities(  # type:ignore
+                    (resolved_network_point,),
+                    # Stage rotation goes backward in time but velocity needs to go forward...
+                    self.stage_rotation.get_inverse(),
+                    1.0,  # time interval
+                )[
+                    0
+                ]
+                resolved_network_is_attached = (
+                    aggregrate_velocity_at_point - resolved_network_point_velocity
+                ).get_magnitude() < 1.0
+
+            if resolved_network_is_attached:
+                # Current resolved network boundary point is *inside* this aggregate.
+                # So add current network as an attached network.
+                self.attached_resolved_networks.append(
+                    resolved_networks[resolved_network_index]
+                )
+                # Move to the next network.
+                point_index = (
+                    resolved_network_point_end_index  # same as start of next network
+                )
+                resolved_network_index += 1
+            else:
+                # Current resolved network boundary point is *outside* this aggregate.
+                # So just move to the next point.
+                point_index += 1
+                if point_index == resolved_network_point_end_index:
+                    resolved_network_index += 1
+
+    def reconstruct_continental_polygons(self, time):
+        #
+        # For each continental polygon, reconstruct using attached networks (or rigid stage rotations):
+        # - For each point in a continental polygon determine if inside an attached network.
+        # - If so then reconstruct using it, otherwise reconstruct using this aggregate's rigid rotation.
+        #
+
+        continent_aggregrate_points = []
+        continental_polygon_point_ranges = []
+        for continental_polygon in self.continental_polygons:
+            continental_polygon_start_point_index = len(continent_aggregrate_points)
+            continent_aggregrate_points.extend(continental_polygon.reconstructed_points)
+            continental_polygon_end_point_index = len(continent_aggregrate_points)
+
+            continental_polygon_point_ranges.append(
+                (
+                    continental_polygon_start_point_index,
+                    continental_polygon_end_point_index,
+                )
+            )
+
+        continent_aggregrate_points_inside_attached_resolved_networks = (
+            points_in_polygons.find_polygons(
+                continent_aggregrate_points,
+                [
+                    resolved_network.get_resolved_boundary()
+                    for resolved_network in self.attached_resolved_networks
+                ],
+                self.attached_resolved_networks,
+            )
+        )
+
+        continental_polygon_index = 0
+        point_index = 0
+        while point_index < len(continent_aggregrate_points):
+            continental_polygon = self.continental_polygons[continental_polygon_index]
+
+            (
+                continental_polygon_point_start_index,
+                continental_polygon_point_end_index,
+            ) = continental_polygon_point_ranges[continental_polygon_index]
+
+            continental_polygon_point_index = (
+                point_index - continental_polygon_point_start_index
+            )
+
+            resolved_network_containing_point = (
+                continent_aggregrate_points_inside_attached_resolved_networks[
+                    point_index
+                ]
+            )
+
+            reconstructed_point = continental_polygon.reconstructed_points[
+                continental_polygon_point_index
+            ]
+
+            if resolved_network_containing_point is not None:
+                # Current continental polygon point is *inside* an attached resolved network.
+                # So reconstruct it using the attached resolved network.
+                reconstructed_point = (
+                    resolved_network_containing_point.reconstruct_point(
+                        reconstructed_point,
+                        time,
+                    )
+                )
+            else:
+                reconstructed_point = self.stage_rotation * reconstructed_point
+
+            continental_polygon.reconstructed_points[
+                continental_polygon_point_index
+            ] = reconstructed_point
+
+            # Move to the next point.
+            point_index += 1
+            if point_index == continental_polygon_point_end_index:
+                continental_polygon_index += 1
+
+        # Now that we've reconstructed all the continental polygon points
+        # we can create reconstructed polygons from those reconstructed points.
+        for continental_polygon in self.continental_polygons:
+            continental_polygon.update_polygon()
+
+    def record_reconstructed_points(self, time_index):
+        for continental_polygon in self.continental_polygons:
+            continental_polygon.reconstructed_polygon_time_span[time_index] = (
+                np.fromiter(
+                    (
+                        point.to_lat_lon()
+                        for point in continental_polygon.reconstructed_points
+                    ),
+                    dtype=np.dtype((float, 2)),
+                    count=len(continental_polygon.reconstructed_points),
+                )
+            )
+
+
 def _reconstruct_and_deform_continent_features_impl(
     continent_features, plate_reconstruction, times, min_time, max_time, time_step
 ):
 
-    reconstructed_continents = [{} for _ in range(len(continent_features))]
+    continental_polygons = []
     for feature_index, feature in enumerate(continent_features):
-        reconstructed_continent = reconstructed_continents[feature_index]
+        continent_plate_id = continent_features[
+            feature_index
+        ].get_reconstruction_plate_id()
+        # Adjustment for present day geometries in case present day rotation is non-zero
+        # (generally it shouldn't be though).
+        present_day_rotation = plate_reconstruction.rotation_model.get_rotation(
+            0.0, continent_plate_id
+        )
         for property in feature:
             property_value = property.get_value()
             if property_value:
                 geometry = property_value.get_geometry()
-                if geometry:
-                    property_name = property.get_name()
-                    if property_name not in reconstructed_continent:
-                        reconstructed_continent[property_name] = []
-                    reconstructed_continent[property_name].append(geometry)
-
-    topological_model = pygplates.TopologicalModel(  # type:ignore
-        plate_reconstruction.topology_features, plate_reconstruction.rotation_model
-    )
+                if geometry and isinstance(
+                    geometry, pygplates.PolygonOnSphere  # type:ignore
+                ):
+                    continental_polygon = _ContinentalPolygon(
+                        feature_index,
+                        property.get_name(),
+                        present_day_rotation * geometry,
+                        times,
+                    )
+                    continental_polygons.append(continental_polygon)
 
     initial_times = np.arange(time_step, min_time - 1e-6, time_step)
     reconstruction_times = np.concatenate((initial_times, times))
 
-    for feature_index, reconstructed_continent in enumerate(reconstructed_continents):
-        continent_plate_id = continent_features[
-            feature_index
-        ].get_reconstruction_plate_id()
+    previous_time = 0.0
+    time_index = 0
+    for time in reconstruction_times:
 
-        for property_name, geometries in reconstructed_continent.items():
+        topological_snapshot = pygplates.TopologicalSnapshot(  # type:ignore
+            plate_reconstruction.topology_features,
+            plate_reconstruction.rotation_model,
+            previous_time,
+        )
+        resolved_networks = topological_snapshot.get_resolved_topologies(
+            pygplates.ResolveTopologyType.network  # type:ignore
+        )
 
-            reconstructed_geometry_time_spans = []
+        #
+        # 1. Find rigid aggregates:
+        #    - Find groups of continental polygons with stage rotations that are equivalent.
+        #    - Within each group further divide into those that are touching/overlapping each other.
+        # 2. For each continent group find all networks that are attached to each group:
+        #    - For each network find any boundary points that are inside any continent polygons in a group.
+        #    - If any two consecutive boundary points have the same velocity (at same location) as rigid continent velocity:
+        #      + then that network is attached to the group.
+        # 3. For each continental polygon in a group, reconstruct using attached networks (or rigid stage rotations):
+        #    - For each point in a continental polygon determine if inside an attached network.
+        #    - If so then reconstruct using it, otherwise reconstruct using this aggregate's rigid rotation.
+        #
 
-            for geometry in geometries:
-                # Adjust present day geometry if present day rotation is non-zero
-                # (generally it shouldn't be though).
-                present_day_rotation = plate_reconstruction.rotation_model.get_rotation(
-                    0.0, continent_plate_id
-                )
-                geometry = present_day_rotation * geometry
+        continent_aggregates = _find_continent_aggregates(
+            previous_time,
+            time,
+            continental_polygons,
+            continent_features,
+            plate_reconstruction.rotation_model,
+        )
 
-                if isinstance(geometry, pygplates.PolygonOnSphere):  # type:ignore
-                    reconstructed_geometry_points = list(
-                        geometry.get_exterior_ring_points()
-                    )
-                else:
-                    reconstructed_geometry_points = list(geometry.get_points())
+        all_resolved_network_points = []
+        all_resolved_network_point_velocities = []
+        resolved_network_point_ranges = []
+        for resolved_network in resolved_networks:
 
-                reconstructed_geometry_time_span = np.empty(
-                    (len(times), len(reconstructed_geometry_points), 2),
-                    dtype=float,
-                )
+            resolved_network_start_point_index = len(all_resolved_network_points)
 
-                previous_time = 0.0
-                time_index = 0
-                for time in reconstruction_times:
+            all_resolved_network_points.extend(
+                resolved_network.get_resolved_geometry_points()
+            )
+            all_resolved_network_point_velocities.extend(
+                resolved_network.get_resolved_geometry_point_velocities()
+            )
 
-                    topological_snapshot = topological_model.topological_snapshot(
-                        previous_time
-                    )
-                    resolved_networks = topological_snapshot.get_resolved_topologies(
-                        pygplates.ResolveTopologyType.network  # type:ignore
-                    )
+            resolved_network_end_point_index = len(all_resolved_network_points)
+            resolved_network_point_ranges.append(
+                (resolved_network_start_point_index, resolved_network_end_point_index)
+            )
+        all_resolved_network_points_spatial_tree = (
+            points_spatial_tree.PointsSpatialTree(all_resolved_network_points)
+        )
 
-                    reconstructed_geometry_point_resolved_networks = (
-                        points_in_polygons.find_polygons(
-                            reconstructed_geometry_points,
-                            [
-                                resolved_topology.get_resolved_boundary()
-                                for resolved_topology in resolved_networks
-                            ],
-                            resolved_networks,
-                        )
-                    )
+        for continent_aggregate in continent_aggregates:
+            continent_aggregate.find_attached_networks(
+                resolved_networks,
+                all_resolved_network_points,
+                all_resolved_network_points_spatial_tree,
+                all_resolved_network_point_velocities,
+                resolved_network_point_ranges,
+            )
 
-                    stage_rotation = plate_reconstruction.rotation_model.get_rotation(
-                        time, continent_plate_id, previous_time
-                    )
+            continent_aggregate.reconstruct_continental_polygons(time)
 
-                    for point_index, resolved_network in enumerate(
-                        reconstructed_geometry_point_resolved_networks
-                    ):
-                        if resolved_network:
-                            reconstructed_geometry_points[point_index] = (
-                                resolved_network.reconstruct_point(
-                                    reconstructed_geometry_points[point_index], time
-                                )
-                            )
-                        else:
-                            reconstructed_geometry_points[point_index] = (
-                                stage_rotation
-                                * reconstructed_geometry_points[point_index]
-                            )
+            # Record the reconstructed points if we're in the [min_time, max_time] time range.
+            if time >= min_time:
+                continent_aggregate.record_reconstructed_points(time_index)
 
-                    # Record the reconstructed geometry points if we're in the [min_time, max_time] time range.
-                    if time >= min_time:
-                        reconstructed_geometry_time_span[time_index] = np.fromiter(
-                            (
-                                point.to_lat_lon()
-                                for point in reconstructed_geometry_points
-                            ),
-                            dtype=np.dtype((float, 2)),
-                            count=len(reconstructed_geometry_points),
-                        )
-                        time_index += 1
+        if time >= min_time:
+            time_index += 1
 
-                    previous_time = time
+        previous_time = time
 
-                reconstructed_geometry_time_spans.append(
-                    reconstructed_geometry_time_span
-                )
+    reconstructed_continents = [{} for _ in range(len(continent_features))]
 
-            reconstructed_continent[property_name] = reconstructed_geometry_time_spans
+    for continental_polygon in continental_polygons:
+        reconstructed_continent = reconstructed_continents[
+            continental_polygon.feature_index
+        ]
+        if continental_polygon.property_name not in reconstructed_continent:
+            reconstructed_continent[continental_polygon.property_name] = []
+        reconstructed_continent[continental_polygon.property_name].append(
+            continental_polygon.reconstructed_polygon_time_span
+        )
 
     return reconstructed_continents
+
+
+def _find_continent_aggregates(
+    previous_time, time, continental_polygons, continent_features, rotation_model
+):
+    #
+    # Find rigid aggregates:
+    # - Find groups of continental polygons with stage rotations that are equivalent.
+    # - Within each group further divide into those that are touching/overlapping each other.
+    #
+
+    continent_aggregates = []
+
+    for continental_polygon in continental_polygons:
+        continent_plate_id = continent_features[
+            continental_polygon.feature_index
+        ].get_reconstruction_plate_id()
+
+        stage_rotation = rotation_model.get_rotation(
+            time, continent_plate_id, previous_time
+        )
+
+        # Add continental polygon to an existing continent aggegrate, if possible.
+        was_added_to_aggregrate = False
+        for continent_aggregate in continent_aggregates:
+            if continent_aggregate.add(continental_polygon, stage_rotation):
+                was_added_to_aggregrate = True
+                break
+
+        if not was_added_to_aggregrate:
+            # Create a new continent aggregrate containing the current continental polygon.
+            continent_aggregate = _ContinentAggregate(
+                stage_rotation, continental_polygon
+            )
+            continent_aggregates.append(continent_aggregate)
+
+    return continent_aggregates
