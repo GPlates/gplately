@@ -15,12 +15,16 @@
 #    51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 
+import itertools
+import math
+import numpy as np
+import pygplates
+from functools import partial
+from multiprocessing import Pool
+
 from ..gpml import _load_FeatureCollection
 from ..parallel import get_num_cpus
 from ..ptt.utils import points_in_polygons
-
-import numpy as np
-import pygplates
 
 
 class ReconstructContinents(object):
@@ -64,14 +68,6 @@ class ReconstructContinents(object):
         self._time_indices = {
             time: time_index for time_index, time in enumerate(self._times)
         }
-        # time_index = 0
-        # while True:
-        #    time = self.min_time + time_index * self.time_step
-        #    if time > self.max_time + 1e-6:
-        #        break
-        #
-        #    self._reconstruction_time_indices[time_index] = time
-        #    time_index += 1
 
         # Make sure the continent features all reconstruct by plate ID only.
         if not self._do_all_continent_features_reconstruct_by_plate_id():
@@ -152,6 +148,24 @@ class ReconstructContinents(object):
                     plate_reconstruction,
                     num_cpus,
                 )
+            )
+
+            all_reconstructed_continents = []
+            for time in self._times:
+                reconstructed_continents = self.get_reconstructed_continents(
+                    time, plate_reconstruction
+                )
+                reconstructed_continent_features = [
+                    reconstructed_continent.get_feature()
+                    for reconstructed_continent in reconstructed_continents
+                ]
+                for feature in reconstructed_continent_features:
+                    feature.set_valid_time(
+                        time + 0.5 * self.time_step, time - 0.5 * self.time_step
+                    )
+                all_reconstructed_continents.extend(reconstructed_continent_features)
+            pygplates.FeatureCollection(all_reconstructed_continents).write(
+                "deformed_continents.gpmlz"
             )
         else:
             self._reconstructed_continents = None
@@ -249,124 +263,162 @@ class ReconstructContinents(object):
         if not self.continent_features:
             return None
 
-        reconstructed_continents = [{} for _ in range(len(self.continent_features))]
-        for feature_index, feature in enumerate(self.continent_features):
-            reconstructed_continent = reconstructed_continents[feature_index]
-            for property in feature:
-                property_value = property.get_value()
-                if property_value:
-                    geometry = property_value.get_geometry()
-                    if geometry:
-                        property_name = property.get_name()
-                        if property_name not in reconstructed_continent:
-                            reconstructed_continent[property_name] = []
-                        reconstructed_continent[property_name].append(geometry)
+        if num_cpus > 1:
 
-        topological_model = pygplates.TopologicalModel(  # type:ignore
-            plate_reconstruction.topology_features, plate_reconstruction.rotation_model
-        )
+            continent_features = list(self.continent_features)
+            continent_features_lists = []
+            num_continent_features_per_task = math.ceil(
+                len(continent_features) / (2 * num_cpus)
+            )
+            task_start_feature_index = 0
+            while task_start_feature_index < len(continent_features):
+                continent_features_lists.append(
+                    continent_features[
+                        task_start_feature_index : task_start_feature_index
+                        + num_continent_features_per_task
+                    ]
+                )
+                task_start_feature_index += num_continent_features_per_task
 
-        initial_times = np.arange(self.time_step, self.min_time - 1e-6, self.time_step)
-        reconstruction_times = np.concatenate((initial_times, self._times))
-
-        for feature_index, reconstructed_continent in enumerate(
-            reconstructed_continents
-        ):
-            continent_plate_id = self.continent_features[
-                feature_index
-            ].get_reconstruction_plate_id()
-
-            for property_name, geometries in reconstructed_continent.items():
-
-                reconstructed_geometry_time_spans = []
-
-                for geometry in geometries:
-                    # Adjust present day geometry if present day rotation is non-zero
-                    # (generally it shouldn't be though).
-                    present_day_rotation = (
-                        plate_reconstruction.rotation_model.get_rotation(
-                            0.0, continent_plate_id
-                        )
-                    )
-                    geometry = present_day_rotation * geometry
-
-                    if isinstance(geometry, pygplates.PolygonOnSphere):  # type:ignore
-                        reconstructed_geometry_points = list(
-                            geometry.get_exterior_ring_points()
-                        )
-                    else:
-                        reconstructed_geometry_points = list(geometry.get_points())
-
-                    reconstructed_geometry_time_span = np.empty(
-                        (len(self._times), len(reconstructed_geometry_points), 2),
-                        dtype=float,
-                    )
-
-                    previous_time = 0.0
-                    time_index = 0
-                    for time in reconstruction_times:
-
-                        topological_snapshot = topological_model.topological_snapshot(
-                            time
-                        )
-                        resolved_networks = (
-                            topological_snapshot.get_resolved_topologies(
-                                pygplates.ResolveTopologyType.network  # type:ignore
-                            )
-                        )
-
-                        reconstructed_geometry_point_resolved_networks = (
-                            points_in_polygons.find_polygons(
-                                reconstructed_geometry_points,
-                                [
-                                    resolved_topology.get_resolved_boundary()
-                                    for resolved_topology in resolved_networks
-                                ],
-                                resolved_networks,
-                            )
-                        )
-
-                        stage_rotation = (
-                            plate_reconstruction.rotation_model.get_rotation(
-                                time, continent_plate_id, previous_time
-                            )
-                        )
-
-                        for point_index, resolved_network in enumerate(
-                            reconstructed_geometry_point_resolved_networks
-                        ):
-                            if resolved_network:
-                                reconstructed_geometry_points[point_index] = (
-                                    resolved_network.reconstruct_point(
-                                        reconstructed_geometry_points[point_index], time
-                                    )
-                                )
-                            else:
-                                reconstructed_geometry_points[point_index] = (
-                                    stage_rotation
-                                    * reconstructed_geometry_points[point_index]
-                                )
-
-                        # Record the reconstructed geometry points if we're in the [min_time, max_time] time range.
-                        if time >= self.min_time:
-                            reconstructed_geometry_time_span[time_index] = np.fromiter(
-                                (
-                                    point.to_lat_lon()
-                                    for point in reconstructed_geometry_points
-                                ),
-                                dtype=np.dtype((float, 2)),
-                                count=len(reconstructed_geometry_points),
-                            )
-                            time_index += 1
-
-                        previous_time = time
-
-                    reconstructed_geometry_time_spans.append(
-                        reconstructed_geometry_time_span
-                    )
-
-                reconstructed_continent[property_name] = (
-                    reconstructed_geometry_time_spans
+            with Pool(num_cpus) as pool:
+                reconstructed_continents_list = pool.map(
+                    partial(
+                        _reconstruct_and_deform_continent_features_impl,
+                        plate_reconstruction=plate_reconstruction,
+                        times=self._times,
+                        min_time=self.min_time,
+                        max_time=self.max_time,
+                        time_step=self.time_step,
+                    ),
+                    continent_features_lists,
                 )
 
-        return reconstructed_continents
+            # Merge output lists back into one list.
+            return list(itertools.chain.from_iterable(reconstructed_continents_list))
+
+        else:
+            return _reconstruct_and_deform_continent_features_impl(
+                self.continent_features,
+                plate_reconstruction,
+                self._times,
+                self.min_time,
+                self.max_time,
+                self.time_step,
+            )
+
+
+def _reconstruct_and_deform_continent_features_impl(
+    continent_features, plate_reconstruction, times, min_time, max_time, time_step
+):
+
+    reconstructed_continents = [{} for _ in range(len(continent_features))]
+    for feature_index, feature in enumerate(continent_features):
+        reconstructed_continent = reconstructed_continents[feature_index]
+        for property in feature:
+            property_value = property.get_value()
+            if property_value:
+                geometry = property_value.get_geometry()
+                if geometry:
+                    property_name = property.get_name()
+                    if property_name not in reconstructed_continent:
+                        reconstructed_continent[property_name] = []
+                    reconstructed_continent[property_name].append(geometry)
+
+    topological_model = pygplates.TopologicalModel(  # type:ignore
+        plate_reconstruction.topology_features, plate_reconstruction.rotation_model
+    )
+
+    initial_times = np.arange(time_step, min_time - 1e-6, time_step)
+    reconstruction_times = np.concatenate((initial_times, times))
+
+    for feature_index, reconstructed_continent in enumerate(reconstructed_continents):
+        continent_plate_id = continent_features[
+            feature_index
+        ].get_reconstruction_plate_id()
+
+        for property_name, geometries in reconstructed_continent.items():
+
+            reconstructed_geometry_time_spans = []
+
+            for geometry in geometries:
+                # Adjust present day geometry if present day rotation is non-zero
+                # (generally it shouldn't be though).
+                present_day_rotation = plate_reconstruction.rotation_model.get_rotation(
+                    0.0, continent_plate_id
+                )
+                geometry = present_day_rotation * geometry
+
+                if isinstance(geometry, pygplates.PolygonOnSphere):  # type:ignore
+                    reconstructed_geometry_points = list(
+                        geometry.get_exterior_ring_points()
+                    )
+                else:
+                    reconstructed_geometry_points = list(geometry.get_points())
+
+                reconstructed_geometry_time_span = np.empty(
+                    (len(times), len(reconstructed_geometry_points), 2),
+                    dtype=float,
+                )
+
+                previous_time = 0.0
+                time_index = 0
+                for time in reconstruction_times:
+
+                    topological_snapshot = topological_model.topological_snapshot(
+                        previous_time
+                    )
+                    resolved_networks = topological_snapshot.get_resolved_topologies(
+                        pygplates.ResolveTopologyType.network  # type:ignore
+                    )
+
+                    reconstructed_geometry_point_resolved_networks = (
+                        points_in_polygons.find_polygons(
+                            reconstructed_geometry_points,
+                            [
+                                resolved_topology.get_resolved_boundary()
+                                for resolved_topology in resolved_networks
+                            ],
+                            resolved_networks,
+                        )
+                    )
+
+                    stage_rotation = plate_reconstruction.rotation_model.get_rotation(
+                        time, continent_plate_id, previous_time
+                    )
+
+                    for point_index, resolved_network in enumerate(
+                        reconstructed_geometry_point_resolved_networks
+                    ):
+                        if resolved_network:
+                            reconstructed_geometry_points[point_index] = (
+                                resolved_network.reconstruct_point(
+                                    reconstructed_geometry_points[point_index], time
+                                )
+                            )
+                        else:
+                            reconstructed_geometry_points[point_index] = (
+                                stage_rotation
+                                * reconstructed_geometry_points[point_index]
+                            )
+
+                    # Record the reconstructed geometry points if we're in the [min_time, max_time] time range.
+                    if time >= min_time:
+                        reconstructed_geometry_time_span[time_index] = np.fromiter(
+                            (
+                                point.to_lat_lon()
+                                for point in reconstructed_geometry_points
+                            ),
+                            dtype=np.dtype((float, 2)),
+                            count=len(reconstructed_geometry_points),
+                        )
+                        time_index += 1
+
+                    previous_time = time
+
+                reconstructed_geometry_time_spans.append(
+                    reconstructed_geometry_time_span
+                )
+
+            reconstructed_continent[property_name] = reconstructed_geometry_time_spans
+
+    return reconstructed_continents
