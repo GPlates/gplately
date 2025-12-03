@@ -294,7 +294,9 @@ def read_netcdf_grid(
                 if (unique_grid == [0, 1]).all():
                     cdf_grid = cdf_grid.astype(bool)
 
-    if realign:
+    # we realign the grid to -180/180 when the longitudes are from 0 to 360
+    # this is a temporary fix. we need a more sophisticated solution.
+    if np.max(cdf_lon) > 180:
         # realign longitudes to -180/180 dateline
         cdf_grid_z, cdf_lon, cdf_lat = _realign_grid(cdf_grid, cdf_lon, cdf_lat)
     else:
@@ -1692,7 +1694,10 @@ class Raster(object):
             self._data = np.array(data)
             self._lons = np.linspace(extent[0], extent[1], self.data.shape[1])
             self._lats = np.linspace(extent[2], extent[3], self.data.shape[0])
-            if realign:
+
+            # we realign the grid to -180/180 when the longitudes are from 0 to 360
+            # this is a temporary fix. we need a more sophisticated solution.
+            if np.max(self._lons) > 180:
                 # realign to -180,180 and flip grid
                 self._data, self._lons, self._lats = _realign_grid(
                     self._data, self._lons, self._lats
