@@ -245,6 +245,41 @@
     <span class="k">return</span> <span class="kc">None</span>
 
 
+<span class="k">def</span><span class="w"> </span><span class="nf">_is_a_common_name_for_longitude</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return True if the `name` parameter is a possible common name for longitude.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">name</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;lon&quot;</span><span class="p">,</span> <span class="s2">&quot;lons&quot;</span><span class="p">,</span> <span class="s2">&quot;longitude&quot;</span><span class="p">,</span> <span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="s2">&quot;east&quot;</span><span class="p">,</span> <span class="s2">&quot;easting&quot;</span><span class="p">,</span> <span class="s2">&quot;eastings&quot;</span><span class="p">]</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_is_a_common_name_for_latitude</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return True if the `name` parameter is a possible common name for latitude.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">name</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;lat&quot;</span><span class="p">,</span> <span class="s2">&quot;lats&quot;</span><span class="p">,</span> <span class="s2">&quot;latitude&quot;</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">,</span> <span class="s2">&quot;north&quot;</span><span class="p">,</span> <span class="s2">&quot;northing&quot;</span><span class="p">,</span> <span class="s2">&quot;northings&quot;</span><span class="p">]</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_find_extent_from_data</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span> <span class="kc">None</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Try to find the extent from data. Return None if data doesn&#39;t contain coordinates.</span>
+<span class="sd">    As of 2025-12-10, only support xarray.DataArray.&quot;&quot;&quot;</span>
+    <span class="n">extent</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">lons</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">lats</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">coords</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">lats</span> <span class="ow">and</span> <span class="n">_is_a_common_name_for_latitude</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
+                <span class="n">lats</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">coords</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
+            <span class="k">elif</span> <span class="ow">not</span> <span class="n">lons</span> <span class="ow">and</span> <span class="n">_is_a_common_name_for_longitude</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
+                <span class="n">lons</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">coords</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">lons</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">lats</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">extent</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="nb">float</span><span class="p">(</span><span class="n">lons</span><span class="o">.</span><span class="n">min</span><span class="p">()),</span>
+                <span class="nb">float</span><span class="p">(</span><span class="n">lons</span><span class="o">.</span><span class="n">max</span><span class="p">()),</span>
+                <span class="nb">float</span><span class="p">(</span><span class="n">lats</span><span class="o">.</span><span class="n">min</span><span class="p">()),</span>
+                <span class="nb">float</span><span class="p">(</span><span class="n">lats</span><span class="o">.</span><span class="n">max</span><span class="p">()),</span>
+            <span class="p">)</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">ex</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">ex</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="k">return</span> <span class="n">extent</span>
+
+
 <div class="viewcode-block" id="read_netcdf_grid">
 <a class="viewcode-back" href="../../generated/gplately.read_netcdf_grid.html#gplately.read_netcdf_grid">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">read_netcdf_grid</span><span class="p">(</span>
@@ -380,7 +415,9 @@
                 <span class="k">if</span> <span class="p">(</span><span class="n">unique_grid</span> <span class="o">==</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">all</span><span class="p">():</span>
                     <span class="n">cdf_grid</span> <span class="o">=</span> <span class="n">cdf_grid</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">bool</span><span class="p">)</span>
 
-    <span class="k">if</span> <span class="n">realign</span><span class="p">:</span>
+    <span class="c1"># we realign the grid to -180/180 when the longitudes are from 0 to 360</span>
+    <span class="c1"># this is a temporary fix. we need a more sophisticated solution.</span>
+    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">cdf_lon</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">180</span><span class="p">:</span>
         <span class="c1"># realign longitudes to -180/180 dateline</span>
         <span class="n">cdf_grid_z</span><span class="p">,</span> <span class="n">cdf_lon</span><span class="p">,</span> <span class="n">cdf_lat</span> <span class="o">=</span> <span class="n">_realign_grid</span><span class="p">(</span><span class="n">cdf_grid</span><span class="p">,</span> <span class="n">cdf_lon</span><span class="p">,</span> <span class="n">cdf_lat</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
@@ -1658,6 +1695,7 @@
 <span class="sd">            The raster data, either as a file path (:class:`str`) or array data or a ``Raster`` object.</span>
 <span class="sd">            If a ``Raster`` object is specified then all other arguments are ignored except ``plate_reconstruction``</span>
 <span class="sd">            which, if it is not ``None``, will override the plate reconstruction of the ``Raster`` object.</span>
+<span class="sd">            The data parameter accepts `numpy.ndarray`, `xarray.DataArray` or or any object that can be converted to a `numpy.ndarray`.</span>
 
 <span class="sd">        plate_reconstruction : PlateReconstruction</span>
 <span class="sd">            A :class:`PlateReconstruction` object to provide the following essential components for reconstructing points.</span>
@@ -1682,7 +1720,7 @@
 <span class="sd">            2-tuple e.g. resample=(resX, resY).</span>
 
 <span class="sd">        time : float, default: 0.0</span>
-<span class="sd">            The geological time the time-dependant raster data.</span>
+<span class="sd">            The geological time of the time-dependant raster data.</span>
 
 <span class="sd">        origin : {&#39;lower&#39;, &#39;upper&#39;}, optional</span>
 <span class="sd">            When ``data`` is an array, use this parameter to specify the origin</span>
@@ -1739,6 +1777,7 @@
                 <span class="o">+</span> <span class="s2">&quot;&#39;</span><span class="si">{}</span><span class="s2">&#39;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
             <span class="p">)</span>
 
+        <span class="c1"># if the &quot;data&quot; parameter is a &quot;Raster&quot; object</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">_data</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
             <span class="c1"># Use specified plate reconstruction (if specified),</span>
@@ -1755,15 +1794,20 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">plate_reconstruction</span> <span class="o">=</span> <span class="n">plate_reconstruction</span>
 
-        <span class="k">if</span> <span class="n">time</span> <span class="o">&lt;</span> <span class="mf">0.0</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Invalid time: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">time</span><span class="p">))</span>
-        <span class="n">time</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">time</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_time</span> <span class="o">=</span> <span class="n">time</span>
+        <span class="c1"># get the geological time parameter for the time-dependant raster data</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">time</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">time</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">time</span> <span class="o">&lt;</span> <span class="mf">0.0</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_time</span> <span class="o">=</span> <span class="n">time</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid time parameter: </span><span class="si">{</span><span class="n">time</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">data</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;`data` argument (or `filename` or `array`) is required&quot;</span><span class="p">)</span>
+
+        <span class="c1"># if the user has passed a NetCDF file path</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-            <span class="c1"># Filename</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_filename</span> <span class="o">=</span> <span class="n">data</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">,</span> <span class="n">lons</span><span class="p">,</span> <span class="n">lats</span> <span class="o">=</span> <span class="n">read_netcdf_grid</span><span class="p">(</span>
                 <span class="n">data</span><span class="p">,</span>
@@ -1777,17 +1821,30 @@
             <span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_lons</span> <span class="o">=</span> <span class="n">lons</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_lats</span> <span class="o">=</span> <span class="n">lats</span>
-
         <span class="k">else</span><span class="p">:</span>
-            <span class="c1"># numpy array</span>
+            <span class="c1"># if the &quot;data&quot; parameter is a numpy array or xarray.DataArray object</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_filename</span> <span class="o">=</span> <span class="kc">None</span>
             <span class="n">extent</span> <span class="o">=</span> <span class="n">_parse_extent_origin</span><span class="p">(</span><span class="n">extent</span><span class="p">,</span> <span class="n">origin</span><span class="p">)</span>
+
+            <span class="c1"># try to extract the extent from input data</span>
+            <span class="c1"># if the extent from data is different from the extent parameter, use the extent from data</span>
+            <span class="n">extent_from_data</span> <span class="o">=</span> <span class="n">_find_extent_from_data</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">extent_from_data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">extent</span> <span class="o">!=</span> <span class="n">extent_from_data</span><span class="p">:</span>
+                <span class="n">extent</span> <span class="o">=</span> <span class="n">extent_from_data</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Raster.__init__(): Use the extent extracted from data: </span><span class="si">{</span><span class="n">extent</span><span class="si">}</span><span class="s2">.&quot;</span>
+                <span class="p">)</span>
+
             <span class="n">data</span> <span class="o">=</span> <span class="n">_check_grid</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_lons</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">extent</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">extent</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_lats</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">extent</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">extent</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-            <span class="k">if</span> <span class="n">realign</span><span class="p">:</span>
-                <span class="c1"># realign to -180,180 and flip grid</span>
+
+            <span class="c1"># we realign the grid to -180/180 when the longitudes are from 0 to 360</span>
+            <span class="c1"># this is a temporary fix. we need a more sophisticated solution.</span>
+            <span class="c1"># for example, some people may use (-360-0) or some other ranges for longitudes. It is unlikely, but possible.</span>
+            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_lons</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">180</span><span class="p">:</span>
+                <span class="c1"># realign to -180,180 and flip grid if needed</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lons</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lats</span> <span class="o">=</span> <span class="n">_realign_grid</span><span class="p">(</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lons</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lats</span>
                 <span class="p">)</span>
