@@ -151,6 +151,9 @@ class CartopyPlotEngine(PlotEngine):
             The projection to use for the grid
         extent : tuple
             The extent of the grid in the form (min_lon, max_lon, min_lat, max_lat)
+        **kwargs :
+            Keyword arguments for plotting the grid. See Matplotlib's ``imshow()`` keyword arguments
+            `here <https://matplotlib.org/3.5.1/api/_as_gen/matplotlib.axes.Axes.imshow.html>`__.
 
         """
         # Override matplotlib default origin ('upper')

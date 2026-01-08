@@ -1,5 +1,5 @@
 #
-#    Copyright (C) 2024-2025 The University of Sydney, Australia
+#    Copyright (C) 2024-2026 The University of Sydney, Australia
 #
 #    This program is free software; you can redistribute it and/or modify it under
 #    the terms of the GNU General Public License, version 2, as published by
@@ -1175,7 +1175,7 @@ class PlotTopologies(object):
         )
 
     def plot_plate_polygon_by_id(self, ax, plate_id, color="black", **kwargs):
-        """Plot a plate polygon with the given``plate_id`` on a map.
+        """Plot a plate polygon with the given ``plate_id`` on a map.
 
         Parameters
         ----------
@@ -1221,35 +1221,52 @@ class PlotTopologies(object):
         return self.plot_plate_polygon_by_id(*args, **kwargs)
 
     def plot_grid(self, ax, grid, extent=(-180, 180, -90, 90), **kwargs):
-        """Plot a `MaskedArray`_ raster or grid onto a map.
-
-        .. note::
-
-            Plotting grid with pygmt has not been implemented yet!
+        """Plot a grid onto a map. The grid can be a NumPy `MaskedArray`_ object, a GPlately `Raster` object
+        or a time-dependent raster name.
 
         Parameters
         ----------
         ax :
-            Cartopy ax.
+            Cartopy ax or pygmt figure object.
 
-        grid : MaskedArray or Raster
+        grid : NumPy `MaskedArray`_, GPlately `Raster` or a time-dependent raster name.
             A `MaskedArray`_ with elements that define a grid. The number of rows in the raster
             corresponds to the number of latitudinal coordinates, while the number of raster
             columns corresponds to the number of longitudinal coordinates.
+            Alternatively, a GPlately `Raster` object can be provided.
+            If a raster name is provided, the raster will be looked up from the time-dependent rasters registered in the Plate Model Manager.
+            The :class:`gplately.PlateReconstruction` object must be created with a valid :class:`PlateModel` object.
 
         extent : tuple, default=(-180, 180, -90, 90)
             A tuple of 4 (min_lon, max_lon, min_lat, max_lat) representing the extent of gird.
 
-        **kwargs :
-            Keyword arguments for plotting the grid.
-            See Matplotlib's ``imshow()`` keyword arguments
-            `here <https://matplotlib.org/3.5.1/api/_as_gen/matplotlib.axes.Axes.imshow.html>`__.
+
+        .. note::
+
+            The parameters of this function are different for different plot engines. See `CartopyPlotEngine.plot_grid`
+            and `PyGMTPlotEngine.plot_grid` for details.
 
         """
 
-        return self._plot_engine.plot_grid(
-            ax, grid, extent=extent, projection=self.base_projection, **kwargs
-        )
+        if isinstance(grid, str):  # grid is a raster name
+            if not self.plate_reconstruction.plate_model:
+                raise Exception(
+                    "The 'plate_reconstruction' does not have a valid 'plate_model'. "
+                    "Cannot look up the raster by name. Make sure to create the 'plate_reconstruction' with a valid 'plate_model'."
+                )
+
+            grid_data = Raster(
+                data=self.plate_reconstruction.plate_model.get_raster(grid, self.time),
+                plate_reconstruction=self.plate_reconstruction,
+                extent=(-180, 180, -90, 90),
+            )
+            return self._plot_engine.plot_grid(
+                ax, grid_data, extent=extent, projection=self.base_projection, **kwargs
+            )
+        else:  # grid is a MaskedArray or Raster object
+            return self._plot_engine.plot_grid(
+                ax, grid, extent=extent, projection=self.base_projection, **kwargs
+            )
 
     def plot_grid_from_netCDF(self, ax, filename, **kwargs):
         """Read raster data from a netCDF file, convert the data into a `MaskedArray`_ object and plot it on a map.
