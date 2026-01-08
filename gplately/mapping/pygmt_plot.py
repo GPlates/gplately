@@ -135,3 +135,63 @@ class PygmtPlotEngine(PlotEngine):
             fill=color,
             style="f0.2/0.08+r+t",
         )
+
+    def plot_grid(
+        self,
+        ax_or_fig,
+        grid,
+        projection=None,
+        extent=(-180, 180, -90, 90),
+        nan_transparent=False,
+        **kwargs,
+    ):
+        """Use PyGMT to plot a grid onto a map.
+
+        Parameters
+        ----------
+        ax_or_fig : pygmt.Figure()
+            pygmt Figure object
+        grid : Raster
+            gplately Raster object or 2D array-like grid data
+        projection : str
+            GMT projection string, e.g., "M6i" for Mercator projection with 6-inch width.
+        extent : tuple
+            (min_lon, max_lon, min_lat, max_lat)
+        cmap : str
+            Colormap name
+        shading : str
+            Shading method, e.g., "a" for artificial illumination.
+        """
+        from ..grids import Raster
+        import xarray as xr
+
+        if isinstance(grid, Raster):
+            # extract extent and origin
+            extent = grid.extent
+            origin = grid.origin
+            data = xr.DataArray(
+                data=grid.data,
+                dims=["lat", "lon"],
+                coords=dict(
+                    lon=(["lon"], grid.lons),
+                    lat=(["lat"], grid.lats),
+                ),
+            )
+        else:
+            data = xr.DataArray(grid)
+
+        region = [extent[0], extent[1], extent[2], extent[3]]
+
+        ax_or_fig.grdimage(
+            grid=data,
+            cmap="gmt/geo",
+            nan_transparent=nan_transparent,
+        )
+        """
+            region=region,
+            projection=projection,
+            # cmap=cmap, cmap="YlGnBu",
+            # shading=shading,
+            frame=False,
+            **kwargs,
+        )"""

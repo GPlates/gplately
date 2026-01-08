@@ -1246,27 +1246,9 @@ class PlotTopologies(object):
             `here <https://matplotlib.org/3.5.1/api/_as_gen/matplotlib.axes.Axes.imshow.html>`__.
 
         """
-        if not isinstance(self._plot_engine, CartopyPlotEngine):
-            raise NotImplementedError(
-                f"Plotting grid has not been implemented for {self._plot_engine.__class__} yet."
-            )
-        # Override matplotlib default origin ('upper')
-        origin = kwargs.pop("origin", "lower")
 
-        if isinstance(grid, Raster):
-            # extract extent and origin
-            extent = grid.extent
-            origin = grid.origin
-            data = grid.data
-        else:
-            data = grid
-
-        return ax.imshow(
-            data,
-            extent=extent,
-            transform=self.base_projection,
-            origin=origin,
-            **kwargs,
+        return self._plot_engine.plot_grid(
+            ax, grid, extent=extent, projection=self.base_projection, **kwargs
         )
 
     def plot_grid_from_netCDF(self, ax, filename, **kwargs):

@@ -45,3 +45,10 @@ class PlotEngine(ABC):
     ):
         """Plot subduction zones with "teeth"(abstract method)"""
         pass  # This is an abstract method, no implementation here.
+
+    @abstractmethod
+    def plot_grid(
+        self, ax_or_fig, grid, projection=None, extent=(-180, 180, -90, 90), **kwargs
+    ):
+        """Plot a grid (abstract method)"""
+        pass  # This is an abstract method, no implementation here.
