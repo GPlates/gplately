@@ -15,6 +15,7 @@
 #    51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 import logging
+from pathlib import Path
 
 logger = logging.getLogger("gplately")
 try:
@@ -142,6 +143,7 @@ class PygmtPlotEngine(PlotEngine):
         grid,
         projection=None,
         extent=(-180, 180, -90, 90),
+        cmap="gmt/geo",
         nan_transparent=False,
         **kwargs,
     ):
@@ -150,25 +152,26 @@ class PygmtPlotEngine(PlotEngine):
         Parameters
         ----------
         ax_or_fig : pygmt.Figure()
-            pygmt Figure object
+            A PyGMT Figure object.
         grid : Raster
-            gplately Raster object or 2D array-like grid data
+            A gplately Raster object or 2D array-like grid data.
         projection : str
-            GMT projection string, e.g., "M6i" for Mercator projection with 6-inch width.
-        extent : tuple
-            (min_lon, max_lon, min_lat, max_lat)
+            Not used currently.
+        extent : str or tuple
+            (xmin, xmax, ymin, ymax). See details at
+            https://www.pygmt.org/dev/tutorials/basics/regions.html
         cmap : str
-            Colormap name
-        shading : str
-            Shading method, e.g., "a" for artificial illumination.
+            A built-in GMT colormaps name or a CPT file path.
+        nan_transparent : bool
+            If True, NaN values in the grid will be plotted as transparent.
+        **kwargs :
+            Additional keyword arguments.
         """
         from ..grids import Raster
         import xarray as xr
 
+        # we need to convert the grid data to xarray.DataArray for pygmt.grdimage().
         if isinstance(grid, Raster):
-            # extract extent and origin
-            extent = grid.extent
-            origin = grid.origin
             data = xr.DataArray(
                 data=grid.data,
                 dims=["lat", "lon"],
@@ -180,18 +183,14 @@ class PygmtPlotEngine(PlotEngine):
         else:
             data = xr.DataArray(grid)
 
-        region = [extent[0], extent[1], extent[2], extent[3]]
+        # check exisence if cmap is a CPT file
+        if cmap.endswith(".cpt"):
+            if not Path(cmap).exists():
+                raise FileNotFoundError(f"The CPT file '{cmap}' does not exist.")
 
         ax_or_fig.grdimage(
             grid=data,
-            cmap="gmt/geo",
+            cmap=cmap,
+            region=extent,
             nan_transparent=nan_transparent,
         )
-        """
-            region=region,
-            projection=projection,
-            # cmap=cmap, cmap="YlGnBu",
-            # shading=shading,
-            frame=False,
-            **kwargs,
-        )"""

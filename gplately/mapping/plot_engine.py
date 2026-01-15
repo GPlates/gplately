@@ -50,5 +50,5 @@ class PlotEngine(ABC):
     def plot_grid(
         self, ax_or_fig, grid, projection=None, extent=(-180, 180, -90, 90), **kwargs
     ):
-        """Plot a grid (abstract method)"""
+        """Plot a grid (abstract method). See :meth:`CartopyPlotEngine.plot_grid()` and :meth:`PygmtPlotEngine.plot_grid()` for details."""
         pass  # This is an abstract method, no implementation here.

@@ -1243,16 +1243,18 @@ class PlotTopologies(object):
 
         .. note::
 
-            The parameters of this function are different for different plot engines. See `CartopyPlotEngine.plot_grid`
-            and `PyGMTPlotEngine.plot_grid` for details.
+            The parameters of this function are different for different plot engines. See :meth:`CartopyPlotEngine.plot_grid`
+            and :meth:`PyGMTPlotEngine.plot_grid` for details.
 
         """
+
+        # TODO: the parameters of this function need to be unified for different plot engines.
 
         if isinstance(grid, str):  # grid is a raster name
             if not self.plate_reconstruction.plate_model:
                 raise Exception(
-                    "The 'plate_reconstruction' does not have a valid 'plate_model'. "
-                    "Cannot look up the raster by name. Make sure to create the 'plate_reconstruction' with a valid 'plate_model'."
+                    "The 'plate_reconstruction' does not have a valid 'plate_model' object. "
+                    "Cannot look up the raster by name. Make sure to create the 'plate_reconstruction' with a valid 'plate_model' object."
                 )
 
             grid_data = Raster(
