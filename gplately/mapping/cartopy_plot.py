@@ -20,6 +20,8 @@ import math
 import cartopy.crs as ccrs
 from geopandas.geodataframe import GeoDataFrame
 
+from ..grids import Raster
+
 from ..tools import EARTH_RADIUS
 from ..utils.plot_utils import plot_subduction_teeth
 from .plot_engine import PlotEngine
@@ -131,5 +133,44 @@ class CartopyPlotEngine(PlotEngine):
             projection=projection,
             ax=ax_or_fig,
             color=color,
+            **kwargs,
+        )
+
+    def plot_grid(
+        self, ax_or_fig, grid, projection=None, extent=(-180, 180, -90, 90), **kwargs
+    ):
+        """Plot a grid onto a map using Cartopy
+
+        Parameters
+        ----------
+        ax_or_fig : cartopy.mpl.geoaxes.GeoAxes
+            Cartopy GeoAxes instance
+        grid : 2D array-like
+            The grid data to be plotted
+        projection : cartopy.crs.Projection
+            The projection to use for the grid
+        extent : tuple
+            The extent of the grid in the form (min_lon, max_lon, min_lat, max_lat)
+        **kwargs :
+            Keyword arguments for plotting the grid. See Matplotlib's ``imshow()`` keyword arguments
+            `here <https://matplotlib.org/3.5.1/api/_as_gen/matplotlib.axes.Axes.imshow.html>`__.
+
+        """
+        # Override matplotlib default origin ('upper')
+        origin = kwargs.pop("origin", "lower")
+
+        if isinstance(grid, Raster):
+            # extract extent and origin
+            extent = grid.extent
+            origin = grid.origin
+            data = grid.data
+        else:
+            data = grid
+
+        return ax_or_fig.imshow(
+            data,
+            extent=extent,
+            transform=projection,
+            origin=origin,
             **kwargs,
         )

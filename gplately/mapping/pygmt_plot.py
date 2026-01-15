@@ -15,6 +15,7 @@
 #    51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 import logging
+from pathlib import Path
 
 logger = logging.getLogger("gplately")
 try:
@@ -134,4 +135,62 @@ class PygmtPlotEngine(PlotEngine):
             pen=f"0.5p,{color}",
             fill=color,
             style="f0.2/0.08+r+t",
+        )
+
+    def plot_grid(
+        self,
+        ax_or_fig,
+        grid,
+        projection=None,
+        extent=(-180, 180, -90, 90),
+        cmap="gmt/geo",
+        nan_transparent=False,
+        **kwargs,
+    ):
+        """Use PyGMT to plot a grid onto a map.
+
+        Parameters
+        ----------
+        ax_or_fig : pygmt.Figure()
+            A PyGMT Figure object.
+        grid : Raster
+            A gplately Raster object or 2D array-like grid data.
+        projection : str
+            Not used currently.
+        extent : str or tuple
+            (xmin, xmax, ymin, ymax). See details at
+            https://www.pygmt.org/dev/tutorials/basics/regions.html
+        cmap : str
+            A built-in GMT colormaps name or a CPT file path.
+        nan_transparent : bool
+            If True, NaN values in the grid will be plotted as transparent.
+        **kwargs :
+            Additional keyword arguments.
+        """
+        from ..grids import Raster
+        import xarray as xr
+
+        # we need to convert the grid data to xarray.DataArray for pygmt.grdimage().
+        if isinstance(grid, Raster):
+            data = xr.DataArray(
+                data=grid.data,
+                dims=["lat", "lon"],
+                coords=dict(
+                    lon=(["lon"], grid.lons),
+                    lat=(["lat"], grid.lats),
+                ),
+            )
+        else:
+            data = xr.DataArray(grid)
+
+        # check exisence if cmap is a CPT file
+        if cmap.endswith(".cpt"):
+            if not Path(cmap).exists():
+                raise FileNotFoundError(f"The CPT file '{cmap}' does not exist.")
+
+        ax_or_fig.grdimage(
+            grid=data,
+            cmap=cmap,
+            region=extent,
+            nan_transparent=nan_transparent,
         )
