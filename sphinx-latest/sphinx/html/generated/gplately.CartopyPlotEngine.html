@@ -65,6 +65,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#gplately.CartopyPlotEngine"><code class="docutils literal notranslate"><span class="pre">CartopyPlotEngine</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#gplately.CartopyPlotEngine.__init__"><code class="docutils literal notranslate"><span class="pre">CartopyPlotEngine.__init__()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#gplately.CartopyPlotEngine.plot_geo_data_frame"><code class="docutils literal notranslate"><span class="pre">CartopyPlotEngine.plot_geo_data_frame()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gplately.CartopyPlotEngine.plot_grid"><code class="docutils literal notranslate"><span class="pre">CartopyPlotEngine.plot_grid()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#gplately.CartopyPlotEngine.plot_pygplates_features"><code class="docutils literal notranslate"><span class="pre">CartopyPlotEngine.plot_pygplates_features()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#gplately.CartopyPlotEngine.plot_subduction_zones"><code class="docutils literal notranslate"><span class="pre">CartopyPlotEngine.plot_subduction_zones()</span></code></a></li>
 </ul>
@@ -123,10 +124,13 @@
 <tr class="row-even"><td><p><a class="reference internal" href="#gplately.CartopyPlotEngine.plot_geo_data_frame" title="gplately.CartopyPlotEngine.plot_geo_data_frame"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_geo_data_frame</span></code></a>(ax_or_fig, gdf, **kwargs)</p></td>
 <td><p>Use Cartopy to plot geometries in a GeoDataFrame object onto a map</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#gplately.CartopyPlotEngine.plot_pygplates_features" title="gplately.CartopyPlotEngine.plot_pygplates_features"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_pygplates_features</span></code></a>(ax_or_fig, features, ...)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#gplately.CartopyPlotEngine.plot_grid" title="gplately.CartopyPlotEngine.plot_grid"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_grid</span></code></a>(ax_or_fig, grid[, projection, extent])</p></td>
+<td><p>Plot a grid onto a map using Cartopy</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#gplately.CartopyPlotEngine.plot_pygplates_features" title="gplately.CartopyPlotEngine.plot_pygplates_features"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_pygplates_features</span></code></a>(ax_or_fig, features, ...)</p></td>
 <td><p>Not implemented yet</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#gplately.CartopyPlotEngine.plot_subduction_zones" title="gplately.CartopyPlotEngine.plot_subduction_zones"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_subduction_zones</span></code></a>(ax_or_fig, ...[, color])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#gplately.CartopyPlotEngine.plot_subduction_zones" title="gplately.CartopyPlotEngine.plot_subduction_zones"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_subduction_zones</span></code></a>(ax_or_fig, ...[, color])</p></td>
 <td><p>Use Cartopy to plot subduction zones with &quot;teeth&quot; onto a map</p></td>
 </tr>
 </tbody>
@@ -140,6 +144,24 @@
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>ax_or_fig</strong> (<em>cartopy.mpl.geoaxes.GeoAxes</em>) – Cartopy GeoAxes instance</p></li>
 <li><p><strong>gdf</strong> (<em>GeoDataFrame</em>) – GeoPandas GeoDataFrame object</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gplately.CartopyPlotEngine.plot_grid">
+<span class="sig-name descname"><span class="pre">plot_grid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ax_or_fig</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">projection</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(-180,</span> <span class="pre">180,</span> <span class="pre">-90,</span> <span class="pre">90)</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/mapping/cartopy_plot.html#CartopyPlotEngine.plot_grid"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.CartopyPlotEngine.plot_grid" title="Link to this definition"></a></dt>
+<dd><p>Plot a grid onto a map using Cartopy</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ax_or_fig</strong> (<em>cartopy.mpl.geoaxes.GeoAxes</em>) – Cartopy GeoAxes instance</p></li>
+<li><p><strong>grid</strong> (<em>2D array-like</em>) – The grid data to be plotted</p></li>
+<li><p><strong>projection</strong> (<em>cartopy.crs.Projection</em>) – The projection to use for the grid</p></li>
+<li><p><strong>extent</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><em>tuple</em></a>) – The extent of the grid in the form (min_lon, max_lon, min_lat, max_lat)</p></li>
+<li><p><strong>**kwargs</strong> – Keyword arguments for plotting the grid. See Matplotlib’s <code class="docutils literal notranslate"><span class="pre">imshow()</span></code> keyword arguments
+<a class="reference external" href="https://matplotlib.org/3.5.1/api/_as_gen/matplotlib.axes.Axes.imshow.html">here</a>.</p></li>
 </ul>
 </dd>
 </dl>

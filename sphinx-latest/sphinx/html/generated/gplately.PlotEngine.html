@@ -64,6 +64,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#gplately.PlotEngine"><code class="docutils literal notranslate"><span class="pre">PlotEngine</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#gplately.PlotEngine.__init__"><code class="docutils literal notranslate"><span class="pre">PlotEngine.__init__()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#gplately.PlotEngine.plot_geo_data_frame"><code class="docutils literal notranslate"><span class="pre">PlotEngine.plot_geo_data_frame()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gplately.PlotEngine.plot_grid"><code class="docutils literal notranslate"><span class="pre">PlotEngine.plot_grid()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#gplately.PlotEngine.plot_pygplates_features"><code class="docutils literal notranslate"><span class="pre">PlotEngine.plot_pygplates_features()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#gplately.PlotEngine.plot_subduction_zones"><code class="docutils literal notranslate"><span class="pre">PlotEngine.plot_subduction_zones()</span></code></a></li>
 </ul>
@@ -124,10 +125,13 @@ Do not use this base class directly. Use subclasses instead, such as <a class="r
 <tr class="row-even"><td><p><a class="reference internal" href="#gplately.PlotEngine.plot_geo_data_frame" title="gplately.PlotEngine.plot_geo_data_frame"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_geo_data_frame</span></code></a>(ax_or_fig, gdf, **kwargs)</p></td>
 <td><p>Plot GeoPandas GeoDataFrame object (abstract method)</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#gplately.PlotEngine.plot_pygplates_features" title="gplately.PlotEngine.plot_pygplates_features"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_pygplates_features</span></code></a>(ax_or_fig, features, ...)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#gplately.PlotEngine.plot_grid" title="gplately.PlotEngine.plot_grid"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_grid</span></code></a>(ax_or_fig, grid[, projection, extent])</p></td>
+<td><p>Plot a grid (abstract method).</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#gplately.PlotEngine.plot_pygplates_features" title="gplately.PlotEngine.plot_pygplates_features"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_pygplates_features</span></code></a>(ax_or_fig, features, ...)</p></td>
 <td><p>Plot one or more pygplates feature(s) (abstract method)</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#gplately.PlotEngine.plot_subduction_zones" title="gplately.PlotEngine.plot_subduction_zones"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_subduction_zones</span></code></a>(ax_or_fig, ...[, color])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#gplately.PlotEngine.plot_subduction_zones" title="gplately.PlotEngine.plot_subduction_zones"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_subduction_zones</span></code></a>(ax_or_fig, ...[, color])</p></td>
 <td><p>Plot subduction zones with &quot;teeth&quot;(abstract method)</p></td>
 </tr>
 </tbody>
@@ -136,6 +140,12 @@ Do not use this base class directly. Use subclasses instead, such as <a class="r
 <dt class="sig sig-object py" id="gplately.PlotEngine.plot_geo_data_frame">
 <em class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">plot_geo_data_frame</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ax_or_fig</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gdf</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">GeoDataFrame</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/mapping/plot_engine.html#PlotEngine.plot_geo_data_frame"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PlotEngine.plot_geo_data_frame" title="Link to this definition"></a></dt>
 <dd><p>Plot GeoPandas GeoDataFrame object (abstract method)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gplately.PlotEngine.plot_grid">
+<em class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">plot_grid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ax_or_fig</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">projection</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(-180,</span> <span class="pre">180,</span> <span class="pre">-90,</span> <span class="pre">90)</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/mapping/plot_engine.html#PlotEngine.plot_grid"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PlotEngine.plot_grid" title="Link to this definition"></a></dt>
+<dd><p>Plot a grid (abstract method). See <a class="reference internal" href="gplately.CartopyPlotEngine.html#gplately.CartopyPlotEngine.plot_grid" title="gplately.CartopyPlotEngine.plot_grid"><code class="xref py py-meth docutils literal notranslate"><span class="pre">CartopyPlotEngine.plot_grid()</span></code></a> and <a class="reference internal" href="gplately.PygmtPlotEngine.html#gplately.PygmtPlotEngine.plot_grid" title="gplately.PygmtPlotEngine.plot_grid"><code class="xref py py-meth docutils literal notranslate"><span class="pre">PygmtPlotEngine.plot_grid()</span></code></a> for details.</p>
 </dd></dl>
 
 <dl class="py method">

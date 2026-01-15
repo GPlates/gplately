@@ -404,7 +404,7 @@ Defaults to the current anchor plate ID of <code class="docutils literal notrans
 <td><p>Plot fracture zones on a map.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#gplately.PlotTopologies.plot_grid" title="gplately.PlotTopologies.plot_grid"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_grid</span></code></a>(ax, grid[, extent])</p></td>
-<td><p>Plot a <a class="reference external" href="https://numpy.org/doc/stable/reference/maskedarray.generic.html">MaskedArray</a> raster or grid onto a map.</p></td>
+<td><p>Plot a grid onto a map.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#gplately.PlotTopologies.plot_grid_from_netCDF" title="gplately.PlotTopologies.plot_grid_from_netCDF"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_grid_from_netCDF</span></code></a>(ax, filename, **kwargs)</p></td>
 <td><p>Read raster data from a netCDF file, convert the data into a <a class="reference external" href="https://numpy.org/doc/stable/reference/maskedarray.generic.html">MaskedArray</a> object and plot it on a map.</p></td>
@@ -431,7 +431,7 @@ Defaults to the current anchor plate ID of <code class="docutils literal notrans
 <td><p>Calculate plate motion velocity vector fields at a particular geological time and plot them on a map.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#gplately.PlotTopologies.plot_plate_polygon_by_id" title="gplately.PlotTopologies.plot_plate_polygon_by_id"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_plate_polygon_by_id</span></code></a>(ax, plate_id[, color])</p></td>
-<td><p>Plot a plate polygon with the given``plate_id`` on a map.</p></td>
+<td><p>Plot a plate polygon with the given <code class="docutils literal notranslate"><span class="pre">plate_id</span></code> on a map.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#gplately.PlotTopologies.plot_pole" title="gplately.PlotTopologies.plot_pole"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_pole</span></code></a>(ax, lon, lat, a95, **kwargs)</p></td>
 <td><p>Plot pole onto a matplotlib axes.</p></td>
@@ -1323,25 +1323,27 @@ which contains plate boundary features like trenches, ridges and transforms.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="gplately.PlotTopologies.plot_grid">
 <span class="sig-name descname"><span class="pre">plot_grid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(-180,</span> <span class="pre">180,</span> <span class="pre">-90,</span> <span class="pre">90)</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/plot.html#PlotTopologies.plot_grid"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PlotTopologies.plot_grid" title="Link to this definition"></a></dt>
-<dd><p>Plot a <a class="reference external" href="https://numpy.org/doc/stable/reference/maskedarray.generic.html">MaskedArray</a> raster or grid onto a map.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Plotting grid with pygmt has not been implemented yet!</p>
-</div>
+<dd><p>Plot a grid onto a map. The grid can be a NumPy <a class="reference external" href="https://numpy.org/doc/stable/reference/maskedarray.generic.html">MaskedArray</a> object, a GPlately <cite>Raster</cite> object
+or a time-dependent raster name.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>ax</strong> – Cartopy ax.</p></li>
-<li><p><strong>grid</strong> (<em>MaskedArray</em><em> or </em><a class="reference internal" href="gplately.Raster.html#gplately.Raster" title="gplately.Raster"><em>Raster</em></a>) – A <a class="reference external" href="https://numpy.org/doc/stable/reference/maskedarray.generic.html">MaskedArray</a> with elements that define a grid. The number of rows in the raster
+<li><p><strong>ax</strong> – Cartopy ax or pygmt figure object.</p></li>
+<li><p><strong>grid</strong> (NumPy <a class="reference external" href="https://numpy.org/doc/stable/reference/maskedarray.generic.html">MaskedArray</a>, GPlately <cite>Raster</cite> or a time-dependent raster name.) – A <a class="reference external" href="https://numpy.org/doc/stable/reference/maskedarray.generic.html">MaskedArray</a> with elements that define a grid. The number of rows in the raster
 corresponds to the number of latitudinal coordinates, while the number of raster
-columns corresponds to the number of longitudinal coordinates.</p></li>
+columns corresponds to the number of longitudinal coordinates.
+Alternatively, a GPlately <cite>Raster</cite> object can be provided.
+If a raster name is provided, the raster will be looked up from the time-dependent rasters registered in the Plate Model Manager.
+The <a class="reference internal" href="gplately.PlateReconstruction.html#gplately.PlateReconstruction" title="gplately.PlateReconstruction"><code class="xref py py-class docutils literal notranslate"><span class="pre">gplately.PlateReconstruction</span></code></a> object must be created with a valid <a class="reference internal" href="gplately.PlateModel.html#gplately.PlateModel" title="gplately.PlateModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">PlateModel</span></code></a> object.</p></li>
 <li><p><strong>extent</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><em>tuple</em></a><em>, </em><em>default=</em><em>(</em><em>-180</em><em>, </em><em>180</em><em>, </em><em>-90</em><em>, </em><em>90</em><em>)</em>) – A tuple of 4 (min_lon, max_lon, min_lat, max_lat) representing the extent of gird.</p></li>
-<li><p><strong>**kwargs</strong> – Keyword arguments for plotting the grid.
-See Matplotlib’s <code class="docutils literal notranslate"><span class="pre">imshow()</span></code> keyword arguments
-<a class="reference external" href="https://matplotlib.org/3.5.1/api/_as_gen/matplotlib.axes.Axes.imshow.html">here</a>.</p></li>
 </ul>
 </dd>
 </dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The parameters of this function are different for different plot engines. See <a class="reference internal" href="gplately.CartopyPlotEngine.html#gplately.CartopyPlotEngine.plot_grid" title="gplately.CartopyPlotEngine.plot_grid"><code class="xref py py-meth docutils literal notranslate"><span class="pre">CartopyPlotEngine.plot_grid()</span></code></a>
+and <code class="xref py py-meth docutils literal notranslate"><span class="pre">PyGMTPlotEngine.plot_grid()</span></code> for details.</p>
+</div>
 </dd></dl>
 
 <dl class="py method">
@@ -1469,7 +1471,7 @@ makes vector arrow lengths uniform.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="gplately.PlotTopologies.plot_plate_polygon_by_id">
 <span class="sig-name descname"><span class="pre">plot_plate_polygon_by_id</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plate_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">color</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'black'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/plot.html#PlotTopologies.plot_plate_polygon_by_id"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PlotTopologies.plot_plate_polygon_by_id" title="Link to this definition"></a></dt>
-<dd><p>Plot a plate polygon with the given``plate_id`` on a map.</p>
+<dd><p>Plot a plate polygon with the given <code class="docutils literal notranslate"><span class="pre">plate_id</span></code> on a map.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">

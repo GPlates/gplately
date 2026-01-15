@@ -66,6 +66,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#gplately.PygmtPlotEngine"><code class="docutils literal notranslate"><span class="pre">PygmtPlotEngine</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#gplately.PygmtPlotEngine.__init__"><code class="docutils literal notranslate"><span class="pre">PygmtPlotEngine.__init__()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#gplately.PygmtPlotEngine.plot_geo_data_frame"><code class="docutils literal notranslate"><span class="pre">PygmtPlotEngine.plot_geo_data_frame()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gplately.PygmtPlotEngine.plot_grid"><code class="docutils literal notranslate"><span class="pre">PygmtPlotEngine.plot_grid()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#gplately.PygmtPlotEngine.plot_pygplates_features"><code class="docutils literal notranslate"><span class="pre">PygmtPlotEngine.plot_pygplates_features()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#gplately.PygmtPlotEngine.plot_subduction_zones"><code class="docutils literal notranslate"><span class="pre">PygmtPlotEngine.plot_subduction_zones()</span></code></a></li>
 </ul>
@@ -123,10 +124,13 @@
 <tr class="row-even"><td><p><a class="reference internal" href="#gplately.PygmtPlotEngine.plot_geo_data_frame" title="gplately.PygmtPlotEngine.plot_geo_data_frame"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_geo_data_frame</span></code></a>(ax_or_fig, gdf, **kwargs)</p></td>
 <td><p>Use PyGMT to plot geometries in a GeoDataFrame object onto a map.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#gplately.PygmtPlotEngine.plot_pygplates_features" title="gplately.PygmtPlotEngine.plot_pygplates_features"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_pygplates_features</span></code></a>(ax_or_fig, features, ...)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#gplately.PygmtPlotEngine.plot_grid" title="gplately.PygmtPlotEngine.plot_grid"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_grid</span></code></a>(ax_or_fig, grid[, projection, ...])</p></td>
+<td><p>Use PyGMT to plot a grid onto a map.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#gplately.PygmtPlotEngine.plot_pygplates_features" title="gplately.PygmtPlotEngine.plot_pygplates_features"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_pygplates_features</span></code></a>(ax_or_fig, features, ...)</p></td>
 <td><p>Not implemented yet</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#gplately.PygmtPlotEngine.plot_subduction_zones" title="gplately.PygmtPlotEngine.plot_subduction_zones"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_subduction_zones</span></code></a>(ax_or_fig, ...[, color])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#gplately.PygmtPlotEngine.plot_subduction_zones" title="gplately.PygmtPlotEngine.plot_subduction_zones"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_subduction_zones</span></code></a>(ax_or_fig, ...[, color])</p></td>
 <td><p>Use PyGMT to plot subduction zones with &quot;teeth&quot;</p></td>
 </tr>
 </tbody>
@@ -147,6 +151,26 @@ Currently, only colour names are tested and officially supported, for example, �
 <li><p><strong>pen</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – GMT “pen” parameter</p></li>
 <li><p><strong>style</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – GMT “style” parameter</p></li>
 <li><p><strong>gmtlabel</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – GMT “label” parameter</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gplately.PygmtPlotEngine.plot_grid">
+<span class="sig-name descname"><span class="pre">plot_grid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ax_or_fig</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">projection</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(-180,</span> <span class="pre">180,</span> <span class="pre">-90,</span> <span class="pre">90)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cmap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'gmt/geo'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nan_transparent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/mapping/pygmt_plot.html#PygmtPlotEngine.plot_grid"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PygmtPlotEngine.plot_grid" title="Link to this definition"></a></dt>
+<dd><p>Use PyGMT to plot a grid onto a map.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ax_or_fig</strong> (<em>pygmt.Figure</em><em>(</em><em>)</em>) – A PyGMT Figure object.</p></li>
+<li><p><strong>grid</strong> (<a class="reference internal" href="gplately.Raster.html#gplately.Raster" title="gplately.Raster"><em>Raster</em></a>) – A gplately Raster object or 2D array-like grid data.</p></li>
+<li><p><strong>projection</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Not used currently.</p></li>
+<li><p><strong>extent</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><em>tuple</em></a>) – (xmin, xmax, ymin, ymax). See details at
+<a class="reference external" href="https://www.pygmt.org/dev/tutorials/basics/regions.html">https://www.pygmt.org/dev/tutorials/basics/regions.html</a></p></li>
+<li><p><strong>cmap</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – A built-in GMT colormaps name or a CPT file path.</p></li>
+<li><p><strong>nan_transparent</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a>) – If True, NaN values in the grid will be plotted as transparent.</p></li>
+<li><p><strong>**kwargs</strong> – Additional keyword arguments.</p></li>
 </ul>
 </dd>
 </dl>
