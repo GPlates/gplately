@@ -17,7 +17,7 @@
 from matplotlib.colors import LinearSegmentedColormap, hsv_to_rgb
 
 
-def parse_old_cpt_row(row, color_model="RGB"):
+def _parse_old_cpt_row(row, color_model="RGB"):
     """parse one row of text from a cpt file in old format, such as the four rows below from a cpt file
 
     0	210	0	0	10	210	0	0
@@ -28,7 +28,8 @@ def parse_old_cpt_row(row, color_model="RGB"):
     Parameters
     ----------
     row : a list of strings
-        A list of strings representing a line from a cpt file in old format.
+        A list of strings representing a line from a cpt file in old format,
+        such as ["0", "210", "0", "0", "10", "210", "0", "0"].
     color_model : str, optional
         The color model to use, either "RGB" or "HSV". Default is "RGB".
 
@@ -67,7 +68,7 @@ def parse_old_cpt_row(row, color_model="RGB"):
     return values, colors
 
 
-def parse_new_cpt_row(row, color_model="RGB"):
+def _parse_new_cpt_row(row, color_model="RGB"):
     """parse one row of text from a cpt file in new format, such as the four rows below from a cpt file
 
     0               64/0/64         0.052632        64/0/192        L
@@ -78,7 +79,8 @@ def parse_new_cpt_row(row, color_model="RGB"):
     Parameters
     ----------
     row : a list of strings
-        A list of strings representing a line from a cpt file in new format.
+        A list of strings representing a line from a cpt file in new format,
+        such as ["0", "64/0/64", "0.052632", "64/0/192", "L"].
     color_model : str, optional
         The color model to use, either "RGB" or "HSV". Default is "RGB
 
@@ -90,7 +92,7 @@ def parse_new_cpt_row(row, color_model="RGB"):
     # convert the new format into old format
     color_1 = row[1].split("/")
     color_2 = row[3].split("/")
-    return parse_old_cpt_row(
+    return _parse_old_cpt_row(
         [row[0]] + color_1 + [row[2]] + color_2, color_model=color_model
     )
 
@@ -122,11 +124,11 @@ def get_cmap_from_gmt_cpt(cpt_file):
                 continue
             vals = line.split()
             if len(vals) == 8:
-                vs, cs = parse_old_cpt_row(vals, color_model=color_model)
+                vs, cs = _parse_old_cpt_row(vals, color_model=color_model)
                 values.extend(vs)
                 colors.extend(cs)
             elif len(vals) == 5 or len(vals) == 4:
-                vs, cs = parse_new_cpt_row(vals, color_model=color_model)
+                vs, cs = _parse_new_cpt_row(vals, color_model=color_model)
                 values.extend(vs)
                 colors.extend(cs)
 
@@ -139,4 +141,4 @@ def get_cmap_from_gmt_cpt(cpt_file):
             ((values[i] - values[0]) / (values[-1] - values[0]), [x for x in colors[i]])
         )
 
-    return LinearSegmentedColormap.from_list("cpt-cmap", colour_list)
+    return LinearSegmentedColormap.from_list("gmt-cpt-cmap", colour_list)
