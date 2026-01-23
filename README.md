@@ -42,6 +42,19 @@ eprint = {https://rmets.onlinelibrary.wiley.com/doi/pdf/10.1002/gdj3.185},
 }
 ```
 
+## Common Use Cases
+
+- Generating Seafloor Age and Spreading Rate Grids Through Time
+  ![Figure: age-and-spreading-rate-200ma.png](https://raw.githubusercontent.com/GPlates/gplately/375-update-main-readme-and-seafloorgridsipynb/Notebooks/NotebookFiles/age-and-spreading-rate-200ma.png)
+- Plotting Paleomaps with Cartopy
+  ![Figure: plottopologies.png](https://gplates.github.io/gplately/latest/sphinx/html/_images/plottopologies.png)
+- Rasters Reconstruction
+  ![Figure: etopo_reconstruction.png](https://gplates.github.io/gplately/latest/sphinx/html/_images/etopo_reconstruction.png)
+- Locations Reconstruction 
+  ![Figure: Reconstructed-Jurassic-Foraminifera-locations-min.png](https://gplates.github.io/gplately/latest/sphinx/html/_images/Reconstructed-Jurassic-Foraminifera-locations-min.png)
+- Calculating Motion Path
+  ![Figure: Hawaii_Emperor_motion_path.png](https://gplates.github.io/gplately/latest/sphinx/html/_images/Hawaii_Emperor_motion_path.png)
+
 ## Documentation
 
 - [latest stable](https://gplates.github.io/gplately/stable/sphinx/html/index.html)
