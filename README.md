@@ -44,15 +44,36 @@ eprint = {https://rmets.onlinelibrary.wiley.com/doi/pdf/10.1002/gdj3.185},
 
 ## Common Use Cases
 
-- Generating Seafloor Age and Spreading Rate Grids Through Time
-  ![Figure: age-and-spreading-rate-200ma.png](https://raw.githubusercontent.com/GPlates/gplately/375-update-main-readme-and-seafloorgridsipynb/Notebooks/NotebookFiles/age-and-spreading-rate-200ma.png)
-- Plotting Paleomaps with Cartopy
+- [Generating Seafloor Age and Spreading Rate Grids Through Time](https://gplates.github.io/gplately/latest/notebook-html/10-SeafloorGrids.html)
+  
+  Adapted from code written by Simon Williams, Nicky Wright, and John Cannon for gridding general z-values onto seafloor basin points using GPlately.
+
+  **Citation**: Simon Williams, Nicky M. Wright, John Cannon, Nicolas Flament, R. Dietmar Müller, Reconstructing seafloor age distributions in lost ocean basins, Geoscience Frontiers, Volume 12, Issue 2,2021, Pages 769-780, ISSN 1674-9871, https://doi.org/10.1016/j.gsf.2020.06.004.
+  
+  ![Figure: age-and-spreading-rate-200ma.png](https://raw.githubusercontent.com/GPlates/gplately/master/Notebooks/NotebookFiles/age-and-spreading-rate-200ma.png)
+  
+- [Plotting Paleomaps with Cartopy](https://gplates.github.io/gplately/latest/notebook-html/02-PlateReconstructions.html)
+
+  GPlately can use Cartopy to plot paleomaps. The figure below shows a comparison of paleomaps produced with the Müller et al. 2019 and Müller et al. 2016 plate reconstruction models.
+  
   ![Figure: plottopologies.png](https://gplates.github.io/gplately/latest/sphinx/html/_images/plottopologies.png)
-- Rasters Reconstruction
+
+- [Rasters Reconstruction](https://gplates.github.io/gplately/latest/notebook-html/06-Rasters.html)
+
+  GPlately can be used to reconstruct raster datasets back through geological time. The figure below shows the ETOPO1 relief raster reconstructed to 50 Ma.
+    
   ![Figure: etopo_reconstruction.png](https://gplates.github.io/gplately/latest/sphinx/html/_images/etopo_reconstruction.png)
-- Locations Reconstruction 
+
+- [Locations Reconstruction](https://gplates.github.io/gplately/latest/notebook-html/03-WorkingWithPoints.html)
+
+  GPlately can be used to calculate the paleo-coordinates of locations. The figure below shows the reconstructed locations of Jurassic foraminifera.
+  
   ![Figure: Reconstructed-Jurassic-Foraminifera-locations-min.png](https://gplates.github.io/gplately/latest/sphinx/html/_images/Reconstructed-Jurassic-Foraminifera-locations-min.png)
-- Calculating Motion Path
+  
+- [Calculating Motion Path](https://gplates.github.io/gplately/latest/notebook-html/09-CreatingMotionPathsAndFlowlines.html)
+
+  GPlately can generate motion paths to illustrate the trajectories of tectonic plates through geological time, and create flowlines to track plate motion from spreading features such as mid-ocean ridges.
+
   ![Figure: Hawaii_Emperor_motion_path.png](https://gplates.github.io/gplately/latest/sphinx/html/_images/Hawaii_Emperor_motion_path.png)
 
 ## Documentation
