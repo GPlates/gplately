@@ -7,7 +7,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>gplately.plot &mdash; gplately 2.0.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
-      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
 
   
     <link rel="shortcut icon" href="../../_static/favicon.ico"/>
@@ -54,6 +54,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../api.html">Main Classes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../functions.html">Functions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../secondaries.html">Other Classes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../plate_models.html">Plate Models</a></li>
 </ul>
 
         </div>
@@ -82,7 +83,7 @@
              
   <h1>Source code for gplately.plot</h1><div class="highlight"><pre>
 <span></span><span class="c1">#</span>
-<span class="c1">#    Copyright (C) 2024-2025 The University of Sydney, Australia</span>
+<span class="c1">#    Copyright (C) 2024-2026 The University of Sydney, Australia</span>
 <span class="c1">#</span>
 <span class="c1">#    This program is free software; you can redistribute it and/or modify it under</span>
 <span class="c1">#    the terms of the GNU General Public License, version 2, as published by</span>
@@ -309,8 +310,9 @@
 <span class="sd">            if these features are sourced from the :class:`DataServer` object).</span>
 <span class="sd">        time: float</span>
 <span class="sd">            The time (Ma) to reconstruct and plot geological features to.</span>
-<span class="sd">        anchor_plate_id : int</span>
-<span class="sd">            Anchor plate ID for reconstruction. Must be an integer &gt;= 0.</span>
+<span class="sd">        anchor_plate_id : int, optional</span>
+<span class="sd">            Anchor plate ID for reconstruction.</span>
+<span class="sd">            Defaults to the current anchor plate ID of ``plate_reconstruction`` (its ``anchor_plate_id`` attribute).</span>
 <span class="sd">        plot_engine : :class:`PlotEngine`, default=CartopyPlotEngine()</span>
 <span class="sd">            Use Cartopy (:class:`CartopyPlotEngine`) or pyGMT (:class:`PygmtPlotEngine`) to plot the map.</span>
 
@@ -1315,7 +1317,7 @@
 <div class="viewcode-block" id="PlotTopologies.plot_plate_polygon_by_id">
 <a class="viewcode-back" href="../../generated/gplately.PlotTopologies.html#gplately.PlotTopologies.plot_plate_polygon_by_id">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">plot_plate_polygon_by_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ax</span><span class="p">,</span> <span class="n">plate_id</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Plot a plate polygon with the given``plate_id`` on a map.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Plot a plate polygon with the given ``plate_id`` on a map.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -1367,53 +1369,54 @@
 <div class="viewcode-block" id="PlotTopologies.plot_grid">
 <a class="viewcode-back" href="../../generated/gplately.PlotTopologies.html#gplately.PlotTopologies.plot_grid">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">plot_grid</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ax</span><span class="p">,</span> <span class="n">grid</span><span class="p">,</span> <span class="n">extent</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">180</span><span class="p">,</span> <span class="mi">180</span><span class="p">,</span> <span class="o">-</span><span class="mi">90</span><span class="p">,</span> <span class="mi">90</span><span class="p">),</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Plot a `MaskedArray`_ raster or grid onto a map.</span>
-
-<span class="sd">        .. note::</span>
-
-<span class="sd">            Plotting grid with pygmt has not been implemented yet!</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Plot a grid onto a map. The grid can be a NumPy `MaskedArray`_ object, a GPlately `Raster` object</span>
+<span class="sd">        or a time-dependent raster name.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        ax :</span>
-<span class="sd">            Cartopy ax.</span>
+<span class="sd">            Cartopy ax or pygmt figure object.</span>
 
-<span class="sd">        grid : MaskedArray or Raster</span>
+<span class="sd">        grid : NumPy `MaskedArray`_, GPlately `Raster` or a time-dependent raster name.</span>
 <span class="sd">            A `MaskedArray`_ with elements that define a grid. The number of rows in the raster</span>
 <span class="sd">            corresponds to the number of latitudinal coordinates, while the number of raster</span>
 <span class="sd">            columns corresponds to the number of longitudinal coordinates.</span>
+<span class="sd">            Alternatively, a GPlately `Raster` object can be provided.</span>
+<span class="sd">            If a raster name is provided, the raster will be looked up from the time-dependent rasters registered in the Plate Model Manager.</span>
+<span class="sd">            The :class:`gplately.PlateReconstruction` object must be created with a valid :class:`PlateModel` object.</span>
 
 <span class="sd">        extent : tuple, default=(-180, 180, -90, 90)</span>
 <span class="sd">            A tuple of 4 (min_lon, max_lon, min_lat, max_lat) representing the extent of gird.</span>
 
-<span class="sd">        **kwargs :</span>
-<span class="sd">            Keyword arguments for plotting the grid.</span>
-<span class="sd">            See Matplotlib&#39;s ``imshow()`` keyword arguments</span>
-<span class="sd">            `here &lt;https://matplotlib.org/3.5.1/api/_as_gen/matplotlib.axes.Axes.imshow.html&gt;`__.</span>
+
+<span class="sd">        .. note::</span>
+
+<span class="sd">            The parameters of this function are different for different plot engines. See :meth:`CartopyPlotEngine.plot_grid`</span>
+<span class="sd">            and :meth:`PyGMTPlotEngine.plot_grid` for details.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_plot_engine</span><span class="p">,</span> <span class="n">CartopyPlotEngine</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;Plotting grid has not been implemented for </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_plot_engine</span><span class="o">.</span><span class="vm">__class__</span><span class="si">}</span><span class="s2"> yet.&quot;</span>
+
+        <span class="c1"># TODO: the parameters of this function need to be unified for different plot engines.</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">grid</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>  <span class="c1"># grid is a raster name</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">plate_reconstruction</span><span class="o">.</span><span class="n">plate_model</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span>
+                    <span class="s2">&quot;The &#39;plate_reconstruction&#39; does not have a valid &#39;plate_model&#39; object. &quot;</span>
+                    <span class="s2">&quot;Cannot look up the raster by name. Make sure to create the &#39;plate_reconstruction&#39; with a valid &#39;plate_model&#39; object.&quot;</span>
+                <span class="p">)</span>
+
+            <span class="n">grid_data</span> <span class="o">=</span> <span class="n">Raster</span><span class="p">(</span>
+                <span class="n">data</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">plate_reconstruction</span><span class="o">.</span><span class="n">plate_model</span><span class="o">.</span><span class="n">get_raster</span><span class="p">(</span><span class="n">grid</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">time</span><span class="p">),</span>
+                <span class="n">plate_reconstruction</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">plate_reconstruction</span><span class="p">,</span>
+                <span class="n">extent</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">180</span><span class="p">,</span> <span class="mi">180</span><span class="p">,</span> <span class="o">-</span><span class="mi">90</span><span class="p">,</span> <span class="mi">90</span><span class="p">),</span>
             <span class="p">)</span>
-        <span class="c1"># Override matplotlib default origin (&#39;upper&#39;)</span>
-        <span class="n">origin</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;origin&quot;</span><span class="p">,</span> <span class="s2">&quot;lower&quot;</span><span class="p">)</span>
-
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">grid</span><span class="p">,</span> <span class="n">Raster</span><span class="p">):</span>
-            <span class="c1"># extract extent and origin</span>
-            <span class="n">extent</span> <span class="o">=</span> <span class="n">grid</span><span class="o">.</span><span class="n">extent</span>
-            <span class="n">origin</span> <span class="o">=</span> <span class="n">grid</span><span class="o">.</span><span class="n">origin</span>
-            <span class="n">data</span> <span class="o">=</span> <span class="n">grid</span><span class="o">.</span><span class="n">data</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">data</span> <span class="o">=</span> <span class="n">grid</span>
-
-        <span class="k">return</span> <span class="n">ax</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span>
-            <span class="n">data</span><span class="p">,</span>
-            <span class="n">extent</span><span class="o">=</span><span class="n">extent</span><span class="p">,</span>
-            <span class="n">transform</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">base_projection</span><span class="p">,</span>
-            <span class="n">origin</span><span class="o">=</span><span class="n">origin</span><span class="p">,</span>
-            <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
-        <span class="p">)</span></div>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_plot_engine</span><span class="o">.</span><span class="n">plot_grid</span><span class="p">(</span>
+                <span class="n">ax</span><span class="p">,</span> <span class="n">grid_data</span><span class="p">,</span> <span class="n">extent</span><span class="o">=</span><span class="n">extent</span><span class="p">,</span> <span class="n">projection</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">base_projection</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>  <span class="c1"># grid is a MaskedArray or Raster object</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_plot_engine</span><span class="o">.</span><span class="n">plot_grid</span><span class="p">(</span>
+                <span class="n">ax</span><span class="p">,</span> <span class="n">grid</span><span class="p">,</span> <span class="n">extent</span><span class="o">=</span><span class="n">extent</span><span class="p">,</span> <span class="n">projection</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">base_projection</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+            <span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="PlotTopologies.plot_grid_from_netCDF">

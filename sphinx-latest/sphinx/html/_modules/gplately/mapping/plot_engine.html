@@ -7,7 +7,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>gplately.mapping.plot_engine &mdash; gplately 2.0.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
-      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
 
   
     <link rel="shortcut icon" href="../../../_static/favicon.ico"/>
@@ -54,6 +54,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../api.html">Main Classes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../functions.html">Functions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../secondaries.html">Other Classes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../plate_models.html">Plate Models</a></li>
 </ul>
 
         </div>
@@ -82,7 +83,7 @@
              
   <h1>Source code for gplately.mapping.plot_engine</h1><div class="highlight"><pre>
 <span></span><span class="c1">#</span>
-<span class="c1">#    Copyright (C) 2024-2025 The University of Sydney, Australia</span>
+<span class="c1">#    Copyright (C) 2024-2026 The University of Sydney, Australia</span>
 <span class="c1">#</span>
 <span class="c1">#    This program is free software; you can redistribute it and/or modify it under</span>
 <span class="c1">#    the terms of the GNU General Public License, version 2, as published by</span>
@@ -137,6 +138,16 @@
         <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
     <span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Plot subduction zones with &quot;teeth&quot;(abstract method)&quot;&quot;&quot;</span>
+        <span class="k">pass</span>  <span class="c1"># This is an abstract method, no implementation here.</span></div>
+
+
+<div class="viewcode-block" id="PlotEngine.plot_grid">
+<a class="viewcode-back" href="../../../generated/gplately.PlotEngine.html#gplately.PlotEngine.plot_grid">[docs]</a>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">plot_grid</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">ax_or_fig</span><span class="p">,</span> <span class="n">grid</span><span class="p">,</span> <span class="n">projection</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">extent</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">180</span><span class="p">,</span> <span class="mi">180</span><span class="p">,</span> <span class="o">-</span><span class="mi">90</span><span class="p">,</span> <span class="mi">90</span><span class="p">),</span> <span class="o">**</span><span class="n">kwargs</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Plot a grid (abstract method). See :meth:`CartopyPlotEngine.plot_grid()` and :meth:`PygmtPlotEngine.plot_grid()` for details.&quot;&quot;&quot;</span>
         <span class="k">pass</span>  <span class="c1"># This is an abstract method, no implementation here.</span></div>
 </div>
 

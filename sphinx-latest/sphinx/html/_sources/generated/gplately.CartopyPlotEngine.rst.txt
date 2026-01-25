@@ -15,6 +15,7 @@
    
       ~CartopyPlotEngine.__init__
       ~CartopyPlotEngine.plot_geo_data_frame
+      ~CartopyPlotEngine.plot_grid
       ~CartopyPlotEngine.plot_pygplates_features
       ~CartopyPlotEngine.plot_subduction_zones
    

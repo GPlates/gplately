@@ -7,7 +7,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>gplately.download &mdash; gplately 2.0.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
-      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
 
   
     <link rel="shortcut icon" href="../../_static/favicon.ico"/>
@@ -54,6 +54,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../api.html">Main Classes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../functions.html">Functions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../secondaries.html">Other Classes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../plate_models.html">Plate Models</a></li>
 </ul>
 
         </div>
@@ -1163,7 +1164,7 @@
 
 <span class="sd">    .. seealso::</span>
 
-<span class="sd">        - `This table &lt;../use_cases.html#id1&gt;`__ provides a list of available plate reconstruction models.</span>
+<span class="sd">        - `This table &lt;../plate_models.html&gt;`__ provides a list of available plate reconstruction models.</span>
 <span class="sd">        - Visit this `EarthByte web page &lt;https://www.earthbyte.org/category/resources/data-models/global-regional-plate-motion-models/&gt;`__ for more information about these plate models.</span>
 <span class="sd">        - Call :meth:`gplately.auxiliary.get_data_server_cache_path` to see the path to the ``GPlately cache folder``.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -1233,6 +1234,15 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">pmm</span><span class="o">.</span><span class="n">get_rotation_model</span><span class="p">()</span>
             <span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_rotation_model</span><span class="o">.</span><span class="n">reconstruction_identifier</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">file_collection</span>
+            <span class="c1"># Setting an attribute on a pyGPlates object produces the following error in version 1.0 of pyGPlates:</span>
+            <span class="c1">#   RuntimeError: Incomplete pickle support (__getstate_manages_dict__ not set)</span>
+            <span class="c1">#</span>
+            <span class="c1"># This is fixed in pyGPlates 1.1 (which implements __getstate__ to copy __dict__ just to be sure),</span>
+            <span class="c1"># but until that&#39;s released we can just set __getstate_manages_dict__ to True.</span>
+            <span class="c1">#</span>
+            <span class="c1"># This is because it turns out that Boost.Python (used in pyGPlates) copies the __dict__ in its default __getstate__</span>
+            <span class="c1"># so we can just manually set __getstate_manages_dict__ to True (I&#39;m not sure why Boost.Python doesn&#39;t set it).</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_rotation_model</span><span class="o">.</span><span class="n">__getstate_manages_dict__</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rotation_model</span>
 
     <span class="nd">@property</span>
