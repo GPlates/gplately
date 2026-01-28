@@ -256,6 +256,6 @@ The latest `10-SeafloorGrids.ipynb`_ Jupyter Notebook is available in the GitHub
 .. _`SeafloorGrids example`: ../../notebook-html//10-SeafloorGrids.html
 .. _`10-SeafloorGrids.ipynb`: https://github.com/GPlates/gplately/blob/master/Notebooks/10-SeafloorGrids.ipynb
 
-.. image:: images/seafloorgrid.gif
+.. image:: images/seafloor_age_65Ma.png
       :width: 600
       :alt: SeafloorGridDemo
