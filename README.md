@@ -50,7 +50,7 @@ eprint = {https://rmets.onlinelibrary.wiley.com/doi/pdf/10.1002/gdj3.185},
 
   **Citation**: Simon Williams, Nicky M. Wright, John Cannon, Nicolas Flament, R. Dietmar Müller, Reconstructing seafloor age distributions in lost ocean basins, Geoscience Frontiers, Volume 12, Issue 2,2021, Pages 769-780, ISSN 1674-9871, https://doi.org/10.1016/j.gsf.2020.06.004.
   
-  ![Figure: age-and-spreading-rate-200ma.png](https://raw.githubusercontent.com/GPlates/gplately/master/Notebooks/NotebookFiles/age-and-spreading-rate-200ma.png)
+  ![Figure: seafloor_age_65Ma.png](https://gplates.github.io/gplately/latest/sphinx/html/_images/seafloor_age_65Ma.png)
   
 - [Plotting Paleomaps with Cartopy](https://gplates.github.io/gplately/latest/notebook-html/02-PlateReconstructions.html)
 
