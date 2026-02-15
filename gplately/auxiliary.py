@@ -21,6 +21,8 @@ minimizing the coding effort required from users."""
 import logging
 from typing import Union
 
+import pygplates
+
 logger = logging.getLogger("gplately")
 try:
     import pygmt
@@ -35,7 +37,11 @@ from .plot import PlotTopologies
 from .reconstruction import PlateReconstruction
 
 
-def get_plate_reconstruction(model: Union[str, PlateModel], model_repo_dir: str = "./"):
+def get_plate_reconstruction(
+    model: Union[str, PlateModel],
+    model_repo_dir: str = "./",
+    default_anchor_plate_id: int = 0,
+) -> PlateReconstruction:
     """Return a :py:class:`gplately.PlateReconstruction` object for a given model name or :class:`gplately.PlateModel` object.
 
     Parameters
@@ -44,6 +50,8 @@ def get_plate_reconstruction(model: Union[str, PlateModel], model_repo_dir: str 
         model name or a :class:`gplately.PlateModel` object
     model_repo_dir: str, default="./"
         the folder in which you would like to keep the model files
+    default_anchor_plate_id: int, default=0
+        the default anchor plate ID to use to create pygplates.RotationModel.
 
     Returns
     -------
@@ -80,7 +88,10 @@ def get_plate_reconstruction(model: Union[str, PlateModel], model_repo_dir: str 
         static_polygons = plate_model.get_layer("StaticPolygons")
 
     return PlateReconstruction(
-        plate_model.get_rotation_model(),
+        pygplates.RotationModel(
+            plate_model.get_rotation_model(),
+            default_anchor_plate_id=default_anchor_plate_id,
+        ),
         topology_features=topology_features,
         static_polygons=static_polygons,
         plate_model=plate_model,
@@ -92,6 +103,7 @@ def get_gplot(
     model_repo_dir: str = "./",
     time: Union[int, float] = 0,
     plot_engine: PlotEngine = CartopyPlotEngine(),
+    default_anchor_plate_id: int = 0,
 ) -> PlotTopologies:
     """Return a :py:class:`gplately.PlotTopologies` object for a given model name or :class:`gplately.PlateModel` object.
 
@@ -105,6 +117,8 @@ def get_gplot(
         the reconstruction age/time
     plot_engine: PlotEngine, default=CartopyPlotEngine()
         two choices - CartopyPlotEngine() or PygmtPlotEngine()
+    default_anchor_plate_id: int, default=0
+        the default anchor plate ID to use to create pygplates.RotationModel.
 
     Returns
     -------
@@ -130,7 +144,7 @@ def get_gplot(
     else:
         plate_model = model
 
-    m = get_plate_reconstruction(plate_model)
+    m = get_plate_reconstruction(plate_model, model_repo_dir, default_anchor_plate_id)
 
     coastlines = None
     COBs = None
