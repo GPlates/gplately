@@ -15,8 +15,8 @@
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
       <script src="../_static/documentation_options.js?v=51b770b3"></script>
-      <script src="../_static/doctools.js?v=9bcbadda"></script>
-      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -180,7 +180,7 @@
 <h1>gplately.PlotTopologies<a class="headerlink" href="#gplately-plottopologies" title="Link to this heading"></a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="gplately.PlotTopologies">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">gplately.</span></span><span class="sig-name descname"><span class="pre">PlotTopologies</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">plate_reconstruction</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coastlines=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">continents=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">COBs=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">140.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">anchor_plate_id=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_engine:</span> <span class="pre">~gplately.mapping.plot_engine.PlotEngine</span> <span class="pre">=</span> <span class="pre">&lt;gplately.mapping.cartopy_plot.CartopyPlotEngine</span> <span class="pre">object&gt;</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/plot.html#PlotTopologies"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PlotTopologies" title="Link to this definition"></a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">gplately.</span></span><span class="sig-name descname"><span class="pre">PlotTopologies</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">plate_reconstruction</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coastlines</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">continents</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">COBs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">140.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">anchor_plate_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_engine</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="gplately.PlotEngine.html#gplately.PlotEngine" title="gplately.mapping.plot_engine.PlotEngine"><span class="pre">PlotEngine</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">&lt;gplately.mapping.cartopy_plot.CartopyPlotEngine</span> <span class="pre">object&gt;</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/plot.html#PlotTopologies"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PlotTopologies" title="Link to this definition"></a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Read, reconstruct and plot topology features at specific reconstruction times.</p>
 <p>The <a class="reference internal" href="#gplately.PlotTopologies" title="gplately.PlotTopologies"><code class="xref py py-class docutils literal notranslate"><span class="pre">PlotTopologies</span></code></a> class:</p>
@@ -257,7 +257,7 @@ You <strong>MUST</strong> set <code class="docutils literal notranslate"><span c
 </ul>
 <dl class="py method">
 <dt class="sig sig-object py" id="gplately.PlotTopologies.__init__">
-<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">plate_reconstruction</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coastlines=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">continents=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">COBs=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">140.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">anchor_plate_id=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_engine:</span> <span class="pre">~gplately.mapping.plot_engine.PlotEngine</span> <span class="pre">=</span> <span class="pre">&lt;gplately.mapping.cartopy_plot.CartopyPlotEngine</span> <span class="pre">object&gt;</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/plot.html#PlotTopologies.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PlotTopologies.__init__" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">plate_reconstruction</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coastlines</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">continents</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">COBs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">140.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">anchor_plate_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_engine</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="gplately.PlotEngine.html#gplately.PlotEngine" title="gplately.mapping.plot_engine.PlotEngine"><span class="pre">PlotEngine</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">&lt;gplately.mapping.cartopy_plot.CartopyPlotEngine</span> <span class="pre">object&gt;</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/plot.html#PlotTopologies.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PlotTopologies.__init__" title="Link to this definition"></a></dt>
 <dd><p>Constructor. Create a <a class="reference internal" href="#gplately.PlotTopologies" title="gplately.PlotTopologies"><code class="xref py py-class docutils literal notranslate"><span class="pre">PlotTopologies</span></code></a> object.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -540,7 +540,7 @@ Defaults to the current anchor plate ID of <code class="docutils literal notrans
 
 <dl class="py property">
 <dt class="sig sig-object py" id="gplately.PlotTopologies.anchor_plate_id">
-<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">anchor_plate_id</span></span><a class="headerlink" href="#gplately.PlotTopologies.anchor_plate_id" title="Link to this definition"></a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">anchor_plate_id</span></span><a class="headerlink" href="#gplately.PlotTopologies.anchor_plate_id" title="Link to this definition"></a></dt>
 <dd><p>Anchor plate ID for reconstruction. Must be an integer &gt;= 0.
 Defaults to <a class="reference internal" href="gplately.PlateReconstruction.html#gplately.PlateReconstruction.anchor_plate_id" title="gplately.PlateReconstruction.anchor_plate_id"><code class="xref py py-attr docutils literal notranslate"><span class="pre">PlateReconstruction.anchor_plate_id</span></code></a>.</p>
 <dl class="field-list simple">
@@ -1113,7 +1113,7 @@ This function converts the feature(s) into a set of Shapely geometries and put t
 
 <dl class="py property">
 <dt class="sig sig-object py" id="gplately.PlotTopologies.misc_transforms">
-<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">misc_transforms</span></span><a class="headerlink" href="#gplately.PlotTopologies.misc_transforms" title="Link to this definition"></a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">misc_transforms</span></span><a class="headerlink" href="#gplately.PlotTopologies.misc_transforms" title="Link to this definition"></a></dt>
 <dd><p>Deprecated! DO NOT USE.</p>
 </dd></dl>
 
@@ -1672,13 +1672,13 @@ See Matplotlib keyword arguments <a class="reference external" href="https://mat
 
 <dl class="py property">
 <dt class="sig sig-object py" id="gplately.PlotTopologies.ridge_transforms">
-<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ridge_transforms</span></span><a class="headerlink" href="#gplately.PlotTopologies.ridge_transforms" title="Link to this definition"></a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">ridge_transforms</span></span><a class="headerlink" href="#gplately.PlotTopologies.ridge_transforms" title="Link to this definition"></a></dt>
 <dd><p>Deprecated! DO NOT USE!</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="gplately.PlotTopologies.ridges">
-<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ridges</span></span><a class="headerlink" href="#gplately.PlotTopologies.ridges" title="Link to this definition"></a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">ridges</span></span><a class="headerlink" href="#gplately.PlotTopologies.ridges" title="Link to this definition"></a></dt>
 <dd><p>Mid-ocean ridge features (all the features which are labelled as <code class="docutils literal notranslate"><span class="pre">gpml:MidOceanRidge</span></code> in the model).
 A list containing ridge and transform boundary sections of type <cite>pygplates.FeatureType.gpml_mid_ocean_ridge</cite>.</p>
 <dl class="field-list simple">
@@ -1690,7 +1690,7 @@ A list containing ridge and transform boundary sections of type <cite>pygplates.
 
 <dl class="py property">
 <dt class="sig sig-object py" id="gplately.PlotTopologies.time">
-<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">time</span></span><a class="headerlink" href="#gplately.PlotTopologies.time" title="Link to this definition"></a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">time</span></span><a class="headerlink" href="#gplately.PlotTopologies.time" title="Link to this definition"></a></dt>
 <dd><p>The time (Ma) to reconstruct and plot geological features to.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type<span class="colon">:</span></dt>
@@ -1712,13 +1712,13 @@ A list containing ridge and transform boundary sections of type <cite>pygplates.
 
 <dl class="py property">
 <dt class="sig sig-object py" id="gplately.PlotTopologies.topological_plate_boundaries">
-<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">topological_plate_boundaries</span></span><a class="headerlink" href="#gplately.PlotTopologies.topological_plate_boundaries" title="Link to this definition"></a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">topological_plate_boundaries</span></span><a class="headerlink" href="#gplately.PlotTopologies.topological_plate_boundaries" title="Link to this definition"></a></dt>
 <dd><p>Resolved topologies for rigid boundaries ONLY.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="gplately.PlotTopologies.topologies">
-<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">topologies</span></span><a class="headerlink" href="#gplately.PlotTopologies.topologies" title="Link to this definition"></a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">topologies</span></span><a class="headerlink" href="#gplately.PlotTopologies.topologies" title="Link to this definition"></a></dt>
 <dd><p>Resolved topologies for BOTH rigid boundaries and networks.
 A list containing assorted topologies like:</p>
 <ul class="simple">
@@ -1736,7 +1736,7 @@ A list containing assorted topologies like:</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="gplately.PlotTopologies.transforms">
-<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">transforms</span></span><a class="headerlink" href="#gplately.PlotTopologies.transforms" title="Link to this definition"></a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">transforms</span></span><a class="headerlink" href="#gplately.PlotTopologies.transforms" title="Link to this definition"></a></dt>
 <dd><p>Transform boundary features (all the features which are labelled as <code class="docutils literal notranslate"><span class="pre">gpml:Transform</span></code> in the model).
 A list containing transform boundary sections of type <cite>pygplates.FeatureType.gpml_transforms</cite>.</p>
 <dl class="field-list simple">

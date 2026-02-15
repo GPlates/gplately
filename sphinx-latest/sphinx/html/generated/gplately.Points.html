@@ -15,8 +15,8 @@
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
       <script src="../_static/documentation_options.js?v=51b770b3"></script>
-      <script src="../_static/doctools.js?v=9bcbadda"></script>
-      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -122,7 +122,7 @@
 <h1>gplately.Points<a class="headerlink" href="#gplately-points" title="Link to this heading"></a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="gplately.Points">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">gplately.</span></span><span class="sig-name descname"><span class="pre">Points</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">plate_reconstruction</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lons</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lats</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plate_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">age</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">inf</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">anchor_plate_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">remove_unreconstructable_points</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/points.html#Points"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.Points" title="Link to this definition"></a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">gplately.</span></span><span class="sig-name descname"><span class="pre">Points</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">plate_reconstruction</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lons</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lats</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plate_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">age</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">inf</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">anchor_plate_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">remove_unreconstructable_points</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/points.html#Points"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.Points" title="Link to this definition"></a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Reconstruct and work with geological point data.</p>
 <p>The locations and plate velocities of point data can be calculated at a specific geological time.
@@ -302,7 +302,7 @@ there must be one <code class="docutils literal notranslate"><span class="pre">t
 
 <dl class="py property">
 <dt class="sig sig-object py" id="gplately.Points.age">
-<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">age</span></span><a class="headerlink" href="#gplately.Points.age" title="Link to this definition"></a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">age</span></span><a class="headerlink" href="#gplately.Points.age" title="Link to this definition"></a></dt>
 <dd><p>A 1D array containing the ages (time of appearance) of the points.
 The length must match that of <code class="docutils literal notranslate"><span class="pre">lons</span></code> and <code class="docutils literal notranslate"><span class="pre">lats</span></code>.
 For points on oceanic crust this is when they were created at a mid-ocean ridge.
@@ -316,7 +316,7 @@ Any points existing for all time will have a value of <code class="docutils lite
 
 <dl class="py property">
 <dt class="sig sig-object py" id="gplately.Points.anchor_plate_id">
-<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">anchor_plate_id</span></span><a class="headerlink" href="#gplately.Points.anchor_plate_id" title="Link to this definition"></a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">anchor_plate_id</span></span><a class="headerlink" href="#gplately.Points.anchor_plate_id" title="Link to this definition"></a></dt>
 <dd><p>Anchor plate that the initial <code class="docutils literal notranslate"><span class="pre">lons</span></code> and <code class="docutils literal notranslate"><span class="pre">lats</span></code> are relative to, at the initial <code class="docutils literal notranslate"><span class="pre">time</span></code>.
 This is also used as the default anchor plate when reconstructing the points.
 It does not change, even if the anchor plate of <code class="docutils literal notranslate"><span class="pre">plate_reconstruction</span></code> subsequently changes.</p>
@@ -475,7 +475,7 @@ and an additional column containing a shapely <code class="docutils literal notr
 
 <dl class="py property">
 <dt class="sig sig-object py" id="gplately.Points.lats">
-<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">lats</span></span><a class="headerlink" href="#gplately.Points.lats" title="Link to this definition"></a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">lats</span></span><a class="headerlink" href="#gplately.Points.lats" title="Link to this definition"></a></dt>
 <dd><p>Latitudes of the initial points at the initial <code class="docutils literal notranslate"><span class="pre">time</span></code>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type<span class="colon">:</span></dt>
@@ -486,7 +486,7 @@ and an additional column containing a shapely <code class="docutils literal notr
 
 <dl class="py property">
 <dt class="sig sig-object py" id="gplately.Points.lons">
-<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">lons</span></span><a class="headerlink" href="#gplately.Points.lons" title="Link to this definition"></a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">lons</span></span><a class="headerlink" href="#gplately.Points.lons" title="Link to this definition"></a></dt>
 <dd><p>Longitudes of the initial points at the initial <code class="docutils literal notranslate"><span class="pre">time</span></code>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type<span class="colon">:</span></dt>
@@ -571,7 +571,7 @@ There are n rows for n reconstructable points.</p></li>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="gplately.Points.plate_id">
-<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">plate_id</span></span><a class="headerlink" href="#gplately.Points.plate_id" title="Link to this definition"></a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">plate_id</span></span><a class="headerlink" href="#gplately.Points.plate_id" title="Link to this definition"></a></dt>
 <dd><p>A 1D array containing the plate IDs of the points.
 The length must match that of <code class="docutils literal notranslate"><span class="pre">lons</span></code> and <code class="docutils literal notranslate"><span class="pre">lats</span></code>.</p>
 <dl class="field-list simple">
@@ -583,7 +583,7 @@ The length must match that of <code class="docutils literal notranslate"><span c
 
 <dl class="py property">
 <dt class="sig sig-object py" id="gplately.Points.plate_reconstruction">
-<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">plate_reconstruction</span></span><a class="headerlink" href="#gplately.Points.plate_reconstruction" title="Link to this definition"></a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">plate_reconstruction</span></span><a class="headerlink" href="#gplately.Points.plate_reconstruction" title="Link to this definition"></a></dt>
 <dd><p>Object to provide the following essential components for reconstructing points.</p>
 <ul class="simple">
 <li><p><a class="reference internal" href="gplately.PlateReconstruction.html#gplately.PlateReconstruction.rotation_model" title="gplately.PlateReconstruction.rotation_model"><code class="xref py py-attr docutils literal notranslate"><span class="pre">PlateReconstruction.rotation_model</span></code></a></p></li>
@@ -787,7 +787,7 @@ to define the “from” and “to” reference frames.</p></li>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="gplately.Points.size">
-<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">size</span></span><a class="headerlink" href="#gplately.Points.size" title="Link to this definition"></a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">size</span></span><a class="headerlink" href="#gplately.Points.size" title="Link to this definition"></a></dt>
 <dd><p>Number of points.
 This is the size of <code class="docutils literal notranslate"><span class="pre">lons</span></code>, <code class="docutils literal notranslate"><span class="pre">lats</span></code>, <code class="docutils literal notranslate"><span class="pre">plate_id</span></code> and <code class="docutils literal notranslate"><span class="pre">age</span></code>.</p>
 <dl class="field-list simple">
@@ -799,7 +799,7 @@ This is the size of <code class="docutils literal notranslate"><span class="pre"
 
 <dl class="py property">
 <dt class="sig sig-object py" id="gplately.Points.time">
-<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">time</span></span><a class="headerlink" href="#gplately.Points.time" title="Link to this definition"></a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">time</span></span><a class="headerlink" href="#gplately.Points.time" title="Link to this definition"></a></dt>
 <dd><p>The initial time (Ma) of the points.
 The initial <code class="docutils literal notranslate"><span class="pre">lons</span></code> and <code class="docutils literal notranslate"><span class="pre">lats</span></code> are the coordinates of the points at this time.</p>
 <dl class="field-list simple">

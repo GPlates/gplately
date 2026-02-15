@@ -15,8 +15,8 @@
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
       <script src="../_static/documentation_options.js?v=51b770b3"></script>
-      <script src="../_static/doctools.js?v=9bcbadda"></script>
-      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -122,7 +122,7 @@
 <h1>gplately.DataServer<a class="headerlink" href="#gplately-dataserver" title="Link to this heading"></a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="gplately.DataServer">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">gplately.</span></span><span class="sig-name descname"><span class="pre">DataServer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_collection</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/download.html#DataServer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.DataServer" title="Link to this definition"></a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">gplately.</span></span><span class="sig-name descname"><span class="pre">DataServer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_collection</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/download.html#DataServer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.DataServer" title="Link to this definition"></a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Download the plate reconstruction models from the <a class="reference external" href="https://repo.gplates.org/webdav/pmm/">EarthByte server</a>.</p>
 <p>The <a class="reference internal" href="#gplately.DataServer" title="gplately.DataServer"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataServer</span></code></a> object downloads the model files to the <code class="docutils literal notranslate"><span class="pre">GPlately</span> <span class="pre">cache</span> <span class="pre">folder</span></code>.
@@ -227,31 +227,31 @@ provided they haven’t been moved or deleted.</p>
 </table>
 <dl class="py property">
 <dt class="sig sig-object py" id="gplately.DataServer.COBs">
-<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">COBs</span></span><a class="headerlink" href="#gplately.DataServer.COBs" title="Link to this definition"></a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">COBs</span></span><a class="headerlink" href="#gplately.DataServer.COBs" title="Link to this definition"></a></dt>
 <dd><p>A pygplates.FeatureCollection object containing continent-ocean boundaries.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="gplately.DataServer.cache_path">
-<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">cache_path</span></span><a class="headerlink" href="#gplately.DataServer.cache_path" title="Link to this definition"></a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">cache_path</span></span><a class="headerlink" href="#gplately.DataServer.cache_path" title="Link to this definition"></a></dt>
 <dd><p>The location of DataServer cache on your computer.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="gplately.DataServer.coastlines">
-<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">coastlines</span></span><a class="headerlink" href="#gplately.DataServer.coastlines" title="Link to this definition"></a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">coastlines</span></span><a class="headerlink" href="#gplately.DataServer.coastlines" title="Link to this definition"></a></dt>
 <dd><p>A pygplates.FeatureCollection object containing coastlines.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="gplately.DataServer.continents">
-<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">continents</span></span><a class="headerlink" href="#gplately.DataServer.continents" title="Link to this definition"></a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">continents</span></span><a class="headerlink" href="#gplately.DataServer.continents" title="Link to this definition"></a></dt>
 <dd><p>A pygplates.FeatureCollection object containing continental polygons.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="gplately.DataServer.from_age">
-<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_age</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></em><a class="headerlink" href="#gplately.DataServer.from_age" title="Link to this definition"></a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">from_age</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span><a class="headerlink" href="#gplately.DataServer.from_age" title="Link to this definition"></a></dt>
 <dd><p>The max age/time of the plate model.</p>
 </dd></dl>
 
@@ -498,7 +498,7 @@ Müller et al. (2019) plate reconstruction model and create a <a class="referenc
 
 <dl class="py method">
 <dt class="sig sig-object py" id="gplately.DataServer.get_raster">
-<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_raster</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">raster_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/download.html#DataServer.get_raster"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.DataServer.get_raster" title="Link to this definition"></a></dt>
+<span class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">get_raster</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">raster_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/download.html#DataServer.get_raster"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.DataServer.get_raster" title="Link to this definition"></a></dt>
 <dd><p>Download rasters that are not associated with any plate reconstruction models. Store the rasters in the <code class="docutils literal notranslate"><span class="pre">GPlately</span> <span class="pre">cache</span></code>.</p>
 <p>The available present-day rasters are listed below.</p>
 <ul class="simple">
@@ -627,44 +627,44 @@ Return a tuple (max_time, min_time) representing the valid time range of the pla
 
 <dl class="py property">
 <dt class="sig sig-object py" id="gplately.DataServer.rotation_model">
-<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">rotation_model</span></span><a class="headerlink" href="#gplately.DataServer.rotation_model" title="Link to this definition"></a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">rotation_model</span></span><a class="headerlink" href="#gplately.DataServer.rotation_model" title="Link to this definition"></a></dt>
 <dd><p>A pygplates.RotationModel object for the plate reconstruction model.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="gplately.DataServer.static_polygons">
-<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">static_polygons</span></span><a class="headerlink" href="#gplately.DataServer.static_polygons" title="Link to this definition"></a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">static_polygons</span></span><a class="headerlink" href="#gplately.DataServer.static_polygons" title="Link to this definition"></a></dt>
 <dd><p>A pygplates.FeatureCollection object containing static polygons.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="gplately.DataServer.time_range">
-<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">time_range</span></span><a class="headerlink" href="#gplately.DataServer.time_range" title="Link to this definition"></a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">time_range</span></span><a class="headerlink" href="#gplately.DataServer.time_range" title="Link to this definition"></a></dt>
 <dd><p>Deprecated!!! Use <a class="reference internal" href="#gplately.DataServer.valid_time" title="gplately.DataServer.valid_time"><code class="xref py py-attr docutils literal notranslate"><span class="pre">DataServer.valid_time</span></code></a> instead.
 Keep consistent with <a class="reference external" href="https://www.gplates.org/docs/gpgim/#gml:validTime">GML naming</a>.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="gplately.DataServer.to_age">
-<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">to_age</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></em><a class="headerlink" href="#gplately.DataServer.to_age" title="Link to this definition"></a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">to_age</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span><a class="headerlink" href="#gplately.DataServer.to_age" title="Link to this definition"></a></dt>
 <dd><p>The min age/time of the plate model.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="gplately.DataServer.topology_features">
-<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">topology_features</span></span><a class="headerlink" href="#gplately.DataServer.topology_features" title="Link to this definition"></a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">topology_features</span></span><a class="headerlink" href="#gplately.DataServer.topology_features" title="Link to this definition"></a></dt>
 <dd><p>A pygplates.FeatureCollection object containing topology features.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="gplately.DataServer.valid_time">
-<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">valid_time</span></span><a class="headerlink" href="#gplately.DataServer.valid_time" title="Link to this definition"></a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">valid_time</span></span><a class="headerlink" href="#gplately.DataServer.valid_time" title="Link to this definition"></a></dt>
 <dd><p>The period of time the plate model are valid. Return a tuple of (max time, min time).</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="gplately.DataServer.valid_times">
-<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">valid_times</span></span><a class="headerlink" href="#gplately.DataServer.valid_times" title="Link to this definition"></a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">valid_times</span></span><a class="headerlink" href="#gplately.DataServer.valid_times" title="Link to this definition"></a></dt>
 <dd><p>Deprecated!!! Use <a class="reference internal" href="#gplately.DataServer.valid_time" title="gplately.DataServer.valid_time"><code class="xref py py-attr docutils literal notranslate"><span class="pre">DataServer.valid_time</span></code></a> instead.
 Keep consistent with <a class="reference external" href="https://www.gplates.org/docs/gpgim/#gml:validTime">GML naming</a>.</p>
 </dd></dl>
