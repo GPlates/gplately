@@ -25,7 +25,7 @@ from gplately import __version__
 
 from .commands import (
     create_age_grids,
-    feature_filter,
+    feature_filter_cmd,
     list_models,
     regrid,
     reset_feature_type,
@@ -97,7 +97,7 @@ def main():
     combine_cmd.formatter_class = argparse.RawDescriptionHelpFormatter
 
     # add "feature filter" sub-command
-    feature_filter.add_parser(subparser)
+    feature_filter_cmd.add_parser(subparser)
 
     # add "reset feature type" sub-command
     reset_feature_type.add_parser(subparser)
