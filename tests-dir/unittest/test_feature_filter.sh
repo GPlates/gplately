@@ -3,7 +3,7 @@ set -euo pipefail  # Exit on error, undefined vars, pipe failures
 
 export DISABLE_GPLATELY_DEV_WARNING=true
 
-TEST_DATA_DIR="./output/test-feature-filter-data"
+TEST_DATA_DIR="./test-output/test-feature-filter-data"
 mkdir -p "$TEST_DATA_DIR"
 
 # Trap to show which command failed
