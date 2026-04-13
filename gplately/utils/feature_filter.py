@@ -1,5 +1,5 @@
 #
-#    Copyright (C) 2024-2025 The University of Sydney, Australia
+#    Copyright (C) 2024-2026 The University of Sydney, Australia
 #
 #    This program is free software; you can redistribute it and/or modify it under
 #    the terms of the GNU General Public License, version 2, as published by
@@ -16,12 +16,11 @@
 #
 
 import abc
-import argparse
 import logging
 import re
 from typing import List
 
-import pygplates  
+import pygplates  # type: ignore
 
 logger = logging.getLogger("gplately")
 
@@ -36,7 +35,7 @@ class FeatureFilter(metaclass=abc.ABCMeta):
         )
 
     @abc.abstractmethod
-    def should_keep(self, feature: pygplates.Feature) -> bool: # type: ignore
+    def should_keep(self, feature: pygplates.Feature) -> bool:  # type: ignore
         """This abstract method must be implemented in subclass.
 
         :param feature: pygplates.Feature
@@ -79,15 +78,15 @@ class FeatureNameFilter(FeatureFilter):
         else:
             return name_1_tmp in name_2_tmp
 
-    def should_keep(self, feature: pygplates.Feature) -> bool: # type: ignore
+    def should_keep(self, feature: pygplates.Feature) -> bool:  # type: ignore
         if self.exclude:
             for name in self.names:
-                if self.check_name(name, feature.get_name()):
+                if self.check_name(name, feature.get_name()):  # type: ignore
                     return False
             return True
         else:
             for name in self.names:
-                if self.check_name(name, feature.get_name()):
+                if self.check_name(name, feature.get_name()):  # type: ignore
                     return True
             return False
 
@@ -105,10 +104,10 @@ class PlateIDFilter(FeatureFilter):
         self.pids = pids
         self.exclude = exclude
 
-    def should_keep(self, feature: pygplates.Feature) -> bool: # type: ignore
-        if not self.exclude and feature.get_reconstruction_plate_id() in self.pids:
+    def should_keep(self, feature: pygplates.Feature) -> bool:  # type: ignore
+        if not self.exclude and feature.get_reconstruction_plate_id() in self.pids:  # type: ignore
             return True
-        if self.exclude and feature.get_reconstruction_plate_id() not in self.pids:
+        if self.exclude and feature.get_reconstruction_plate_id() not in self.pids:  # type: ignore
             return True
         return False
 
@@ -117,11 +116,11 @@ class BirthAgeFilter(FeatureFilter):
     """filter features by the time of appearance
 
     for example:
-        BirthAgeFilter(500) -- keep features whose time of apprearance are bigger than 500
-        BirthAgeFilter(500, keep_older=False) --  keep features whose time of apprearance are smaller than 500
+        BirthAgeFilter(500) -- keep features which appreared before 500 Ma
+        BirthAgeFilter(500, keep_older=False) --  keep features which appreared after 500 Ma
 
     :param age: the age criterion
-    :param keep_older: if True, return True when the feature's birth age is older than the age criterion. If False, otherwise.
+    :param keep_older: if True, return True when the feature appeared before the age criterion. If False, otherwise.
 
     """
 
@@ -129,13 +128,65 @@ class BirthAgeFilter(FeatureFilter):
         self.age = age
         self.keep_older = keep_older
 
-    def should_keep(self, feature: pygplates.Feature) -> bool: # type: ignore
+    def should_keep(self, feature: pygplates.Feature) -> bool:  # type: ignore
         valid_time = feature.get_valid_time(None)
         if valid_time:
-            if self.keep_older and valid_time[0] > self.age:
-                return True
-            if not self.keep_older and valid_time[0] < self.age:
-                return True
+            begin_time, _ = valid_time
+            if self.keep_older:
+                if (
+                    begin_time == pygplates.GeoTimeInstant.create_distant_past()
+                    or begin_time > self.age
+                ):
+                    return True
+            else:
+                if (
+                    begin_time != pygplates.GeoTimeInstant.create_distant_past()
+                    and begin_time < self.age
+                ):
+                    return True
+        else:
+            logger.warning(
+                f"Feature {feature.get_feature_type()} {feature.get_name()} does not have valid time, and will be excluded by BirthAgeFilter."  # type: ignore
+            )
+        return False
+
+
+class EndTimeFilter(FeatureFilter):
+    """filter features by the time of disappearance
+
+    for example:
+        EndTimeFilter(500) -- keep features which disappeared before 500 Ma
+        EndTimeFilter(500, disappear_before=False) --  keep features which disappeared after 500 Ma, including features that have not disappeared yet (end time is distant future)
+
+    :param age: the age criterion
+    :param disappear_before: if True, return True when the feature disappeared before the age criterion. If False, otherwise.
+
+    """
+
+    def __init__(self, age: float, disappear_before=True):
+        self.age = age
+        self.disappear_before = disappear_before
+
+    def should_keep(self, feature: pygplates.Feature) -> bool:  # type: ignore
+        valid_time = feature.get_valid_time(None)
+        if valid_time:
+            _, end_time = valid_time
+            if self.disappear_before:
+                if (
+                    end_time != pygplates.GeoTimeInstant.create_distant_future()
+                    and end_time > self.age
+                ):
+                    return True
+            else:
+                if (
+                    end_time == pygplates.GeoTimeInstant.create_distant_future()
+                    or end_time < self.age
+                ):
+                    return True
+        else:
+            logger.warning(
+                f"Feature {feature.get_feature_type()} {feature.get_name()} does not have valid time, and will be excluded by EndTimeFilter."  # type: ignore
+            )
         return False
 
 
@@ -153,7 +204,7 @@ class FeatureTypeFilter(FeatureFilter):
     def __init__(self, feature_type_re: str):
         self._feature_type_re = feature_type_re
 
-    def should_keep(self, feature: pygplates.Feature) -> bool: # type: ignore
+    def should_keep(self, feature: pygplates.Feature) -> bool:  # type: ignore
         feature_type = feature.get_feature_type()
         if re.fullmatch(self._feature_type_re, feature_type.to_qualified_string()):
             logger.debug(
@@ -168,10 +219,10 @@ class FeatureTypeFilter(FeatureFilter):
 
 
 def filter_feature_collection(
-    feature_collection: pygplates.FeatureCollection, filters: List[FeatureFilter] # type: ignore
-): 
+    feature_collection: pygplates.FeatureCollection, filters: List[FeatureFilter]  # type: ignore
+):
     """Filter feature collection by various criteria."""
-    new_feature_collection = pygplates.FeatureCollection() # type: ignore
+    new_feature_collection = pygplates.FeatureCollection()  # type: ignore
     for feature in feature_collection:
         keep_flag = True
         for filter in filters:
@@ -181,5 +232,3 @@ def filter_feature_collection(
         if keep_flag:
             new_feature_collection.add(feature)
     return new_feature_collection
-
-

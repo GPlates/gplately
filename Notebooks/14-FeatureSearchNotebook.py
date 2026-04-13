@@ -19,6 +19,7 @@ from urllib.request import urlretrieve
 import pygplates  # type: ignore
 
 from gplately.utils.feature_filter import (
+    EndTimeFilter,
     FeatureNameFilter,
     PlateIDFilter,
     BirthAgeFilter,
@@ -73,7 +74,7 @@ print(
 )
 
 # %% [markdown]
-# Filter feature collection by feature names (case sensitive, partial match)
+#### Filter feature collection by feature names (case sensitive, partial match)
 
 # Features whose name contains "Australia", "New Zealand" or "Tasmania" will be discarded.
 
@@ -136,7 +137,7 @@ print(
 
 # %% [markdown]
 
-# Filter feature collection by plate IDs
+##### Filter feature collection by plate IDs
 
 # Features whose plate ID matches the specified IDs will be discarded. In this example, we keep features with plate IDs from 701 to 715, which correspond to the Africa and its neighboring plates.
 
@@ -197,7 +198,7 @@ print(
 
 # %% [markdown]
 
-# Keep all the features whose birth ages are younger than 500 million years
+##### Keep all the features whose birth ages are younger than 500 million years
 
 
 # %%
@@ -221,6 +222,76 @@ if len(features) == 0:
 features.write(f"{DATA_DIR}/coastlines_younger_than_500_million_years.gpmlz")
 print(
     f"Features with birth ages younger than 500 million years have been written to {DATA_DIR}/coastlines_younger_than_500_million_years.gpmlz"
+)
+
+# %% [markdown]
+
+##### Keep all the features which had disappeared before 100 million years ago
+
+# %%
+# we need to use a different input file for this example.
+topology_features = f"{DATA_DIR}/Feature_Geometries.gpmlz"
+topology_features_url = (
+    "https://repo.gplates.org/webdav/mchin/data/Feature_Geometries.gpmlz"
+)
+
+if not exists(topology_features):
+    print(f"Downloading test file to {topology_features}...")
+    urlretrieve(topology_features_url, topology_features)
+
+topology_feature_collection = pygplates.FeatureCollection(topology_features)  # type: ignore
+
+filters = []
+filters.append(
+    EndTimeFilter(
+        100, disappear_before=True
+    )  # This filter will keep features that had disappeared before 100 million years ago.
+)
+
+features = filter_feature_collection(
+    topology_feature_collection,
+    filters,
+)
+if len(features) == 0:
+    print(
+        "Warning: No features matched the search criteria. "
+        "The output feature collection will be empty."
+    )
+
+features.write(
+    f"{DATA_DIR}/topology_features_disappeared_before_100_million_years.gpmlz"
+)
+print(
+    f"Topology features that had disappeared before 100 million years ago have been written to {DATA_DIR}/topology_features_disappeared_before_100_million_years.gpmlz"
+)
+
+# %% [markdown]
+
+##### Keep all the features that had not yet disappeared as of 100 million years ago
+
+# %%
+filters = []
+filters.append(
+    EndTimeFilter(
+        100, disappear_before=False
+    )  # This filter will keep features that had not yet disappeared as of 100 million years ago
+)
+
+features = filter_feature_collection(
+    topology_feature_collection,
+    filters,
+)
+if len(features) == 0:
+    print(
+        "Warning: No features matched the search criteria. "
+        "The output feature collection will be empty."
+    )
+
+features.write(
+    f"{DATA_DIR}/topology_features_disappeared_after_100_million_years.gpmlz"
+)
+print(
+    f"Topology features that had not yet disappeared as of 100 million years ago have been written to {DATA_DIR}/topology_features_disappeared_after_100_million_years.gpmlz"
 )
 
 # %% [markdown]
