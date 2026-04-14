@@ -155,8 +155,8 @@ class EndTimeFilter(FeatureFilter):
     """filter features by the time of disappearance
 
     for example:
-        EndTimeFilter(500) -- keep features which disappeared before 500 Ma
-        EndTimeFilter(500, disappear_before=False) --  keep features which disappeared after 500 Ma, including features that have not disappeared yet (end time is distant future)
+        EndTimeFilter(100) -- keep features which disappeared before 100 Ma
+        EndTimeFilter(100, disappear_before=False) --  keep features which disappeared after 100 Ma, including features that have not disappeared yet (end time is distant future)
 
     :param age: the age criterion
     :param disappear_before: if True, return True when the feature disappeared before the age criterion. If False, otherwise.
@@ -215,6 +215,81 @@ class FeatureTypeFilter(FeatureFilter):
             logger.debug(
                 f"feature type not match: {self._feature_type_re} {feature_type.to_qualified_string()}"
             )
+            return False
+
+
+class PropertyExistsFilter(FeatureFilter):
+    """filter features by the existence of a property
+
+    Depending on the value of not_exists, this filter can be used to either keep features that have a specific property, or keep features that do not have that property. For example, if we want to keep features that do not have the property "gpml:subductionPolarity", we can use PropertyExistsFilter("gpml:subductionPolarity", not_exists=True).
+
+    :param property_name: the name of the property to check (case-insensitive), such as gpml:subductoinPolarity
+    :param not_exists: if True, keep features that do not have the property; if False, keep features that have the property.
+
+    """
+
+    def __init__(self, property_name: str, not_exists=False):
+        self._property_name = property_name
+        self._not_exists = not_exists
+
+    def should_keep(self, feature: pygplates.Feature) -> bool:  # type: ignore
+        for property in feature:
+            if self._not_exists:
+                if (
+                    property.get_name().to_qualified_string().lower()
+                    == self._property_name.lower()
+                ):
+                    return False
+            else:
+                if (
+                    property.get_name().to_qualified_string().lower()
+                    == self._property_name.lower()
+                ):
+                    return True
+        if self._not_exists:
+            return True
+        else:
+            return False
+
+
+class PropertyValueFilter(FeatureFilter):
+    """filter features by the value of a property
+
+    Depending on the value of not_match, this filter can be used to either keep features that have the specific property and its value matches the specified value, or keep features that either do not have that property or its value does not match the specified value.
+
+    For example, if we want to keep features whose "gpml:subductionPolarity" property value is not "Unknown", we can use PropertyValueFilter("gpml:subductionPolarity", "Unknown", not_match=True).
+
+    :param property_name: the name of the property to check (case-insensitive), such as gpml:subductoinPolarity
+    :param property_value: the value of the property to check
+    :param not_match: if True, keep features whose property value does not match the specified value, also keep features without the specified property; if False, keep features that have at least one property which has the specified value.
+
+    """
+
+    def __init__(
+        self,
+        property_name: str,
+        property_value,
+        not_match=False,
+    ):
+        self._property_name = property_name
+        self._property_value = property_value
+        self._not_match = not_match
+
+    def should_keep(self, feature: pygplates.Feature) -> bool:  # type: ignore
+        for property in feature:
+            if (
+                property.get_name().to_qualified_string().lower()
+                == self._property_name.lower()
+            ):
+                if self._not_match:
+                    if property.get_value() == self._property_value:
+                        return False
+                else:
+                    if property.get_value() == self._property_value:
+                        return True
+        if self._not_match:
+            return True
+        else:
             return False
 
 

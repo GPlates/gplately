@@ -24,6 +24,8 @@ from gplately.utils.feature_filter import (
     PlateIDFilter,
     BirthAgeFilter,
     FeatureTypeFilter,
+    PropertyExistsFilter,
+    PropertyValueFilter,
     filter_feature_collection,
 )
 
@@ -324,5 +326,57 @@ print(
     f"Features with feature type Basin or IslandArc have been written to {DATA_DIR}/coastlines_basins_and_island_arcs.gpmlz"
 )
 
+# %% [markdown]
+
+#### Search features in a feature collection which have a gpml:subductionPolarity property
 
 # %%
+filters = []
+filters.append(PropertyExistsFilter("gpml:subductionPolarity", not_exists=False))
+
+features = filter_feature_collection(
+    topology_feature_collection,
+    filters,
+)
+if len(features) == 0:
+    print(
+        "Warning: No features matched the search criteria. "
+        "The output feature collection will be empty."
+    )
+
+features.write(f"{DATA_DIR}/topology_features_with_subduction_polarity.gpmlz")
+print(
+    f"Topology features with subduction polarity have been written to {DATA_DIR}/topology_features_with_subduction_polarity.gpmlz"
+)
+
+# %% [markdown]
+
+#### Find features in a feature collection that has a gpml:subductionPolarity property with a value of "Left"
+
+# %%
+# open the .gpml file to find the property value name, such as this SubductionPolarityEnumeration
+subduction_polarity_left = pygplates.Enumeration(
+    pygplates.EnumerationType.create_gpml("SubductionPolarityEnumeration"), "Left"
+)
+
+filters = []
+filters.append(
+    PropertyValueFilter(
+        "gpml:subductionPolarity", subduction_polarity_left, not_match=False
+    )
+)
+
+features = filter_feature_collection(
+    topology_feature_collection,
+    filters,
+)
+if len(features) == 0:
+    print(
+        "Warning: No features matched the search criteria. "
+        "The output feature collection will be empty."
+    )
+
+features.write(f"{DATA_DIR}/topology_features_with_subduction_polarity_left.gpmlz")
+print(
+    f"Topology features with subduction polarity have been written to {DATA_DIR}/topology_features_with_subduction_polarity_left.gpmlz"
+)
