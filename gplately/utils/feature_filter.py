@@ -18,9 +18,10 @@
 import abc
 import logging
 import re
-from typing import List
+from typing import List, Tuple, Union
 
-import pygplates  # type: ignore
+import pygplates
+import shapely  # type: ignore
 
 logger = logging.getLogger("gplately")
 
@@ -134,13 +135,13 @@ class BirthAgeFilter(FeatureFilter):
             begin_time, _ = valid_time
             if self.keep_older:
                 if (
-                    begin_time == pygplates.GeoTimeInstant.create_distant_past()
+                    begin_time == pygplates.GeoTimeInstant.create_distant_past()  # type: ignore
                     or begin_time > self.age
                 ):
                     return True
             else:
                 if (
-                    begin_time != pygplates.GeoTimeInstant.create_distant_past()
+                    begin_time != pygplates.GeoTimeInstant.create_distant_past()  # type: ignore
                     and begin_time < self.age
                 ):
                     return True
@@ -173,13 +174,13 @@ class EndTimeFilter(FeatureFilter):
             _, end_time = valid_time
             if self.disappear_before:
                 if (
-                    end_time != pygplates.GeoTimeInstant.create_distant_future()
+                    end_time != pygplates.GeoTimeInstant.create_distant_future()  # type: ignore
                     and end_time > self.age
                 ):
                     return True
             else:
                 if (
-                    end_time == pygplates.GeoTimeInstant.create_distant_future()
+                    end_time == pygplates.GeoTimeInstant.create_distant_future()  # type: ignore
                     or end_time < self.age
                 ):
                     return True
@@ -293,10 +294,55 @@ class PropertyValueFilter(FeatureFilter):
             return False
 
 
+class RegionOfInterestFilter(FeatureFilter):
+    """filter features by whether they are in a region of interest
+
+    for example:
+        RegionOfInterestFilter(polygon) -- keep features that are in the polygon
+        RegionOfInterestFilter(polygon, exclude=True) -- keep features that are not in the polygon
+
+    """
+
+    def __init__(
+        self,
+        region_of_interest: Union[Tuple[float, float, float, float], pygplates.PolygonOnSphere],  # type: ignore
+        exclude=False,
+    ):
+        if isinstance(region_of_interest, pygplates.PolygonOnSphere):  # type: ignore
+            self._region_of_interest = region_of_interest
+        elif isinstance(region_of_interest, tuple) and len(region_of_interest) == 4:
+            (left, right, bottom, top) = region_of_interest
+            self._region_of_interest = pygplates.PolygonOnSphere((lat, lon) for lon, lat in [(left, bottom), (left, top), (right, top), (right, bottom)])  # type: ignore
+        else:
+            raise ValueError(
+                "region_of_interest should be either a tuple of (left, right, bottom, top) or a pygplates.PolygonOnSphere"
+            )
+
+        self._exclude = exclude
+
+    def should_keep(self, feature: pygplates.Feature) -> bool:  # type: ignore
+        # Implementation for checking if feature is in the region of interest
+        roi_feature = pygplates.Feature()  # type: ignore
+        roi_feature.set_geometry(self._region_of_interest)  # type: ignore
+        plate_partitioner = pygplates.PlatePartitioner(pygplates.FeatureCollection([roi_feature]), pygplates.RotationModel([]))  # type: ignore
+        inside_geometries = []
+        outside_geometries = []
+        plate_partitioner.partition_geometry(feature.get_geometries(), inside_geometries, outside_geometries)  # type: ignore
+        if self._exclude:
+            return len(inside_geometries) == 0
+        else:
+            return len(outside_geometries) == 0
+
+
 def filter_feature_collection(
     feature_collection: pygplates.FeatureCollection, filters: List[FeatureFilter]  # type: ignore
 ):
-    """Filter feature collection by various criteria."""
+    """Filter a feature collection using a list of filters.
+
+    :param feature_collection: the input feature collection to be filtered
+    :param filters: a list of filters to apply. A feature will be kept if it passes all the filters in the list.
+    :returns: a new feature collection after filtering
+    """
     new_feature_collection = pygplates.FeatureCollection()  # type: ignore
     for feature in feature_collection:
         keep_flag = True

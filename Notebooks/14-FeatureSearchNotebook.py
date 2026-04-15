@@ -26,6 +26,7 @@ from gplately.utils.feature_filter import (
     FeatureTypeFilter,
     PropertyExistsFilter,
     PropertyValueFilter,
+    RegionOfInterestFilter,
     filter_feature_collection,
 )
 
@@ -355,8 +356,8 @@ print(
 
 # %%
 # open the .gpml file to find the property value name, such as this SubductionPolarityEnumeration
-subduction_polarity_left = pygplates.Enumeration(
-    pygplates.EnumerationType.create_gpml("SubductionPolarityEnumeration"), "Left"
+subduction_polarity_left = pygplates.Enumeration(  # type: ignore
+    pygplates.EnumerationType.create_gpml("SubductionPolarityEnumeration"), "Left"  # type: ignore
 )
 
 filters = []
@@ -379,4 +380,61 @@ if len(features) == 0:
 features.write(f"{DATA_DIR}/topology_features_with_subduction_polarity_left.gpmlz")
 print(
     f"Topology features with subduction polarity have been written to {DATA_DIR}/topology_features_with_subduction_polarity_left.gpmlz"
+)
+
+# %% [markdown]
+
+# ![icosahedron mesh](https://raw.githubusercontent.com/GPlates/gplately/refs/heads/377-feature-request-gpml-file-management-workflow/Notebooks/NotebookFiles/Notebook14/icosahedron_mesh.png)
+
+# ![icosahedron vertices in region](https://raw.githubusercontent.com/GPlates/gplately/refs/heads/377-feature-request-gpml-file-management-workflow/Notebooks/NotebookFiles/Notebook14/icosahedron_vertices_in_region.png)
+
+
+# %%
+from gplately.lib.icosahedron import get_mesh, xyz2lonlat
+
+# Create a feature collection for the vertices of an icosahedron mesh.
+# We will use this feature collection as input for searching features within a region of interest in the next step.
+mesh_resolution = 5
+vertices_0, faces_0 = get_mesh(mesh_resolution)
+seen = set()
+mesh_feature_collection = pygplates.FeatureCollection()  # type: ignore
+for v in vertices_0:
+    lon, lat = xyz2lonlat(v[0], v[1], v[2])
+    point = f"{lon:0.2f} {lat:0.2f}"
+    if point in seen:
+        continue
+    else:
+        seen.add(point)
+    feature = pygplates.Feature()  # type: ignore
+    feature.set_geometry(pygplates.PointOnSphere(lat, lon))  # type: ignore
+    mesh_feature_collection.add(feature)  # type: ignore
+
+mesh_feature_collection.write(f"{DATA_DIR}/icosahedron_mesh_{mesh_resolution}.gpmlz")
+print(
+    f"Icosahedron mesh have been written to {DATA_DIR}/icosahedron_mesh_{mesh_resolution}.gpmlz"
+)
+
+(left, right, bottom, top) = (120, 140, -10, 10)
+filters = []
+filters.append(RegionOfInterestFilter((left, right, bottom, top), exclude=False))
+
+features = filter_feature_collection(
+    mesh_feature_collection,
+    filters,
+)
+if len(features) == 0:
+    print(
+        "Warning: No features matched the search criteria. "
+        "The output feature collection will be empty."
+    )
+
+# Create a feature for the region of interest and add it to the output feature collection for visualization.
+region_of_interest_feature = pygplates.Feature()  # type: ignore
+region_of_interest = pygplates.PolygonOnSphere((lat, lon) for lon, lat in [(left, bottom), (left, top), (right, top), (right, bottom)])  # type: ignore
+region_of_interest_feature.set_geometry(region_of_interest)  # type: ignore
+features.add(region_of_interest_feature)  # type: ignore
+
+features.write(f"{DATA_DIR}/icosahedron_vertices_in_region.gpmlz")
+print(
+    f"Icosahedron vertices in the region of interest have been written to {DATA_DIR}/icosahedron_vertices_in_region.gpmlz"
 )
