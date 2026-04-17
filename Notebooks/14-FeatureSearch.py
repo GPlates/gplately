@@ -9,7 +9,7 @@
 
 # %% [markdown]
 
-# 📒 This notebook is generated from 14-FeatureSearchNotebook.py using the command `jupytext --to notebook Notebooks/14-FeatureSearchNotebook.py -o Notebooks/14-FeatureSearch.ipynb`. If you need to commit changes to this notebook to the GPlately repository, make your edits in 14-FeatureSearchNotebook.py and then regenerate this Jupyter Notebook file. The reason that a .py file is used is to allow for easier version control and collaboration. And it is also more Copilot and code auto-formatting friendly.
+# 📒 This notebook is generated from 14-FeatureSearch.py using the command `jupytext --to notebook Notebooks/14-FeatureSearch.py -o Notebooks/14-FeatureSearch.ipynb`. If you need to commit changes to this notebook to the GPlately repository, make your edits in 14-FeatureSearch.py and then regenerate this Jupyter Notebook file. The reason that a .py file is used is to allow for easier version control and collaboration. And it is also more Copilot and code auto-formatting friendly.
 
 # %%
 from os import makedirs
@@ -36,14 +36,14 @@ makedirs(DATA_DIR, exist_ok=True)
 # Download the input feature collection file if it does not exist.
 # The input file we use in this notbook is a global coastline feature collection at present day.
 # You can also use your own feature collection as input and apply the same search and filter methods as shown in this notebook.
-IN_FILE = f"{DATA_DIR}/Global_EarthByte_GPlates_PresentDay_Coastlines.gpmlz"
-FILE_URL = "https://repo.gplates.org/webdav/mchin/data/Global_EarthByte_GPlates_PresentDay_Coastlines.gpmlz"
+coastlines_file = f"{DATA_DIR}/Global_EarthByte_GPlates_PresentDay_Coastlines.gpmlz"
+coastlines_url = "https://repo.gplates.org/webdav/mchin/data/Global_EarthByte_GPlates_PresentDay_Coastlines.gpmlz"
 
-if not exists(IN_FILE):
-    print(f"Downloading test file to {IN_FILE}...")
-    urlretrieve(FILE_URL, IN_FILE)
+if not exists(coastlines_file):
+    print(f"Downloading test file to {coastlines_file}...")
+    urlretrieve(coastlines_url, coastlines_file)
 
-input_feature_collection = pygplates.FeatureCollection(IN_FILE)  # type: ignore
+coastlines_feature_collection = pygplates.FeatureCollection(coastlines_file)  # type: ignore
 
 # %% [markdown]
 #### Search and filter feature collection by feature names
@@ -62,7 +62,7 @@ filters.append(
     )
 )
 features = filter_feature_collection(
-    input_feature_collection,
+    coastlines_feature_collection,
     filters,
 )
 if len(features) == 0:
@@ -75,6 +75,15 @@ features.write(f"{DATA_DIR}/Australia_and_New_Zealand_coastlines.gpmlz")
 print(
     f"Coastlines of Australia and New Zealand have been written to {DATA_DIR}/Australia_and_New_Zealand_coastlines.gpmlz"
 )
+
+from gplately.mapping.cartopy_plot import _plot_feature_collection
+
+_plot_feature_collection(
+    pygplates.FeatureCollection(
+        f"{DATA_DIR}/Australia_and_New_Zealand_coastlines.gpmlz"
+    )
+)
+
 
 # %% [markdown]
 #### Filter feature collection by feature names (case sensitive, partial match)
@@ -92,7 +101,7 @@ filters.append(
     )
 )
 features = filter_feature_collection(
-    input_feature_collection,
+    coastlines_feature_collection,
     filters,
 )
 if len(features) == 0:
@@ -124,7 +133,7 @@ filters.append(
     )
 )
 features = filter_feature_collection(
-    input_feature_collection,
+    coastlines_feature_collection,
     filters,
 )
 if len(features) == 0:
@@ -155,7 +164,7 @@ filters.append(
     )
 )
 features = filter_feature_collection(
-    input_feature_collection,
+    coastlines_feature_collection,
     filters,
 )
 if len(features) == 0:
@@ -185,7 +194,7 @@ filters.append(
 )
 
 features = filter_feature_collection(
-    input_feature_collection,
+    coastlines_feature_collection,
     filters,
 )
 if len(features) == 0:
@@ -213,7 +222,7 @@ filters.append(
 )
 
 features = filter_feature_collection(
-    input_feature_collection,
+    coastlines_feature_collection,
     filters,
 )
 if len(features) == 0:
@@ -313,7 +322,7 @@ filters.append(
 )
 
 features = filter_feature_collection(
-    input_feature_collection,
+    coastlines_feature_collection,
     filters,
 )
 if len(features) == 0:
@@ -382,12 +391,16 @@ print(
     f"Topology features with subduction polarity have been written to {DATA_DIR}/topology_features_with_subduction_polarity_left.gpmlz"
 )
 
+
 # %% [markdown]
+#### Find points inside a region of interest
 
-# ![icosahedron mesh](https://raw.githubusercontent.com/GPlates/gplately/refs/heads/377-feature-request-gpml-file-management-workflow/Notebooks/NotebookFiles/Notebook14/icosahedron_mesh.png)
+# Firstly, we create a feature collection for the vertices of an icosahedron mesh. Then we search for the vertices that are located within a region of interest defined by a bounding box (left, right, bottom, top) in longitude and latitude. Finally, we create a feature for the region of interest and add it to the output feature collection for visualization.
 
-# ![icosahedron vertices in region](https://raw.githubusercontent.com/GPlates/gplately/refs/heads/377-feature-request-gpml-file-management-workflow/Notebooks/NotebookFiles/Notebook14/icosahedron_vertices_in_region.png)
-
+# <figure>
+#  <img src="https://raw.githubusercontent.com/GPlates/gplately/refs/heads/377-feature-request-gpml-file-management-workflow/Notebooks/NotebookFiles/Notebook14/icosahedron_mesh.png" width="300">
+#  <figcaption><b>Icosahedron Mesh</b></figcaption>
+# </figure>
 
 # %%
 from gplately.lib.icosahedron import get_mesh, xyz2lonlat
@@ -414,6 +427,16 @@ print(
     f"Icosahedron mesh have been written to {DATA_DIR}/icosahedron_mesh_{mesh_resolution}.gpmlz"
 )
 
+# %% [markdown]
+# Search for the vertices that are located within a region of interest defined by a bounding box (left, right, bottom, top) in longitude and latitude.
+
+# <figure>
+#  <img src="https://raw.githubusercontent.com/GPlates/gplately/refs/heads/377-feature-request-gpml-file-management-workflow/Notebooks/NotebookFiles/Notebook14/icosahedron_vertices_in_region.png" width="300">
+#  <figcaption><b>Icosahedron Vertices within (120, 140, -10, 10)</b></figcaption>
+# </figure>
+
+# %%
+# define the bounding box for the region of interest
 (left, right, bottom, top) = (120, 140, -10, 10)
 filters = []
 filters.append(RegionOfInterestFilter((left, right, bottom, top), exclude=False))
@@ -422,11 +445,6 @@ features = filter_feature_collection(
     mesh_feature_collection,
     filters,
 )
-if len(features) == 0:
-    print(
-        "Warning: No features matched the search criteria. "
-        "The output feature collection will be empty."
-    )
 
 # Create a feature for the region of interest and add it to the output feature collection for visualization.
 region_of_interest_feature = pygplates.Feature()  # type: ignore
@@ -437,4 +455,56 @@ features.add(region_of_interest_feature)  # type: ignore
 features.write(f"{DATA_DIR}/icosahedron_vertices_in_region.gpmlz")
 print(
     f"Icosahedron vertices in the region of interest have been written to {DATA_DIR}/icosahedron_vertices_in_region.gpmlz"
+)
+
+# %% [markdown]
+# Search for the vertices that are located within the mainland of Australia.
+
+# <figure>
+#  <img src="https://raw.githubusercontent.com/GPlates/gplately/refs/heads/377-feature-request-gpml-file-management-workflow/Notebooks/NotebookFiles/Notebook14/icosahedron_vertices_within_australia.png" width="300">
+#  <figcaption><b>Icosahedron Vertices within Australia</b></figcaption>
+# </figure>
+
+# %%
+# Firstly, we search for the feature that corresponds to the mainland of Australia in the global coastline feature collection.
+# Then we use the geometry of this feature to define the region of interest for filtering the vertices of the icosahedron mesh.
+filters = []
+filters.append(
+    FeatureNameFilter(
+        ["Australia"],
+        exact_match=True,
+        case_sensitive=True,
+    )
+)
+features = filter_feature_collection(
+    coastlines_feature_collection,
+    filters,
+)
+
+australia_mainland_geometry = None
+australia_mainland_feature = None
+largest_area = 0
+for feature in features:
+    geometry = feature.get_geometry()  # type: ignore
+    if isinstance(geometry, pygplates.PolygonOnSphere):  # type: ignore
+        if geometry.get_area() > largest_area:  # type: ignore
+            largest_area = geometry.get_area()  # type: ignore
+            australia_mainland_geometry = geometry
+            australia_mainland_feature = feature
+    else:
+        continue
+
+# search for the vertices that are located within the mainland of Australia
+filters = []
+filters.append(RegionOfInterestFilter(australia_mainland_geometry, exclude=False))
+
+features = filter_feature_collection(
+    mesh_feature_collection,
+    filters,
+)
+
+features.add(australia_mainland_feature)  # type: ignore
+features.write(f"{DATA_DIR}/icosahedron_vertices_within_australia.gpmlz")
+print(
+    f"Icosahedron vertices in the region of interest have been written to {DATA_DIR}/icosahedron_vertices_within_australia.gpmlz"
 )

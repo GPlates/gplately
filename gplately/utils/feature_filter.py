@@ -352,4 +352,7 @@ def filter_feature_collection(
                 break
         if keep_flag:
             new_feature_collection.add(feature)
+
+    if len(new_feature_collection) == 0:
+        logger.warning("No feature matched the search criteria.")
     return new_feature_collection

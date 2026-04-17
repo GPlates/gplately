@@ -17,6 +17,8 @@
 import logging
 import math
 
+import pygplates
+
 import cartopy.crs as ccrs
 from geopandas.geodataframe import GeoDataFrame
 
@@ -174,3 +176,54 @@ class CartopyPlotEngine(PlotEngine):
             origin=origin,
             **kwargs,
         )
+
+
+def _plot_feature_collection(feature_collection: pygplates.FeatureCollection):
+    import cartopy.crs as ccrs  # type: ignore
+    import matplotlib.pyplot as plt  # type: ignore
+    from gplately.geometry import pygplates_to_shapely
+    from cartopy.mpl.ticker import LongitudeFormatter, LatitudeFormatter
+    import matplotlib.ticker as mticker
+
+    fig = plt.figure(figsize=(10, 5), dpi=72)
+    ax = fig.add_subplot(111, projection=ccrs.Robinson(central_longitude=180))
+    ax.set_global()  # type: ignore
+    # Add gridlines and lat/lon labels
+    gl = ax.gridlines(
+        crs=ccrs.PlateCarree(),
+        draw_labels=True,
+        linewidth=0.8,
+        color="gray",
+        alpha=0.6,
+        linestyle="--",
+    )
+
+    # Hide labels on top/right if you want cleaner maps
+    gl.top_labels = False
+    gl.right_labels = False
+
+    # Control tick locations
+    gl.xlocator = mticker.FixedLocator(range(-180, 181, 60))
+    gl.ylocator = mticker.FixedLocator(range(-90, 91, 15))
+
+    # Nice lon/lat formatting
+    gl.xformatter = LongitudeFormatter(number_format=".0f", degree_symbol="°")
+    gl.yformatter = LatitudeFormatter(number_format=".0f", degree_symbol="°")
+
+    # Label style
+    gl.xlabel_style = {"size": 10}
+    gl.ylabel_style = {"size": 10}
+
+    for feature in feature_collection:
+        geometry = feature.get_geometry()  # type: ignore
+        if geometry is not None:
+            shapely_geometry = pygplates_to_shapely(geometry)  # type: ignore
+            if shapely_geometry is not None:
+                ax.add_geometries(
+                    shapely_geometry,
+                    crs=ccrs.PlateCarree(),
+                    edgecolor="blue",
+                    facecolor="none",
+                )
+    plt.title("Coastlines of Australia and New Zealand")
+    plt.show()
