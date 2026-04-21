@@ -14,8 +14,8 @@
 
 # %% [markdown]
 
-# 📒 This notebook is generated from 14-FeatureSearch.py using the command `jupytext --to notebook Notebooks/14-FeatureSearch.py -o Notebooks/14-FeatureSearch.ipynb`.
-# If you need to commit changes to this notebook to the GPlately repository, make your edits in 14-FeatureSearch.py and then regenerate this Jupyter Notebook file.
+# 📒 This notebook is generated from 14-RuleBasedGPMLProcessingPipeline.py using the command `jupytext --to notebook Notebooks/14-RuleBasedGPMLProcessingPipeline.py -o Notebooks/14-RuleBasedGPMLProcessingPipeline.ipynb`.
+# If you need to commit changes to this notebook to the GPlately repository, make your edits in 14-RuleBasedGPMLProcessingPipeline.py and then regenerate this Jupyter Notebook file.
 # The reason that a .py file is used is to allow for easier version control and collaboration. And it is also more Copilot and code auto-formatting friendly.
 
 # %%
