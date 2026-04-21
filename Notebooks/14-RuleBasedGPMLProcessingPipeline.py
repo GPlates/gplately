@@ -1,9 +1,10 @@
 # %% [markdown]
 
-## Search and Filter Feature Collection
+## Rule Based GPML Processing Pipeline
 
-# This notebook demonstrates how to use GPlately to query and filter feature collections
-# based on criteria such as feature name, plate ID, birth age, disappearance age, and region of interest.
+# This notebook demonstrates how to use GPlately to query and manipulate GPML files based on user-defined rules,
+# which can be based on various criteria such as feature name, plate ID, birth age, disappearance age, region of interest, and more.
+# This allows users to create customized GPML processing pipelines that can be applied to a wide range of use cases in geoscience research.
 
 # The search and filter functionality is implemented in the `gplately.utils.feature_filter` module.
 # The main function is `filter_feature_collection`, which takes a feature collection and a list of filters,
@@ -434,12 +435,10 @@ _plot_feature_collection(
 # %% [markdown]
 #### Find points inside a region of interest
 
-# Firstly, we create a feature collection for the vertices of an icosahedron mesh. Then we search for the vertices that are located within a region of interest defined by a bounding box (left, right, bottom, top) in longitude and latitude. Finally, we create a feature for the region of interest and add it to the output feature collection for visualization.
+# Firstly, we create a feature collection for the vertices of an icosahedron mesh.
+# Then we search for the vertices that are located within a region of interest defined by a bounding box (left, right, bottom, top).
+# Finally, we create a feature for the region of interest and add it to the output feature collection for visualization.
 
-# <figure>
-#  <img src="https://raw.githubusercontent.com/GPlates/gplately/refs/heads/377-feature-request-gpml-file-management-workflow/Notebooks/NotebookFiles/Notebook14/icosahedron_mesh.png" width="300">
-#  <figcaption><b>Icosahedron Mesh</b></figcaption>
-# </figure>
 
 # %%
 from gplately.lib.icosahedron import get_mesh, xyz2lonlat
@@ -467,12 +466,17 @@ print(
 )
 
 # %% [markdown]
-# Search for the vertices that are located within a region of interest defined by a bounding box (left, right, bottom, top) in longitude and latitude.
+# if you open the icosahedron_mesh_5.gpmlz file in GPlates, you will see the vertices of the icosahedron mesh,
+# which are represented as point features.
 
 # <figure>
-#  <img src="https://raw.githubusercontent.com/GPlates/gplately/refs/heads/377-feature-request-gpml-file-management-workflow/Notebooks/NotebookFiles/Notebook14/icosahedron_vertices_in_region.png" width="300">
-#  <figcaption><b>Icosahedron Vertices within (120, 140, -10, 10)</b></figcaption>
+#  <img src="https://raw.githubusercontent.com/GPlates/gplately/refs/heads/377-feature-request-gpml-file-management-workflow/Notebooks/NotebookFiles/Notebook14/icosahedron_mesh.png" width="300">
+#  <figcaption><b>Icosahedron Mesh</b></figcaption>
 # </figure>
+
+# %% [markdown]
+# Search for the vertices that are located within a region of interest defined by a bounding box (left, right, bottom, top) in longitude and latitude.
+
 
 # %%
 # define the bounding box for the region of interest
@@ -497,12 +501,18 @@ print(
 )
 
 # %% [markdown]
-# Search for the vertices that are located within the mainland of Australia.
+# If you open icosahedron_vertices_in_region.gpmlz in GPlates, you will see the vertices of the icosahedron mesh that
+# are located within the bounding box defined by (120, 140, -10, 10),
+# as well as a polygon feature that represents the region of interest defined by the bounding box.
 
 # <figure>
-#  <img src="https://raw.githubusercontent.com/GPlates/gplately/refs/heads/377-feature-request-gpml-file-management-workflow/Notebooks/NotebookFiles/Notebook14/icosahedron_vertices_within_australia.png" width="300">
-#  <figcaption><b>Icosahedron Vertices within Australia</b></figcaption>
+#  <img src="https://raw.githubusercontent.com/GPlates/gplately/refs/heads/377-feature-request-gpml-file-management-workflow/Notebooks/NotebookFiles/Notebook14/icosahedron_vertices_in_region.png" width="300">
+#  <figcaption><b>Icosahedron Vertices within (120, 140, -10, 10)</b></figcaption>
 # </figure>
+
+# %% [markdown]
+##### Search for the vertices that are located within the mainland of Australia.
+
 
 # %%
 # Firstly, we search for the feature that corresponds to the mainland of Australia in the global coastline feature collection.
@@ -533,7 +543,7 @@ for feature in features:
     else:
         continue
 
-# search for the vertices that are located within the mainland of Australia
+##### search for the vertices that are located within the mainland of Australia
 filters = []
 filters.append(RegionOfInterestFilter(australia_mainland_geometry, exclude=False))
 
@@ -546,4 +556,33 @@ features.add(australia_mainland_feature)  # type: ignore
 features.write(f"{DATA_DIR}/icosahedron_vertices_within_australia.gpmlz")
 print(
     f"Icosahedron vertices in the region of interest have been written to {DATA_DIR}/icosahedron_vertices_within_australia.gpmlz"
+)
+# %% [markdown]
+# If you open icosahedron_vertices_within_australia.gpmlz in GPlates, you will see the vertices of the icosahedron mesh that
+# are located within the mainland of Australia, as well as a polygon feature that represents the mainland of Australia
+
+# <figure>
+#  <img src="https://raw.githubusercontent.com/GPlates/gplately/refs/heads/377-feature-request-gpml-file-management-workflow/Notebooks/NotebookFiles/Notebook14/icosahedron_vertices_within_australia.png" width="300">
+#  <figcaption><b>Icosahedron Vertices within Australia</b></figcaption>
+# </figure>
+
+# %%
+
+from gplately.gpml import (
+    get_unique_feature_names,
+    GPML_to_GeoDataFrame,
+    feature_type_getter,
+    feature_name_getter,
+    plate_id_getter,
+)
+
+print(
+    GPML_to_GeoDataFrame(
+        coastlines_feature_collection,
+        property_getters={
+            "name": feature_name_getter,
+            "type": feature_type_getter,
+            "plate_id": plate_id_getter,
+        },
+    )
 )

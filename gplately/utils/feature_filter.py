@@ -21,7 +21,6 @@ import re
 from typing import List, Tuple, Union
 
 import pygplates
-import shapely  # type: ignore
 
 logger = logging.getLogger("gplately")
 
@@ -66,7 +65,7 @@ class FeatureNameFilter(FeatureFilter):
         self.case_sensitive = case_sensitive
         self.exclude = exclude
 
-    def check_name(self, name_1: str, name_2: str) -> bool:
+    def _check_name(self, name_1: str, name_2: str) -> bool:
         """check if two names are the same or name_2 contains name_1"""
         if not self.case_sensitive:
             name_1_tmp = name_1.lower()
@@ -82,12 +81,12 @@ class FeatureNameFilter(FeatureFilter):
     def should_keep(self, feature: pygplates.Feature) -> bool:  # type: ignore
         if self.exclude:
             for name in self.names:
-                if self.check_name(name, feature.get_name()):  # type: ignore
+                if self._check_name(name, feature.get_name()):  # type: ignore
                     return False
             return True
         else:
             for name in self.names:
-                if self.check_name(name, feature.get_name()):  # type: ignore
+                if self._check_name(name, feature.get_name()):  # type: ignore
                     return True
             return False
 

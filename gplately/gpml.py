@@ -1,5 +1,5 @@
 #
-#    Copyright (C) 2024-2025 The University of Sydney, Australia
+#    Copyright (C) 2024-2026 The University of Sydney, Australia
 #
 #    This program is free software; you can redistribute it and/or modify it under
 #    the terms of the GNU General Public License, version 2, as published by
@@ -20,7 +20,10 @@ as well as `pygplates.Feature` and `pygplates.FeatureCollection` objects.
 """
 import os
 
+
 import pygplates
+
+# pyright: reportAttributeAccessIssue=false
 
 __all__ = [
     "create_feature_dict",
@@ -28,6 +31,63 @@ __all__ = [
     "get_topological_references",
     "is_topological",
 ]
+
+
+def get_unique_feature_names(feature_collection):
+    """Return a set of unique feature names from a feature collection."""
+    if isinstance(feature_collection, (str, bytes)) and os.path.isfile(
+        feature_collection
+    ):
+        feature_collection = pygplates.FeatureCollection(feature_collection)
+    return {feature.get_name() for feature in feature_collection}
+
+
+def feature_id_getter(feature):
+    """Return the feature ID of a feature as a string."""
+    return feature.get_feature_id().get_string()
+
+
+def feature_name_getter(feature):
+    """Return the feature name of a feature as a string."""
+    return feature.get_name()
+
+
+def feature_type_getter(feature):
+    """Return the feature type of a feature as a string."""
+    return feature.get_feature_type()
+
+
+def plate_id_getter(feature):
+    """Return the plate ID of a feature as a int."""
+    return feature.get_reconstruction_plate_id()
+
+
+def GPML_to_GeoDataFrame(
+    feature_collection, property_getters={"name": feature_name_getter}
+):
+    """Convert a GPML feature collection to a GeoDataFrame."""
+    import geopandas as gpd  # type: ignore --- IGNORE ---
+
+    if isinstance(feature_collection, (str, bytes)) and os.path.isfile(
+        feature_collection
+    ):
+        feature_collection = pygplates.FeatureCollection(feature_collection)
+
+    feature_ids = []
+    for feature in feature_collection:
+        feature_ids.append(feature.get_feature_id().get_string())
+
+    data = {}
+    for key in property_getters:
+        if not callable(property_getters[key]):
+            raise ValueError(f"Property getter for {key} is not callable.")
+        properties = []
+        for feature in feature_collection:
+            properties.append(property_getters[key](feature))
+        data[key] = properties
+    gdf = gpd.GeoDataFrame(data)
+    gdf.index = feature_ids
+    return gdf
 
 
 def extract_feature(id, features):
