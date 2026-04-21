@@ -178,18 +178,21 @@ class CartopyPlotEngine(PlotEngine):
         )
 
 
-def _plot_feature_collection(feature_collection: pygplates.FeatureCollection):
+def _plot_feature_collection(feature_collection: pygplates.FeatureCollection, title: str = "Untitled Feature Collection", figsize=(8, 4), projection=ccrs.Robinson(central_longitude=180)):  # type: ignore
+    """Helper function to plot a pygplates FeatureCollection using Cartopy. Not part of the public API.
+    Mostly this function is for testing and debugging purposes, and to provide a simple example of how to plot pygplates features with Cartopy.
+    """
     import cartopy.crs as ccrs  # type: ignore
     import matplotlib.pyplot as plt  # type: ignore
     from gplately.geometry import pygplates_to_shapely
     from cartopy.mpl.ticker import LongitudeFormatter, LatitudeFormatter
     import matplotlib.ticker as mticker
 
-    fig = plt.figure(figsize=(10, 5), dpi=72)
-    ax = fig.add_subplot(111, projection=ccrs.Robinson(central_longitude=180))
+    fig = plt.figure(figsize=figsize, dpi=72)
+    ax = fig.add_subplot(111, projection=projection)
     ax.set_global()  # type: ignore
     # Add gridlines and lat/lon labels
-    gl = ax.gridlines(
+    gl = ax.gridlines(  # type: ignore
         crs=ccrs.PlateCarree(),
         draw_labels=True,
         linewidth=0.8,
@@ -215,15 +218,20 @@ def _plot_feature_collection(feature_collection: pygplates.FeatureCollection):
     gl.ylabel_style = {"size": 10}
 
     for feature in feature_collection:
-        geometry = feature.get_geometry()  # type: ignore
-        if geometry is not None:
-            shapely_geometry = pygplates_to_shapely(geometry)  # type: ignore
-            if shapely_geometry is not None:
-                ax.add_geometries(
-                    shapely_geometry,
-                    crs=ccrs.PlateCarree(),
-                    edgecolor="blue",
-                    facecolor="none",
-                )
-    plt.title("Coastlines of Australia and New Zealand")
+        valid_time = feature.get_valid_time(None)  # type: ignore
+        if valid_time is not None:
+            if valid_time[1] not in [pygplates.GeoTimeInstant.create_distant_future(), 0]:  # type: ignore
+                continue  # skip features that are not valid at 0 Ma
+        geometries = feature.get_geometries()  # type: ignore
+        if geometries:
+            for geometry in geometries:
+                shapely_geometry = pygplates_to_shapely(geometry)  # type: ignore
+                if shapely_geometry is not None:
+                    ax.add_geometries(  # type: ignore
+                        shapely_geometry,
+                        crs=ccrs.PlateCarree(),
+                        edgecolor="blue",
+                        facecolor="none",
+                    )
+    plt.title(title)
     plt.show()

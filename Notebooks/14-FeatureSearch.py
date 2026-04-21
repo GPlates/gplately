@@ -2,14 +2,21 @@
 
 ## Search and Filter Feature Collection
 
-# This notebook demonstrates how to use GPlately to query and filter feature collections based on criteria such as feature name, plate ID, birth age, disappearance age, and region of interest.
+# This notebook demonstrates how to use GPlately to query and filter feature collections
+# based on criteria such as feature name, plate ID, birth age, disappearance age, and region of interest.
 
-# The search and filter functionality is implemented in the `gplately.utils.feature_filter` module. The main function is `filter_feature_collection`, which takes a feature collection and a list of filters, and returns a new feature collection that contains only the features that satisfy all the filters. Each filter is a subclass of the `FeatureFilter` class, which defines a `should_keep` method that takes a feature and returns True if the feature should be kept, and False otherwise.
+# The search and filter functionality is implemented in the `gplately.utils.feature_filter` module.
+# The main function is `filter_feature_collection`, which takes a feature collection and a list of filters,
+# and returns a new feature collection that contains only the features that satisfy all the filters.
+# Each filter is a subclass of the `FeatureFilter` class, which defines a `should_keep` method that takes a feature and
+# returns True if the feature should be kept, and False otherwise.
 
 
 # %% [markdown]
 
-# 📒 This notebook is generated from 14-FeatureSearch.py using the command `jupytext --to notebook Notebooks/14-FeatureSearch.py -o Notebooks/14-FeatureSearch.ipynb`. If you need to commit changes to this notebook to the GPlately repository, make your edits in 14-FeatureSearch.py and then regenerate this Jupyter Notebook file. The reason that a .py file is used is to allow for easier version control and collaboration. And it is also more Copilot and code auto-formatting friendly.
+# 📒 This notebook is generated from 14-FeatureSearch.py using the command `jupytext --to notebook Notebooks/14-FeatureSearch.py -o Notebooks/14-FeatureSearch.ipynb`.
+# If you need to commit changes to this notebook to the GPlately repository, make your edits in 14-FeatureSearch.py and then regenerate this Jupyter Notebook file.
+# The reason that a .py file is used is to allow for easier version control and collaboration. And it is also more Copilot and code auto-formatting friendly.
 
 # %%
 from os import makedirs
@@ -46,11 +53,9 @@ if not exists(coastlines_file):
 coastlines_feature_collection = pygplates.FeatureCollection(coastlines_file)  # type: ignore
 
 # %% [markdown]
-#### Search and filter feature collection by feature names
+#### Search coastlines by feature names (case sensitive, partial match)
 
-# Search feature collection by feature names (case sensitive, partial match)
-
-# Features whose name contains "Australia", "New Zealand" or "Tasmania" will be kept.
+# Features whose name contains "Australia", "New Zealand" or "Tasmania" will be saved in the output file.
 
 # %%
 filters = []
@@ -65,30 +70,28 @@ features = filter_feature_collection(
     coastlines_feature_collection,
     filters,
 )
-if len(features) == 0:
-    print(
-        "Warning: No features matched the search criteria. "
-        "The output feature collection will be empty."
-    )
 
 features.write(f"{DATA_DIR}/Australia_and_New_Zealand_coastlines.gpmlz")
 print(
-    f"Coastlines of Australia and New Zealand have been written to {DATA_DIR}/Australia_and_New_Zealand_coastlines.gpmlz"
+    f"The coastlines of Australia and New Zealand have been written to {DATA_DIR}/Australia_and_New_Zealand_coastlines.gpmlz"
 )
 
+# plot the output feature collection to check if the search worked as expected.
+# You should see the coastlines of Australia, New Zealand and Tasmania in the plot below.
 from gplately.mapping.cartopy_plot import _plot_feature_collection
 
 _plot_feature_collection(
-    pygplates.FeatureCollection(
-        f"{DATA_DIR}/Australia_and_New_Zealand_coastlines.gpmlz"
-    )
+    pygplates.FeatureCollection(  # type: ignore
+        f"{DATA_DIR}/Australia_and_New_Zealand_coastlines.gpmlz",
+    ),
+    title="Coastlines of Australia and New Zealand",
 )
 
 
 # %% [markdown]
-#### Filter feature collection by feature names (case sensitive, partial match)
+#### Filter out "Australia", "New Zealand" and "Tasmania" from the global coastlines (case sensitive, partial match)
 
-# Features whose name contains "Australia", "New Zealand" or "Tasmania" will be discarded.
+# Features whose name contains "Australia", "New Zealand" or "Tasmania" will be taken out of the global coastlines.
 
 # %%
 filters = []
@@ -104,23 +107,29 @@ features = filter_feature_collection(
     coastlines_feature_collection,
     filters,
 )
-if len(features) == 0:
-    print(
-        "Warning: No features matched the search criteria. "
-        "The output feature collection will be empty."
-    )
 
 features.write(f"{DATA_DIR}/coastlines_exclude_Australia_and_New_Zealand.gpmlz")
 print(
-    f"Coastlines excluding Australia and New Zealand have been written to {DATA_DIR}/coastlines_exclude_Australia_and_New_Zealand.gpmlz"
+    f"The coastlines excluding Australia and New Zealand have been written to {DATA_DIR}/coastlines_exclude_Australia_and_New_Zealand.gpmlz"
+)
+
+# plot the output feature collection to check if the filter worked as expected.
+# You should see the coastlines of Australia, New Zealand and Tasmania were taken out of the global coastlines in the plot below.
+from gplately.mapping.cartopy_plot import _plot_feature_collection
+
+_plot_feature_collection(
+    pygplates.FeatureCollection(  # type: ignore
+        f"{DATA_DIR}/coastlines_exclude_Australia_and_New_Zealand.gpmlz",
+    ),
+    title="Coastlines excluding Australia and New Zealand",
+    figsize=(10, 5),
 )
 
 # %% [markdown]
-#### Search and filter feature collection by plate IDs
+#### Search Africa coastlines by plate IDs
 
-# Search feature collection by plate IDs
-
-# Features whose plate ID matches the specified IDs will be kept. In this example, we keep features with plate IDs from 701 to 715, which correspond to the Africa and its neighboring plates.
+# Features whose plate ID matches the specified IDs will be kept. In this example, we keep features with plate IDs from 701 to 715,
+# which correspond to the Africa and its neighboring plates.
 
 # %%
 filters = []
@@ -136,22 +145,31 @@ features = filter_feature_collection(
     coastlines_feature_collection,
     filters,
 )
-if len(features) == 0:
-    print(
-        "Warning: No features matched the search criteria. "
-        "The output feature collection will be empty."
-    )
 
 features.write(f"{DATA_DIR}/coastlines_with_plate_id_from_701_to_715.gpmlz")
 print(
     f"Features with plate IDs from 701 to 715 have been written to {DATA_DIR}/coastlines_with_plate_id_from_701_to_715.gpmlz"
 )
 
+# plot the output feature collection to check if the search worked as expected.
+# You should see the coastlines of Africa in the plot below.
+import cartopy.crs as ccrs  # type: ignore
+from gplately.mapping.cartopy_plot import _plot_feature_collection
+
+_plot_feature_collection(
+    pygplates.FeatureCollection(  # type: ignore
+        f"{DATA_DIR}/coastlines_with_plate_id_from_701_to_715.gpmlz",
+    ),
+    title="Coastlines of Africa",
+    projection=ccrs.Robinson(central_longitude=0),
+)
+
 # %% [markdown]
 
-##### Filter feature collection by plate IDs
+##### Filter coastlines by plate IDs
 
-# Features whose plate ID matches the specified IDs will be discarded. In this example, we keep features with plate IDs from 701 to 715, which correspond to the Africa and its neighboring plates.
+# Features whose plate ID matches the specified IDs will be discarded. In this example, we filter out features with plate IDs from 701 to 715,
+# which correspond to the Africa and its neighboring plates.
 
 # %%
 filters = []
@@ -167,23 +185,27 @@ features = filter_feature_collection(
     coastlines_feature_collection,
     filters,
 )
-if len(features) == 0:
-    print(
-        "Warning: No features matched the search criteria. "
-        "The output feature collection will be empty."
-    )
-
 features.write(f"{DATA_DIR}/coastlines_exclude_plate_id_from_701_to_715.gpmlz")
 print(
     f"Features with plate IDs from 701 to 715 have been written to {DATA_DIR}/coastlines_exclude_plate_id_from_701_to_715.gpmlz"
 )
+# plot the output feature collection to check if the filter worked as expected.
+# You should see that the coastlines of Africa are excluded in the plot below.
+import cartopy.crs as ccrs  # type: ignore
+from gplately.mapping.cartopy_plot import _plot_feature_collection
 
+_plot_feature_collection(
+    pygplates.FeatureCollection(  # type: ignore
+        f"{DATA_DIR}/coastlines_exclude_plate_id_from_701_to_715.gpmlz",
+    ),
+    title="Coastlines excluding Africa",
+    projection=ccrs.Robinson(central_longitude=0),
+)
 # %% [markdown]
 
-#### Search features in a feature collection by their birth ages
+#### Search features by birth ages
 
-# Search all the features whose birth ages are older than 500 million years
-
+# Find all the features whose birth ages are older than 500 million years
 
 # %%
 filters = []
@@ -197,21 +219,26 @@ features = filter_feature_collection(
     coastlines_feature_collection,
     filters,
 )
-if len(features) == 0:
-    print(
-        "Warning: No features matched the search criteria. "
-        "The output feature collection will be empty."
-    )
 
 features.write(f"{DATA_DIR}/coastlines_older_than_500_million_years.gpmlz")
 print(
     f"Features with birth ages older than 500 million years have been written to {DATA_DIR}/coastlines_older_than_500_million_years.gpmlz"
 )
 
+# plot the output feature collection to check if the search worked as expected.
+# You should see that the coastlines older than 500 million years in the plot below.
+from gplately.mapping.cartopy_plot import _plot_feature_collection
+
+_plot_feature_collection(
+    pygplates.FeatureCollection(  # type: ignore
+        f"{DATA_DIR}/coastlines_older_than_500_million_years.gpmlz",
+    ),
+    title="Coastlines older than 500 million years",
+)
+
 # %% [markdown]
 
-##### Keep all the features whose birth ages are younger than 500 million years
-
+##### Find all the coastlines younger than 500 million years
 
 # %%
 filters = []
@@ -225,15 +252,21 @@ features = filter_feature_collection(
     coastlines_feature_collection,
     filters,
 )
-if len(features) == 0:
-    print(
-        "Warning: No features matched the search criteria. "
-        "The output feature collection will be empty."
-    )
 
 features.write(f"{DATA_DIR}/coastlines_younger_than_500_million_years.gpmlz")
 print(
     f"Features with birth ages younger than 500 million years have been written to {DATA_DIR}/coastlines_younger_than_500_million_years.gpmlz"
+)
+
+# plot the output feature collection to check if the search worked as expected.
+# You should see that the coastlines younger than 500 million years in the plot below.
+from gplately.mapping.cartopy_plot import _plot_feature_collection
+
+_plot_feature_collection(
+    pygplates.FeatureCollection(  # type: ignore
+        f"{DATA_DIR}/coastlines_younger_than_500_million_years.gpmlz",
+    ),
+    title="Coastlines younger than 500 million years",
 )
 
 # %% [markdown]
@@ -264,11 +297,6 @@ features = filter_feature_collection(
     topology_feature_collection,
     filters,
 )
-if len(features) == 0:
-    print(
-        "Warning: No features matched the search criteria. "
-        "The output feature collection will be empty."
-    )
 
 features.write(
     f"{DATA_DIR}/topology_features_disappeared_before_100_million_years.gpmlz"
@@ -293,11 +321,6 @@ features = filter_feature_collection(
     topology_feature_collection,
     filters,
 )
-if len(features) == 0:
-    print(
-        "Warning: No features matched the search criteria. "
-        "The output feature collection will be empty."
-    )
 
 features.write(
     f"{DATA_DIR}/topology_features_disappeared_after_100_million_years.gpmlz"
@@ -308,10 +331,9 @@ print(
 
 # %% [markdown]
 
-#### Search features in a feature collection by feature type
+#### Search by feature type
 
-# keep all the features whose feature type is gpml:Basin or gpml:IslandArc
-
+# find all the features whose feature type is gpml:Basin or gpml:IslandArc
 
 # %%
 filters = []
@@ -325,20 +347,26 @@ features = filter_feature_collection(
     coastlines_feature_collection,
     filters,
 )
-if len(features) == 0:
-    print(
-        "Warning: No features matched the search criteria. "
-        "The output feature collection will be empty."
-    )
 
 features.write(f"{DATA_DIR}/coastlines_basins_and_island_arcs.gpmlz")
 print(
     f"Features with feature type Basin or IslandArc have been written to {DATA_DIR}/coastlines_basins_and_island_arcs.gpmlz"
 )
 
+# plot the output feature collection to check if the search worked as expected.
+# You should see basin and island arcs in the plot below.
+from gplately.mapping.cartopy_plot import _plot_feature_collection
+
+_plot_feature_collection(
+    pygplates.FeatureCollection(  # type: ignore
+        f"{DATA_DIR}/coastlines_basins_and_island_arcs.gpmlz",
+    ),
+    title="Coastlines with feature type Basin or IslandArc",
+)
+
 # %% [markdown]
 
-#### Search features in a feature collection which have a gpml:subductionPolarity property
+#### Find features with gpml:subductionPolarity property
 
 # %%
 filters = []
@@ -348,20 +376,26 @@ features = filter_feature_collection(
     topology_feature_collection,
     filters,
 )
-if len(features) == 0:
-    print(
-        "Warning: No features matched the search criteria. "
-        "The output feature collection will be empty."
-    )
 
 features.write(f"{DATA_DIR}/topology_features_with_subduction_polarity.gpmlz")
 print(
     f"Topology features with subduction polarity have been written to {DATA_DIR}/topology_features_with_subduction_polarity.gpmlz"
 )
 
+# plot the output feature collection to check if the search worked as expected.
+# You should see features with gpml:subductionPolarity property in the plot below.
+from gplately.mapping.cartopy_plot import _plot_feature_collection
+
+_plot_feature_collection(
+    pygplates.FeatureCollection(  # type: ignore
+        f"{DATA_DIR}/topology_features_with_subduction_polarity.gpmlz",
+    ),
+    title="Topology features with subduction polarity",
+)
+
 # %% [markdown]
 
-#### Find features in a feature collection that has a gpml:subductionPolarity property with a value of "Left"
+#### Find features whose gpml:subductionPolarity is "Left"
 
 # %%
 # open the .gpml file to find the property value name, such as this SubductionPolarityEnumeration
@@ -380,17 +414,22 @@ features = filter_feature_collection(
     topology_feature_collection,
     filters,
 )
-if len(features) == 0:
-    print(
-        "Warning: No features matched the search criteria. "
-        "The output feature collection will be empty."
-    )
 
 features.write(f"{DATA_DIR}/topology_features_with_subduction_polarity_left.gpmlz")
 print(
-    f"Topology features with subduction polarity have been written to {DATA_DIR}/topology_features_with_subduction_polarity_left.gpmlz"
+    f"Topology features with subduction polarity of Left have been written to {DATA_DIR}/topology_features_with_subduction_polarity_left.gpmlz"
 )
 
+# plot the output feature collection to check if the search worked as expected.
+# You should see features whose gpml:subductionPolarity is Left in the plot below.
+from gplately.mapping.cartopy_plot import _plot_feature_collection
+
+_plot_feature_collection(
+    pygplates.FeatureCollection(  # type: ignore
+        f"{DATA_DIR}/topology_features_with_subduction_polarity_left.gpmlz",
+    ),
+    title="Topology features with subduction polarity of Left",
+)
 
 # %% [markdown]
 #### Find points inside a region of interest
