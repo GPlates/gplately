@@ -18,6 +18,7 @@
 """This sub-module contains functions for manipulating GPML (`.gpml`, `.gpmlz`) files,
 as well as `pygplates.Feature` and `pygplates.FeatureCollection` objects.
 """
+import abc
 import os
 
 
@@ -88,6 +89,36 @@ def GPML_to_GeoDataFrame(
     gdf = gpd.GeoDataFrame(data)
     gdf.index = feature_ids
     return gdf
+
+
+class FeatureTransformer(metaclass=abc.ABCMeta):
+    @classmethod
+    def __subclasshook__(cls, subclass):
+        return (
+            hasattr(subclass, "transform")
+            and callable(subclass.transform)
+            or NotImplemented
+        )
+
+    @abc.abstractmethod
+    def transform(self, feature: pygplates.Feature) -> pygplates.Feature:  # type: ignore
+        """This abstract method must be implemented in subclass.
+
+        :param feature: pygplates.Feature
+
+        :returns: new pygplates.Feature after transformation
+        """
+
+        raise NotImplementedError
+
+
+def transform_feature_collection(
+    feature_collection: pygplates.FeatureCollection, transformers: List[FeatureTransformer]  # type: ignore
+):
+    for feature in feature_collection:
+        for transformer in transformers:
+            feature = transformer.transform(feature)
+    return feature_collection
 
 
 def extract_feature(id, features):

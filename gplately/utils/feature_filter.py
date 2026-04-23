@@ -340,37 +340,18 @@ class RegionOfInterestFilter(FeatureFilter):
             return len(outside_geometries) == 0
 
 
-class PandasFeatureNameFilter(FeatureFilter):
-    """search and filter feature collection with Pandas DataFrame"""
-
-    def __init__(self, feature_collection, name):
-
-        gdf = GPML_to_GeoDataFrame(
-            feature_collection,
-            property_getters={
-                "name": feature_name_getter,
-            },
-        )
-        filtered_gdf = gdf[gdf["name"].str.contains(name, case=False, na=False)]
-        self._feature_ids = filtered_gdf.index.tolist()
-
-    def should_keep(self, feature: pygplates.Feature) -> bool:  # type: ignore
-        if feature.get_feature_id().get_string() in self._feature_ids:
-            return True
-        else:
-            return False
-
-
 def filter_feature_collection(
-    feature_collection: pygplates.FeatureCollection, filters: List[FeatureFilter]  # type: ignore
+    feature_collection: pygplates.FeatureCollection, filters: List[FeatureFilter], return_remainder=False  # type: ignore
 ):
     """Filter a feature collection using a list of filters.
 
     :param feature_collection: the input feature collection to be filtered
     :param filters: a list of filters to apply. A feature will be kept if it passes all the filters in the list.
-    :returns: a new feature collection after filtering
+    :param return_remainder: if True, return a tuple of (chosen_feature_collection, remainder_feature_collection); if False, return filtered_feature_collection only.
+    :returns: depending on the value of return_remainder, either the chosen feature collection, or a tuple of (chosen feature collection, remainder feature collection)
     """
-    new_feature_collection = pygplates.FeatureCollection()  # type: ignore
+    chosen_ones_feature_collection = pygplates.FeatureCollection()  # type: ignore
+    remainder_feature_collection = pygplates.FeatureCollection()  # type: ignore
     for feature in feature_collection:
         keep_flag = True
         for filter in filters:
@@ -378,8 +359,12 @@ def filter_feature_collection(
                 keep_flag = False
                 break
         if keep_flag:
-            new_feature_collection.add(feature)
-
-    if len(new_feature_collection) == 0:
+            chosen_ones_feature_collection.add(feature)
+        else:
+            remainder_feature_collection.add(feature)
+    if len(chosen_ones_feature_collection) == 0:
         logger.warning("No feature matched the search criteria.")
-    return new_feature_collection
+    if return_remainder:
+        return chosen_ones_feature_collection, remainder_feature_collection
+    else:
+        return chosen_ones_feature_collection

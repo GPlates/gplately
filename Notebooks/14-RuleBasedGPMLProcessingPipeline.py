@@ -31,6 +31,7 @@ import cartopy.crs as ccrs  # type: ignore
 import pygplates  # type: ignore
 
 from gplately.utils.feature_filter import (
+    FeatureFilter,
     EndTimeFilter,
     FeatureNameFilter,
     PlateIDFilter,
@@ -39,10 +40,18 @@ from gplately.utils.feature_filter import (
     PropertyExistsFilter,
     PropertyValueFilter,
     RegionOfInterestFilter,
-    PandasFeatureNameFilter,
     filter_feature_collection,
 )
 from gplately.mapping import cartopy_plot
+
+from gplately.gpml import (
+    FeatureTransformer,
+    GPML_to_GeoDataFrame,
+    feature_type_getter,
+    feature_name_getter,
+    plate_id_getter,
+    transform_feature_collection,
+)
 
 DATA_DIR = "./rule-based-GPML-processing-pipeline-data"
 makedirs(DATA_DIR, exist_ok=True)
@@ -230,10 +239,10 @@ cases.append(
 # case 8: features with gpml:subductionPolarity property will be saved in the output file.
 cases.append(
     {
-        "title": "Coastlines with subduction polarity",
+        "title": "Topology with subduction polarity",
         "feature_collection": topology_feature_collection,
         "filters": [PropertyExistsFilter("gpml:subductionPolarity", not_exists=False)],
-        "output_file": f"{DATA_DIR}/coastlines_with_subduction_polarity.gpmlz",
+        "output_file": f"{DATA_DIR}/topology_with_subduction_polarity.gpmlz",
         "ax": ax8,
     }
 )
@@ -241,14 +250,14 @@ cases.append(
 # case 9: features whose gpml:subductionPolarity is "Left" will be saved in the output file.
 cases.append(
     {
-        "title": "Coastlines with subduction polarity of Left",
+        "title": "Topology with subduction polarity of Left",
         "feature_collection": topology_feature_collection,
         "filters": [
             PropertyValueFilter(
                 "gpml:subductionPolarity", subduction_polarity_left, not_match=False
             )
         ],
-        "output_file": f"{DATA_DIR}/coastlines_with_subduction_polarity_left.gpmlz",
+        "output_file": f"{DATA_DIR}/topology_with_subduction_polarity_left.gpmlz",
         "ax": ax9,
     }
 )
@@ -283,7 +292,7 @@ for case in cases:
         case["filters"],
     )
 
-    features.write(case["output_file"])
+    features.write(case["output_file"])  # type: ignore
     print(f"\"{case['title']}\" have been written to {case['output_file']}")
 
     # plot the output feature collection to check if the search worked as expected.
@@ -298,6 +307,87 @@ for case in cases:
 
 plt.tight_layout()
 plt.show()
+
+# %% [markdown]
+# #### Search and filter feature collection with custom filters
+
+
+# The code cell below demonstrates how to create a custom filter by subclassing the `FeatureFilter` class,
+# and then use this custom filter to search and filter a feature collection.
+# %%
+class PandasFeatureNameFilter(FeatureFilter):
+    """search and filter feature collection with Pandas DataFrame"""
+
+    def __init__(self, feature_collection: pygplates.FeatureCollection, name: str):  # type: ignore
+        gdf = GPML_to_GeoDataFrame(
+            feature_collection,
+            property_getters={
+                "name": feature_name_getter,
+            },
+        )
+        # use pandas dataframe to filter features whose name contains the specified name, and get the feature IDs of the filtered features.
+        self._feature_ids = gdf[
+            gdf["name"].str.contains(name, case=False, na=False)
+        ].index.tolist()
+
+    def should_keep(self, feature: pygplates.Feature) -> bool:  # type: ignore
+        if feature.get_feature_id().get_string() in self._feature_ids:
+            return True
+        else:
+            return False
+
+
+output_file = f"{DATA_DIR}/Africa_coastlines_with_custom_filter.gpmlz"
+filter_feature_collection(
+    coastlines_feature_collection,
+    [PandasFeatureNameFilter(coastlines_feature_collection, "Africa")],
+).write(  # type: ignore
+    output_file
+)
+
+print(f"The coastlines of Africa have been written to {output_file}")
+
+# plot the output feature collection to check if the search worked as expected.
+# You should see the coastlines of Africa in the plot below.
+cartopy_plot._plot_feature_collection(
+    pygplates.FeatureCollection(  # type: ignore
+        output_file,
+    ),
+    title="Coastlines of Africa",
+    projection=ccrs.Robinson(central_longitude=0),
+)
+
+
+# %%
+class NullifyPlateID(FeatureTransformer):
+    """A custom feature transformer that sets the plate ID of all features to null."""
+
+    def transform(self, feature: pygplates.Feature) -> pygplates.Feature:  # type: ignore
+        feature.set_reconstruction_plate_id(0)  # type: ignore
+        return feature
+
+
+unclassified_features, other_features = filter_feature_collection(
+    topology_feature_collection,
+    [
+        FeatureTypeFilter(
+            "gpml:UnclassifiedFeature",
+        )
+    ],
+    return_remainder=True,
+)
+
+[
+    other_features.append(x)
+    for x in transform_feature_collection(
+        unclassified_features,
+        [NullifyPlateID()],
+    )
+]
+
+other_features.write(  # type: ignore
+    f"{DATA_DIR}/topology_unclassified_features_with_null_plate_id.gpmlz"
+)
 
 
 # %% [markdown]
@@ -433,47 +523,3 @@ print(
 #  <img src="https://raw.githubusercontent.com/GPlates/gplately/refs/heads/377-feature-request-gpml-file-management-workflow/Notebooks/NotebookFiles/Notebook14/icosahedron_vertices_within_australia.png" width="300">
 #  <figcaption><b>Icosahedron Vertices within Australia</b></figcaption>
 # </figure>
-
-# %%
-
-from gplately.gpml import (
-    get_unique_feature_names,
-    GPML_to_GeoDataFrame,
-    feature_type_getter,
-    feature_name_getter,
-    plate_id_getter,
-)
-
-print(
-    GPML_to_GeoDataFrame(
-        coastlines_feature_collection,
-        property_getters={
-            "name": feature_name_getter,
-            "type": feature_type_getter,
-            "plate_id": plate_id_getter,
-        },
-    )
-)
-
-filters = []
-filters.append(PandasFeatureNameFilter(coastlines_feature_collection, "Africa"))
-features = filter_feature_collection(
-    coastlines_feature_collection,
-    filters,
-)
-
-features.write(f"{DATA_DIR}/Africa_coastlines.gpmlz")
-print(
-    f"The coastlines of Africa have been written to {DATA_DIR}/Africa_coastlines.gpmlz"
-)
-
-# plot the output feature collection to check if the search worked as expected.
-# You should see the coastlines of Africa in the plot below.
-from gplately.mapping.cartopy_plot import _plot_feature_collection
-
-_plot_feature_collection(
-    pygplates.FeatureCollection(  # type: ignore
-        f"{DATA_DIR}/Africa_coastlines.gpmlz",
-    ),
-    title="Coastlines of Africa",
-)
