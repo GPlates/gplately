@@ -178,7 +178,13 @@ class CartopyPlotEngine(PlotEngine):
         )
 
 
-def _plot_feature_collection(feature_collection: pygplates.FeatureCollection, title: str = "Untitled Feature Collection", figsize=(8, 4), projection=ccrs.Robinson(central_longitude=180)):  # type: ignore
+def _plot_feature_collection(
+    feature_collection: pygplates.FeatureCollection,  # type: ignore
+    title: str = "Untitled Feature Collection",
+    ax=None,
+    figsize=(8, 4),
+    projection=ccrs.Robinson(central_longitude=180),
+):
     """Helper function to plot a pygplates FeatureCollection using Cartopy. Not part of the public API.
     Mostly this function is for testing and debugging purposes, and to provide a simple example of how to plot pygplates features with Cartopy.
     """
@@ -188,8 +194,10 @@ def _plot_feature_collection(feature_collection: pygplates.FeatureCollection, ti
     from cartopy.mpl.ticker import LongitudeFormatter, LatitudeFormatter
     import matplotlib.ticker as mticker
 
-    fig = plt.figure(figsize=figsize, dpi=72)
-    ax = fig.add_subplot(111, projection=projection)
+    if ax is None:
+        fig = plt.figure(figsize=figsize, dpi=72)
+        ax = fig.add_subplot(111, projection=projection)
+
     ax.set_global()  # type: ignore
     # Add gridlines and lat/lon labels
     gl = ax.gridlines(  # type: ignore
@@ -202,12 +210,21 @@ def _plot_feature_collection(feature_collection: pygplates.FeatureCollection, ti
     )
 
     # Hide labels on top/right if you want cleaner maps
-    gl.top_labels = False
-    gl.right_labels = False
+    # Newer Cartopy
+    if hasattr(gl, "top_labels"):
+        gl.top_labels = False
+    if hasattr(gl, "right_labels"):
+        gl.right_labels = False
+
+    # Older Cartopy
+    if hasattr(gl, "xlabels_top"):
+        gl.xlabels_top = False
+    if hasattr(gl, "ylabels_right"):
+        gl.ylabels_right = False
 
     # Control tick locations
     gl.xlocator = mticker.FixedLocator(range(-180, 181, 60))
-    gl.ylocator = mticker.FixedLocator(range(-90, 91, 15))
+    gl.ylocator = mticker.FixedLocator(range(-90, 91, 30))
 
     # Nice lon/lat formatting
     gl.xformatter = LongitudeFormatter(number_format=".0f", degree_symbol="°")
@@ -233,5 +250,5 @@ def _plot_feature_collection(feature_collection: pygplates.FeatureCollection, ti
                         edgecolor="blue",
                         facecolor="none",
                     )
-    plt.title(title)
-    plt.show()
+    ax.set_title(title)
+    # plt.show()

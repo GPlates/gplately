@@ -22,6 +22,13 @@ from typing import List, Tuple, Union
 
 import pygplates
 
+from ..gpml import (
+    GPML_to_GeoDataFrame,
+    feature_name_getter,
+    feature_type_getter,
+    plate_id_getter,
+)
+
 logger = logging.getLogger("gplately")
 
 
@@ -135,13 +142,13 @@ class BirthAgeFilter(FeatureFilter):
             if self.keep_older:
                 if (
                     begin_time == pygplates.GeoTimeInstant.create_distant_past()  # type: ignore
-                    or begin_time > self.age
+                    or begin_time >= self.age
                 ):
                     return True
             else:
                 if (
                     begin_time != pygplates.GeoTimeInstant.create_distant_past()  # type: ignore
-                    and begin_time < self.age
+                    and begin_time <= self.age
                 ):
                     return True
         else:
@@ -174,13 +181,13 @@ class EndTimeFilter(FeatureFilter):
             if self.disappear_before:
                 if (
                     end_time != pygplates.GeoTimeInstant.create_distant_future()  # type: ignore
-                    and end_time > self.age
+                    and end_time >= self.age
                 ):
                     return True
             else:
                 if (
                     end_time == pygplates.GeoTimeInstant.create_distant_future()  # type: ignore
-                    or end_time < self.age
+                    or end_time <= self.age
                 ):
                     return True
         else:
@@ -331,6 +338,27 @@ class RegionOfInterestFilter(FeatureFilter):
             return len(inside_geometries) == 0
         else:
             return len(outside_geometries) == 0
+
+
+class PandasFeatureNameFilter(FeatureFilter):
+    """search and filter feature collection with Pandas DataFrame"""
+
+    def __init__(self, feature_collection, name):
+
+        gdf = GPML_to_GeoDataFrame(
+            feature_collection,
+            property_getters={
+                "name": feature_name_getter,
+            },
+        )
+        filtered_gdf = gdf[gdf["name"].str.contains(name, case=False, na=False)]
+        self._feature_ids = filtered_gdf.index.tolist()
+
+    def should_keep(self, feature: pygplates.Feature) -> bool:  # type: ignore
+        if feature.get_feature_id().get_string() in self._feature_ids:
+            return True
+        else:
+            return False
 
 
 def filter_feature_collection(
