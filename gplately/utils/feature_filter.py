@@ -20,19 +20,15 @@ import logging
 import re
 from typing import List, Tuple, Union
 
-import pygplates
-
-from ..gpml import (
-    GPML_to_GeoDataFrame,
-    feature_name_getter,
-    feature_type_getter,
-    plate_id_getter,
-)
+import pygplates  # type: ignore
 
 logger = logging.getLogger("gplately")
 
 
 class FeatureFilter(metaclass=abc.ABCMeta):
+    _filtrate_feature_collection = None
+    _residue_feature_collection = None
+
     @classmethod
     def __subclasshook__(cls, subclass):
         return (
@@ -52,6 +48,16 @@ class FeatureFilter(metaclass=abc.ABCMeta):
 
         raise NotImplementedError
 
+    @property
+    def filtrate_feature_collection(self) -> Union[pygplates.FeatureCollection, None]:  # type: ignore
+        """the feature collection of features that passed the filter."""
+        return self._filtrate_feature_collection
+
+    @property
+    def residue_feature_collection(self) -> Union[pygplates.FeatureCollection, None]:  # type: ignore
+        """the feature collection of features that did not pass the filter."""
+        return self._residue_feature_collection
+
 
 class FeatureNameFilter(FeatureFilter):
     """filter features by name
@@ -67,34 +73,48 @@ class FeatureNameFilter(FeatureFilter):
     def __init__(
         self, names: List[str], exact_match=False, case_sensitive=False, exclude=False
     ):
-        self.names = names
-        self.exact_match = exact_match
-        self.case_sensitive = case_sensitive
-        self.exclude = exclude
+        """
+        :param names: a list of strings to match the feature name
+        :param exact_match: if True, the feature name must be exactly the same as one of the strings in names;
+            if False, the feature name only needs to contain one of the strings in names
+        :param case_sensitive: if True, the name matching is case sensitive; if False, the name matching is case insensitive
+        :param exclude: if True, features that match the criteria will be excluded;
+            if False, only features that match the criteria will be kept
+        """
+        self._names = names
+        self._exact_match = exact_match
+        self._case_sensitive = case_sensitive
+        self._exclude = exclude
+        self._filtrate_feature_collection = pygplates.FeatureCollection()  # type: ignore
+        self._residue_feature_collection = pygplates.FeatureCollection()  # type: ignore
 
     def _check_name(self, name_1: str, name_2: str) -> bool:
         """check if two names are the same or name_2 contains name_1"""
-        if not self.case_sensitive:
+        if not self._case_sensitive:
             name_1_tmp = name_1.lower()
             name_2_tmp = name_2.lower()
         else:
             name_1_tmp = name_1
             name_2_tmp = name_2
-        if self.exact_match:
+        if self._exact_match:
             return name_1_tmp == name_2_tmp
         else:
             return name_1_tmp in name_2_tmp
 
     def should_keep(self, feature: pygplates.Feature) -> bool:  # type: ignore
-        if self.exclude:
-            for name in self.names:
+        if self._exclude:
+            for name in self._names:
                 if self._check_name(name, feature.get_name()):  # type: ignore
+                    self._residue_feature_collection.add(feature)  # type: ignore
                     return False
+            self._filtrate_feature_collection.add(feature)  # type: ignore
             return True
         else:
-            for name in self.names:
+            for name in self._names:
                 if self._check_name(name, feature.get_name()):  # type: ignore
+                    self._filtrate_feature_collection.add(feature)  # type: ignore
                     return True
+            self._residue_feature_collection.add(feature)  # type: ignore
             return False
 
 
@@ -108,13 +128,13 @@ class PlateIDFilter(FeatureFilter):
     """
 
     def __init__(self, pids: List[int], exclude=False):
-        self.pids = pids
-        self.exclude = exclude
+        self._pids = pids
+        self._exclude = exclude
 
     def should_keep(self, feature: pygplates.Feature) -> bool:  # type: ignore
-        if not self.exclude and feature.get_reconstruction_plate_id() in self.pids:  # type: ignore
+        if not self._exclude and feature.get_reconstruction_plate_id() in self._pids:  # type: ignore
             return True
-        if self.exclude and feature.get_reconstruction_plate_id() not in self.pids:  # type: ignore
+        if self._exclude and feature.get_reconstruction_plate_id() not in self._pids:  # type: ignore
             return True
         return False
 
@@ -210,6 +230,8 @@ class FeatureTypeFilter(FeatureFilter):
 
     def __init__(self, feature_type_re: str):
         self._feature_type_re = feature_type_re
+        self._filtrate_feature_collection = pygplates.FeatureCollection()  # type: ignore
+        self._residue_feature_collection = pygplates.FeatureCollection()  # type: ignore
 
     def should_keep(self, feature: pygplates.Feature) -> bool:  # type: ignore
         feature_type = feature.get_feature_type()
@@ -217,11 +239,13 @@ class FeatureTypeFilter(FeatureFilter):
             logger.debug(
                 f"feature type match: {self._feature_type_re} {feature_type.to_qualified_string()}"
             )
+            self._filtrate_feature_collection.add(feature)  # type: ignore
             return True
         else:
             logger.debug(
                 f"feature type not match: {self._feature_type_re} {feature_type.to_qualified_string()}"
             )
+            self._residue_feature_collection.add(feature)  # type: ignore
             return False
 
 
@@ -341,30 +365,19 @@ class RegionOfInterestFilter(FeatureFilter):
 
 
 def filter_feature_collection(
-    feature_collection: pygplates.FeatureCollection, filters: List[FeatureFilter], return_remainder=False  # type: ignore
+    feature_collection: pygplates.FeatureCollection, filters: List[FeatureFilter]  # type: ignore
 ):
     """Filter a feature collection using a list of filters.
 
     :param feature_collection: the input feature collection to be filtered
     :param filters: a list of filters to apply. A feature will be kept if it passes all the filters in the list.
-    :param return_remainder: if True, return a tuple of (chosen_feature_collection, remainder_feature_collection); if False, return filtered_feature_collection only.
-    :returns: depending on the value of return_remainder, either the chosen feature collection, or a tuple of (chosen feature collection, remainder feature collection)
+    :returns: the filtered feature collection
     """
-    chosen_ones_feature_collection = pygplates.FeatureCollection()  # type: ignore
-    remainder_feature_collection = pygplates.FeatureCollection()  # type: ignore
-    for feature in feature_collection:
-        keep_flag = True
-        for filter in filters:
-            if not filter.should_keep(feature):
-                keep_flag = False
-                break
-        if keep_flag:
-            chosen_ones_feature_collection.add(feature)
-        else:
-            remainder_feature_collection.add(feature)
-    if len(chosen_ones_feature_collection) == 0:
-        logger.warning("No feature matched the search criteria.")
-    if return_remainder:
-        return chosen_ones_feature_collection, remainder_feature_collection
-    else:
-        return chosen_ones_feature_collection
+    for filter in filters:
+        filtrate_feature_collection = pygplates.FeatureCollection()  # type: ignore
+        for feature in feature_collection:
+            if filter.should_keep(feature):
+                filtrate_feature_collection.add(feature)
+        feature_collection = filtrate_feature_collection
+
+    return feature_collection

@@ -45,6 +45,7 @@ from gplately.utils.feature_filter import (
 from gplately.mapping import cartopy_plot
 
 from gplately.gpml import (
+    FeatureCollectionProcessor,
     FeatureTransformer,
     GPML_to_GeoDataFrame,
     feature_type_getter,
@@ -359,34 +360,31 @@ cartopy_plot._plot_feature_collection(
 
 
 # %%
-class NullifyPlateID(FeatureTransformer):
-    """A custom feature transformer that sets the plate ID of all features to null."""
+# define a custom filter that sets the plate ID of a feature to 0
+class ZeroPlateID(FeatureTransformer):
+    """A custom feature transformer that sets the plate ID of a feature to 0."""
 
     def transform(self, feature: pygplates.Feature) -> pygplates.Feature:  # type: ignore
         feature.set_reconstruction_plate_id(0)  # type: ignore
         return feature
 
 
-unclassified_features, other_features = filter_feature_collection(
-    topology_feature_collection,
-    [
-        FeatureTypeFilter(
-            "gpml:UnclassifiedFeature",
-        )
-    ],
-    return_remainder=True,
-)
+# 1. create a feature collection processor with a list of filter(s) and transformer(s),
+# 2. process the topology feature collection.
+# 3. write the output to a new GPML file.
+feature_type_filter = FeatureTypeFilter("gpml:UnclassifiedFeature")
+zero_plate_id_feature_collection = FeatureCollectionProcessor(
+    filters=[feature_type_filter],
+    transformers=[ZeroPlateID()],
+).process(topology_feature_collection)
 
-[
-    other_features.append(x)
-    for x in transform_feature_collection(
-        unclassified_features,
-        [NullifyPlateID()],
-    )
-]
-
-other_features.write(  # type: ignore
-    f"{DATA_DIR}/topology_unclassified_features_with_null_plate_id.gpmlz"
+features = []
+if zero_plate_id_feature_collection:
+    features.extend(zero_plate_id_feature_collection)
+if feature_type_filter._residue_feature_collection:
+    features.extend(feature_type_filter.residue_feature_collection)
+pygplates.FeatureCollection(features).write(
+    f"{DATA_DIR}/topology_unclassified_features_zero_plate_id.gpmlz"
 )
 
 

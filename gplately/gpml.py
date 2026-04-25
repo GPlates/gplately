@@ -20,9 +20,12 @@ as well as `pygplates.Feature` and `pygplates.FeatureCollection` objects.
 """
 import abc
 import os
+from typing import List
 
 
-import pygplates
+import pygplates  # type: ignore
+
+from gplately.utils.feature_filter import FeatureFilter, filter_feature_collection
 
 # pyright: reportAttributeAccessIssue=false
 
@@ -32,6 +35,59 @@ __all__ = [
     "get_topological_references",
     "is_topological",
 ]
+
+
+class FeatureTransformer(metaclass=abc.ABCMeta):
+    @classmethod
+    def __subclasshook__(cls, subclass):
+        return (
+            hasattr(subclass, "transform")
+            and callable(subclass.transform)
+            or NotImplemented
+        )
+
+    @abc.abstractmethod
+    def transform(self, feature: pygplates.Feature) -> pygplates.Feature:  # type: ignore
+        """This abstract method must be implemented in subclass.
+
+        :param feature: pygplates.Feature
+
+        :returns: new pygplates.Feature after transformation
+        """
+
+        raise NotImplementedError
+
+
+def transform_feature_collection(
+    feature_collection: pygplates.FeatureCollection, transformers: List[FeatureTransformer]  # type: ignore
+):
+    """Transform a feature collection with a list of transformers."""
+    for feature in feature_collection:
+        for transformer in transformers:
+            feature = transformer.transform(feature)
+    return feature_collection
+
+
+class FeatureCollectionProcessor:
+    def __init__(
+        self,
+        filters: List[FeatureFilter] = [],
+        transformers: List[FeatureTransformer] = [],
+    ):
+        """Initialize the processor with a list of filters and transformers."""
+        self._filters = filters
+        self._transformers = transformers
+
+    def process(self, feature_collection: pygplates.FeatureCollection) -> pygplates.FeatureCollection:  # type: ignore
+        """Process the feature collection with the assigned filters and transformers.
+
+        :param feature_collection: pygplates.FeatureCollection
+        :returns: new pygplates.FeatureCollection after processing
+        """
+        return transform_feature_collection(
+            filter_feature_collection(feature_collection, self._filters),
+            self._transformers,
+        )
 
 
 def get_unique_feature_names(feature_collection):
@@ -89,36 +145,6 @@ def GPML_to_GeoDataFrame(
     gdf = gpd.GeoDataFrame(data)
     gdf.index = feature_ids
     return gdf
-
-
-class FeatureTransformer(metaclass=abc.ABCMeta):
-    @classmethod
-    def __subclasshook__(cls, subclass):
-        return (
-            hasattr(subclass, "transform")
-            and callable(subclass.transform)
-            or NotImplemented
-        )
-
-    @abc.abstractmethod
-    def transform(self, feature: pygplates.Feature) -> pygplates.Feature:  # type: ignore
-        """This abstract method must be implemented in subclass.
-
-        :param feature: pygplates.Feature
-
-        :returns: new pygplates.Feature after transformation
-        """
-
-        raise NotImplementedError
-
-
-def transform_feature_collection(
-    feature_collection: pygplates.FeatureCollection, transformers: List[FeatureTransformer]  # type: ignore
-):
-    for feature in feature_collection:
-        for transformer in transformers:
-            feature = transformer.transform(feature)
-    return feature_collection
 
 
 def extract_feature(id, features):
