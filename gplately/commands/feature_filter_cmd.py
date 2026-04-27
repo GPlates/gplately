@@ -19,7 +19,7 @@
 import argparse
 import logging
 import pygplates
-from..utils.feature_filter import (
+from ..utils.feature_filter import (
     FeatureNameFilter,
     PlateIDFilter,
     BirthAgeFilter,
@@ -161,7 +161,7 @@ def add_parser(subparser):
 
 def run_filter_feature_collection(args):
     """Filter the input feature collection according to command line arguments."""
-    input_feature_collection = pygplates.FeatureCollection(args.filter_input_file) # type: ignore
+    input_feature_collection = pygplates.FeatureCollection(args.filter_input_file)  # type: ignore
 
     filters = []
     if args.names:
@@ -176,7 +176,7 @@ def run_filter_feature_collection(args):
         filters.append(
             FeatureNameFilter(
                 args.exclude_names,
-                exclude=True,
+                reverse=True,
                 exact_match=args.exact_match,
                 case_sensitive=args.case_sensitive,
             )
@@ -185,11 +185,11 @@ def run_filter_feature_collection(args):
     if args.pids:
         filters.append(PlateIDFilter(args.pids))
     elif args.exclude_pids:
-        filters.append(PlateIDFilter(args.exclude_pids, exclude=True))
+        filters.append(PlateIDFilter(args.exclude_pids, reverse=True))
 
     # print(args.max_birth_age)
     if args.max_birth_age is not None:
-        filters.append(BirthAgeFilter(args.max_birth_age, keep_older=False))
+        filters.append(BirthAgeFilter(args.max_birth_age, reverse=False))
     elif args.min_birth_age is not None:
         filters.append(BirthAgeFilter(args.min_birth_age))
 

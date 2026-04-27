@@ -60,31 +60,32 @@ class FeatureFilter(metaclass=abc.ABCMeta):
 
 
 class FeatureNameFilter(FeatureFilter):
-    """filter features by name
+    """filter features by name, keep features with name matching any of the specified strings by default
 
     for example:
         FeatureNameFilter(['Africa', 'Asia']) -- keep features who name contains 'Africa' or 'Asia'
-        FeatureNameFilter(['Africa', 'Asia'], exclude=True) -- keep features who name does not contain 'Africa' or 'Asia'
+        FeatureNameFilter(['Africa', 'Asia'], reverse=True) -- keep features who name does not contain 'Africa' or 'Asia'
         FeatureNameFilter(['Africa', 'Asia'], exact_match=True) -- keep features who name is 'Africa' or 'Asia'
-        FeatureNameFilter(['Africa', 'Asia'], exclude=True, exact_match=True) -- keep features who name is not 'Africa' or 'Asia'
-        FeatureNameFilter(['Africa', 'Asia'], exclude=True, exact_match=True, case_sensitive=True) -- keep features who name is not 'Africa' or 'Asia' (case sensitive)
+        FeatureNameFilter(['Africa', 'Asia'], reverse=True, exact_match=True) -- keep features who name is not 'Africa' or 'Asia'
+        FeatureNameFilter(['Africa', 'Asia'], reverse=True, exact_match=True, case_sensitive=True) -- keep features who name is not 'Africa' or 'Asia' (case sensitive)
     """
 
     def __init__(
-        self, names: List[str], exact_match=False, case_sensitive=False, exclude=False
+        self, names: List[str], exact_match=False, case_sensitive=False, reverse=False
     ):
-        """
+        """filter features by name, keep features with name matching any of the specified strings by default
+
         :param names: a list of strings to match the feature name
         :param exact_match: if True, the feature name must be exactly the same as one of the strings in names;
             if False, the feature name only needs to contain one of the strings in names
         :param case_sensitive: if True, the name matching is case sensitive; if False, the name matching is case insensitive
-        :param exclude: if True, features that match the criteria will be excluded;
-            if False, only features that match the criteria will be kept
+        :param reverse: if False, feature with name matching one of the strings in the parameter "names" will pass the filter,
+            if True, feature with name not matching any of the strings in the parameter "names" will pass the filter.
         """
         self._names = names
         self._exact_match = exact_match
         self._case_sensitive = case_sensitive
-        self._exclude = exclude
+        self._reverse = reverse
         self._filtrate_feature_collection = pygplates.FeatureCollection()  # type: ignore
         self._residue_feature_collection = pygplates.FeatureCollection()  # type: ignore
 
@@ -102,7 +103,7 @@ class FeatureNameFilter(FeatureFilter):
             return name_1_tmp in name_2_tmp
 
     def should_keep(self, feature: pygplates.Feature) -> bool:  # type: ignore
-        if self._exclude:
+        if self._reverse:
             for name in self._names:
                 if self._check_name(name, feature.get_name()):  # type: ignore
                     self._residue_feature_collection.add(feature)  # type: ignore
@@ -119,192 +120,189 @@ class FeatureNameFilter(FeatureFilter):
 
 
 class PlateIDFilter(FeatureFilter):
-    """filter features by plate ID
+    """filter features by plate ID, keep features with plate ID in a specified list by default
 
     for example:
         PlateIDFilter([101,201,301]) -- keep features whose plate id is 101 or 201 or 301
-        PlateIDFilter([101,201,301], exclude=True) -- keep features whose plate id is not 101 nor 201 nor 301
+        PlateIDFilter([101,201,301], reverse=True) -- keep features whose plate id is not 101 nor 201 nor 301
 
     """
 
-    def __init__(self, pids: List[int], exclude=False):
+    def __init__(self, pids: List[int], reverse=False):
+        """filter features by plate ID, keep features with plate ID in a specified list by default
+
+        :param pids: a list of plate IDs to match
+        :param reverse: if False, feature with plate ID matching one of the strings in the parameter "pids" will pass the filter,
+            if True, feature with plate ID not matching any of the strings in the parameter "pids" will pass the filter.
+        """
         self._pids = pids
-        self._exclude = exclude
+        self._reverse = reverse
+        self._filtrate_feature_collection = pygplates.FeatureCollection()  # type: ignore
+        self._residue_feature_collection = pygplates.FeatureCollection()  # type: ignore
 
     def should_keep(self, feature: pygplates.Feature) -> bool:  # type: ignore
-        if not self._exclude and feature.get_reconstruction_plate_id() in self._pids:  # type: ignore
-            return True
-        if self._exclude and feature.get_reconstruction_plate_id() not in self._pids:  # type: ignore
-            return True
-        return False
+        if not self._reverse:
+            if feature.get_reconstruction_plate_id() in self._pids:  # type: ignore
+                self._filtrate_feature_collection.add(feature)
+                return True
+            else:
+                self._residue_feature_collection.add(feature)  # type: ignore
+                return False
+        else:
+            if feature.get_reconstruction_plate_id() not in self._pids:  # type: ignore
+                self._filtrate_feature_collection.add(feature)  # type: ignore
+                return True
+            else:
+                self._residue_feature_collection.add(feature)  # type: ignore
+                return False
 
 
 class BirthAgeFilter(FeatureFilter):
-    """filter features by the time of appearance
+    """filter features by the time of appearance, keep older features by default
 
     for example:
         BirthAgeFilter(500) -- keep features which appreared before 500 Ma
-        BirthAgeFilter(500, keep_older=False) --  keep features which appreared after 500 Ma
-
-    :param age: the age criterion
-    :param keep_older: if True, return True when the feature appeared before the age criterion. If False, otherwise.
-
+        BirthAgeFilter(500, reverse=False) --  keep features which appreared after 500 Ma
     """
 
-    def __init__(self, age: float, keep_older=True):
-        self.age = age
-        self.keep_older = keep_older
+    def __init__(self, age: float, reverse=False):
+        """filter features by the time of appearance, keep older features by default
+
+        :param age: the age criterion
+        :param reverse: if False, the feature older than the age criterion will pass the filter.
+            If True, the feature younger than the age criterion will pass the filter.
+        """
+
+        self._age = age
+        self._reverse = reverse
+        self._filtrate_feature_collection = pygplates.FeatureCollection()  # type: ignore
+        self._residue_feature_collection = pygplates.FeatureCollection()  # type: ignore
 
     def should_keep(self, feature: pygplates.Feature) -> bool:  # type: ignore
         valid_time = feature.get_valid_time(None)
         if valid_time:
             begin_time, _ = valid_time
-            if self.keep_older:
+            if not self._reverse:  # keep older features
                 if (
                     begin_time == pygplates.GeoTimeInstant.create_distant_past()  # type: ignore
-                    or begin_time >= self.age
+                    or begin_time >= self._age
                 ):
+                    self._filtrate_feature_collection.add(feature)  # type: ignore
                     return True
-            else:
+            else:  # keep younger features
                 if (
                     begin_time != pygplates.GeoTimeInstant.create_distant_past()  # type: ignore
-                    and begin_time <= self.age
+                    and begin_time <= self._age
                 ):
+                    self._filtrate_feature_collection.add(feature)  # type: ignore
                     return True
         else:
             logger.warning(
-                f"Feature {feature.get_feature_type()} {feature.get_name()} does not have valid time, and will be excluded by BirthAgeFilter."  # type: ignore
+                f"Feature {feature.get_feature_type()} {feature.get_name()} does not have 'valid time', and will not pass BirthAgeFilter."  # type: ignore
             )
+        self._residue_feature_collection.add(feature)  # type: ignore
         return False
 
 
 class EndTimeFilter(FeatureFilter):
-    """filter features by the time of disappearance
+    """filter features by the time of disappearance, keep features that disappeared before a certain time by default
 
     for example:
         EndTimeFilter(100) -- keep features which disappeared before 100 Ma
-        EndTimeFilter(100, disappear_before=False) --  keep features which disappeared after 100 Ma, including features that have not disappeared yet (end time is distant future)
-
-    :param age: the age criterion
-    :param disappear_before: if True, return True when the feature disappeared before the age criterion. If False, otherwise.
-
+        EndTimeFilter(100, reverse=False) --  keep features which disappeared after 100 Ma, including features that have not disappeared yet (end time is distant future)
     """
 
-    def __init__(self, age: float, disappear_before=True):
-        self.age = age
-        self.disappear_before = disappear_before
+    def __init__(self, age: float, reverse=False):
+        """filter features by the time of disappearance, keep features that disappeared before a certain time by default
+
+        :param age: the age criterion
+        :param reverse: if False, feature disappeared before the age criterion will pass the filter.
+            If True, feature disappeared after the age criterion will pass the filter, including features that have not disappeared yet (end time is distant future).
+        """
+        self._age = age
+        self._reverse = reverse
+        self._filtrate_feature_collection = pygplates.FeatureCollection()  # type: ignore
+        self._residue_feature_collection = pygplates.FeatureCollection()  # type: ignore
 
     def should_keep(self, feature: pygplates.Feature) -> bool:  # type: ignore
         valid_time = feature.get_valid_time(None)
         if valid_time:
             _, end_time = valid_time
-            if self.disappear_before:
+            if not self._reverse:  # keep features disappeared before the age criterion
                 if (
                     end_time != pygplates.GeoTimeInstant.create_distant_future()  # type: ignore
-                    and end_time >= self.age
+                    and end_time >= self._age
                 ):
+                    self._filtrate_feature_collection.add(feature)  # type: ignore
                     return True
-            else:
+            else:  # keep features disappeared after the age criterion, including features that have not disappeared yet (end time is distant future)
                 if (
                     end_time == pygplates.GeoTimeInstant.create_distant_future()  # type: ignore
-                    or end_time <= self.age
+                    or end_time <= self._age
                 ):
+                    self._filtrate_feature_collection.add(feature)  # type: ignore
                     return True
         else:
             logger.warning(
-                f"Feature {feature.get_feature_type()} {feature.get_name()} does not have valid time, and will be excluded by EndTimeFilter."  # type: ignore
+                f"Feature {feature.get_feature_type()} {feature.get_name()} does not have 'valid time', and will not pass EndTimeFilter."  # type: ignore
             )
+        self._residue_feature_collection.add(feature)  # type: ignore
         return False
 
 
 class FeatureTypeFilter(FeatureFilter):
-    """filter features by the feature type(regular expression)
+    """filter features by the feature type, keep features with feature type matching a specified regular expression by default"""
 
-    examples:
-        - gplately filter input_file output_file -t gpml:Basin
-        - gplately filter input_file output_file  -t "gpml:IslandArc|gpml:Basin"
-
-    :param feature_type_re: the regular expression to match the feature type
-
-    """
-
-    def __init__(self, feature_type_re: str):
+    def __init__(self, feature_type_re: str, reverse=False):
         self._feature_type_re = feature_type_re
+        self._reverse = reverse
         self._filtrate_feature_collection = pygplates.FeatureCollection()  # type: ignore
         self._residue_feature_collection = pygplates.FeatureCollection()  # type: ignore
 
     def should_keep(self, feature: pygplates.Feature) -> bool:  # type: ignore
         feature_type = feature.get_feature_type()
-        if re.fullmatch(self._feature_type_re, feature_type.to_qualified_string()):
-            logger.debug(
-                f"feature type match: {self._feature_type_re} {feature_type.to_qualified_string()}"
-            )
-            self._filtrate_feature_collection.add(feature)  # type: ignore
-            return True
-        else:
-            logger.debug(
-                f"feature type not match: {self._feature_type_re} {feature_type.to_qualified_string()}"
-            )
-            self._residue_feature_collection.add(feature)  # type: ignore
-            return False
+        if (
+            not self._reverse
+        ):  # keep features with feature type matching the regular expression
+            if re.fullmatch(self._feature_type_re, feature_type.to_qualified_string()):
+                self._filtrate_feature_collection.add(feature)  # type: ignore
+                return True
+            else:
+                self._residue_feature_collection.add(feature)  # type: ignore
+                return False
+        else:  # keep features with feature type not matching the regular expression
+            if not re.fullmatch(
+                self._feature_type_re, feature_type.to_qualified_string()
+            ):
+                self._filtrate_feature_collection.add(feature)  # type: ignore
+                return True
+            else:
+                self._residue_feature_collection.add(feature)  # type: ignore
+                return False
 
 
 class PropertyExistsFilter(FeatureFilter):
-    """filter features by the existence of a property
+    """filter features by the existence of a property, keep features that have a specific property by default
 
-    Depending on the value of not_exists, this filter can be used to either keep features that have a specific property, or keep features that do not have that property. For example, if we want to keep features that do not have the property "gpml:subductionPolarity", we can use PropertyExistsFilter("gpml:subductionPolarity", not_exists=True).
+    Depending on the value of reverse, this filter can be used to either keep features that have a specific property,
+    or keep features that do not have that property.
 
-    :param property_name: the name of the property to check (case-insensitive), such as gpml:subductoinPolarity
-    :param not_exists: if True, keep features that do not have the property; if False, keep features that have the property.
-
+    For example, if we want to keep features that do not have the property "gpml:subductionPolarity",
+    we can use PropertyExistsFilter("gpml:subductionPolarity", reverse=True).
     """
 
-    def __init__(self, property_name: str, not_exists=False):
+    def __init__(self, property_name: str, reverse=False):
+        """filter features by the existence of a property, keep features that have a specific property by default
+
+        :param property_name: the name of the property to check (case-insensitive), such as gpml:subductoinPolarity
+        :param reverse: if False, features that have the property will pass the filter;
+            if True, features that do not have the property will pass the filter.
+        """
+
         self._property_name = property_name
-        self._not_exists = not_exists
-
-    def should_keep(self, feature: pygplates.Feature) -> bool:  # type: ignore
-        for property in feature:
-            if self._not_exists:
-                if (
-                    property.get_name().to_qualified_string().lower()
-                    == self._property_name.lower()
-                ):
-                    return False
-            else:
-                if (
-                    property.get_name().to_qualified_string().lower()
-                    == self._property_name.lower()
-                ):
-                    return True
-        if self._not_exists:
-            return True
-        else:
-            return False
-
-
-class PropertyValueFilter(FeatureFilter):
-    """filter features by the value of a property
-
-    Depending on the value of not_match, this filter can be used to either keep features that have the specific property and its value matches the specified value, or keep features that either do not have that property or its value does not match the specified value.
-
-    For example, if we want to keep features whose "gpml:subductionPolarity" property value is not "Unknown", we can use PropertyValueFilter("gpml:subductionPolarity", "Unknown", not_match=True).
-
-    :param property_name: the name of the property to check (case-insensitive), such as gpml:subductoinPolarity
-    :param property_value: the value of the property to check
-    :param not_match: if True, keep features whose property value does not match the specified value, also keep features without the specified property; if False, keep features that have at least one property which has the specified value.
-
-    """
-
-    def __init__(
-        self,
-        property_name: str,
-        property_value,
-        not_match=False,
-    ):
-        self._property_name = property_name
-        self._property_value = property_value
-        self._not_match = not_match
+        self._reverse = reverse
+        self._filtrate_feature_collection = pygplates.FeatureCollection()  # type: ignore
+        self._residue_feature_collection = pygplates.FeatureCollection()  # type: ignore
 
     def should_keep(self, feature: pygplates.Feature) -> bool:  # type: ignore
         for property in feature:
@@ -312,32 +310,96 @@ class PropertyValueFilter(FeatureFilter):
                 property.get_name().to_qualified_string().lower()
                 == self._property_name.lower()
             ):
-                if self._not_match:
-                    if property.get_value() == self._property_value:
-                        return False
+                if not self._reverse:
+                    self._filtrate_feature_collection.add(feature)  # type: ignore
+                    return True
                 else:
-                    if property.get_value() == self._property_value:
-                        return True
-        if self._not_match:
+                    self._residue_feature_collection.add(feature)  # type: ignore
+                    return False
+
+        # if we go through all properties and do not find the property we are looking for
+        if self._reverse:
+            self._filtrate_feature_collection.add(feature)  # type: ignore
             return True
         else:
+            self._residue_feature_collection.add(feature)  # type: ignore
+            return False
+
+
+class PropertyValueFilter(FeatureFilter):
+    """filter features by the value of a property, keep features that have a specific property with a specific value by default
+
+    Depending on the value of not_match, this filter can be used to either keep features that have the specific property and
+    its value matches the specified value, or keep features that either do not have that property or its value does not match
+    the specified value.
+
+    For example, if we want to keep features whose "gpml:subductionPolarity" property value is not "Unknown",
+    we can use PropertyValueFilter("gpml:subductionPolarity", "Unknown", reverse=True).
+    """
+
+    def __init__(
+        self,
+        property_name: str,
+        property_value,
+        reverse=False,
+    ):
+        """filter features by the value of a property, keep features that have a specific property with a specific value by default
+
+        :param property_name: the name of the property to check (case-insensitive), such as gpml:subductoinPolarity
+        :param property_value: the value of the property to check
+        :param reverse: if False, features which has a property and its value match the specified value will pass the filter;
+            if True, features which either do not have the property or have the property but its value does not match the specified value will pass the filter.
+        """
+        self._property_name = property_name
+        self._property_value = property_value
+        self._reverse = reverse
+        self._filtrate_feature_collection = pygplates.FeatureCollection()  # type: ignore
+        self._residue_feature_collection = pygplates.FeatureCollection()  # type: ignore
+
+    def should_keep(self, feature: pygplates.Feature) -> bool:  # type: ignore
+        for property in feature:
+            if (
+                property.get_name().to_qualified_string().lower()
+                == self._property_name.lower()
+                and property.get_value() == self._property_value
+            ):
+                if self._reverse:
+                    self._residue_feature_collection.add(feature)  # type: ignore
+                    return False
+                else:
+                    self._filtrate_feature_collection.add(feature)  # type: ignore
+                    return True
+
+        # if we go through all properties and do not find the property with the specified value
+        if self._reverse:
+            self._filtrate_feature_collection.add(feature)  # type: ignore
+            return True
+        else:
+            self._residue_feature_collection.add(feature)  # type: ignore
             return False
 
 
 class RegionOfInterestFilter(FeatureFilter):
-    """filter features by whether they are in a region of interest
+    """filter features by whether they are inside a region of interest, which can be defined by a bounding box or a polygon.
+    By default, features that are inside the region of interest will pass the filter.
 
     for example:
         RegionOfInterestFilter(polygon) -- keep features that are in the polygon
-        RegionOfInterestFilter(polygon, exclude=True) -- keep features that are not in the polygon
-
+        RegionOfInterestFilter(polygon, reverse=True) -- keep features that are not in the polygon
     """
 
     def __init__(
         self,
         region_of_interest: Union[Tuple[float, float, float, float], pygplates.PolygonOnSphere],  # type: ignore
-        exclude=False,
+        reverse=False,
     ):
+        """filter features by whether they are inside a region of interest, which can be defined by a bounding box or a polygon.
+        By default, features that are inside the region of interest will pass the filter.
+
+        :param region_of_interest: the region of interest, can be either a tuple of (left, right, bottom, top) or a pygplates.PolygonOnSphere
+        :param reverse: if False, features that are within the region of interest will pass the filter;
+            if True, features that are not inside the region of interest will pass the filter.
+        """
         if isinstance(region_of_interest, pygplates.PolygonOnSphere):  # type: ignore
             self._region_of_interest = region_of_interest
         elif isinstance(region_of_interest, tuple) and len(region_of_interest) == 4:
@@ -348,7 +410,9 @@ class RegionOfInterestFilter(FeatureFilter):
                 "region_of_interest should be either a tuple of (left, right, bottom, top) or a pygplates.PolygonOnSphere"
             )
 
-        self._exclude = exclude
+        self._reverse = reverse
+        self._filtrate_feature_collection = pygplates.FeatureCollection()  # type: ignore
+        self._residue_feature_collection = pygplates.FeatureCollection()  # type: ignore
 
     def should_keep(self, feature: pygplates.Feature) -> bool:  # type: ignore
         # Implementation for checking if feature is in the region of interest
@@ -358,10 +422,25 @@ class RegionOfInterestFilter(FeatureFilter):
         inside_geometries = []
         outside_geometries = []
         plate_partitioner.partition_geometry(feature.get_geometries(), inside_geometries, outside_geometries)  # type: ignore
-        if self._exclude:
-            return len(inside_geometries) == 0
+
+        # TODO:
+        # we may want to add an option to specify the minimum area of the inside/outside geometry to be considered as inside/outside the region of interest,
+        # because for some features, such as large polygons, they may have a small portion of their geometry inside the region of interest,
+        # and we may want to consider them as not inside the region of interest.
+        if not self._reverse:
+            if len(inside_geometries) == 0:
+                self._residue_feature_collection.add(feature)  # type: ignore
+                return False
+            else:
+                self._filtrate_feature_collection.add(feature)  # type: ignore
+                return True
         else:
-            return len(outside_geometries) == 0
+            if len(outside_geometries) == 0:
+                self._residue_feature_collection.add(feature)  # type: ignore
+                return False
+            else:
+                self._filtrate_feature_collection.add(feature)  # type: ignore
+                return True
 
 
 def filter_feature_collection(

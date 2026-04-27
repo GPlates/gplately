@@ -25,7 +25,7 @@
 from os import makedirs
 from os.path import exists
 from urllib.request import urlretrieve
-import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt  # type: ignore
 import cartopy.crs as ccrs  # type: ignore
 
 import pygplates  # type: ignore
@@ -149,7 +149,7 @@ cases.append(
         "filters": [
             FeatureNameFilter(
                 ["Australia", "New Zealand", "Tasmania"],
-                exclude=True,
+                reverse=True,
                 exact_match=False,
                 case_sensitive=True,
             )
@@ -168,7 +168,7 @@ cases.append(
                 list(
                     range(701, 716, 1)
                 ),  # This is the list of plate IDs for the Africa and its neighboring plates
-                exclude=False,
+                reverse=False,
             )
         ],
         "output_file": f"{DATA_DIR}/coastlines_with_plate_id_from_701_to_715.gpmlz",
@@ -185,7 +185,7 @@ cases.append(
                 list(
                     range(701, 716, 1)
                 ),  # This is the list of plate IDs for the Africa and its neighboring plates
-                exclude=True,  # exclude features with the specified plate IDs
+                reverse=True,  # exclude features with the specified plate IDs
             )
         ],
         "output_file": f"{DATA_DIR}/coastlines_exclude_plate_id_from_701_to_715.gpmlz",
@@ -200,7 +200,7 @@ cases.append(
         "feature_collection": coastlines_feature_collection,
         "filters": [
             BirthAgeFilter(
-                500, keep_older=True
+                500, reverse=False
             )  # This filter will keep features that were born more than 500 million years ago.
         ],
         "output_file": f"{DATA_DIR}/coastlines_older_than_500_million_years.gpmlz",
@@ -215,7 +215,7 @@ cases.append(
         "feature_collection": coastlines_feature_collection,
         "filters": [
             BirthAgeFilter(
-                500, keep_older=False
+                500, reverse=True
             )  # This filter will keep features that were born less than 500 million years ago.
         ],
         "output_file": f"{DATA_DIR}/coastlines_younger_than_500_million_years.gpmlz",
@@ -242,7 +242,7 @@ cases.append(
     {
         "title": "Topology with subduction polarity",
         "feature_collection": topology_feature_collection,
-        "filters": [PropertyExistsFilter("gpml:subductionPolarity", not_exists=False)],
+        "filters": [PropertyExistsFilter("gpml:subductionPolarity", reverse=False)],
         "output_file": f"{DATA_DIR}/topology_with_subduction_polarity.gpmlz",
         "ax": ax8,
     }
@@ -255,7 +255,7 @@ cases.append(
         "feature_collection": topology_feature_collection,
         "filters": [
             PropertyValueFilter(
-                "gpml:subductionPolarity", subduction_polarity_left, not_match=False
+                "gpml:subductionPolarity", subduction_polarity_left, reverse=False
             )
         ],
         "output_file": f"{DATA_DIR}/topology_with_subduction_polarity_left.gpmlz",
@@ -268,7 +268,7 @@ cases.append(
     {
         "title": "Topology features that had disappeared before 100 Ma",
         "feature_collection": topology_feature_collection,
-        "filters": [EndTimeFilter(100, disappear_before=True)],
+        "filters": [EndTimeFilter(100, reverse=False)],
         "output_file": f"{DATA_DIR}/topology_features_disappeared_before_100_million_years.gpmlz",
         "ax": None,  # no plot for this case
     }
@@ -279,7 +279,7 @@ cases.append(
     {
         "title": "Topology features that still exist at present day",
         "feature_collection": topology_feature_collection,
-        "filters": [EndTimeFilter(0, disappear_before=False)],
+        "filters": [EndTimeFilter(0, reverse=True)],
         "output_file": f"{DATA_DIR}/topology_features_still_existing_present_day.gpmlz",
         "ax": None,  # no plot for this case
     }
@@ -438,7 +438,7 @@ print(
 # define the bounding box for the region of interest
 (left, right, bottom, top) = (120, 140, -10, 10)
 filters = []
-filters.append(RegionOfInterestFilter((left, right, bottom, top), exclude=False))
+filters.append(RegionOfInterestFilter((left, right, bottom, top), reverse=False))
 
 features = filter_feature_collection(
     mesh_feature_collection,
@@ -501,7 +501,7 @@ for feature in features:
 
 ##### search for the vertices that are located within the mainland of Australia
 filters = []
-filters.append(RegionOfInterestFilter(australia_mainland_geometry, exclude=False))
+filters.append(RegionOfInterestFilter(australia_mainland_geometry, reverse=False))
 
 features = filter_feature_collection(
     mesh_feature_collection,
