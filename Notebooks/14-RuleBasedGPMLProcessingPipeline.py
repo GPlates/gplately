@@ -6,12 +6,6 @@
 # which can be based on various criteria such as feature name, plate ID, birth age, disappearance age, region of interest, and more.
 # This allows users to create customized GPML processing pipelines that can be applied to a wide range of use cases in geoscience research.
 
-# The search and filter functionality is implemented in the `gplately.utils.feature_filter` module.
-# The main function is `filter_feature_collection`, which takes a feature collection and a list of filters,
-# and returns a new feature collection that contains only the features that satisfy all the filters.
-# Each filter is a subclass of the `FeatureFilter` class, which defines a `should_keep` method that takes a feature and
-# returns True if the feature should be kept, and False otherwise.
-
 
 # %% [markdown]
 
@@ -58,24 +52,30 @@ DATA_DIR = "./rule-based-GPML-processing-pipeline-data"
 makedirs(DATA_DIR, exist_ok=True)
 
 # Download the test feature collection files if they do not exist.
-coastlines_file = f"{DATA_DIR}/Global_EarthByte_GPlates_PresentDay_Coastlines.gpmlz"
-coastlines_url = "https://repo.gplates.org/webdav/mchin/data/Global_EarthByte_GPlates_PresentDay_Coastlines.gpmlz"
-topology_features = f"{DATA_DIR}/Feature_Geometries.gpmlz"
-topology_features_url = (
-    "https://repo.gplates.org/webdav/mchin/data/Feature_Geometries.gpmlz"
-)
+test_files = [
+    (
+        "https://repo.gplates.org/webdav/mchin/data/Global_EarthByte_GPlates_PresentDay_Coastlines.gpmlz",
+        f"{DATA_DIR}/Global_EarthByte_GPlates_PresentDay_Coastlines.gpmlz",
+    ),
+    (
+        "https://repo.gplates.org/webdav/mchin/data/Feature_Geometries.gpmlz",
+        f"{DATA_DIR}/Feature_Geometries.gpmlz",
+    ),
+    (
+        "https://repo.gplates.org/webdav/mchin/data/Plate_Boundaries.gpmlz",
+        f"{DATA_DIR}/Plate_Boundaries.gpmlz",
+    ),
+]
 
-if not exists(coastlines_file):
-    print(f"Downloading test file to {coastlines_file}...")
-    urlretrieve(coastlines_url, coastlines_file)
+filepaths = []
+for test_file in test_files:
+    url, file_path = test_file
+    if not exists(file_path):
+        print(f"Downloading test file to {file_path}...")
+        urlretrieve(url, file_path)
+    filepaths.append(file_path)
 
-
-if not exists(topology_features):
-    print(f"Downloading test file to {topology_features}...")
-    urlretrieve(topology_features_url, topology_features)
-
-coastlines_feature_collection = pygplates.FeatureCollection(coastlines_file)  # type: ignore
-topology_feature_collection = pygplates.FeatureCollection(topology_features)  # type: ignore
+coastlines_feature_collection, topology_feature_collection, boundary_feature_collection = pygplates.FeatureCollection().read(filepaths)  # type: ignore
 
 subduction_polarity_left = pygplates.Enumeration(  # type: ignore
     pygplates.EnumerationType.create_gpml("SubductionPolarityEnumeration"), "Left"  # type: ignore
@@ -310,7 +310,7 @@ plt.tight_layout()
 plt.show()
 
 # %% [markdown]
-# #### Search and filter feature collection with custom filters
+# #### Search and filter feature collection with custom filter
 
 
 # The code cell below demonstrates how to create a custom filter by subclassing the `FeatureFilter` class,
@@ -358,35 +358,43 @@ cartopy_plot._plot_feature_collection(
     projection=ccrs.Robinson(central_longitude=0),
 )
 
+# %% [markdown]
+# #### a real-world use case of the rule-based GPML processing pipeline
+# Find all features whose end time is 0 and update their end time to "distant future".
+
 
 # %%
-# define a custom filter that sets the plate ID of a feature to 0
-class ZeroPlateID(FeatureTransformer):
-    """A custom feature transformer that sets the plate ID of a feature to 0."""
+# define a custom filter that keeps features with disappearance age equal to 0
+class ZeroEndTimeFilter(FeatureFilter):
+    def should_keep(self, feature: pygplates.Feature) -> bool:  # type: ignore
+        valid_time = feature.get_valid_time(None)
+        if valid_time:
+            if valid_time[1] == 0:
+                return True
+        return False
 
+
+# define a custom transformer that sets the end time of a feature to "distant future"
+class UpdateEndTimeToDistanceFuture(FeatureTransformer):
     def transform(self, feature: pygplates.Feature) -> pygplates.Feature:  # type: ignore
-        feature.set_reconstruction_plate_id(0)  # type: ignore
+        feature.set_valid_time(feature.get_valid_time()[0], pygplates.GeoTimeInstant.create_distant_future())  # type: ignore
         return feature
 
 
 # 1. create a feature collection processor with a list of filter(s) and transformer(s),
 # 2. process the topology feature collection.
 # 3. write the output to a new GPML file.
-feature_type_filter = FeatureTypeFilter("gpml:UnclassifiedFeature")
-zero_plate_id_feature_collection = FeatureCollectionProcessor(
-    filters=[feature_type_filter],
-    transformers=[ZeroPlateID()],
+updated_feature_collection = FeatureCollectionProcessor(
+    filters=[ZeroEndTimeFilter()],
+    transformers=[UpdateEndTimeToDistanceFuture()],
 ).process(topology_feature_collection)
 
-features = []
-if zero_plate_id_feature_collection:
-    features.extend(zero_plate_id_feature_collection)
-if feature_type_filter._residue_feature_collection:
-    features.extend(feature_type_filter.residue_feature_collection)
-pygplates.FeatureCollection(features).write(
-    f"{DATA_DIR}/topology_unclassified_features_zero_plate_id.gpmlz"
+print(
+    f"{len(updated_feature_collection)} features out of {len(topology_feature_collection)} were updated. Changed end time to distant future for features whose end time was 0."
 )
-
+# %% [markdown]
+# #### TODO: find features with subductionparity property but whose feature type is not subduction zone.
+# #### TODO: find topological boundaries with duplicated features.
 
 # %% [markdown]
 #### Find points inside a region of interest

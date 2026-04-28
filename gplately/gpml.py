@@ -147,6 +147,25 @@ def GPML_to_GeoDataFrame(
     return gdf
 
 
+def merge_feature_collections(feature_collections):
+    """Merge multiple feature collections into a single feature collection.
+
+    :param feature_collections: A list of feature collections,
+        or a list of file paths to feature collections,
+        or a sequence(list/tuple) of features.
+    :returns: A single feature collection containing all features from the input collections.
+    """
+    merged = pygplates.FeatureCollection()
+    for feature_collection in feature_collections:
+        if isinstance(feature_collection, (str, bytes)) and os.path.isfile(
+            feature_collection
+        ):
+            feature_collection = pygplates.FeatureCollection(feature_collection)
+        for feature in feature_collection:
+            merged.add(feature)
+    return merged
+
+
 def extract_feature(id, features):
     r"""Return the feature with the given feature ID.
 
