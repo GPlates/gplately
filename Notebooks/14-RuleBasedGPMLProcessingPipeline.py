@@ -338,25 +338,20 @@ class PandasFeatureNameFilter(FeatureFilter):
             return False
 
 
-output_file = f"{DATA_DIR}/Africa_coastlines_with_custom_filter.gpmlz"
-filter_feature_collection(
+name_contain_africa_feature_collection = filter_feature_collection(
     coastlines_feature_collection,
     [PandasFeatureNameFilter(coastlines_feature_collection, "Africa")],
-).write(  # type: ignore
-    output_file
 )
-
-print(f"The coastlines of Africa have been written to {output_file}")
-
-# plot the output feature collection to check if the search worked as expected.
-# You should see the coastlines of Africa in the plot below.
-cartopy_plot._plot_feature_collection(
-    pygplates.FeatureCollection(  # type: ignore
-        output_file,
-    ),
-    title="Coastlines of Africa",
-    projection=ccrs.Robinson(central_longitude=0),
+print(
+    f"There are {len(name_contain_africa_feature_collection)} features whose name contains 'Africa' in the global coastlines feature collection."
 )
+unique_names = {
+    feature.get_name() for feature in name_contain_africa_feature_collection
+}
+print(f"The unique feature names of these features are: {unique_names}")
+
+for property in name_contain_africa_feature_collection[0]:
+    print(property.get_name(), property.get_value())
 
 # %% [markdown]
 # #### a real-world use case of the rule-based GPML processing pipeline
@@ -395,6 +390,76 @@ print(
 # %% [markdown]
 # #### TODO: find features with subductionparity property but whose feature type is not subduction zone.
 # #### TODO: find topological boundaries with duplicated features.
+
+# %%
+
+
+class DuplicateFeatureInTopologyFilter(FeatureFilter):
+    """search for duplicated sectionfeatures in topological boundaries"""
+
+    def __init__(self):
+        pass
+
+    def should_keep(self, feature: pygplates.Feature) -> bool:  # type: ignore
+        _seen_feature_ids = set()
+        geom = feature.get_topological_geometry()
+        if not isinstance(geom, pygplates.GpmlTopologicalLine):  # type: ignore
+            for section in geom.get_boundary_sections():
+                feature_id = section.get_property_delegate().get_feature_id()
+                if feature_id in _seen_feature_ids:
+                    print(
+                        f"Duplicate feature found: {feature_id} in feature {feature.get_feature_id()}"
+                    )
+                    return False
+                _seen_feature_ids.add(feature_id)
+        else:
+            for section in geom.get_sections():
+                feature_id = section.get_property_delegate().get_feature_id()
+                if feature_id in _seen_feature_ids:
+                    print(
+                        f"Duplicate feature found: {feature_id} in feature {feature.get_feature_id()}"
+                    )
+                    return False
+                _seen_feature_ids.add(feature_id)
+
+        return True
+
+
+bad_topology = filter_feature_collection(
+    boundary_feature_collection,
+    [DuplicateFeatureInTopologyFilter()],
+)
+
+
+# "GPlates-cfe96235-5906-4974-a654-2b14a260a3fe" example topological boundary with duplicated features.
+class TopologyFeatureGeometryFilter(FeatureFilter):
+    """search for duplicated sectionfeatures in topological boundaries"""
+
+    def __init__(self, feature_ids=[]):
+        self._feature_ids = feature_ids
+
+    def should_keep(self, feature: pygplates.Feature) -> bool:  # type: ignore
+        for feature_id in self._feature_ids:
+            for feature in boundary_feature_collection:
+                if feature.get_feature_id().get_string() == feature_id:
+                    for (
+                        section
+                    ) in feature.get_topological_geometry().get_boundary_sections():
+                        features_to_get.add(
+                            section.get_property_delegate().get_feature_id()
+                        )
+                    output_features.append(feature)
+                    break
+
+            for feature in topology_feature_collection:
+                if feature.get_feature_id() in features_to_get:
+                    output_features.append(feature)
+
+            pygplates.FeatureCollection(output_features).write(f"{DATA_DIR}/duplicated_topological_boundaries.gpmlz")  # type: ignore
+            print(
+                f"Duplicated topological boundaries have been written to {DATA_DIR}/duplicated_topological_boundaries.gpmlz"
+            )
+
 
 # %% [markdown]
 #### Find points inside a region of interest
