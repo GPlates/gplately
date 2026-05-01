@@ -18,6 +18,7 @@
 """This sub-module contains functions for manipulating GPML (`.gpml`, `.gpmlz`) files,
 as well as `pygplates.Feature` and `pygplates.FeatureCollection` objects.
 """
+
 import abc
 import os
 from typing import List
@@ -167,7 +168,9 @@ def merge_feature_collections(feature_collections):
 
 
 def extract_feature(id, features):
-    r"""Return the feature with the given feature ID.
+    r"""Obsoleted. Use the new :py:class:`FeatureIDFilter` class in gplately.utils.feature_filter.
+
+    Return the feature with the given feature ID.
 
     Searches through `features` and returns the feature with a feature ID
     matching `id`. The order of `features` is not preserved, so multiple

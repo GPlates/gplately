@@ -26,9 +26,6 @@ logger = logging.getLogger("gplately")
 
 
 class FeatureFilter(metaclass=abc.ABCMeta):
-    _filtrate_feature_collection = None
-    _residue_feature_collection = None
-
     @classmethod
     def __subclasshook__(cls, subclass):
         return (
@@ -48,15 +45,31 @@ class FeatureFilter(metaclass=abc.ABCMeta):
 
         raise NotImplementedError
 
-    @property
-    def filtrate_feature_collection(self) -> Union[pygplates.FeatureCollection, None]:  # type: ignore
-        """the feature collection of features that passed the filter."""
-        return self._filtrate_feature_collection
 
-    @property
-    def residue_feature_collection(self) -> Union[pygplates.FeatureCollection, None]:  # type: ignore
-        """the feature collection of features that did not pass the filter."""
-        return self._residue_feature_collection
+def filter_feature_collection(
+    feature_collection: pygplates.FeatureCollection, filters: List[FeatureFilter]  # type: ignore
+):
+    """Filter a feature collection using a list of filters.
+
+    :param feature_collection: the input feature collection to be filtered
+    :param filters: a list of filters to apply. A feature will be kept if it passes all the filters in the list.
+    :returns: the filtered feature collection
+    """
+    for filter in filters:
+        filtrate_feature_collection = pygplates.FeatureCollection()  # type: ignore
+        for feature in feature_collection:
+            if filter.should_keep(feature):
+                filtrate_feature_collection.add(feature)
+
+        filtrate_feature_collection_from_filter = getattr(
+            filter, "filtrate_feature_collection", None
+        )
+        if filtrate_feature_collection_from_filter is not None:
+            feature_collection = filtrate_feature_collection_from_filter
+        else:
+            feature_collection = filtrate_feature_collection
+
+    return feature_collection
 
 
 class FeatureNameFilter(FeatureFilter):
@@ -403,7 +416,7 @@ class RegionOfInterestFilter(FeatureFilter):
         if isinstance(region_of_interest, pygplates.PolygonOnSphere):  # type: ignore
             self._region_of_interest = region_of_interest
         elif isinstance(region_of_interest, tuple) and len(region_of_interest) == 4:
-            (left, right, bottom, top) = region_of_interest
+            left, right, bottom, top = region_of_interest
             self._region_of_interest = pygplates.PolygonOnSphere((lat, lon) for lon, lat in [(left, bottom), (left, top), (right, top), (right, bottom)])  # type: ignore
         else:
             raise ValueError(
@@ -424,9 +437,12 @@ class RegionOfInterestFilter(FeatureFilter):
         plate_partitioner.partition_geometry(feature.get_geometries(), inside_geometries, outside_geometries)  # type: ignore
 
         # TODO:
-        # we may want to add an option to specify the minimum area of the inside/outside geometry to be considered as inside/outside the region of interest,
-        # because for some features, such as large polygons, they may have a small portion of their geometry inside the region of interest,
-        # and we may want to consider them as not inside the region of interest.
+        # we may want to add an option to specify the minimum area of the inside/outside geometry
+        # to be considered as inside/outside the region of interest,
+        # because for some features, such as large polygons, they may have a portion of their geometry
+        # inside the region of interest, and we may want to consider them as inside the region of interest.
+        # and the same for ploylines, they may have a portion of their geometry inside the region of interest,
+        #  and we may want to consider them as inside the region of interest.
         if not self._reverse:
             if len(inside_geometries) == 0:
                 self._residue_feature_collection.add(feature)  # type: ignore
@@ -443,20 +459,150 @@ class RegionOfInterestFilter(FeatureFilter):
                 return True
 
 
-def filter_feature_collection(
-    feature_collection: pygplates.FeatureCollection, filters: List[FeatureFilter]  # type: ignore
-):
-    """Filter a feature collection using a list of filters.
+class TopologicalFeaturesWithDuplicateSectionsFilter(FeatureFilter):
+    """find features whose topological geometries have duplicated section features.
 
-    :param feature_collection: the input feature collection to be filtered
-    :param filters: a list of filters to apply. A feature will be kept if it passes all the filters in the list.
-    :returns: the filtered feature collection
+    No parameter is needed to create this filter.
+    For the given feature, if any of its topological geometries has duplicated section features,
+    the feature will pass the filter.
     """
-    for filter in filters:
-        filtrate_feature_collection = pygplates.FeatureCollection()  # type: ignore
-        for feature in feature_collection:
-            if filter.should_keep(feature):
-                filtrate_feature_collection.add(feature)
-        feature_collection = filtrate_feature_collection
 
-    return feature_collection
+    def should_keep(self, feature: pygplates.Feature) -> bool:  # type: ignore
+        geoms = feature.get_all_topological_geometries()
+        for geom in geoms:
+            _seen_feature_ids = set()
+            if not isinstance(geom, pygplates.GpmlTopologicalLine):  # type: ignore
+                for section in geom.get_boundary_sections():
+                    feature_id = section.get_property_delegate().get_feature_id()
+                    if feature_id in _seen_feature_ids:
+                        logger.debug(
+                            f"Duplicate feature found: {feature_id} in feature {feature.get_feature_id()}"
+                        )
+                        return True
+                    else:
+                        _seen_feature_ids.add(feature_id)
+            else:
+                for section in geom.get_sections():
+                    feature_id = section.get_property_delegate().get_feature_id()
+                    if feature_id in _seen_feature_ids:
+                        logger.debug(
+                            f"Duplicate feature found: {feature_id} in feature {feature.get_feature_id()}"
+                        )
+                        return True
+                    else:
+                        _seen_feature_ids.add(feature_id)
+
+        return False
+
+
+class TopologicalSectionFeaturesFilter(FeatureFilter):
+    """find section features for given topological features
+
+    Given a collection of topological features, this filter will find section features
+    that are used in the topological geometries of these topological features
+    from another feature collection containing the real geometries.
+    """
+
+    def __init__(self, topological_feature_collection=pygplates.FeatureCollection()):  # type: ignore
+        """construct the filter with a collection of topological features,
+        the filtering will be done to another collection of features containing the real geometries.
+
+        :param topological_feature_collection: a collection of topological features,
+            the filter will find section features that are used in the topological geometries
+            of these topological features
+        """
+        self._topological_feature_collection = topological_feature_collection
+        self._the_ids_of_section_features = set()
+        for feature in self._topological_feature_collection:
+            for geom in feature.get_all_topological_geometries():
+                if not isinstance(geom, pygplates.GpmlTopologicalLine):  # type: ignore
+                    for section in geom.get_boundary_sections():
+                        self._the_ids_of_section_features.add(
+                            section.get_property_delegate()
+                            .get_feature_id()
+                            .get_string()
+                        )
+                else:
+                    for section in geom.get_sections():
+                        self._the_ids_of_section_features.add(
+                            section.get_property_delegate()
+                            .get_feature_id()
+                            .get_string()
+                        )
+
+    def should_keep(self, feature: pygplates.Feature) -> bool:  # type: ignore
+        if feature.get_feature_id().get_string() in self._the_ids_of_section_features:
+            return True
+        else:
+            return False
+
+
+class FeatureIDFilter(FeatureFilter):
+    """filter features by their feature IDs, keep features with feature ID in a specified list by default
+
+    for example:
+        FeatureIDFilter(['id1', 'id2', 'id3']) -- keep features whose feature ID is 'id1' or 'id2' or 'id3'
+        FeatureIDFilter(['id1', 'id2', 'id3'], reverse=True) -- keep features whose feature ID is not 'id1' nor 'id2' nor 'id3'
+
+    """
+
+    def __init__(self, fids: List[str], reverse=False):
+        """filter features by their feature IDs, keep features with feature ID in a specified list by default
+
+        :param fids: a set of feature IDs to match. Each feature ID should be a universal unique string.
+        :param reverse: if False, feature with feature ID matching one of the strings in the parameter "fids" will pass the filter,
+            if True, feature with feature ID not matching any of the strings in the parameter "fids" will pass the filter.
+        """
+        self._fids = fids
+        assert len(self._fids) == len(
+            set(self._fids)
+        ), "The feature IDs in the parameter 'fids' should be unique."
+        self._reverse = reverse
+        if not self._reverse:
+            self._filtrate_feature_collection: List[Optional[pygplates.Feature]] = [None] * len(  # type: ignore
+                self._fids
+            )
+            self._residue_feature_collection = []
+        else:
+            self._filtrate_feature_collection = []
+            self._residue_feature_collection: List[Optional[pygplates.Feature]] = [None] * len(  # type: ignore
+                self._fids
+            )
+
+    @property
+    def filtrate_feature_collection(self):
+        return pygplates.FeatureCollection(self._filtrate_feature_collection)
+
+    @property
+    def residue_feature_collection(self):
+        return pygplates.FeatureCollection(self._residue_feature_collection)
+
+    def should_keep(self, feature: pygplates.Feature) -> bool:  # type: ignore
+        try:
+            i = self._fids.index(feature.get_feature_id().get_string())
+        except ValueError:
+            i = -1
+        if not self._reverse:
+            if i >= 0:  # feature ID matches one of the strings in the parameter "fids"
+                if self._filtrate_feature_collection[i] is None:
+                    self._filtrate_feature_collection[i] = feature
+                else:
+                    logger.warning(
+                        f"Duplicate feature ID found: {feature.get_feature_id().get_string()}. Only the first one will be kept in the filtrate feature collection."
+                    )
+                return True
+            else:
+                self._residue_feature_collection.append(feature)  # type: ignore
+                return False
+        else:
+            if i < 0:
+                self._filtrate_feature_collection.append(feature)
+                return True
+            else:
+                if self._residue_feature_collection[i] is None:
+                    self._residue_feature_collection[i] = feature  # type: ignore
+                else:
+                    logger.warning(
+                        f"Duplicate feature ID found: {feature.get_feature_id().get_string()}. Only the first one will be kept in the residue feature collection."
+                    )
+                return False

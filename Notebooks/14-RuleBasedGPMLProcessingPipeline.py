@@ -27,6 +27,7 @@ import pygplates  # type: ignore
 from gplately.utils.feature_filter import (
     FeatureFilter,
     EndTimeFilter,
+    FeatureIDFilter,
     FeatureNameFilter,
     PlateIDFilter,
     BirthAgeFilter,
@@ -34,6 +35,8 @@ from gplately.utils.feature_filter import (
     PropertyExistsFilter,
     PropertyValueFilter,
     RegionOfInterestFilter,
+    TopologicalFeaturesWithDuplicateSectionsFilter,
+    TopologicalSectionFeaturesFilter,
     filter_feature_collection,
 )
 from gplately.mapping import cartopy_plot
@@ -391,68 +394,28 @@ print(
 
 
 # %%
-class TopologicalFeaturesWithDuplicateSectionsFilter(FeatureFilter):
-    """find features whose topological geometries have duplicated section features"""
-
-    def should_keep(self, feature: pygplates.Feature) -> bool:  # type: ignore
-        geoms = feature.get_all_topological_geometries()
-        for geom in geoms:
-            _seen_feature_ids = set()
-            if not isinstance(geom, pygplates.GpmlTopologicalLine):  # type: ignore
-                for section in geom.get_boundary_sections():
-                    feature_id = section.get_property_delegate().get_feature_id()
-                    if feature_id in _seen_feature_ids:
-                        print(
-                            f"Duplicate feature found: {feature_id} in feature {feature.get_feature_id()}"
-                        )
-                        return True
-                    else:
-                        _seen_feature_ids.add(feature_id)
-            else:
-                for section in geom.get_sections():
-                    feature_id = section.get_property_delegate().get_feature_id()
-                    if feature_id in _seen_feature_ids:
-                        print(
-                            f"Duplicate feature found: {feature_id} in feature {feature.get_feature_id()}"
-                        )
-                        return True
-                    else:
-                        _seen_feature_ids.add(feature_id)
-
-        return False
-
-
 # "GPlates-cfe96235-5906-4974-a654-2b14a260a3fe" 371Ma example topological boundary with duplicated features.
-class TopologicalSectionFeaturesFilter(FeatureFilter):
-    """find all section features for given topological features"""
+laurussia_371 = filter_feature_collection(
+    boundary_feature_collection,
+    [FeatureIDFilter(["GPlates-cfe96235-5906-4974-a654-2b14a260a3fe"])],
+)
 
-    def __init__(self, topological_feature_collection=pygplates.FeatureCollection()):  # type: ignore
-        self._topological_feature_collection = topological_feature_collection
-        self._the_ids_of_section_features = set()
-        for feature in self._topological_feature_collection:
-            for geom in feature.get_all_topological_geometries():
-                if not isinstance(geom, pygplates.GpmlTopologicalLine):  # type: ignore
-                    for section in geom.get_boundary_sections():
-                        self._the_ids_of_section_features.add(
-                            section.get_property_delegate()
-                            .get_feature_id()
-                            .get_string()
-                        )
-                else:
-                    for section in geom.get_sections():
-                        self._the_ids_of_section_features.add(
-                            section.get_property_delegate()
-                            .get_feature_id()
-                            .get_string()
-                        )
+for feature in laurussia_371:
+    print(feature.get_feature_id().get_string())
+    print(feature.get_valid_time(None))
 
-    def should_keep(self, feature: pygplates.Feature) -> bool:  # type: ignore
-        if feature.get_feature_id().get_string() in self._the_ids_of_section_features:
-            return True
-        else:
-            return False
+laurussia_371_section_features = filter_feature_collection(
+    topology_feature_collection,
+    [TopologicalSectionFeaturesFilter(laurussia_371)],
+)
+merge_feature_collections([laurussia_371, laurussia_371_section_features]).write(
+    f"{DATA_DIR}/laurussia_371_with_section_features.gpmlz"
+)
+print(
+    f"Laurussia topological boundary around 371Ma and the section features have been written to {DATA_DIR}/laurussia_371_with_section_features.gpmlz"
+)
 
-
+# %%
 topology_with_duplicated_sections = filter_feature_collection(
     boundary_feature_collection,
     [TopologicalFeaturesWithDuplicateSectionsFilter()],
@@ -521,7 +484,7 @@ print(
 
 # %%
 # define the bounding box for the region of interest
-(left, right, bottom, top) = (120, 140, -10, 10)
+left, right, bottom, top = (120, 140, -10, 10)
 filters = []
 filters.append(RegionOfInterestFilter((left, right, bottom, top), reverse=False))
 
