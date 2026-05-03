@@ -19,7 +19,6 @@
 as well as `pygplates.Feature` and `pygplates.FeatureCollection` objects.
 """
 
-import abc
 import os
 from typing import List
 
@@ -27,6 +26,10 @@ from typing import List
 import pygplates  # type: ignore
 
 from gplately.utils.feature_filter import FeatureFilter, filter_feature_collection
+from gplately.utils.feature_transformer import (
+    FeatureTransformer,
+    transform_feature_collection,
+)
 
 # pyright: reportAttributeAccessIssue=false
 
@@ -36,37 +39,6 @@ __all__ = [
     "get_topological_references",
     "is_topological",
 ]
-
-
-class FeatureTransformer(metaclass=abc.ABCMeta):
-    @classmethod
-    def __subclasshook__(cls, subclass):
-        return (
-            hasattr(subclass, "transform")
-            and callable(subclass.transform)
-            or NotImplemented
-        )
-
-    @abc.abstractmethod
-    def transform(self, feature: pygplates.Feature) -> pygplates.Feature:  # type: ignore
-        """This abstract method must be implemented in subclass.
-
-        :param feature: pygplates.Feature
-
-        :returns: new pygplates.Feature after transformation
-        """
-
-        raise NotImplementedError
-
-
-def transform_feature_collection(
-    feature_collection: pygplates.FeatureCollection, transformers: List[FeatureTransformer]  # type: ignore
-):
-    """Transform a feature collection with a list of transformers."""
-    for feature in feature_collection:
-        for transformer in transformers:
-            feature = transformer.transform(feature)
-    return feature_collection
 
 
 class FeatureCollectionProcessor:
@@ -120,7 +92,7 @@ def plate_id_getter(feature):
     return feature.get_reconstruction_plate_id()
 
 
-def GPML_to_GeoDataFrame(
+def gpml_to_pandas_dataframe(
     feature_collection, property_getters={"name": feature_name_getter}
 ):
     """Convert a GPML feature collection to a GeoDataFrame."""

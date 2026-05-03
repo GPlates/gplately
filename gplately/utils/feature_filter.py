@@ -18,7 +18,7 @@
 import abc
 import logging
 import re
-from typing import List, Tuple, Union
+from typing import List, Optional, Tuple, Union
 
 import pygplates  # type: ignore
 
@@ -26,6 +26,10 @@ logger = logging.getLogger("gplately")
 
 
 class FeatureFilter(metaclass=abc.ABCMeta):
+    def __init__(self):
+        self._filtrate_feature_collection: List[Optional[pygplates.Feature]] = []
+        self._residue_feature_collection: List[Optional[pygplates.Feature]] = []
+
     @classmethod
     def __subclasshook__(cls, subclass):
         return (
@@ -45,6 +49,14 @@ class FeatureFilter(metaclass=abc.ABCMeta):
 
         raise NotImplementedError
 
+    @property
+    def filtrate_feature_collection(self):
+        return pygplates.FeatureCollection(self._filtrate_feature_collection)
+
+    @property
+    def residue_feature_collection(self):
+        return pygplates.FeatureCollection(self._residue_feature_collection)
+
 
 def filter_feature_collection(
     feature_collection: pygplates.FeatureCollection, filters: List[FeatureFilter]  # type: ignore
@@ -61,11 +73,8 @@ def filter_feature_collection(
             if filter.should_keep(feature):
                 filtrate_feature_collection.add(feature)
 
-        filtrate_feature_collection_from_filter = getattr(
-            filter, "filtrate_feature_collection", None
-        )
-        if filtrate_feature_collection_from_filter is not None:
-            feature_collection = filtrate_feature_collection_from_filter
+        if filter.filtrate_feature_collection:
+            feature_collection = filter.filtrate_feature_collection
         else:
             feature_collection = filtrate_feature_collection
 
@@ -86,7 +95,7 @@ class FeatureNameFilter(FeatureFilter):
     def __init__(
         self, names: List[str], exact_match=False, case_sensitive=False, reverse=False
     ):
-        """filter features by name, keep features with name matching any of the specified strings by default
+        """constructor for the feature name filter
 
         :param names: a list of strings to match the feature name
         :param exact_match: if True, the feature name must be exactly the same as one of the strings in names;
@@ -95,12 +104,11 @@ class FeatureNameFilter(FeatureFilter):
         :param reverse: if False, feature with name matching one of the strings in the parameter "names" will pass the filter,
             if True, feature with name not matching any of the strings in the parameter "names" will pass the filter.
         """
+        super().__init__()
         self._names = names
         self._exact_match = exact_match
         self._case_sensitive = case_sensitive
         self._reverse = reverse
-        self._filtrate_feature_collection = pygplates.FeatureCollection()  # type: ignore
-        self._residue_feature_collection = pygplates.FeatureCollection()  # type: ignore
 
     def _check_name(self, name_1: str, name_2: str) -> bool:
         """check if two names are the same or name_2 contains name_1"""
@@ -119,16 +127,16 @@ class FeatureNameFilter(FeatureFilter):
         if self._reverse:
             for name in self._names:
                 if self._check_name(name, feature.get_name()):  # type: ignore
-                    self._residue_feature_collection.add(feature)  # type: ignore
+                    self._residue_feature_collection.append(feature)
                     return False
-            self._filtrate_feature_collection.add(feature)  # type: ignore
+            self._filtrate_feature_collection.append(feature)
             return True
         else:
             for name in self._names:
                 if self._check_name(name, feature.get_name()):  # type: ignore
-                    self._filtrate_feature_collection.add(feature)  # type: ignore
+                    self._filtrate_feature_collection.append(feature)
                     return True
-            self._residue_feature_collection.add(feature)  # type: ignore
+            self._residue_feature_collection.append(feature)
             return False
 
 
@@ -142,31 +150,30 @@ class PlateIDFilter(FeatureFilter):
     """
 
     def __init__(self, pids: List[int], reverse=False):
-        """filter features by plate ID, keep features with plate ID in a specified list by default
+        """constructor for the plate ID filter
 
         :param pids: a list of plate IDs to match
         :param reverse: if False, feature with plate ID matching one of the strings in the parameter "pids" will pass the filter,
             if True, feature with plate ID not matching any of the strings in the parameter "pids" will pass the filter.
         """
+        super().__init__()
         self._pids = pids
         self._reverse = reverse
-        self._filtrate_feature_collection = pygplates.FeatureCollection()  # type: ignore
-        self._residue_feature_collection = pygplates.FeatureCollection()  # type: ignore
 
     def should_keep(self, feature: pygplates.Feature) -> bool:  # type: ignore
         if not self._reverse:
             if feature.get_reconstruction_plate_id() in self._pids:  # type: ignore
-                self._filtrate_feature_collection.add(feature)
+                self._filtrate_feature_collection.append(feature)
                 return True
             else:
-                self._residue_feature_collection.add(feature)  # type: ignore
+                self._residue_feature_collection.append(feature)
                 return False
         else:
             if feature.get_reconstruction_plate_id() not in self._pids:  # type: ignore
-                self._filtrate_feature_collection.add(feature)  # type: ignore
+                self._filtrate_feature_collection.append(feature)
                 return True
             else:
-                self._residue_feature_collection.add(feature)  # type: ignore
+                self._residue_feature_collection.append(feature)
                 return False
 
 
@@ -179,17 +186,16 @@ class BirthAgeFilter(FeatureFilter):
     """
 
     def __init__(self, age: float, reverse=False):
-        """filter features by the time of appearance, keep older features by default
+        """constructor for the birth age filter
 
         :param age: the age criterion
         :param reverse: if False, the feature older than the age criterion will pass the filter.
             If True, the feature younger than the age criterion will pass the filter.
         """
 
+        super().__init__()
         self._age = age
         self._reverse = reverse
-        self._filtrate_feature_collection = pygplates.FeatureCollection()  # type: ignore
-        self._residue_feature_collection = pygplates.FeatureCollection()  # type: ignore
 
     def should_keep(self, feature: pygplates.Feature) -> bool:  # type: ignore
         valid_time = feature.get_valid_time(None)
@@ -200,20 +206,20 @@ class BirthAgeFilter(FeatureFilter):
                     begin_time == pygplates.GeoTimeInstant.create_distant_past()  # type: ignore
                     or begin_time >= self._age
                 ):
-                    self._filtrate_feature_collection.add(feature)  # type: ignore
+                    self._filtrate_feature_collection.append(feature)
                     return True
             else:  # keep younger features
                 if (
                     begin_time != pygplates.GeoTimeInstant.create_distant_past()  # type: ignore
                     and begin_time <= self._age
                 ):
-                    self._filtrate_feature_collection.add(feature)  # type: ignore
+                    self._filtrate_feature_collection.append(feature)
                     return True
         else:
             logger.warning(
                 f"Feature {feature.get_feature_type()} {feature.get_name()} does not have 'valid time', and will not pass BirthAgeFilter."  # type: ignore
             )
-        self._residue_feature_collection.add(feature)  # type: ignore
+        self._residue_feature_collection.append(feature)
         return False
 
 
@@ -226,16 +232,15 @@ class EndTimeFilter(FeatureFilter):
     """
 
     def __init__(self, age: float, reverse=False):
-        """filter features by the time of disappearance, keep features that disappeared before a certain time by default
+        """constructor for the end time filter
 
         :param age: the age criterion
         :param reverse: if False, feature disappeared before the age criterion will pass the filter.
             If True, feature disappeared after the age criterion will pass the filter, including features that have not disappeared yet (end time is distant future).
         """
+        super().__init__()
         self._age = age
         self._reverse = reverse
-        self._filtrate_feature_collection = pygplates.FeatureCollection()  # type: ignore
-        self._residue_feature_collection = pygplates.FeatureCollection()  # type: ignore
 
     def should_keep(self, feature: pygplates.Feature) -> bool:  # type: ignore
         valid_time = feature.get_valid_time(None)
@@ -246,20 +251,20 @@ class EndTimeFilter(FeatureFilter):
                     end_time != pygplates.GeoTimeInstant.create_distant_future()  # type: ignore
                     and end_time >= self._age
                 ):
-                    self._filtrate_feature_collection.add(feature)  # type: ignore
+                    self._filtrate_feature_collection.append(feature)
                     return True
             else:  # keep features disappeared after the age criterion, including features that have not disappeared yet (end time is distant future)
                 if (
                     end_time == pygplates.GeoTimeInstant.create_distant_future()  # type: ignore
                     or end_time <= self._age
                 ):
-                    self._filtrate_feature_collection.add(feature)  # type: ignore
+                    self._filtrate_feature_collection.append(feature)
                     return True
         else:
             logger.warning(
                 f"Feature {feature.get_feature_type()} {feature.get_name()} does not have 'valid time', and will not pass EndTimeFilter."  # type: ignore
             )
-        self._residue_feature_collection.add(feature)  # type: ignore
+        self._residue_feature_collection.append(feature)
         return False
 
 
@@ -267,10 +272,9 @@ class FeatureTypeFilter(FeatureFilter):
     """filter features by the feature type, keep features with feature type matching a specified regular expression by default"""
 
     def __init__(self, feature_type_re: str, reverse=False):
+        super().__init__()
         self._feature_type_re = feature_type_re
         self._reverse = reverse
-        self._filtrate_feature_collection = pygplates.FeatureCollection()  # type: ignore
-        self._residue_feature_collection = pygplates.FeatureCollection()  # type: ignore
 
     def should_keep(self, feature: pygplates.Feature) -> bool:  # type: ignore
         feature_type = feature.get_feature_type()
@@ -278,19 +282,19 @@ class FeatureTypeFilter(FeatureFilter):
             not self._reverse
         ):  # keep features with feature type matching the regular expression
             if re.fullmatch(self._feature_type_re, feature_type.to_qualified_string()):
-                self._filtrate_feature_collection.add(feature)  # type: ignore
+                self._filtrate_feature_collection.append(feature)
                 return True
             else:
-                self._residue_feature_collection.add(feature)  # type: ignore
+                self._residue_feature_collection.append(feature)
                 return False
         else:  # keep features with feature type not matching the regular expression
             if not re.fullmatch(
                 self._feature_type_re, feature_type.to_qualified_string()
             ):
-                self._filtrate_feature_collection.add(feature)  # type: ignore
+                self._filtrate_feature_collection.append(feature)
                 return True
             else:
-                self._residue_feature_collection.add(feature)  # type: ignore
+                self._residue_feature_collection.append(feature)
                 return False
 
 
@@ -305,17 +309,16 @@ class PropertyExistsFilter(FeatureFilter):
     """
 
     def __init__(self, property_name: str, reverse=False):
-        """filter features by the existence of a property, keep features that have a specific property by default
+        """constructor for the property existence filter
 
         :param property_name: the name of the property to check (case-insensitive), such as gpml:subductoinPolarity
         :param reverse: if False, features that have the property will pass the filter;
             if True, features that do not have the property will pass the filter.
         """
 
+        super().__init__()
         self._property_name = property_name
         self._reverse = reverse
-        self._filtrate_feature_collection = pygplates.FeatureCollection()  # type: ignore
-        self._residue_feature_collection = pygplates.FeatureCollection()  # type: ignore
 
     def should_keep(self, feature: pygplates.Feature) -> bool:  # type: ignore
         for property in feature:
@@ -324,18 +327,18 @@ class PropertyExistsFilter(FeatureFilter):
                 == self._property_name.lower()
             ):
                 if not self._reverse:
-                    self._filtrate_feature_collection.add(feature)  # type: ignore
+                    self._filtrate_feature_collection.append(feature)
                     return True
                 else:
-                    self._residue_feature_collection.add(feature)  # type: ignore
+                    self._residue_feature_collection.append(feature)
                     return False
 
         # if we go through all properties and do not find the property we are looking for
         if self._reverse:
-            self._filtrate_feature_collection.add(feature)  # type: ignore
+            self._filtrate_feature_collection.append(feature)
             return True
         else:
-            self._residue_feature_collection.add(feature)  # type: ignore
+            self._residue_feature_collection.append(feature)
             return False
 
 
@@ -356,18 +359,17 @@ class PropertyValueFilter(FeatureFilter):
         property_value,
         reverse=False,
     ):
-        """filter features by the value of a property, keep features that have a specific property with a specific value by default
+        """constructor for the property value filter
 
         :param property_name: the name of the property to check (case-insensitive), such as gpml:subductoinPolarity
         :param property_value: the value of the property to check
         :param reverse: if False, features which has a property and its value match the specified value will pass the filter;
             if True, features which either do not have the property or have the property but its value does not match the specified value will pass the filter.
         """
+        super().__init__()
         self._property_name = property_name
         self._property_value = property_value
         self._reverse = reverse
-        self._filtrate_feature_collection = pygplates.FeatureCollection()  # type: ignore
-        self._residue_feature_collection = pygplates.FeatureCollection()  # type: ignore
 
     def should_keep(self, feature: pygplates.Feature) -> bool:  # type: ignore
         for property in feature:
@@ -377,18 +379,18 @@ class PropertyValueFilter(FeatureFilter):
                 and property.get_value() == self._property_value
             ):
                 if self._reverse:
-                    self._residue_feature_collection.add(feature)  # type: ignore
+                    self._residue_feature_collection.append(feature)
                     return False
                 else:
-                    self._filtrate_feature_collection.add(feature)  # type: ignore
+                    self._filtrate_feature_collection.append(feature)
                     return True
 
         # if we go through all properties and do not find the property with the specified value
         if self._reverse:
-            self._filtrate_feature_collection.add(feature)  # type: ignore
+            self._filtrate_feature_collection.append(feature)
             return True
         else:
-            self._residue_feature_collection.add(feature)  # type: ignore
+            self._residue_feature_collection.append(feature)
             return False
 
 
@@ -406,13 +408,13 @@ class RegionOfInterestFilter(FeatureFilter):
         region_of_interest: Union[Tuple[float, float, float, float], pygplates.PolygonOnSphere],  # type: ignore
         reverse=False,
     ):
-        """filter features by whether they are inside a region of interest, which can be defined by a bounding box or a polygon.
-        By default, features that are inside the region of interest will pass the filter.
+        """constructor for the region of interest filter
 
         :param region_of_interest: the region of interest, can be either a tuple of (left, right, bottom, top) or a pygplates.PolygonOnSphere
         :param reverse: if False, features that are within the region of interest will pass the filter;
             if True, features that are not inside the region of interest will pass the filter.
         """
+        super().__init__()
         if isinstance(region_of_interest, pygplates.PolygonOnSphere):  # type: ignore
             self._region_of_interest = region_of_interest
         elif isinstance(region_of_interest, tuple) and len(region_of_interest) == 4:
@@ -424,8 +426,6 @@ class RegionOfInterestFilter(FeatureFilter):
             )
 
         self._reverse = reverse
-        self._filtrate_feature_collection = pygplates.FeatureCollection()  # type: ignore
-        self._residue_feature_collection = pygplates.FeatureCollection()  # type: ignore
 
     def should_keep(self, feature: pygplates.Feature) -> bool:  # type: ignore
         # Implementation for checking if feature is in the region of interest
@@ -445,17 +445,17 @@ class RegionOfInterestFilter(FeatureFilter):
         #  and we may want to consider them as inside the region of interest.
         if not self._reverse:
             if len(inside_geometries) == 0:
-                self._residue_feature_collection.add(feature)  # type: ignore
+                self._residue_feature_collection.append(feature)
                 return False
             else:
-                self._filtrate_feature_collection.add(feature)  # type: ignore
+                self._filtrate_feature_collection.append(feature)
                 return True
         else:
             if len(outside_geometries) == 0:
-                self._residue_feature_collection.add(feature)  # type: ignore
+                self._residue_feature_collection.append(feature)
                 return False
             else:
-                self._filtrate_feature_collection.add(feature)  # type: ignore
+                self._filtrate_feature_collection.append(feature)
                 return True
 
 
@@ -511,6 +511,7 @@ class TopologicalSectionFeaturesFilter(FeatureFilter):
             the filter will find section features that are used in the topological geometries
             of these topological features
         """
+        super().__init__()
         self._topological_feature_collection = topological_feature_collection
         self._the_ids_of_section_features = set()
         for feature in self._topological_feature_collection:
@@ -547,35 +548,22 @@ class FeatureIDFilter(FeatureFilter):
     """
 
     def __init__(self, fids: List[str], reverse=False):
-        """filter features by their feature IDs, keep features with feature ID in a specified list by default
+        """constructor for the feature ID filter
 
         :param fids: a set of feature IDs to match. Each feature ID should be a universal unique string.
         :param reverse: if False, feature with feature ID matching one of the strings in the parameter "fids" will pass the filter,
             if True, feature with feature ID not matching any of the strings in the parameter "fids" will pass the filter.
         """
+        super().__init__()
         self._fids = fids
         assert len(self._fids) == len(
             set(self._fids)
         ), "The feature IDs in the parameter 'fids' should be unique."
         self._reverse = reverse
         if not self._reverse:
-            self._filtrate_feature_collection: List[Optional[pygplates.Feature]] = [None] * len(  # type: ignore
-                self._fids
-            )
-            self._residue_feature_collection = []
+            self._filtrate_feature_collection = [None] * len(self._fids)
         else:
-            self._filtrate_feature_collection = []
-            self._residue_feature_collection: List[Optional[pygplates.Feature]] = [None] * len(  # type: ignore
-                self._fids
-            )
-
-    @property
-    def filtrate_feature_collection(self):
-        return pygplates.FeatureCollection(self._filtrate_feature_collection)
-
-    @property
-    def residue_feature_collection(self):
-        return pygplates.FeatureCollection(self._residue_feature_collection)
+            self._residue_feature_collection = [None] * len(self._fids)
 
     def should_keep(self, feature: pygplates.Feature) -> bool:  # type: ignore
         try:
@@ -606,3 +594,30 @@ class FeatureIDFilter(FeatureFilter):
                         f"Duplicate feature ID found: {feature.get_feature_id().get_string()}. Only the first one will be kept in the residue feature collection."
                     )
                 return False
+
+    class ValidTimeFilter(FeatureFilter):
+        """filter features by their valid time, keep features with valid time within a specified time range."""
+
+        def __init__(
+            self, begin_time: float = float("inf"), end_time: float = float("-inf")
+        ):
+            """constructor for the valid time filter
+
+            :param begin_time: the begin time of the time range (inclusive)
+            :param end_time: the end time of the time range (inclusive)
+            """
+            super().__init__()
+            self._begin_time = begin_time
+            self._end_time = end_time
+
+        def should_keep(self, feature: pygplates.Feature) -> bool:  # type: ignore
+            valid_time = feature.get_valid_time(None)
+            if valid_time:
+                begin_time, end_time = valid_time
+
+                if begin_time <= self._begin_time or end_time >= self._end_time:
+                    self._filtrate_feature_collection.append(feature)
+                    return True
+
+            self._residue_feature_collection.append(feature)
+            return False

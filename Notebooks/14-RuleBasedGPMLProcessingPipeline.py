@@ -44,10 +44,11 @@ from gplately.mapping import cartopy_plot
 from gplately.gpml import (
     FeatureCollectionProcessor,
     FeatureTransformer,
-    GPML_to_GeoDataFrame,
+    gpml_to_pandas_dataframe,
     feature_name_getter,
     merge_feature_collections,
 )
+from gplately.utils.feature_transformer import SetValidTimeTransformer
 
 DATA_DIR = "./rule-based-GPML-processing-pipeline-data"
 makedirs(DATA_DIR, exist_ok=True)
@@ -321,7 +322,7 @@ class PandasFeatureNameFilter(FeatureFilter):
     """search and filter feature collection with Pandas DataFrame"""
 
     def __init__(self, feature_collection: pygplates.FeatureCollection, name: str):  # type: ignore
-        gdf = GPML_to_GeoDataFrame(
+        gdf = gpml_to_pandas_dataframe(
             feature_collection,
             property_getters={
                 "name": feature_name_getter,
@@ -360,7 +361,7 @@ for property in name_contain_africa_feature_collection[0]:
 
 
 # %%
-# define a custom filter that keeps features with disappearance age equal to 0
+# define a custom filter that finds all features with end time equal to 0
 class ZeroEndTimeFilter(FeatureFilter):
     def should_keep(self, feature: pygplates.Feature) -> bool:  # type: ignore
         valid_time = feature.get_valid_time(None)
@@ -370,19 +371,14 @@ class ZeroEndTimeFilter(FeatureFilter):
         return False
 
 
-# define a custom transformer that sets the end time of a feature to "distant future"
-class UpdateEndTimeToDistanceFuture(FeatureTransformer):
-    def transform(self, feature: pygplates.Feature) -> pygplates.Feature:  # type: ignore
-        feature.set_valid_time(feature.get_valid_time()[0], pygplates.GeoTimeInstant.create_distant_future())  # type: ignore
-        return feature
-
-
-# 1. create a feature collection processor with a list of filter(s) and transformer(s),
-# 2. process the topology feature collection.
-# 3. write the output to a new GPML file.
+# update the end time to "distant future" for features with end time equal to 0
 updated_feature_collection = FeatureCollectionProcessor(
     filters=[ZeroEndTimeFilter()],
-    transformers=[UpdateEndTimeToDistanceFuture()],
+    transformers=[
+        SetValidTimeTransformer(
+            end_time=pygplates.GeoTimeInstant.create_distant_future()
+        )
+    ],
 ).process(topology_feature_collection)
 
 print(
