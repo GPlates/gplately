@@ -42,9 +42,14 @@ class FeatureFilter(metaclass=abc.ABCMeta):
     def should_keep(self, feature: pygplates.Feature) -> bool:  # type: ignore
         """This abstract method must be implemented in subclass.
 
-        :param feature: pygplates.Feature
+        Parameters
+        ----------
+        feature : pygplates.Feature
 
-        :returns: true if the feature should be kept; false otherwise
+        Returns
+        -------
+        bool
+            True if the feature should be kept; False otherwise.
         """
 
         raise NotImplementedError
@@ -71,9 +76,17 @@ def filter_feature_collection(
 ):
     """Filter a feature collection using a list of filters.
 
-    :param feature_collection: the input feature collection to be filtered
-    :param filters: a list of filters to apply. A feature will be kept if it passes all the filters in the list.
-    :returns: the filtered feature collection
+    Parameters
+    ----------
+    feature_collection : pygplates.FeatureCollection
+        The input feature collection to be filtered.
+    filters : list of FeatureFilter
+        A list of filters to apply. A feature will be kept if it passes all the filters in the list.
+
+    Returns
+    -------
+    pygplates.FeatureCollection
+        The filtered feature collection.
     """
     for filter in filters:
         filtrate_feature_collection = pygplates.FeatureCollection()  # type: ignore
@@ -103,14 +116,23 @@ class FeatureNameFilter(FeatureFilter):
     def __init__(
         self, names: List[str], exact_match=False, case_sensitive=False, reverse=False
     ):
-        """constructor for the feature name filter
+        """Constructor for the feature name filter.
 
-        :param names: a list of strings to match the feature name
-        :param exact_match: if True, the feature name must be exactly the same as one of the strings in names;
-            if False, the feature name only needs to contain one of the strings in names
-        :param case_sensitive: if True, the name matching is case sensitive; if False, the name matching is case insensitive
-        :param reverse: if False, feature with name matching one of the strings in the parameter "names" will pass the filter,
-            if True, feature with name not matching any of the strings in the parameter "names" will pass the filter.
+        Parameters
+        ----------
+        names : list of str
+            A list of strings to match the feature name.
+        exact_match : bool, optional
+            If True, the feature name must be exactly the same as one of the strings in
+            ``names``; if False, the feature name only needs to contain one of the strings.
+            Default is False.
+        case_sensitive : bool, optional
+            If True, name matching is case-sensitive; if False, it is case-insensitive.
+            Default is False.
+        reverse : bool, optional
+            If False, features with a name matching one of the strings in ``names`` will
+            pass the filter; if True, features with a name not matching any string in
+            ``names`` will pass the filter. Default is False.
         """
         super().__init__()
         self._names = names
@@ -158,11 +180,16 @@ class PlateIDFilter(FeatureFilter):
     """
 
     def __init__(self, pids: List[int], reverse=False):
-        """constructor for the plate ID filter
+        """Constructor for the plate ID filter.
 
-        :param pids: a list of plate IDs to match
-        :param reverse: if False, feature with plate ID matching one of the strings in the parameter "pids" will pass the filter,
-            if True, feature with plate ID not matching any of the strings in the parameter "pids" will pass the filter.
+        Parameters
+        ----------
+        pids : list of int
+            A list of plate IDs to match.
+        reverse : bool, optional
+            If False, features with a plate ID matching one of the values in ``pids`` will
+            pass the filter; if True, features with a plate ID not matching any value in
+            ``pids`` will pass the filter. Default is False.
         """
         super().__init__()
         self._pids = pids
@@ -194,11 +221,16 @@ class BirthAgeFilter(FeatureFilter):
     """
 
     def __init__(self, age: float, reverse=False):
-        """constructor for the birth age filter
+        """Constructor for the birth age filter.
 
-        :param age: the age criterion
-        :param reverse: if False, the feature older than the age criterion will pass the filter.
-            If True, the feature younger than the age criterion will pass the filter.
+        Parameters
+        ----------
+        age : float
+            The age criterion.
+        reverse : bool, optional
+            If False, features older than the age criterion will pass the filter;
+            if True, features younger than the age criterion will pass the filter.
+            Default is False.
         """
 
         super().__init__()
@@ -240,11 +272,17 @@ class EndTimeFilter(FeatureFilter):
     """
 
     def __init__(self, age: float, reverse=False):
-        """constructor for the end time filter
+        """Constructor for the end time filter.
 
-        :param age: the age criterion
-        :param reverse: if False, feature disappeared before the age criterion will pass the filter.
-            If True, feature disappeared after the age criterion will pass the filter, including features that have not disappeared yet (end time is distant future).
+        Parameters
+        ----------
+        age : float
+            The age criterion.
+        reverse : bool, optional
+            If False, features that disappeared before the age criterion will pass the filter;
+            if True, features that disappeared after the age criterion will pass the filter,
+            including features that have not disappeared yet (end time is distant future).
+            Default is False.
         """
         super().__init__()
         self._age = age
@@ -317,11 +355,16 @@ class PropertyExistsFilter(FeatureFilter):
     """
 
     def __init__(self, property_name: str, reverse=False):
-        """constructor for the property existence filter
+        """Constructor for the property existence filter.
 
-        :param property_name: the name of the property to check (case-insensitive), such as gpml:subductoinPolarity
-        :param reverse: if False, features that have the property will pass the filter;
+        Parameters
+        ----------
+        property_name : str
+            The name of the property to check (case-insensitive), e.g. ``gpml:subductionPolarity``.
+        reverse : bool, optional
+            If False, features that have the property will pass the filter;
             if True, features that do not have the property will pass the filter.
+            Default is False.
         """
 
         super().__init__()
@@ -367,12 +410,18 @@ class PropertyValueFilter(FeatureFilter):
         property_value,
         reverse=False,
     ):
-        """constructor for the property value filter
+        """Constructor for the property value filter.
 
-        :param property_name: the name of the property to check (case-insensitive), such as gpml:subductoinPolarity
-        :param property_value: the value of the property to check
-        :param reverse: if False, features which has a property and its value match the specified value will pass the filter;
-            if True, features which either do not have the property or have the property but its value does not match the specified value will pass the filter.
+        Parameters
+        ----------
+        property_name : str
+            The name of the property to check (case-insensitive), e.g. ``gpml:subductionPolarity``.
+        property_value :
+            The value of the property to check.
+        reverse : bool, optional
+            If False, features that have the property and whose value matches ``property_value``
+            will pass the filter; if True, features that either do not have the property or have
+            the property but its value does not match will pass the filter. Default is False.
         """
         super().__init__()
         self._property_name = property_name
@@ -416,11 +465,17 @@ class RegionOfInterestFilter(FeatureFilter):
         region_of_interest: Union[Tuple[float, float, float, float], pygplates.PolygonOnSphere],  # type: ignore
         reverse=False,
     ):
-        """constructor for the region of interest filter
+        """Constructor for the region of interest filter.
 
-        :param region_of_interest: the region of interest, can be either a tuple of (left, right, bottom, top) or a pygplates.PolygonOnSphere
-        :param reverse: if False, features that are within the region of interest will pass the filter;
-            if True, features that are not inside the region of interest will pass the filter.
+        Parameters
+        ----------
+        region_of_interest : tuple of (float, float, float, float) or pygplates.PolygonOnSphere
+            The region of interest. Either a ``(left, right, bottom, top)`` bounding box tuple
+            or a ``pygplates.PolygonOnSphere``.
+        reverse : bool, optional
+            If False, features within the region of interest will pass the filter;
+            if True, features outside the region of interest will pass the filter.
+            Default is False.
         """
         super().__init__()
         if isinstance(region_of_interest, pygplates.PolygonOnSphere):  # type: ignore
@@ -512,12 +567,16 @@ class TopologicalSectionFeaturesFilter(FeatureFilter):
     """
 
     def __init__(self, topological_feature_collection=pygplates.FeatureCollection()):  # type: ignore
-        """construct the filter with a collection of topological features,
-        the filtering will be done to another collection of features containing the real geometries.
+        """Construct the filter with a collection of topological features.
 
-        :param topological_feature_collection: a collection of topological features,
-            the filter will find section features that are used in the topological geometries
-            of these topological features
+        The filtering will be applied to another collection of features containing the real
+        geometries.
+
+        Parameters
+        ----------
+        topological_feature_collection : pygplates.FeatureCollection, optional
+            A collection of topological features. The filter will find section features that
+            are referenced by the topological geometries of these features.
         """
         super().__init__()
         self._topological_feature_collection = topological_feature_collection
@@ -556,11 +615,16 @@ class FeatureIDFilter(FeatureFilter):
     """
 
     def __init__(self, fids: List[str], reverse=False):
-        """constructor for the feature ID filter
+        """Constructor for the feature ID filter.
 
-        :param fids: a set of feature IDs to match. Each feature ID should be a universal unique string.
-        :param reverse: if False, feature with feature ID matching one of the strings in the parameter "fids" will pass the filter,
-            if True, feature with feature ID not matching any of the strings in the parameter "fids" will pass the filter.
+        Parameters
+        ----------
+        fids : list of str
+            A list of feature IDs to match. Each feature ID should be a universally unique string.
+        reverse : bool, optional
+            If False, features with a feature ID matching one of the strings in ``fids`` will
+            pass the filter; if True, features with a feature ID not matching any string in
+            ``fids`` will pass the filter. Default is False.
         """
         super().__init__()
         self._fids = fids
@@ -603,29 +667,34 @@ class FeatureIDFilter(FeatureFilter):
                     )
                 return False
 
-    class ValidTimeFilter(FeatureFilter):
-        """filter features by their valid time, keep features with valid time within a specified time range."""
 
-        def __init__(
-            self, begin_time: float = float("inf"), end_time: float = float("-inf")
-        ):
-            """constructor for the valid time filter
+class ValidTimeFilter(FeatureFilter):
+    """filter features by their valid time, keep features with valid time within a specified time range."""
 
-            :param begin_time: the begin time of the time range (inclusive)
-            :param end_time: the end time of the time range (inclusive)
-            """
-            super().__init__()
-            self._begin_time = begin_time
-            self._end_time = end_time
+    def __init__(
+        self, begin_time: float = float("inf"), end_time: float = float("-inf")
+    ):
+        """Constructor for the valid time filter.
 
-        def should_keep(self, feature: pygplates.Feature) -> bool:  # type: ignore
-            valid_time = feature.get_valid_time(None)
-            if valid_time:
-                begin_time, end_time = valid_time
+        Parameters
+        ----------
+        begin_time : float, optional
+            The begin time of the time range (inclusive). Default is ``inf``.
+        end_time : float, optional
+            The end time of the time range (inclusive). Default is ``-inf``.
+        """
+        super().__init__()
+        self._begin_time = begin_time
+        self._end_time = end_time
 
-                if begin_time <= self._begin_time or end_time >= self._end_time:
-                    self._filtrate_feature_collection.append(feature)
-                    return True
+    def should_keep(self, feature: pygplates.Feature) -> bool:  # type: ignore
+        valid_time = feature.get_valid_time(None)
+        if valid_time:
+            begin_time, end_time = valid_time
 
-            self._residue_feature_collection.append(feature)
-            return False
+            if begin_time <= self._begin_time or end_time >= self._end_time:
+                self._filtrate_feature_collection.append(feature)
+                return True
+
+        self._residue_feature_collection.append(feature)
+        return False

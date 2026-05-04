@@ -55,8 +55,14 @@ class FeatureCollectionProcessor:
     def process(self, feature_collection: pygplates.FeatureCollection) -> pygplates.FeatureCollection:  # type: ignore
         """Process the feature collection with the assigned filters and transformers.
 
-        :param feature_collection: pygplates.FeatureCollection
-        :returns: new pygplates.FeatureCollection after processing
+        Parameters
+        ----------
+        feature_collection : pygplates.FeatureCollection
+
+        Returns
+        -------
+        pygplates.FeatureCollection
+            New feature collection after processing.
         """
         return transform_feature_collection(
             filter_feature_collection(feature_collection, self._filters),
@@ -161,10 +167,16 @@ def gpml_to_pandas_dataframe(
 def merge_feature_collections(feature_collections):
     """Merge multiple feature collections into a single feature collection.
 
-    :param feature_collections: A list of feature collections,
-        or a list of file paths to feature collections,
-        or a sequence(list/tuple) of features.
-    :returns: A single feature collection containing all features from the input collections.
+    Parameters
+    ----------
+    feature_collections : list
+        A list of feature collections, or a list of file paths to feature
+        collections, or a sequence (list/tuple) of features.
+
+    Returns
+    -------
+    pygplates.FeatureCollection
+        A single feature collection containing all features from the input collections.
     """
     merged = pygplates.FeatureCollection()
     for feature_collection in feature_collections:
