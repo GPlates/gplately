@@ -25,6 +25,7 @@ from typing import List
 
 import pygplates  # type: ignore
 
+from gplately.geometry import pygplates_to_shapely
 from gplately.utils.feature_filter import FeatureFilter, filter_feature_collection
 from gplately.utils.feature_transformer import (
     FeatureTransformer,
@@ -92,8 +93,45 @@ def plate_id_getter(feature):
     return feature.get_reconstruction_plate_id()
 
 
+def begin_time_getter(feature):
+    """Return the begin time of a feature as a float."""
+    t = feature.get_valid_time(None)
+    return t[0] if t else None
+
+
+def end_time_getter(feature):
+    """Return the end time of a feature as a float."""
+    t = feature.get_valid_time(None)
+    return t[1] if t else None
+
+
+def primary_geometry_getter(feature):
+    """Return the primary geometry of a feature."""
+    geom = feature.get_geometry()
+    if geom:
+        return pygplates_to_shapely(geom)
+    return None
+
+
+def shapefile_attributes_getter(feature):
+    """Return the shapefile attributes of a feature as a dictionary."""
+    return feature.get_shapefile_attributes()
+
+
+DEFAULT_PROPERTY_GETTERS = {
+    "name": feature_name_getter,
+    "type": feature_type_getter,
+    "plate_id": plate_id_getter,
+    "begin_time": begin_time_getter,
+    "end_time": end_time_getter,
+    "shapefile_attributes": shapefile_attributes_getter,
+    "geometry": primary_geometry_getter,
+}
+
+
 def gpml_to_pandas_dataframe(
-    feature_collection, property_getters={"name": feature_name_getter}
+    feature_collection,
+    property_getters=DEFAULT_PROPERTY_GETTERS | {},
 ):
     """Convert a GPML feature collection to a GeoDataFrame."""
     import geopandas as gpd  # type: ignore --- IGNORE ---

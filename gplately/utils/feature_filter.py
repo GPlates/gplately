@@ -57,6 +57,14 @@ class FeatureFilter(metaclass=abc.ABCMeta):
     def residue_feature_collection(self):
         return pygplates.FeatureCollection(self._residue_feature_collection)
 
+    @property
+    def filtrate_features_as_list(self):
+        return self._filtrate_feature_collection
+
+    @property
+    def residue_features_as_list(self):
+        return self._residue_feature_collection
+
 
 def filter_feature_collection(
     feature_collection: pygplates.FeatureCollection, filters: List[FeatureFilter]  # type: ignore

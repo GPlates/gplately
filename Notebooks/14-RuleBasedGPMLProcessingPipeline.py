@@ -312,56 +312,54 @@ plt.tight_layout()
 plt.show()
 
 # %% [markdown]
-# #### Search and filter feature collection with custom filter
+# #### Use Pandas DataFrame to filter features based on their properties
 
 
-# The code cell below demonstrates how to create a custom filter by subclassing the `FeatureFilter` class,
-# and then use this custom filter to search and filter a feature collection.
+# The code cell below demonstrates how to use the `gpml_to_pandas_dataframe` function to convert
+# a GPML feature collection to a Pandas DataFrame, and then use the DataFrame to
+# filter features based on their properties.
+# In this example, we filter features whose name contains "Africa" and then check if
+# the filtered features are correct by comparing the feature IDs of the filtered features with
+# the feature IDs obtained from the DataFrame filtering.
 # %%
-class PandasFeatureNameFilter(FeatureFilter):
-    """search and filter feature collection with Pandas DataFrame"""
 
-    def __init__(self, feature_collection: pygplates.FeatureCollection, name: str):  # type: ignore
-        gdf = gpml_to_pandas_dataframe(
-            feature_collection,
-            property_getters={
-                "name": feature_name_getter,
-            },
-        )
-        # use pandas dataframe to filter features whose name contains the specified name, and get the feature IDs of the filtered features.
-        self._feature_ids = gdf[
-            gdf["name"].str.contains(name, case=False, na=False)
-        ].index.tolist()
-
-    def should_keep(self, feature: pygplates.Feature) -> bool:  # type: ignore
-        if feature.get_feature_id().get_string() in self._feature_ids:
-            return True
-        else:
-            return False
+gdf = gpml_to_pandas_dataframe(coastlines_feature_collection)
+# use pandas dataframe to filter features whose name contains the specified name, and get the feature IDs of the filtered features.
+africa_feature_ids = gdf[
+    gdf["name"].str.contains("Africa", case=False, na=False)
+].index.tolist()
 
 
-name_contain_africa_feature_collection = filter_feature_collection(
+feature_id_filter = FeatureIDFilter(africa_feature_ids)
+filter_feature_collection(
     coastlines_feature_collection,
-    [PandasFeatureNameFilter(coastlines_feature_collection, "Africa")],
+    [feature_id_filter],
 )
-print(
-    f"There are {len(name_contain_africa_feature_collection)} features whose name contains 'Africa' in the global coastlines feature collection."
-)
-unique_names = {
-    feature.get_name() for feature in name_contain_africa_feature_collection
-}
-print(f"The unique feature names of these features are: {unique_names}")
 
-for property in name_contain_africa_feature_collection[0]:
-    print(property.get_name(), property.get_value())
+# assert the list of filtrate features is in the same order as the list of feature IDs.
+for fid, feature in zip(
+    africa_feature_ids, feature_id_filter.filtrate_features_as_list
+):
+    assert (
+        feature is not None
+    ), f"Feature with ID {fid} is not found in the feature collection."
+    assert (
+        fid == feature.get_feature_id().get_string()
+    ), f"Feature ID mismatch: {fid} != {feature.get_feature_id().get_string()}"
+
+print(
+    f"There are {len(feature_id_filter.filtrate_features_as_list)} out of {len(coastlines_feature_collection)} features whose name contains 'Africa' in the global coastlines feature collection."
+)
 
 # %% [markdown]
-# #### a real-world use case of the rule-based GPML processing pipeline
-# Find all features whose end time is 0 and update their end time to "distant future".
+# #### Search feature collection with a user defined filter and update the filtered features with a transformer
+
+# The code cell below demonstrates how to create a filter by subclassing the `FeatureFilter` class,
+# and then use this filter to search a feature collection and update the filtered features' "end time" to "distant future".
 
 
 # %%
-# define a custom filter that finds all features with end time equal to 0
+# define a filter that finds all features with "end time" equal to 0
 class ZeroEndTimeFilter(FeatureFilter):
     def should_keep(self, feature: pygplates.Feature) -> bool:  # type: ignore
         valid_time = feature.get_valid_time(None)
@@ -371,7 +369,7 @@ class ZeroEndTimeFilter(FeatureFilter):
         return False
 
 
-# update the end time to "distant future" for features with end time equal to 0
+# update the "end time" to "distant future" for features with "end time" equal to 0
 updated_feature_collection = FeatureCollectionProcessor(
     filters=[ZeroEndTimeFilter()],
     transformers=[
@@ -385,12 +383,17 @@ print(
     f"{len(updated_feature_collection)} features out of {len(topology_feature_collection)} were updated. Changed end time to distant future for features whose end time was 0."
 )
 # %% [markdown]
-# #### TODO: find features with subductionparity property but whose feature type is not subduction zone.
-# #### TODO: find topological boundaries with duplicated features.
+# #### Find laurussia topological plate and extract the section features for investigation
 
+# The laurussia topological plate at 371 Ma with duplicated section features is suspicious.
+# Its feature ID is "GPlates-cfe96235-5906-4974-a654-2b14a260a3fe".
+# We will find the section features for this topological plate and
+# save them together in a new GPML file for investigation.
+# open the output file in GPlates desktop software, you will see the laurussia topological plate feature and
+# the section features that are used to construct the topological geometry of this plate feature.
 
 # %%
-# "GPlates-cfe96235-5906-4974-a654-2b14a260a3fe" 371Ma example topological boundary with duplicated features.
+# get the feature by feature ID
 laurussia_371 = filter_feature_collection(
     boundary_feature_collection,
     [FeatureIDFilter(["GPlates-cfe96235-5906-4974-a654-2b14a260a3fe"])],
@@ -400,10 +403,12 @@ for feature in laurussia_371:
     print(feature.get_feature_id().get_string())
     print(feature.get_valid_time(None))
 
+# get the section features for the laurussia topological plate feature
 laurussia_371_section_features = filter_feature_collection(
     topology_feature_collection,
     [TopologicalSectionFeaturesFilter(laurussia_371)],
 )
+
 merge_feature_collections([laurussia_371, laurussia_371_section_features]).write(
     f"{DATA_DIR}/laurussia_371_with_section_features.gpmlz"
 )
@@ -411,6 +416,10 @@ print(
     f"Laurussia topological boundary around 371Ma and the section features have been written to {DATA_DIR}/laurussia_371_with_section_features.gpmlz"
 )
 
+# %% [markdown]
+# Find all topological boundaries with duplicated section features,
+# and also extract the section features for these topological boundaries and
+# save them together in a new GPML file for investigation.
 # %%
 topology_with_duplicated_sections = filter_feature_collection(
     boundary_feature_collection,
@@ -420,6 +429,7 @@ topology_with_duplicated_sections = filter_feature_collection(
 print(
     f"There are {len(topology_with_duplicated_sections)} out of {len(boundary_feature_collection)} features whose topological geometries have duplicated section features."
 )
+
 topological_section_features = filter_feature_collection(
     topology_feature_collection,
     [TopologicalSectionFeaturesFilter(topology_with_duplicated_sections)],
