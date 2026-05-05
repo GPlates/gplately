@@ -36,7 +36,7 @@ from gplately.utils.feature_filter import (
     PropertyValueFilter,
     RegionOfInterestFilter,
     TopologicalFeaturesWithDuplicateSectionsFilter,
-    TopologicalSectionFeaturesFilter,
+    TopologicalReferenceFilter,
     filter_feature_collection,
 )
 from gplately.mapping import cartopy_plot
@@ -82,6 +82,7 @@ coastlines_feature_collection, topology_feature_collection, boundary_feature_col
 subduction_polarity_left = pygplates.Enumeration(  # type: ignore
     pygplates.EnumerationType.create_gpml("SubductionPolarityEnumeration"), "Left"  # type: ignore
 )
+print(f"Finished preparation of running this notebook.")
 
 # %% [markdown]
 #### Search and filter feature collection with pre-defined filters
@@ -312,7 +313,7 @@ plt.tight_layout()
 plt.show()
 
 # %% [markdown]
-# #### Use Pandas DataFrame to filter features based on their properties
+# #### Use Pandas DataFrame to filter features
 
 
 # The code cell below demonstrates how to use the `gpml_to_pandas_dataframe` function to convert
@@ -322,21 +323,21 @@ plt.show()
 # the filtered features are correct by comparing the feature IDs of the filtered features with
 # the feature IDs obtained from the DataFrame filtering.
 # %%
-
 gdf = gpml_to_pandas_dataframe(coastlines_feature_collection)
 # use pandas dataframe to filter features whose name contains the specified name, and get the feature IDs of the filtered features.
 africa_feature_ids = gdf[
     gdf["name"].str.contains("Africa", case=False, na=False)
 ].index.tolist()
 
-
 feature_id_filter = FeatureIDFilter(africa_feature_ids)
-filter_feature_collection(
+
+features_with_name_africa = filter_feature_collection(
     coastlines_feature_collection,
     [feature_id_filter],
 )
 
-# assert the list of filtrate features is in the same order as the list of feature IDs.
+# assert the list of filtrate features is in the same order as the list of given feature IDs.
+# use filtrate_features_as_list to get the list of filtered features in the same order as the given feature IDs.
 for fid, feature in zip(
     africa_feature_ids, feature_id_filter.filtrate_features_as_list
 ):
@@ -348,11 +349,14 @@ for fid, feature in zip(
     ), f"Feature ID mismatch: {fid} != {feature.get_feature_id().get_string()}"
 
 print(
-    f"There are {len(feature_id_filter.filtrate_features_as_list)} out of {len(coastlines_feature_collection)} features whose name contains 'Africa' in the global coastlines feature collection."
+    f"There are {len(features_with_name_africa)} out of {len(coastlines_feature_collection)} features whose name contains 'Africa' in the global coastlines feature collection."
 )
 
 # %% [markdown]
-# #### Search feature collection with a user defined filter and update the filtered features with a transformer
+# #### Search feature collection with a user defined filter and update the filtrate features with a transformer
+
+# There are some features in the topology feature collection whose "end time" is 0,
+# which should be "distant future" instead, unless some major geological events will happen soon to destroy them.
 
 # The code cell below demonstrates how to create a filter by subclassing the `FeatureFilter` class,
 # and then use this filter to search a feature collection and update the filtered features' "end time" to "distant future".
@@ -383,14 +387,14 @@ print(
     f"{len(updated_feature_collection)} features out of {len(topology_feature_collection)} were updated. Changed end time to distant future for features whose end time was 0."
 )
 # %% [markdown]
-# #### Find laurussia topological plate and extract the section features for investigation
+# #### Find Laurussia topological plate and extract the reference features for investigation
 
-# The laurussia topological plate at 371 Ma with duplicated section features is suspicious.
-# Its feature ID is "GPlates-cfe96235-5906-4974-a654-2b14a260a3fe".
+# The Laurussia topological plate has duplicate section features.
+# Use its feature ID "GPlates-cfe96235-5906-4974-a654-2b14a260a3fe" to find it.
 # We will find the section features for this topological plate and
 # save them together in a new GPML file for investigation.
-# open the output file in GPlates desktop software, you will see the laurussia topological plate feature and
-# the section features that are used to construct the topological geometry of this plate feature.
+# Open the output file in GPlates desktop software, you will see the Laurussia topological plate at 371 Ma and
+# the section features that are used to construct the topological geometry of this plate.
 
 # %%
 # get the feature by feature ID
@@ -399,26 +403,29 @@ laurussia_371 = filter_feature_collection(
     [FeatureIDFilter(["GPlates-cfe96235-5906-4974-a654-2b14a260a3fe"])],
 )
 
+# print some information about the laurussia_371 feature to check if we get the correct feature.
 for feature in laurussia_371:
     print(feature.get_feature_id().get_string())
     print(feature.get_valid_time(None))
 
-# get the section features for the laurussia topological plate feature
+# get the section features for the Laurussia topological plate
 laurussia_371_section_features = filter_feature_collection(
     topology_feature_collection,
-    [TopologicalSectionFeaturesFilter(laurussia_371)],
+    [TopologicalReferenceFilter(laurussia_371)],
 )
 
 merge_feature_collections([laurussia_371, laurussia_371_section_features]).write(
     f"{DATA_DIR}/laurussia_371_with_section_features.gpmlz"
 )
 print(
-    f"Laurussia topological boundary around 371Ma and the section features have been written to {DATA_DIR}/laurussia_371_with_section_features.gpmlz"
+    f"Laurussia topological boundary and the section features have been written to {DATA_DIR}/laurussia_371_with_section_features.gpmlz"
 )
 
 # %% [markdown]
-# Find all topological boundaries with duplicated section features,
-# and also extract the section features for these topological boundaries and
+# #### Find all topological boundaries with duplicate section features for investigation
+
+# Find all topological boundaries with duplicate section features from a feature collection,
+# and then extract the reference section features for these topological boundaries and
 # save them together in a new GPML file for investigation.
 # %%
 topology_with_duplicated_sections = filter_feature_collection(
@@ -427,23 +434,45 @@ topology_with_duplicated_sections = filter_feature_collection(
 )
 
 print(
-    f"There are {len(topology_with_duplicated_sections)} out of {len(boundary_feature_collection)} features whose topological geometries have duplicated section features."
+    f"There are {len(topology_with_duplicated_sections)} out of {len(boundary_feature_collection)} features whose topological geometries have duplicate section features."
 )
 
+topo_ref_filter = TopologicalReferenceFilter(topology_with_duplicated_sections)
 topological_section_features = filter_feature_collection(
     topology_feature_collection,
-    [TopologicalSectionFeaturesFilter(topology_with_duplicated_sections)],
+    [topo_ref_filter],
 )
 
 merge_feature_collections(
     [topology_with_duplicated_sections, topological_section_features]
-).write(f"{DATA_DIR}/topology_with_duplicated_sections_and_the_section_features.gpmlz")
+).write(f"{DATA_DIR}/topology_with_duplicate_sections_and_the_section_features.gpmlz")
 print(
-    f"Topology features with duplicated sections and the section features have been written to {DATA_DIR}/topology_with_duplicated_sections_and_the_section_features.gpmlz"
+    f"Topology features with duplicate sections and the section features have been written to {DATA_DIR}/topology_with_duplicate_sections_and_the_section_features.gpmlz"
+)
+# %% [markdown]
+# #### Topological reference map
+
+# The map of topological feature ID to the list of section feature IDs used in the topological
+# geometries of that topological feature can be accessed by the property "topological_reference_map" of
+# the TopologicalReferenceFilter.
+# The keys of this map are the string representation of the feature IDs of the topological boundary features,
+# and the values are lists of string representation of the feature IDs of the section features used
+# to construct the topological boundaries.
+
+# %%
+# you will see the length of the topological reference map is the same
+# as the number of topological features with duplicate sections
+print(len(topo_ref_filter.topological_reference_map))
+
+# now print all the reference section feature IDs for the Laurussia topological plate
+print(
+    topo_ref_filter.topological_reference_map.get(
+        "GPlates-cfe96235-5906-4974-a654-2b14a260a3fe"
+    )
 )
 
 # %% [markdown]
-#### Find points inside a region of interest
+# #### Find points inside a region of interest
 
 # Firstly, we create a feature collection for the vertices of an icosahedron mesh.
 # Then we search for the vertices that are located within a region of interest defined by a bounding box (left, right, bottom, top).
@@ -540,6 +569,9 @@ features = filter_feature_collection(
     filters,
 )
 
+# find the largest polygon feature among the features whose name contains "Australia",
+# which should correspond to the mainland of Australia, and use its geometry as the region of interest
+# for filtering the vertices of the icosahedron mesh.
 australia_mainland_geometry = None
 australia_mainland_feature = None
 largest_area = 0

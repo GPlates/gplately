@@ -64,10 +64,14 @@ class FeatureFilter(metaclass=abc.ABCMeta):
 
     @property
     def filtrate_features_as_list(self):
+        """return the features that pass the filter as a list.
+        Use this property if you want to keep the order of the features."""
         return self._filtrate_feature_collection
 
     @property
     def residue_features_as_list(self):
+        """return the features that do not pass the filter as a list.
+        Use this property if you want to keep the order of the features."""
         return self._residue_feature_collection
 
 
@@ -75,6 +79,8 @@ def filter_feature_collection(
     feature_collection: pygplates.FeatureCollection, filters: List[FeatureFilter]  # type: ignore
 ):
     """Filter a feature collection using a list of filters.
+    The filtrate and residue features of each filter can be obtained by
+    the properties of the filter after calling this function.
 
     Parameters
     ----------
@@ -271,35 +277,37 @@ class EndTimeFilter(FeatureFilter):
         EndTimeFilter(100, reverse=False) --  keep features which disappeared after 100 Ma, including features that have not disappeared yet (end time is distant future)
     """
 
-    def __init__(self, age: float, reverse=False):
+    def __init__(self, end_time: float, reverse=False):
         """Constructor for the end time filter.
 
         Parameters
         ----------
-        age : float
-            The age criterion.
+        end_time : float
+            The end time criterion.
         reverse : bool, optional
-            If False, features that disappeared before the age criterion will pass the filter;
-            if True, features that disappeared after the age criterion will pass the filter,
+            If False, features that disappeared before the end time criterion will pass the filter;
+            if True, features that disappeared after the end time criterion will pass the filter,
             including features that have not disappeared yet (end time is distant future).
             Default is False.
         """
         super().__init__()
-        self._age = age
+        self._age = end_time
         self._reverse = reverse
 
     def should_keep(self, feature: pygplates.Feature) -> bool:  # type: ignore
         valid_time = feature.get_valid_time(None)
         if valid_time:
             _, end_time = valid_time
-            if not self._reverse:  # keep features disappeared before the age criterion
+            if (
+                not self._reverse
+            ):  # keep features disappeared before the "end time" criterion
                 if (
                     end_time != pygplates.GeoTimeInstant.create_distant_future()  # type: ignore
                     and end_time >= self._age
                 ):
                     self._filtrate_feature_collection.append(feature)
                     return True
-            else:  # keep features disappeared after the age criterion, including features that have not disappeared yet (end time is distant future)
+            else:  # keep features disappeared after the "end time" criterion, including features that have not disappeared yet (end time is distant future)
                 if (
                     end_time == pygplates.GeoTimeInstant.create_distant_future()  # type: ignore
                     or end_time <= self._age
@@ -315,11 +323,27 @@ class EndTimeFilter(FeatureFilter):
 
 
 class FeatureTypeFilter(FeatureFilter):
-    """filter features by the feature type, keep features with feature type matching a specified regular expression by default"""
+    """filter features by the feature type, keep features with feature type matching
+    a specified regular expression by default. A list of feature types can also be provided,
+    and the regular expression will be the combination of these feature types."""
 
-    def __init__(self, feature_type_re: str, reverse=False):
+    def __init__(self, feature_types: Union[str, List[str]], reverse=False):
+        """Constructor for the feature type filter.
+
+        Parameters
+        ----------
+        feature_types : Union[str, List[str]]
+            The feature type(s) to filter by.
+        reverse : bool, optional
+            If False, features with matching feature types will pass the filter;
+            if True, features with non-matching feature types will pass the filter.
+            Default is False.
+        """
         super().__init__()
-        self._feature_type_re = feature_type_re
+        if isinstance(feature_types, list):
+            self._feature_types = "|".join(feature_types)
+        else:
+            self._feature_types = feature_types
         self._reverse = reverse
 
     def should_keep(self, feature: pygplates.Feature) -> bool:  # type: ignore
@@ -327,7 +351,7 @@ class FeatureTypeFilter(FeatureFilter):
         if (
             not self._reverse
         ):  # keep features with feature type matching the regular expression
-            if re.fullmatch(self._feature_type_re, feature_type.to_qualified_string()):
+            if re.fullmatch(self._feature_types, feature_type.to_qualified_string()):
                 self._filtrate_feature_collection.append(feature)
                 return True
             else:
@@ -335,7 +359,7 @@ class FeatureTypeFilter(FeatureFilter):
                 return False
         else:  # keep features with feature type not matching the regular expression
             if not re.fullmatch(
-                self._feature_type_re, feature_type.to_qualified_string()
+                self._feature_types, feature_type.to_qualified_string()
             ):
                 self._filtrate_feature_collection.append(feature)
                 return True
@@ -396,7 +420,7 @@ class PropertyExistsFilter(FeatureFilter):
 class PropertyValueFilter(FeatureFilter):
     """filter features by the value of a property, keep features that have a specific property with a specific value by default
 
-    Depending on the value of not_match, this filter can be used to either keep features that have the specific property and
+    Depending on the value of "reverse" parameter, this filter can be used to either keep features that have the specific property and
     its value matches the specified value, or keep features that either do not have that property or its value does not match
     the specified value.
 
@@ -541,6 +565,7 @@ class TopologicalFeaturesWithDuplicateSectionsFilter(FeatureFilter):
                         logger.debug(
                             f"Duplicate feature found: {feature_id} in feature {feature.get_feature_id()}"
                         )
+                        self._filtrate_feature_collection.append(feature)
                         return True
                     else:
                         _seen_feature_ids.add(feature_id)
@@ -551,19 +576,27 @@ class TopologicalFeaturesWithDuplicateSectionsFilter(FeatureFilter):
                         logger.debug(
                             f"Duplicate feature found: {feature_id} in feature {feature.get_feature_id()}"
                         )
+                        self._filtrate_feature_collection.append(feature)
                         return True
                     else:
                         _seen_feature_ids.add(feature_id)
-
+        self._residue_feature_collection.append(feature)
         return False
 
 
-class TopologicalSectionFeaturesFilter(FeatureFilter):
-    """find section features for given topological features
+class TopologicalReferenceFilter(FeatureFilter):
+    """find reference section features for given topological features
 
     Given a collection of topological features, this filter will find section features
     that are used in the topological geometries of these topological features
     from another feature collection containing the real geometries.
+
+    A map of topological feature ID to the list of section feature IDs used in the topological geometries
+    of that topological feature will also be created and stored in the filter,
+    which can be accessed by the property "topological_reference_map".
+    The keys of this map are the string representation of the feature IDs of the topological
+    features, and the values are lists of string representation of the feature IDs of
+    the section features used in the topological geometries of that topological feature.
     """
 
     def __init__(self, topological_feature_collection=pygplates.FeatureCollection()):  # type: ignore
@@ -581,37 +614,74 @@ class TopologicalSectionFeaturesFilter(FeatureFilter):
         super().__init__()
         self._topological_feature_collection = topological_feature_collection
         self._the_ids_of_section_features = set()
+        self._topological_reference_map = {}
         for feature in self._topological_feature_collection:
+            feature_id_str = feature.get_feature_id().get_string()
+            self._topological_reference_map[feature_id_str] = []
             for geom in feature.get_all_topological_geometries():
                 if not isinstance(geom, pygplates.GpmlTopologicalLine):  # type: ignore
                     for section in geom.get_boundary_sections():
-                        self._the_ids_of_section_features.add(
+                        section_id = (
                             section.get_property_delegate()
                             .get_feature_id()
                             .get_string()
+                        )
+                        self._the_ids_of_section_features.add(section_id)
+                        self._topological_reference_map[feature_id_str].append(
+                            section_id
                         )
                 else:
                     for section in geom.get_sections():
-                        self._the_ids_of_section_features.add(
+                        section_id = (
                             section.get_property_delegate()
                             .get_feature_id()
                             .get_string()
                         )
+                        self._the_ids_of_section_features.add(section_id)
+                        self._topological_reference_map[feature_id_str].append(
+                            section_id
+                        )
+
+    @property
+    def topological_reference_map(self):
+        """return the map of topological feature ID to the list of section feature IDs used
+        in the topological geometries of that topological feature"""
+        return self._topological_reference_map
 
     def should_keep(self, feature: pygplates.Feature) -> bool:  # type: ignore
         if feature.get_feature_id().get_string() in self._the_ids_of_section_features:
+            self._filtrate_feature_collection.append(feature)
             return True
         else:
+            self._residue_feature_collection.append(feature)
             return False
 
 
 class FeatureIDFilter(FeatureFilter):
-    """filter features by their feature IDs, keep features with feature ID in a specified list by default
+    """Filter features by feature ID.
 
-    for example:
-        FeatureIDFilter(['id1', 'id2', 'id3']) -- keep features whose feature ID is 'id1' or 'id2' or 'id3'
-        FeatureIDFilter(['id1', 'id2', 'id3'], reverse=True) -- keep features whose feature ID is not 'id1' nor 'id2' nor 'id3'
+    By default, this filter keeps features whose feature ID is present in ``fids``.
+    Set ``reverse=True`` to keep features whose feature ID is not present in ``fids``.
 
+    Ordering behavior
+    -----------------
+    When ``reverse=False``, the output list in ``filtrate_features_as_list`` is arranged
+    to follow the order of IDs in ``fids`` (with ``None`` placeholders for IDs that are
+    not found).
+
+    When ``reverse=True``, the output list in ``residue_features_as_list`` follows the
+    order of IDs in ``fids`` (again with ``None`` placeholders for IDs that are not found).
+
+    Notes
+    -----
+    - IDs in ``fids`` must be unique.
+    - If multiple features share the same feature ID in the input collection, only the
+        first occurrence is kept in the ordered output list and a warning is logged.
+
+    Examples
+    --------
+    - ``FeatureIDFilter(['id1', 'id2', 'id3'])`` keeps features with IDs ``id1``, ``id2``, or ``id3``.
+    - ``FeatureIDFilter(['id1', 'id2', 'id3'], reverse=True)`` keeps features whose IDs are not in that list.
     """
 
     def __init__(self, fids: List[str], reverse=False):
@@ -628,9 +698,8 @@ class FeatureIDFilter(FeatureFilter):
         """
         super().__init__()
         self._fids = fids
-        assert len(self._fids) == len(
-            set(self._fids)
-        ), "The feature IDs in the parameter 'fids' should be unique."
+        if len(self._fids) != len(set(self._fids)):
+            logger.warning("The feature IDs in the parameter 'fids' should be unique.")
         self._reverse = reverse
         if not self._reverse:
             self._filtrate_feature_collection = [None] * len(self._fids)
