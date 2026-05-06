@@ -513,15 +513,18 @@ class RegionOfInterestFilter(FeatureFilter):
             )
 
         self._reverse = reverse
+        roi_feature = pygplates.Feature()  # type: ignore
+        roi_feature.set_geometry(self._region_of_interest)  # type: ignore
+        self._plate_partitioner = pygplates.PlatePartitioner(  # type: ignore
+            pygplates.FeatureCollection([roi_feature]),
+            pygplates.RotationModel([]),
+        )
 
     def should_keep(self, feature: pygplates.Feature) -> bool:  # type: ignore
         # Implementation for checking if feature is in the region of interest
-        roi_feature = pygplates.Feature()  # type: ignore
-        roi_feature.set_geometry(self._region_of_interest)  # type: ignore
-        plate_partitioner = pygplates.PlatePartitioner(pygplates.FeatureCollection([roi_feature]), pygplates.RotationModel([]))  # type: ignore
         inside_geometries = []
         outside_geometries = []
-        plate_partitioner.partition_geometry(feature.get_geometries(), inside_geometries, outside_geometries)  # type: ignore
+        self._plate_partitioner.partition_geometry(feature.get_geometries(), inside_geometries, outside_geometries)  # type: ignore
 
         # TODO:
         # we may want to add an option to specify the minimum area of the inside/outside geometry
