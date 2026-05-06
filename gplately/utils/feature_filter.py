@@ -92,20 +92,24 @@ def filter_feature_collection(
     Returns
     -------
     pygplates.FeatureCollection
-        The filtered feature collection.
+        The features that pass all filters.
     """
+    features_to_be_filtered = feature_collection
     for filter in filters:
         filtrate_feature_collection = pygplates.FeatureCollection()  # type: ignore
-        for feature in feature_collection:
+        for feature in features_to_be_filtered:
             if filter.should_keep(feature):
                 filtrate_feature_collection.add(feature)
 
+        # if the filter has its own filtrate_feature_collection, we prefer it and use it as the input for the next filter,
+        # otherwise we use the filtrate_feature_collection we just created.
         if filter.filtrate_feature_collection:
-            feature_collection = filter.filtrate_feature_collection
+            features_to_be_filtered = filter.filtrate_feature_collection
         else:
-            feature_collection = filtrate_feature_collection
+            features_to_be_filtered = filtrate_feature_collection
 
-    return feature_collection
+    # after going through all filters, the features that pass all filters are in "features_to_be_filtered"
+    return features_to_be_filtered
 
 
 class FeatureNameFilter(FeatureFilter):
