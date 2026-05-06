@@ -431,15 +431,8 @@ class TestFeatureIDFilter(unittest.TestCase):
 
     def test_unique_ids_assertion(self):
         """Test that duplicate IDs cause an assertion error during initialization."""
-        # The FeatureIDFilter should have logic to catch duplicate IDs
-        # This test verifies the implementation handles duplicates appropriately
-        try:
+        with self.assertRaises(AssertionError):
             FeatureIDFilter(["id1", "id1", "id2"])
-            # If we get here without an exception, the filter allowed duplicates
-            # which is acceptable as long as the class documents this behavior
-        except AssertionError:
-            # Expected behavior - duplicates raise AssertionError
-            pass
 
     def test_filter_initialization(self):
         """Test FeatureIDFilter initialization with unique IDs."""
