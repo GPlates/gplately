@@ -699,7 +699,7 @@ class FeatureIDFilter(FeatureFilter):
         super().__init__()
         self._fids = fids
         if len(self._fids) != len(set(self._fids)):
-            logger.warning("The feature IDs in the parameter 'fids' should be unique.")
+            raise ValueError("The feature IDs in the parameter 'fids' must be unique.")
         self._reverse = reverse
         if not self._reverse:
             self._filtrate_feature_collection = [None] * len(self._fids)
