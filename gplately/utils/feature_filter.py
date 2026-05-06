@@ -761,7 +761,7 @@ class ValidTimeFilter(FeatureFilter):
         if valid_time:
             begin_time, end_time = valid_time
 
-            if begin_time <= self._begin_time or end_time >= self._end_time:
+            if begin_time <= self._begin_time and end_time >= self._end_time:
                 self._filtrate_feature_collection.append(feature)
                 return True
 
