@@ -4,9 +4,9 @@ This document describes the comprehensive unit test suite for the `gplately.util
 
 ## Overview
 
-The test suite (`test_feature_filter_units.py`) provides 40 unit tests covering all classes and functions in the `feature_filter` module, including:
+The test suite (`test_feature_filter_units.py`) provides 40 unit tests covering the core classes and functions exercised in the `feature_filter` module, including:
 
-- **Filter Classes**: FeatureNameFilter, PlateIDFilter, BirthAgeFilter, EndTimeFilter, FeatureTypeFilter, PropertyExistsFilter, PropertyValueFilter, RegionOfInterestFilter, TopologicalFeaturesWithDuplicateSectionsFilter, TopologicalReferenceFilter, FeatureIDFilter, ValidTimeFilter
+- **Filter Classes**: FeatureNameFilter, PlateIDFilter, BirthAgeFilter, EndTimeFilter, PropertyExistsFilter, PropertyValueFilter, FeatureIDFilter, ValidTimeFilter
 - **Main Functions**: `filter_feature_collection()`
 - **Base Class**: `FeatureFilter` (abstract base)
 
