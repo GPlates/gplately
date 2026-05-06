@@ -402,10 +402,10 @@ def test_point_reconstruction_to_birth_age(
 
 # POINTS INITIALISATION WITH ARRAY TIME
 def test_point_array_time():
-    """Test that Points can be initialised with a 1D array of times (one per point).
+    """Test that Points can be initialised with a 1D array of per-point initial times.
 
     This validates the feature requested in GitHub issue:
-    "New feature: instantiate Points object with asynchronous list of initialisation times"
+    "New feature: instantiate Points object with per-point initial times"
     """
     import tempfile
     import os

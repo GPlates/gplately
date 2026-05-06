@@ -170,7 +170,13 @@ class Points(object):
         # Handle 'time' as scalar or 1D array.
         if not np.isscalar(time):
             time = np.asarray(time, dtype=float)
-            if time.ndim != 1 or len(time) != num_points:
+            if time.ndim != 1:
+                raise ValueError(
+                    "'time' must be a scalar or a 1D array, got array with {} dimensions".format(
+                        time.ndim
+                    )
+                )
+            if len(time) != num_points:
                 raise ValueError(
                     "'time' array must be 1D with the same length as 'lons' and 'lats' ({} != {})".format(
                         len(time), num_points
@@ -404,10 +410,9 @@ class Points(object):
         else:
             # 'time' is a 1D array: group features by their unique initial times and
             # call reverse_reconstruct once per unique non-zero time.
-            time_array = np.asarray(time)
-            for unique_t in np.unique(time_array):
+            for unique_t in np.unique(time):
                 if unique_t != 0:
-                    time_indices = np.where(time_array == unique_t)[0]
+                    time_indices = np.where(time == unique_t)[0]
                     features_at_t = [point_features[i] for i in time_indices]
                     pygplates.reverse_reconstruct(  # type: ignore
                         features_at_t,
@@ -569,11 +574,12 @@ class Points(object):
         Points
             A copy of the current :py:class:`Points` object
         """
+        time_copy = self.time.copy() if not np.isscalar(self.time) else self.time
         gpts = Points(
             self.plate_reconstruction,
             self.lons.copy(),
             self.lats.copy(),
-            self.time.copy() if not np.isscalar(self.time) else self.time,
+            time_copy,
             self.plate_id.copy(),
             self.age.copy(),
             anchor_plate_id=self.anchor_plate_id,
