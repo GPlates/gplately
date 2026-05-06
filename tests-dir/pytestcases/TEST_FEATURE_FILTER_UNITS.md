@@ -77,7 +77,7 @@ The test suite (`test_feature_filter_units.py`) provides 40 unit tests covering 
 
 ### Run all tests:
 ```bash
-cd /Users/mchin/workspace/gplately.git
+# Run from the repository root
 micromamba activate gplately
 python -m pytest tests-dir/unittest/test_feature_filter_units.py -v
 ```
