@@ -29,6 +29,7 @@ from .commands import (
     list_models,
     regrid,
     reset_feature_type,
+    rotate_grid,
 )
 from .ptt import (
     cleanup_topologies,
@@ -107,6 +108,9 @@ def main():
 
     # add "regrid" sub-command
     regrid.add_parser(subparser)
+
+    # add "rotate_grid" sub-command
+    rotate_grid.add_parser(subparser)
 
     # add "fix crossovers" sub-command
     fix_crossovers_cmd = subparser.add_parser(
