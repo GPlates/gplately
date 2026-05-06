@@ -457,15 +457,29 @@ class TestValidTimeFilter(unittest.TestCase):
         ]
         self.feature_collection = pygplates.FeatureCollection(self.features)  # type: ignore
 
-    def test_filter_initialization(self):
-        """Test ValidTimeFilter initialization."""
+    def test_filter_keeps_only_features_within_time_range(self):
+        """Test ValidTimeFilter applies the configured begin/end bounds."""
         filter_obj = ValidTimeFilter(begin_time=600, end_time=50)
-        self.assertIsNotNone(filter_obj)
+        result = filter_feature_collection(self.feature_collection, [filter_obj])
 
-    def test_filter_with_infinite_defaults(self):
-        """Test ValidTimeFilter with infinite defaults."""
+        self.assertIsNotNone(result)
+        self.assertEqual(len(filter_obj.filtrate_features_as_list), 2)
+        self.assertEqual(
+            [feature.get_name() for feature in filter_obj.filtrate_features_as_list],
+            ["Feature1", "Feature2"],
+        )
+
+    def test_filter_with_infinite_defaults_keeps_all_features(self):
+        """Test ValidTimeFilter with infinite defaults keeps all features."""
         filter_obj = ValidTimeFilter()
-        self.assertIsNotNone(filter_obj)
+        result = filter_feature_collection(self.feature_collection, [filter_obj])
+
+        self.assertIsNotNone(result)
+        self.assertEqual(len(filter_obj.filtrate_features_as_list), 3)
+        self.assertEqual(
+            [feature.get_name() for feature in filter_obj.filtrate_features_as_list],
+            ["Feature1", "Feature2", "Feature3"],
+        )
 
 
 class TestIntegrationScenarios(unittest.TestCase):
