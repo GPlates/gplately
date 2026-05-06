@@ -17,6 +17,8 @@
 import logging
 import math
 
+import pygplates
+
 import cartopy.crs as ccrs
 from geopandas.geodataframe import GeoDataFrame
 
@@ -174,3 +176,79 @@ class CartopyPlotEngine(PlotEngine):
             origin=origin,
             **kwargs,
         )
+
+
+def _plot_feature_collection(
+    feature_collection: pygplates.FeatureCollection,  # type: ignore
+    title: str = "Untitled Feature Collection",
+    ax=None,
+    figsize=(8, 4),
+    projection=ccrs.Robinson(central_longitude=180),
+):
+    """Helper function to plot a pygplates FeatureCollection using Cartopy. Not part of the public API.
+    Mostly this function is for testing and debugging purposes, and to provide a simple example of how to plot pygplates features with Cartopy.
+    """
+    import cartopy.crs as ccrs  # type: ignore
+    import matplotlib.pyplot as plt  # type: ignore
+    from gplately.geometry import pygplates_to_shapely
+    from cartopy.mpl.ticker import LongitudeFormatter, LatitudeFormatter
+    import matplotlib.ticker as mticker
+
+    if ax is None:
+        fig = plt.figure(figsize=figsize, dpi=72)
+        ax = fig.add_subplot(111, projection=projection)
+
+    ax.set_global()  # type: ignore
+    # Add gridlines and lat/lon labels
+    gl = ax.gridlines(  # type: ignore
+        crs=ccrs.PlateCarree(),
+        draw_labels=True,
+        linewidth=0.8,
+        color="gray",
+        alpha=0.6,
+        linestyle="--",
+    )
+
+    # Hide labels on top/right if you want cleaner maps
+    # Newer Cartopy
+    if hasattr(gl, "top_labels"):
+        gl.top_labels = False
+    if hasattr(gl, "right_labels"):
+        gl.right_labels = False
+
+    # Older Cartopy
+    if hasattr(gl, "xlabels_top"):
+        gl.xlabels_top = False
+    if hasattr(gl, "ylabels_right"):
+        gl.ylabels_right = False
+
+    # Control tick locations
+    gl.xlocator = mticker.FixedLocator(range(-180, 181, 60))
+    gl.ylocator = mticker.FixedLocator(range(-90, 91, 30))
+
+    # Nice lon/lat formatting
+    gl.xformatter = LongitudeFormatter(number_format=".0f", degree_symbol="°")
+    gl.yformatter = LatitudeFormatter(number_format=".0f", degree_symbol="°")
+
+    # Label style
+    gl.xlabel_style = {"size": 10}
+    gl.ylabel_style = {"size": 10}
+
+    for feature in feature_collection:
+        valid_time = feature.get_valid_time(None)  # type: ignore
+        if valid_time is not None:
+            if valid_time[1] not in [pygplates.GeoTimeInstant.create_distant_future(), 0]:  # type: ignore
+                continue  # skip features that are not valid at 0 Ma
+        geometries = feature.get_geometries()  # type: ignore
+        if geometries:
+            for geometry in geometries:
+                shapely_geometry = pygplates_to_shapely(geometry)  # type: ignore
+                if shapely_geometry is not None:
+                    ax.add_geometries(  # type: ignore
+                        [shapely_geometry],
+                        crs=ccrs.PlateCarree(),
+                        edgecolor="blue",
+                        facecolor="none",
+                    )
+    ax.set_title(title)
+    # plt.show()

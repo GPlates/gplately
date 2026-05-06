@@ -1,5 +1,5 @@
 #
-#    Copyright (C) 2024-2025 The University of Sydney, Australia
+#    Copyright (C) 2024-2026 The University of Sydney, Australia
 #
 #    This program is free software; you can redistribute it and/or modify it under
 #    the terms of the GNU General Public License, version 2, as published by
@@ -18,9 +18,21 @@
 """This sub-module contains functions for manipulating GPML (`.gpml`, `.gpmlz`) files,
 as well as `pygplates.Feature` and `pygplates.FeatureCollection` objects.
 """
-import os
 
-import pygplates
+import os
+from typing import List
+
+
+import pygplates  # type: ignore
+
+from gplately.geometry import pygplates_to_shapely
+from gplately.utils.feature_filter import FeatureFilter, filter_feature_collection
+from gplately.utils.feature_transformer import (
+    FeatureTransformer,
+    transform_feature_collection,
+)
+
+# pyright: reportAttributeAccessIssue=false
 
 __all__ = [
     "create_feature_dict",
@@ -30,8 +42,157 @@ __all__ = [
 ]
 
 
+class FeatureCollectionProcessor:
+    def __init__(
+        self,
+        filters: List[FeatureFilter] = [],
+        transformers: List[FeatureTransformer] = [],
+    ):
+        """Initialize the processor with a list of filters and transformers."""
+        self._filters = filters
+        self._transformers = transformers
+
+    def process(self, feature_collection: pygplates.FeatureCollection) -> pygplates.FeatureCollection:  # type: ignore
+        """Process the feature collection with the assigned filters and transformers.
+
+        Parameters
+        ----------
+        feature_collection : pygplates.FeatureCollection
+
+        Returns
+        -------
+        pygplates.FeatureCollection
+            New feature collection after processing.
+        """
+        return transform_feature_collection(
+            filter_feature_collection(feature_collection, self._filters),
+            self._transformers,
+        )
+
+
+def get_unique_feature_names(feature_collection):
+    """Return a set of unique feature names from a feature collection."""
+    if isinstance(feature_collection, (str, bytes)) and os.path.isfile(
+        feature_collection
+    ):
+        feature_collection = pygplates.FeatureCollection(feature_collection)
+    return {feature.get_name() for feature in feature_collection}
+
+
+def feature_id_getter(feature):
+    """Return the feature ID of a feature as a string."""
+    return feature.get_feature_id().get_string()
+
+
+def feature_name_getter(feature):
+    """Return the feature name of a feature as a string."""
+    return feature.get_name()
+
+
+def feature_type_getter(feature):
+    """Return the feature type of a feature as a string."""
+    return feature.get_feature_type()
+
+
+def plate_id_getter(feature):
+    """Return the plate ID of a feature as a int."""
+    return feature.get_reconstruction_plate_id()
+
+
+def begin_time_getter(feature):
+    """Return the begin time of a feature as a float."""
+    t = feature.get_valid_time(None)
+    return t[0] if t else None
+
+
+def end_time_getter(feature):
+    """Return the end time of a feature as a float."""
+    t = feature.get_valid_time(None)
+    return t[1] if t else None
+
+
+def primary_geometry_getter(feature):
+    """Return the primary geometry of a feature."""
+    geom = feature.get_geometry()
+    if geom:
+        return pygplates_to_shapely(geom)
+    return None
+
+
+def shapefile_attributes_getter(feature):
+    """Return the shapefile attributes of a feature as a dictionary."""
+    return feature.get_shapefile_attributes()
+
+
+DEFAULT_PROPERTY_GETTERS = {
+    "name": feature_name_getter,
+    "type": feature_type_getter,
+    "plate_id": plate_id_getter,
+    "begin_time": begin_time_getter,
+    "end_time": end_time_getter,
+    "shapefile_attributes": shapefile_attributes_getter,
+    "geometry": primary_geometry_getter,
+}
+
+
+def gpml_to_pandas_dataframe(
+    feature_collection,
+    property_getters=DEFAULT_PROPERTY_GETTERS | {},
+):
+    """Convert a GPML feature collection to a GeoDataFrame."""
+    import geopandas as gpd  # type: ignore --- IGNORE ---
+
+    if isinstance(feature_collection, (str, bytes)) and os.path.isfile(
+        feature_collection
+    ):
+        feature_collection = pygplates.FeatureCollection(feature_collection)
+
+    feature_ids = []
+    for feature in feature_collection:
+        feature_ids.append(feature.get_feature_id().get_string())
+
+    data = {}
+    for key in property_getters:
+        if not callable(property_getters[key]):
+            raise ValueError(f"Property getter for {key} is not callable.")
+        properties = []
+        for feature in feature_collection:
+            properties.append(property_getters[key](feature))
+        data[key] = properties
+    gdf = gpd.GeoDataFrame(data)
+    gdf.index = feature_ids
+    return gdf
+
+
+def merge_feature_collections(feature_collections):
+    """Merge multiple feature collections into a single feature collection.
+
+    Parameters
+    ----------
+    feature_collections : list
+        A list of feature collections, or a list of file paths to feature
+        collections, or a sequence (list/tuple) of features.
+
+    Returns
+    -------
+    pygplates.FeatureCollection
+        A single feature collection containing all features from the input collections.
+    """
+    merged = pygplates.FeatureCollection()
+    for feature_collection in feature_collections:
+        if isinstance(feature_collection, (str, bytes)) and os.path.isfile(
+            feature_collection
+        ):
+            feature_collection = pygplates.FeatureCollection(feature_collection)
+        for feature in feature_collection:
+            merged.add(feature)
+    return merged
+
+
 def extract_feature(id, features):
-    r"""Return the feature with the given feature ID.
+    r"""Obsoleted. Use the new :py:class:`FeatureIDFilter` class in gplately.utils.feature_filter.
+
+    Return the feature with the given feature ID.
 
     Searches through `features` and returns the feature with a feature ID
     matching `id`. The order of `features` is not preserved, so multiple
