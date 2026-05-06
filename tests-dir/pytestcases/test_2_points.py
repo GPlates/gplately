@@ -400,6 +400,156 @@ def test_point_reconstruction_to_birth_age(
     assert point_indices.size == 0
 
 
+# POINTS INITIALISATION WITH ARRAY TIME
+def test_point_array_time():
+    """Test that Points can be initialised with a 1D array of times (one per point).
+
+    This validates the feature requested in GitHub issue:
+    "New feature: instantiate Points object with asynchronous list of initialisation times"
+    """
+    import tempfile
+    import os
+    from unittest.mock import MagicMock, patch
+
+    # Create a minimal synthetic rotation model.
+    # Plate 901 rotates 30 degrees about the North Pole over 50 Ma.
+    # A point at (lat=0, lon=0) at 0 Ma corresponds to (lat≈0, lon=30) at 50 Ma.
+    rot_content = (
+        "1 0.0 0.0 0.0 0.0 0 !Identity\n"
+        "1 200.0 0.0 0.0 0.0 0 !Identity\n"
+        "901 0.0 0.0 0.0 0.0 0 !Plate 901 at 0 Ma\n"
+        "901 50.0 90.0 0.0 30.0 0 !Plate 901 at 50 Ma (30 deg about North Pole)\n"
+    )
+    with tempfile.NamedTemporaryFile(suffix=".rot", mode="w", delete=False) as f:
+        f.write(rot_content)
+        rot_file = f.name
+    rot_model = pygplates.RotationModel(rot_file)
+    os.unlink(rot_file)
+
+    # Calculate where (0, 0) ends up at 50 Ma.
+    rot_0_to_50 = rot_model.get_rotation(
+        to_time=50, moving_plate_id=901, from_time=0
+    )
+    pt_at_50 = rot_0_to_50 * pygplates.PointOnSphere(0, 0)
+    pt_at_50_lat, pt_at_50_lon = pt_at_50.to_lat_lon()
+
+    # Build a mock PlateReconstruction that exposes the rotation model.
+    mock_pr = MagicMock()
+    mock_pr.anchor_plate_id = 0
+    mock_pr.rotation_model = rot_model
+
+    # Patch reverse_reconstruct so we don't need real static polygons.
+    with patch.object(pygplates, "reverse_reconstruct"):
+
+        # --- Validation tests ---
+
+        # A time array with wrong length must raise ValueError.
+        with pytest.raises(ValueError, match="'time' array"):
+            gplately.Points(
+                mock_pr,
+                lons=np.array([0.0, 90.0]),
+                lats=np.array([0.0, 0.0]),
+                time=np.array([0.0, 50.0, 100.0]),  # 3 values for 2 points
+                plate_id=901,
+                age=np.inf,
+            )
+
+        # --- Storage tests ---
+
+        # Scalar time: backward-compatible behaviour.
+        gpts_scalar = gplately.Points(
+            mock_pr,
+            lons=np.array([0.0]),
+            lats=np.array([0.0]),
+            time=0.0,
+            plate_id=901,
+            age=np.inf,
+        )
+        assert np.isscalar(gpts_scalar.time)
+        assert gpts_scalar.time == 0.0
+
+        # Array time (Python list): stored as numpy array.
+        gpts_list = gplately.Points(
+            mock_pr,
+            lons=np.array([0.0, pt_at_50_lon]),
+            lats=np.array([0.0, pt_at_50_lat]),
+            time=[0.0, 50.0],
+            plate_id=901,
+            age=np.inf,
+        )
+        assert isinstance(gpts_list.time, np.ndarray)
+        assert len(gpts_list.time) == 2
+        assert gpts_list.time[0] == pytest.approx(0.0)
+        assert gpts_list.time[1] == pytest.approx(50.0)
+
+        # --- Reconstructability filtering with array time ---
+
+        # Point 0: time=0,  age=100 -> reconstructable (100 >= 0)
+        # Point 1: time=50, age=30  -> NOT reconstructable (30 < 50)
+        # Point 2: time=50, age=100 -> reconstructable (100 >= 50)
+        unrec = []
+        gpts_filtered = gplately.Points(
+            mock_pr,
+            lons=np.array([0.0, 10.0, 20.0]),
+            lats=np.array([0.0, 10.0, 20.0]),
+            time=np.array([0.0, 50.0, 50.0]),
+            plate_id=901,
+            age=np.array([100.0, 30.0, 100.0]),
+            remove_unreconstructable_points=unrec,
+        )
+        assert gpts_filtered.size == 2
+        assert unrec == [1]
+        assert isinstance(gpts_filtered.time, np.ndarray)
+        assert len(gpts_filtered.time) == 2
+        assert gpts_filtered.time[0] == pytest.approx(0.0)
+        assert gpts_filtered.time[1] == pytest.approx(50.0)
+
+        # --- Reconstruction equivalence test ---
+        # A Points object initialised with array time must produce the same
+        # reconstructed positions as two separate scalar-time Points objects.
+
+        target_time = 25  # Ma
+
+        # Array-time approach.
+        gpts_array = gplately.Points(
+            mock_pr,
+            lons=np.array([0.0, pt_at_50_lon]),
+            lats=np.array([0.0, pt_at_50_lat]),
+            time=np.array([0.0, 50.0]),
+            plate_id=901,
+            age=np.inf,
+        )
+        rlons_array, rlats_array = gpts_array.reconstruct(
+            target_time, return_array=True
+        )
+
+        # Scalar-time approach (reference).
+        gpts_A = gplately.Points(
+            mock_pr,
+            lons=np.array([0.0]),
+            lats=np.array([0.0]),
+            time=0.0,
+            plate_id=901,
+            age=np.inf,
+        )
+        rlons_A, rlats_A = gpts_A.reconstruct(target_time, return_array=True)
+
+        gpts_B = gplately.Points(
+            mock_pr,
+            lons=np.array([pt_at_50_lon]),
+            lats=np.array([pt_at_50_lat]),
+            time=50.0,
+            plate_id=901,
+            age=np.inf,
+        )
+        rlons_B, rlats_B = gpts_B.reconstruct(target_time, return_array=True)
+
+        assert rlons_array[0] == pytest.approx(rlons_A[0], abs=1e-6)
+        assert rlats_array[0] == pytest.approx(rlats_A[0], abs=1e-6)
+        assert rlons_array[1] == pytest.approx(rlons_B[0], abs=1e-6)
+        assert rlats_array[1] == pytest.approx(rlats_B[0], abs=1e-6)
+
+
 # TESTING PLATE VELOCITY CALCULATIONS
 @pytest.mark.parametrize("time", reconstruction_times)
 def test_plate_velocity(

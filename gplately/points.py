@@ -40,7 +40,7 @@ class Points(object):
         plate_reconstruction,
         lons,
         lats,
-        time: float = 0,
+        time: Union[float, np.ndarray] = 0,
         plate_id=None,
         age: Union[float, np.ndarray, None] = np.inf,
         *,
@@ -63,10 +63,16 @@ class Points(object):
         lats : float or 1D array
             Latitudes of the initial points at the initial ``time``.
 
-        time : float, default=0
+        time : float or 1D array, default=0
             The initial time (Ma) of the points.
             The ``lons`` and ``lats`` are the initial coordinates of the points at this time.
             By default, it is set to the present day (0 Ma).
+
+            If a single float then all points share the same initial time.
+            If a 1D array then each element specifies the initial time of the corresponding point,
+            and the length must match the number of points. This allows points to be defined
+            at different initial times, which is useful for spatio-temporal datasets where
+            palaeo-coordinates are known at different geological times.
 
         plate_id : int or 1D array or None, default=None
             Plate ID(s) of a particular tectonic plate on which point data lies, if known.
@@ -93,7 +99,7 @@ class Points(object):
             A point cannot be reconstructed if it cannot be assigned a plate ID, or cannot be assigned an age, because it did not
             intersect any reconstructed static polygons (note that this can only happen when ``plate_id`` and/or ``age`` is None).
             Also, a point cannot be reconstructed if point ages were **explicitly** provided (ie, ``age`` was **not** None) and
-            a point's age was less than (younger than) ``time``, meaning it did not exist as far back as ``time``.
+            a point's age was less than (younger than) its ``time``, meaning it did not exist as far back as ``time``.
             Additionally, if this variable is a :py:class:`list` then the indices (into the supplied ``lons`` and ``lats`` arguments)
             of any removed points (ie, that are unreconstructable) are appended to that list.
 
@@ -104,12 +110,13 @@ class Points(object):
             If ``time`` is non-zero (ie, not present day) then ``lons`` and ``lats`` are assumed to be the **reconstructed** point
             locations at ``time``. And the reconstructed positions are assumed to be relative to the anchor plate
             (which is ``plate_reconstruction.anchor_plate_id`` if ``anchor_plate_id`` is None).
+            When ``time`` is a 1D array each point is treated as a snapshot at its own initial time.
 
             If ``plate_id`` and/or ``age`` is None then the plate ID and/or age of each point is determined by reconstructing the static polygons
-            of ``plate_reconstruction`` to ``time`` and reconstructing relative to the anchor plate (regardless of whether ``time`` is present day or not).
+            of ``plate_reconstruction`` to the point's ``time`` and reconstructing relative to the anchor plate (regardless of whether ``time`` is present day or not).
             And then, for each point, assigning the plate ID and/or time-of-appearance (begin time) of the static polygon containing the point.
 
-            A point is considered unreconstructable if it does not exist at ``time``. This can happen if its age was explicitly provided (ie, ``age`` is **not** None)
+            A point is considered unreconstructable if it does not exist at its ``time``. This can happen if its age was explicitly provided (ie, ``age`` is **not** None)
             but is younger than ``time``. It can also happen if the point is automatically assigned a plate ID (ie, ``plate_id`` is None) or an age (ie, ``age`` is None)
             but does not intersect any reconstructed static polygons (at ``time``). In either of these cases it is marked as unreconstructable and will not be available
             for any method outputing a reconstruction, such as :meth:`reconstruct()`, or any method depending on a reconstruction, such as :meth:`plate_velocity`.
@@ -160,6 +167,16 @@ class Points(object):
 
         num_points = len(lons)
 
+        # Handle 'time' as scalar or 1D array.
+        if not np.isscalar(time):
+            time = np.asarray(time, dtype=float)
+            if time.ndim != 1 or len(time) != num_points:
+                raise ValueError(
+                    "'time' array must be 1D with the same length as 'lons' and 'lats' ({} != {})".format(
+                        len(time), num_points
+                    )
+                )
+
         # If caller provided plate IDs.
         if plate_id is not None:
             # If plate ID is a scalar then all points have the same plate ID.
@@ -205,53 +222,69 @@ class Points(object):
             if age is None:
                 point_ages = np.empty(num_points)
 
-            # Assign a plate ID to each point based on which reconstructed static polygon it's inside.
-            static_polygons_snapshot = plate_reconstruction.static_polygons_snapshot(
-                time,
-                anchor_plate_id=anchor_plate_id,
-            )
-            reconstructed_static_polygons_containing_points = (
-                static_polygons_snapshot.get_point_locations(points)
-            )
-            for point_index in range(num_points):
-                reconstructed_static_polygon = (
-                    reconstructed_static_polygons_containing_points[point_index]
-                )
+            # When 'time' is a scalar, all points share the same snapshot; when it is an array
+            # we group points by their unique initial times and call the snapshot once per unique time.
+            if np.isscalar(time):
+                unique_lookup_times = [time]
+            else:
+                unique_lookup_times = np.unique(time)
 
-                # If current point is inside a reconstructed static polygon then assign its plate ID to the point,
-                # otherwise assign the anchor plate to the point.
-                if reconstructed_static_polygon is not None:
-                    reconstructed_static_polygon_feature = (
-                        reconstructed_static_polygon.get_feature()
+            for lookup_time in unique_lookup_times:
+                if np.isscalar(time):
+                    time_point_indices = range(num_points)
+                    time_points = points
+                else:
+                    time_point_indices = np.where(time == lookup_time)[0]
+                    time_points = [points[i] for i in time_point_indices]
+
+                # Assign a plate ID to each point based on which reconstructed static polygon it's inside.
+                static_polygons_snapshot = plate_reconstruction.static_polygons_snapshot(
+                    lookup_time,
+                    anchor_plate_id=anchor_plate_id,
+                )
+                reconstructed_static_polygons_containing_points = (
+                    static_polygons_snapshot.get_point_locations(time_points)
+                )
+                for local_index, point_index in enumerate(time_point_indices):
+                    reconstructed_static_polygon = (
+                        reconstructed_static_polygons_containing_points[local_index]
                     )
 
-                    if plate_id is None:
-                        point_plate_ids[point_index] = (
-                            reconstructed_static_polygon_feature.get_reconstruction_plate_id()
-                        )
-                    if age is None:
-                        point_ages[point_index], _ = (
-                            reconstructed_static_polygon_feature.get_valid_time()
+                    # If current point is inside a reconstructed static polygon then assign its plate ID to the point,
+                    # otherwise assign the anchor plate to the point.
+                    if reconstructed_static_polygon is not None:
+                        reconstructed_static_polygon_feature = (
+                            reconstructed_static_polygon.get_feature()
                         )
 
-                else:  # current point did NOT intersect a reconstructed static polygon ...
+                        if plate_id is None:
+                            point_plate_ids[point_index] = (
+                                reconstructed_static_polygon_feature.get_reconstruction_plate_id()
+                            )
+                        if age is None:
+                            point_ages[point_index], _ = (
+                                reconstructed_static_polygon_feature.get_valid_time()
+                            )
 
-                    # We're trying to assign a plate ID or assign an age (or both), neither of which we can assign.
-                    # That essentially makes the current point unreconstructable.
-                    #
-                    # Mark the current point as unreconstructable.
-                    points_are_reconstructable[point_index] = False
+                    else:  # current point did NOT intersect a reconstructed static polygon ...
 
-                    if plate_id is None:
-                        # Assign the anchor plate ID to indicate we could NOT assign a proper plate ID.
-                        point_plate_ids[point_index] = anchor_plate_id
-                    if age is None:
-                        # Assign the distant future (not distant past) to indicate we could NOT assign a proper age.
-                        point_ages[point_index] = -np.inf  # distant future
+                        # We're trying to assign a plate ID or assign an age (or both), neither of which we can assign.
+                        # That essentially makes the current point unreconstructable.
+                        #
+                        # Mark the current point as unreconstructable.
+                        points_are_reconstructable[point_index] = False
+
+                        if plate_id is None:
+                            # Assign the anchor plate ID to indicate we could NOT assign a proper plate ID.
+                            point_plate_ids[point_index] = anchor_plate_id
+                        if age is None:
+                            # Assign the distant future (not distant past) to indicate we could NOT assign a proper age.
+                            point_ages[point_index] = -np.inf  # distant future
 
         # If point ages were explicitly provided by the caller then we need to check if points existed at 'time'.
+        # This comparison works element-wise whether 'time' is a scalar or a numpy array.
         if age is not None:
-            # Any point with an age younger than 'time' did not exist at 'time' and hence is not reconstructable.
+            # Any point with an age younger than its own 'time' did not exist at 'time' and hence is not reconstructable.
             points_are_reconstructable[point_ages < time] = False
 
         # If requested, remove any unreconstructable points.
@@ -263,6 +296,8 @@ class Points(object):
                 )
             lons = lons[points_are_reconstructable]
             lats = lats[points_are_reconstructable]
+            if not np.isscalar(time):
+                time = time[points_are_reconstructable]
             point_plate_ids = point_plate_ids[points_are_reconstructable]
             point_ages = point_ages[points_are_reconstructable]
             points = [
@@ -358,13 +393,28 @@ class Points(object):
 
         # If the points represent a snapshot at a *past* geological time then we need to reverse reconstruct them
         # such that their features contain present-day points.
-        if time != 0:
-            pygplates.reverse_reconstruct(  # type: ignore
-                point_features,
-                plate_reconstruction.rotation_model,
-                time,
-                anchor_plate_id=anchor_plate_id,
-            )
+        if np.isscalar(time):
+            if time != 0:
+                pygplates.reverse_reconstruct(  # type: ignore
+                    point_features,
+                    plate_reconstruction.rotation_model,
+                    time,
+                    anchor_plate_id=anchor_plate_id,
+                )
+        else:
+            # 'time' is a 1D array: group features by their unique initial times and
+            # call reverse_reconstruct once per unique non-zero time.
+            time_array = np.asarray(time)
+            for unique_t in np.unique(time_array):
+                if unique_t != 0:
+                    time_indices = np.where(time_array == unique_t)[0]
+                    features_at_t = [point_features[i] for i in time_indices]
+                    pygplates.reverse_reconstruct(  # type: ignore
+                        features_at_t,
+                        plate_reconstruction.rotation_model,
+                        unique_t,
+                        anchor_plate_id=anchor_plate_id,
+                    )
 
         return point_features
 
@@ -486,7 +536,10 @@ class Points(object):
         The initial time (Ma) of the points.
         The initial ``lons`` and ``lats`` are the coordinates of the points at this time.
 
-        :type: float
+        If a single float then all points share the same initial time.
+        If a 1D ``numpy.ndarray`` then each element gives the initial time of the corresponding point.
+
+        :type: float or 1D numpy.ndarray
         """
         return self._time
 
@@ -520,7 +573,7 @@ class Points(object):
             self.plate_reconstruction,
             self.lons.copy(),
             self.lats.copy(),
-            self.time,
+            self.time.copy() if not np.isscalar(self.time) else self.time,
             self.plate_id.copy(),
             self.age.copy(),
             anchor_plate_id=self.anchor_plate_id,
@@ -720,39 +773,54 @@ class Points(object):
             if point_indices_with_plate_id.size == 0:
                 continue
 
-            # Get the reconstructed points with the current unique plate ID that have appeared before (or at) 'time'.
-            reconstructed_points_with_plate_id = pygplates.MultiPointOnSphere(
-                self.points[point_index] for point_index in point_indices_with_plate_id
-            )
-
-            # First reconstruct the internal points from the initial time ('self.time') to present day using
-            # our internal anchor plate ID (the same anchor plate used in '__init__').
-            # Then reconstruct from present day to 'time' using the *requested* anchor plate ID.
-            #
-            # Note 'self.points' (and hence 'reconstructed_points_with_plate_id') are the locations at 'self.time'
-            #      (just like 'self.lons' and 'self.lats').
-            reconstruct_rotation = (
-                self.plate_reconstruction.rotation_model.get_rotation(
-                    to_time=time,
-                    moving_plate_id=plate_id,
-                    from_time=0,
-                    anchor_plate_id=anchor_plate_id,
+            # Get the per-point initial times for this plate group.
+            # When 'self._time' is a scalar all points share the same initial time;
+            # when it is an array we also need to iterate over unique initial times.
+            if np.isscalar(self._time):
+                initial_times_for_group = np.full(
+                    len(point_indices_with_plate_id), self._time
                 )
-                * self.plate_reconstruction.rotation_model.get_rotation(
-                    to_time=0,
-                    moving_plate_id=plate_id,
-                    from_time=self.time,
-                    anchor_plate_id=self.anchor_plate_id,
-                )
-            )
-            reconstructed_points_with_plate_id = (
-                reconstruct_rotation * reconstructed_points_with_plate_id
-            )
+            else:
+                initial_times_for_group = self._time[point_indices_with_plate_id]
+            unique_initial_times = np.unique(initial_times_for_group)
 
-            # Write the reconstructed points.
-            lat_lon_points[point_indices_with_plate_id] = [
-                rpoint.to_lat_lon() for rpoint in reconstructed_points_with_plate_id
-            ]
+            for init_t in unique_initial_times:
+                sub_mask = initial_times_for_group == init_t
+                sub_indices = point_indices_with_plate_id[sub_mask]
+
+                # Get the points at 'init_t' for the current plate ID and initial time.
+                reconstructed_points_sub = pygplates.MultiPointOnSphere(
+                    self.points[point_index] for point_index in sub_indices
+                )
+
+                # First reconstruct the internal points from the initial time ('init_t') to present day using
+                # our internal anchor plate ID (the same anchor plate used in '__init__').
+                # Then reconstruct from present day to 'time' using the *requested* anchor plate ID.
+                #
+                # Note 'self.points' (and hence 'reconstructed_points_sub') are the locations at 'init_t'
+                #      (just like 'self.lons' and 'self.lats').
+                reconstruct_rotation = (
+                    self.plate_reconstruction.rotation_model.get_rotation(
+                        to_time=time,
+                        moving_plate_id=plate_id,
+                        from_time=0,
+                        anchor_plate_id=anchor_plate_id,
+                    )
+                    * self.plate_reconstruction.rotation_model.get_rotation(
+                        to_time=0,
+                        moving_plate_id=plate_id,
+                        from_time=init_t,
+                        anchor_plate_id=self.anchor_plate_id,
+                    )
+                )
+                reconstructed_points_sub = (
+                    reconstruct_rotation * reconstructed_points_sub
+                )
+
+                # Write the reconstructed points.
+                lat_lon_points[sub_indices] = [
+                    rpoint.to_lat_lon() for rpoint in reconstructed_points_sub
+                ]
 
         rlonslats = lat_lon_points[valid_mask]  # remove invalid points
         rlons = rlonslats[:, 1]
@@ -881,58 +949,64 @@ class Points(object):
             if point_indices_with_plate_id.size == 0:
                 continue
 
-            # Get all the unique reconstruct ages of all valid points with the current unique plate ID.
-            point_reconstruct_ages_with_plate_id = reconstruct_ages[
-                point_indices_with_plate_id
-            ]
-            unique_reconstruct_ages_with_plate_id = np.unique(
-                point_reconstruct_ages_with_plate_id
-            )
-            for reconstruct_age in unique_reconstruct_ages_with_plate_id:
-                # Indices of points with the current unique plate ID and the current unique reconstruct age.
-                point_indices_with_plate_id_and_reconstruct_age = (
-                    point_indices_with_plate_id[
-                        point_reconstruct_ages_with_plate_id == reconstruct_age
+            # Get the per-point initial times for this plate group.
+            if np.isscalar(self._time):
+                initial_times_for_group = np.full(
+                    len(point_indices_with_plate_id), self._time
+                )
+            else:
+                initial_times_for_group = self._time[point_indices_with_plate_id]
+            unique_initial_times = np.unique(initial_times_for_group)
+
+            for init_t in unique_initial_times:
+                init_t_mask = initial_times_for_group == init_t
+                indices_with_init_t = point_indices_with_plate_id[init_t_mask]
+
+                # Get all the unique reconstruct ages of all valid points with the current plate ID and initial time.
+                point_reconstruct_ages_sub = reconstruct_ages[indices_with_init_t]
+                unique_reconstruct_ages_sub = np.unique(point_reconstruct_ages_sub)
+
+                for reconstruct_age in unique_reconstruct_ages_sub:
+                    # Indices of points with the current plate ID, initial time, and reconstruct age.
+                    point_indices_sub = indices_with_init_t[
+                        point_reconstruct_ages_sub == reconstruct_age
                     ]
-                )
 
-                # Get the reconstructed points with the current unique plate ID and unique reconstruct age
-                # (that exist at their respective reconstruct age).
-                reconstructed_points_with_plate_id_and_reconstruct_age = pygplates.MultiPointOnSphere(
-                    self.points[point_index]
-                    for point_index in point_indices_with_plate_id_and_reconstruct_age
-                )
-
-                # First reconstruct the internal points from the initial time ('self.time') to present day using
-                # our internal anchor plate ID (the same anchor plate used in '__init__').
-                # Then reconstruct from present day to 'reconstruct_age' using the *requested* anchor plate ID.
-                #
-                # Note 'self.points' (and hence 'reconstructed_points_with_plate_id_and_reconstruct_age') are the locations at 'self.time'
-                #      (just like 'self.lons' and 'self.lats').
-                reconstruct_rotation = (
-                    self.plate_reconstruction.rotation_model.get_rotation(
-                        to_time=reconstruct_age,
-                        moving_plate_id=plate_id,
-                        from_time=0,
-                        anchor_plate_id=anchor_plate_id,
+                    # Get the points at 'init_t' for the current plate ID and reconstruct age.
+                    reconstructed_points_sub = pygplates.MultiPointOnSphere(
+                        self.points[point_index]
+                        for point_index in point_indices_sub
                     )
-                    * self.plate_reconstruction.rotation_model.get_rotation(
-                        to_time=0,
-                        moving_plate_id=plate_id,
-                        from_time=self.time,
-                        anchor_plate_id=self.anchor_plate_id,
-                    )
-                )
-                reconstructed_points_with_plate_id_and_reconstruct_age = (
-                    reconstruct_rotation
-                    * reconstructed_points_with_plate_id_and_reconstruct_age
-                )
 
-                # Write the reconstructed points.
-                lat_lon_points[point_indices_with_plate_id_and_reconstruct_age] = [
-                    rpoint.to_lat_lon()
-                    for rpoint in reconstructed_points_with_plate_id_and_reconstruct_age
-                ]
+                    # First reconstruct the internal points from the initial time ('init_t') to present day using
+                    # our internal anchor plate ID (the same anchor plate used in '__init__').
+                    # Then reconstruct from present day to 'reconstruct_age' using the *requested* anchor plate ID.
+                    #
+                    # Note 'self.points' (and hence 'reconstructed_points_sub') are the locations at 'init_t'
+                    #      (just like 'self.lons' and 'self.lats').
+                    reconstruct_rotation = (
+                        self.plate_reconstruction.rotation_model.get_rotation(
+                            to_time=reconstruct_age,
+                            moving_plate_id=plate_id,
+                            from_time=0,
+                            anchor_plate_id=anchor_plate_id,
+                        )
+                        * self.plate_reconstruction.rotation_model.get_rotation(
+                            to_time=0,
+                            moving_plate_id=plate_id,
+                            from_time=init_t,
+                            anchor_plate_id=self.anchor_plate_id,
+                        )
+                    )
+                    reconstructed_points_sub = (
+                        reconstruct_rotation * reconstructed_points_sub
+                    )
+
+                    # Write the reconstructed points.
+                    lat_lon_points[point_indices_sub] = [
+                        rpoint.to_lat_lon()
+                        for rpoint in reconstructed_points_sub
+                    ]
 
         rlonslats = lat_lon_points[valid_mask]  # remove invalid points
         rlons = rlonslats[:, 1]
@@ -1087,67 +1161,80 @@ class Points(object):
             if point_indices_with_plate_id.size == 0:
                 continue
 
-            # Get the reconstructed points with the current unique plate ID that have appeared before (or at) 'time'.
-            reconstructed_points_with_plate_id = pygplates.MultiPointOnSphere(
-                self.points[point_index] for point_index in point_indices_with_plate_id
-            )
-
-            # Stage rotation for the current unique plate ID.
+            # Stage rotation for the current unique plate ID (shared by all initial-time sub-groups).
             velocity_equivalent_stage_rotation = (
                 self.plate_reconstruction.rotation_model.get_rotation(
                     to_time, plate_id, from_time, anchor_plate_id=anchor_plate_id
                 )
             )
 
-            # First reconstruct the internal points from the initial time ('self.time') to present day using
-            # our internal anchor plate ID (the same anchor plate used in '__init__').
-            # Then reconstruct from present day to 'time' using the *requested* anchor plate ID.
-            #
-            # Note 'self.points' (and hence 'reconstructed_points_with_plate_id') are the locations at 'self.time'
-            #      (just like 'self.lons' and 'self.lats').
-            reconstruct_rotation = (
-                self.plate_reconstruction.rotation_model.get_rotation(
-                    to_time=time,
-                    moving_plate_id=plate_id,
-                    from_time=0,
-                    anchor_plate_id=anchor_plate_id,
+            # Get the per-point initial times for this plate group.
+            if np.isscalar(self._time):
+                initial_times_for_group = np.full(
+                    len(point_indices_with_plate_id), self._time
                 )
-                * self.plate_reconstruction.rotation_model.get_rotation(
-                    to_time=0,
-                    moving_plate_id=plate_id,
-                    from_time=self.time,
-                    anchor_plate_id=self.anchor_plate_id,
+            else:
+                initial_times_for_group = self._time[point_indices_with_plate_id]
+            unique_initial_times = np.unique(initial_times_for_group)
+
+            for init_t in unique_initial_times:
+                sub_mask = initial_times_for_group == init_t
+                sub_indices = point_indices_with_plate_id[sub_mask]
+
+                # Get the points at 'init_t' for the current plate ID.
+                reconstructed_points_sub = pygplates.MultiPointOnSphere(
+                    self.points[point_index] for point_index in sub_indices
                 )
-            )
-            reconstructed_points_with_plate_id = (
-                reconstruct_rotation * reconstructed_points_with_plate_id
-            )
 
-            velocity_vectors_with_plate_id = pygplates.calculate_velocities(  # type: ignore
-                reconstructed_points_with_plate_id,
-                velocity_equivalent_stage_rotation,
-                delta_time,
-                velocity_units=velocity_units,
-                earth_radius_in_kms=earth_radius_in_kms,
-            )
-
-            north_east_down_velocities_with_plate_id = (
-                pygplates.LocalCartesian.convert_from_geocentric_to_north_east_down(
-                    reconstructed_points_with_plate_id, velocity_vectors_with_plate_id
+                # First reconstruct the internal points from the initial time ('init_t') to present day using
+                # our internal anchor plate ID (the same anchor plate used in '__init__').
+                # Then reconstruct from present day to 'time' using the *requested* anchor plate ID.
+                #
+                # Note 'self.points' (and hence 'reconstructed_points_sub') are the locations at 'init_t'
+                #      (just like 'self.lons' and 'self.lats').
+                reconstruct_rotation = (
+                    self.plate_reconstruction.rotation_model.get_rotation(
+                        to_time=time,
+                        moving_plate_id=plate_id,
+                        from_time=0,
+                        anchor_plate_id=anchor_plate_id,
+                    )
+                    * self.plate_reconstruction.rotation_model.get_rotation(
+                        to_time=0,
+                        moving_plate_id=plate_id,
+                        from_time=init_t,
+                        anchor_plate_id=self.anchor_plate_id,
+                    )
                 )
-            )
+                reconstructed_points_sub = (
+                    reconstruct_rotation * reconstructed_points_sub
+                )
 
-            # Write velocities of points with the current unique plate ID as (north, east) components.
-            north_east_velocities[point_indices_with_plate_id] = [
-                (ned.get_x(), ned.get_y())  # north, east
-                for ned in north_east_down_velocities_with_plate_id
-            ]
+                velocity_vectors_sub = pygplates.calculate_velocities(  # type: ignore
+                    reconstructed_points_sub,
+                    velocity_equivalent_stage_rotation,
+                    delta_time,
+                    velocity_units=velocity_units,
+                    earth_radius_in_kms=earth_radius_in_kms,
+                )
 
-            # Also write the reconstructed points (if requested).
-            if return_reconstructed_points:
-                lat_lon_points[point_indices_with_plate_id] = [
-                    rpoint.to_lat_lon() for rpoint in reconstructed_points_with_plate_id
+                north_east_down_velocities_sub = (
+                    pygplates.LocalCartesian.convert_from_geocentric_to_north_east_down(
+                        reconstructed_points_sub, velocity_vectors_sub
+                    )
+                )
+
+                # Write velocities of points as (north, east) components.
+                north_east_velocities[sub_indices] = [
+                    (ned.get_x(), ned.get_y())  # north, east
+                    for ned in north_east_down_velocities_sub
                 ]
+
+                # Also write the reconstructed points (if requested).
+                if return_reconstructed_points:
+                    lat_lon_points[sub_indices] = [
+                        rpoint.to_lat_lon() for rpoint in reconstructed_points_sub
+                    ]
 
         velocities = north_east_velocities[valid_mask]  # remove invalid points
         velocity_lons = velocities[:, 1]  # east
