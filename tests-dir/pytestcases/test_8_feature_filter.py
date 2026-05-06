@@ -306,7 +306,9 @@ class TestFilterFeatureCollection(unittest.TestCase):
         ]
         result = filter_feature_collection(self.feature_collection, filters)
         # Should keep only features with plate ID 102 or 201 that don't match the first filter
-        self.assertIsInstance(result, pygplates.FeatureCollection)  # type: ignore
+        result_names = sorted([feature.get_name() for feature in result])  # type: ignore
+        self.assertEqual(result_names, ["Africa", "New Zealand"])
+        self.assertEqual(len(result_names), 2)
 
     def test_filter_returns_feature_collection(self):
         """Test that filter_feature_collection returns a FeatureCollection."""
