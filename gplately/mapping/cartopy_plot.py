@@ -245,7 +245,7 @@ def _plot_feature_collection(
                 shapely_geometry = pygplates_to_shapely(geometry)  # type: ignore
                 if shapely_geometry is not None:
                     ax.add_geometries(  # type: ignore
-                        shapely_geometry,
+                        [shapely_geometry],
                         crs=ccrs.PlateCarree(),
                         edgecolor="blue",
                         facecolor="none",
