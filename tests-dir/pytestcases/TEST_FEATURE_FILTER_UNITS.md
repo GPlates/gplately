@@ -79,22 +79,22 @@ The test suite (`test_feature_filter_units.py`) provides 40 unit tests covering 
 ```bash
 # Run from the repository root
 micromamba activate gplately
-python -m pytest tests-dir/unittest/test_feature_filter_units.py -v
+python -m pytest tests-dir/pytestcases/test_8_feature_filter.py -v
 ```
 
 ### Run specific test class:
 ```bash
-python -m pytest tests-dir/unittest/test_feature_filter_units.py::TestFeatureNameFilter -v
+python -m pytest tests-dir/pytestcases/test_8_feature_filter.py::TestFeatureNameFilter -v
 ```
 
 ### Run specific test:
 ```bash
-python -m pytest tests-dir/unittest/test_feature_filter_units.py::TestFeatureNameFilter::test_contains_match -v
+python -m pytest tests-dir/pytestcases/test_8_feature_filter.py::TestFeatureNameFilter::test_contains_match -v
 ```
 
 ### Run with detailed output:
 ```bash
-python -m pytest tests-dir/unittest/test_feature_filter_units.py -vv --tb=long
+python -m pytest tests-dir/pytestcases/test_8_feature_filter.py -vv --tb=long
 ```
 
 ## Test Results

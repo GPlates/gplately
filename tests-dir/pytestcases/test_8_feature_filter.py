@@ -430,8 +430,8 @@ class TestFeatureIDFilter(unittest.TestCase):
     """Tests for FeatureIDFilter class."""
 
     def test_unique_ids_assertion(self):
-        """Test that duplicate IDs cause an assertion error during initialization."""
-        with self.assertRaises(AssertionError):
+        """Test that duplicate IDs cause a ValueError during initialization."""
+        with self.assertRaises(ValueError):
             FeatureIDFilter(["id1", "id1", "id2"])
 
     def test_filter_initialization(self):
