@@ -16,7 +16,8 @@ GPlately comes with a suite of useful command line tools. These tools are design
 - [__rotation_tools__](#-rotation_tools) -- calculate stage rotations  
 - [__separate_ridge_transform_segments__](#-separate_ridge_transform_segments) -- pick out ridge and transform features
 - [__subduction_convergence__](#-subduction_convergence) -- calculate the convergence rates along subduction zones
-- [__gpmdb__](#-gpmdb) -- download the paleomagnetic data and create GPlates-compatible VGP features 
+- [__gpmdb__](#-gpmdb) -- download the paleomagnetic data and create GPlates-compatible VGP features
+- [__rotate_grid__](#-rotate_grid) -- rotate a grid between plate-model reference frames
 
 ### 🟢 **list**
 
@@ -196,3 +197,19 @@ GPlately comes with a suite of useful command line tools. These tools are design
 
   - `gplately gpmdb -m zahirovic2022 -o vgp.gpmlz`
     (download the paleomagnetic data and generate GPlates-compatible VGP features using the zahirovic2022 reconstruction model)
+
+
+### 🟢 **rotate_grid**
+
+  Rotate a grid (or all grids in a folder) between plate-model reference frames. Run `gplately rotate_grid -h` to see the details of this subcommand.
+
+  Examples:
+
+  - `gplately rotate_grid input.nc output.nc --from-model Alfonso2024 --to-model Alfonso2024 --from-anchor 0 --to-anchor 701701 --time 100`
+    (rotate input.nc at 100 Ma from the Alfonso2024 mantle frame to the Alfonso2024 pmag frame)
+
+  - `gplately rotate_grid input_dir output_dir --from-model Alfonso2024 --to-model Alfonso2024 --from-anchor 0 --to-anchor 701701`
+    (rotate all .nc files in input_dir; reconstruction times are deduced from filenames such as paleobathymetry_103Ma.nc)
+
+  - `gplately rotate_grid input.nc output.nc --from-rotation-files from.rot --to-rotation-files to.rot --time 100`
+    (rotate using local rotation files instead of a named model)
