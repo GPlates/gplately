@@ -1,5 +1,5 @@
 #
-#    Copyright (C) 2024-2025 The University of Sydney, Australia
+#    Copyright (C) 2024-2026 The University of Sydney, Australia
 #
 #    This program is free software; you can redistribute it and/or modify it under
 #    the terms of the GNU General Public License, version 2, as published by
@@ -25,13 +25,15 @@ import time
 from functools import partial
 from typing import List, Optional, Union
 
-from plate_model_manager import PlateModel, PlateModelManager
+from plate_model_manager import PlateModel, PlateModelManager  # type: ignore
 
 from ..grids import Raster
 
 logger = logging.getLogger("gplately")
 
-help_str = "Rotate a grid (or all grids in a folder) between plate-model reference frames."
+help_str = (
+    "Rotate a grid (or all grids in a folder) between plate-model reference frames."
+)
 
 __description__ = f"""{help_str}
 
@@ -244,7 +246,9 @@ def rotate_single_grid(
         non_reference_plate=non_reference_plate,
         output_name=str(output_file),
     )
-    logger.info("  %s -> %s (%.1f Ma) done.", input_file, output_file, reconstruction_time)
+    logger.info(
+        "  %s -> %s (%.1f Ma) done.", input_file, output_file, reconstruction_time
+    )
     print(f"  {output_file} complete!")
 
 
@@ -310,7 +314,9 @@ def _rotate_grid_cmd(args):
         pairs = [
             (nc_file, p_output / nc_file.name)
             for nc_file in sorted(p_input.iterdir())
-            if nc_file.suffix == ".nc" and nc_file.is_file() and not nc_file.name.startswith(".")
+            if nc_file.suffix == ".nc"
+            and nc_file.is_file()
+            and not nc_file.name.startswith(".")
         ]
 
         if not pairs:

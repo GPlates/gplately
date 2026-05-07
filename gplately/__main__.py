@@ -19,7 +19,7 @@ import os
 import sys
 from typing import List
 
-import pygplates
+import pygplates  # type: ignore
 
 from gplately import __version__
 
