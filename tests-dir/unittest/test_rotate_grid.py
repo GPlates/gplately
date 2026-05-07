@@ -74,11 +74,17 @@ MODEL_DIR = TEST_DIR  # plate-model-manager creates <MODEL_DIR>/zahirovic2022/
 # The rotation file path created by plate-model-manager for Zahirovic2022
 ROTATION_FILE = TEST_DIR / "zahirovic2022" / "Rotations" / "CombinedRotations.rot"
 
-# Single-file test (step 6 / 7)
+# Single-file test – forward rotation (step 6 / 7): mantle → pmag, 105 Ma
 SINGLE_TIME = 105  # Ma
 SINGLE_INPUT = MANTLE_DIR / f"paleobathymetry_{SINGLE_TIME}Ma.nc"
 SINGLE_OUTPUT = TEST_DIR / f"paleobathymetry_pmag_{SINGLE_TIME}Ma.nc"
 SINGLE_REFERENCE = PMAG_DIR / f"paleobathymetry_{SINGLE_TIME}Ma.nc"
+
+# Single-file test – reverse rotation (step 8 / 9): pmag → mantle, 106 Ma
+REVERSE_TIME = 106  # Ma
+REVERSE_INPUT = PMAG_DIR / f"paleobathymetry_{REVERSE_TIME}Ma.nc"
+REVERSE_OUTPUT = TEST_DIR / f"paleobathymetry_mantle_{REVERSE_TIME}Ma.nc"
+REVERSE_REFERENCE = MANTLE_DIR / f"paleobathymetry_{REVERSE_TIME}Ma.nc"
 
 TIME_MIN = 100  # Ma
 TIME_MAX = 110  # Ma
@@ -394,6 +400,64 @@ def compare_single_file():
 
 
 # ---------------------------------------------------------------------------
+# Step 8: Run gplately rotate_grid (single-file mode, named model, reverse)
+# ---------------------------------------------------------------------------
+
+
+def rotate_single_file_reverse():
+    """
+    Invoke ``gplately rotate_grid`` in single-file mode using a named model,
+    rotating from the pmag frame (anchor 701701) back to the mantle frame
+    (anchor 0) for the 106 Ma grid.
+    """
+    cmd = [
+        sys.executable,
+        "-m",
+        "gplately",
+        "rotate_grid",
+        str(REVERSE_INPUT),
+        str(REVERSE_OUTPUT),
+        "-r",
+        "0.2",
+        "--from-model",
+        "zahirovic2022",
+        "--to-model",
+        "zahirovic2022",
+        "--from-anchor",
+        "701701",
+        "--to-anchor",
+        "0",
+    ]
+    print("\nRunning:", " ".join(cmd))
+    subprocess.run(cmd, check=True, text=True)
+
+
+# ---------------------------------------------------------------------------
+# Step 9: Compare reverse-rotated output with original mantle-frame grid
+# ---------------------------------------------------------------------------
+
+
+def compare_reverse_file():
+    """
+    Compare ``REVERSE_OUTPUT`` against ``REVERSE_REFERENCE``.
+
+    Returns True if the comparison passes, False otherwise.
+    """
+    if not REVERSE_OUTPUT.exists():
+        print(f"ERROR: Reverse-rotation output not found: {REVERSE_OUTPUT}")
+        return False
+    if not REVERSE_REFERENCE.exists():
+        print(f"ERROR: Reverse-rotation reference not found: {REVERSE_REFERENCE}")
+        return False
+
+    return _compare_two_grids(
+        REVERSE_OUTPUT,
+        REVERSE_REFERENCE,
+        label=f"{REVERSE_TIME} Ma (reverse rotation pmag → mantle)",
+    )
+
+
+# ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
 
@@ -428,7 +492,17 @@ def main():
     print(f"\n=== Step 7: Compare single-file output against reference pmag grid ===")
     ok_single = compare_single_file()
 
-    if ok_dir and ok_single:
+    print(
+        f"\n=== Step 8: Rotate single file ({REVERSE_TIME} Ma) pmag → mantle (named model) ==="
+    )
+    rotate_single_file_reverse()
+
+    print(
+        f"\n=== Step 9: Compare reverse-rotated output against original mantle-frame grid ==="
+    )
+    ok_reverse = compare_reverse_file()
+
+    if ok_dir and ok_single and ok_reverse:
         print("\nAll comparisons PASSED.")
     else:
         print("\nSome comparisons FAILED — please review the output above.")
