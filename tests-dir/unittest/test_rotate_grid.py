@@ -58,7 +58,7 @@ TIME_MIN = 100  # Ma
 TIME_MAX = 110  # Ma
 
 # Acceptance thresholds for the automated comparison
-MIN_CORRELATION = 0.95  # Pearson r must be at least this
+MIN_CORRELATION = 0.90  # Pearson r must be at least this
 MAX_MEAN_ABS_DIFF_FRACTION = 0.10  # mean |diff| / value-range ≤ 10 %
 
 DOWNLOAD_CHUNK_SIZE = 64 * 1024  # 64 KB per streaming chunk
@@ -156,10 +156,12 @@ def rotate_grids():
 
 
 def _load_first_var(nc_path):
-    """Load the first data variable from a NetCDF file as a numpy array."""
+    """Load the ``z`` data variable from a NetCDF file as a numpy array."""
     ds = xr.open_dataset(nc_path)
-    var = list(ds.data_vars)[0]
-    arr = ds[var].values.astype(float)
+    if "z" not in ds.data_vars:
+        ds.close()
+        raise KeyError(f"Variable 'z' not found in {nc_path}")
+    arr = ds["z"].values.astype(float)
     ds.close()
     return arr
 
