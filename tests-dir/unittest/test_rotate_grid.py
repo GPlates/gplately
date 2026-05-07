@@ -142,12 +142,8 @@ def _compare_two_grids(rot_file, ref_file, label=""):
         ref_var = list(ds_ref.data_vars)[0]
 
         # Identify coordinate names (lat/lon may appear under various names)
-        lat_dim = next(
-            (c for c in ds_rot[rot_var].dims if "lat" in c.lower()), None
-        )
-        lon_dim = next(
-            (c for c in ds_rot[rot_var].dims if "lon" in c.lower()), None
-        )
+        lat_dim = next((c for c in ds_rot[rot_var].dims if "lat" in c.lower()), None)
+        lon_dim = next((c for c in ds_rot[rot_var].dims if "lon" in c.lower()), None)
 
         if lat_dim and lon_dim:
             ref_resampled = ds_ref[ref_var].interp(
@@ -329,7 +325,9 @@ def compare_grids_directory_mode():
             continue
         ref_file = ref_candidates[0]
 
-        passed = _compare_two_grids(rot_file, ref_file, label=f"{t:.0f} Ma ({rot_file.name})")
+        passed = _compare_two_grids(
+            rot_file, ref_file, label=f"{t:.0f} Ma ({rot_file.name})"
+        )
         if not passed:
             all_pass = False
 
@@ -363,6 +361,8 @@ def rotate_single_file_local_rot():
         "0",
         "--to-anchor",
         "701701",
+        "-r",
+        "0.2",
     ]
     print("\nRunning:", " ".join(cmd))
     subprocess.run(cmd, check=True, text=True)
@@ -410,10 +410,14 @@ def main():
     print("\n=== Step 3: Download Zahirovic2022 plate model ===")
     download_model()
 
-    print("\n=== Step 4: Rotate mantle-frame grids to pmag reference frame (named model) ===")
+    print(
+        "\n=== Step 4: Rotate mantle-frame grids to pmag reference frame (named model) ==="
+    )
     rotate_grids_named_model()
 
-    print("\n=== Step 5: Compare directory-mode output against reference pmag grids ===")
+    print(
+        "\n=== Step 5: Compare directory-mode output against reference pmag grids ==="
+    )
     ok_dir = compare_grids_directory_mode()
 
     print(
