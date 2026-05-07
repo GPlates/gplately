@@ -17,7 +17,7 @@ GPlately comes with a suite of useful command line tools. These tools are design
 - [__separate_ridge_transform_segments__](#-separate_ridge_transform_segments) -- pick out ridge and transform features
 - [__subduction_convergence__](#-subduction_convergence) -- calculate the convergence rates along subduction zones
 - [__gpmdb__](#-gpmdb) -- download the paleomagnetic data and create GPlates-compatible VGP features
-- [__rotate_grid (rg2)__](#-rotate_grid-rg2) -- rotate a grid between plate-model reference frames
+- [__rotate_grid__](#-rotate_grid) -- rotate a grid between plate-model reference frames
 
 ### 🟢 **list**
 
@@ -199,7 +199,7 @@ GPlately comes with a suite of useful command line tools. These tools are design
     (download the paleomagnetic data and generate GPlates-compatible VGP features using the zahirovic2022 reconstruction model)
 
 
-### 🟢 **rotate_grid (rg2)**
+### 🟢 **rotate_grid**
 
   Rotate a grid (or all grids in a folder) between plate-model reference frames. Run `gplately rotate_grid -h` to see the details of this subcommand.
 

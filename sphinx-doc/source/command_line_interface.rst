@@ -272,8 +272,8 @@ Retrieve the paleomagnetic data from the `GPMDB website <http://www.gpmdb.net>`_
    $ gplately gpmdb -m zahirovic2022 -o vgp.gpmlz
    
 
-rotate_grid (rg2)
------------------
+rotate_grid
+-----------
 
 Rotate a grid (or all grids in a folder) between plate-model reference frames.
 The source and target rotation models can each be a named plate model or local rotation files (the two options are mutually exclusive).

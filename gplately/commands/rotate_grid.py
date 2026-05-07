@@ -56,7 +56,6 @@ def add_parser(parser):
 
     cmd = parser.add_parser(
         "rotate_grid",
-        aliases=("rg2",),
         help=help_str,
         add_help=True,
         description=__description__,
