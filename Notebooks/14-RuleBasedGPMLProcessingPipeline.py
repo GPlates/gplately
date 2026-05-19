@@ -509,7 +509,7 @@ print(
 # which are represented as point features.
 
 # <figure>
-#  <img src="https://raw.githubusercontent.com/GPlates/gplately/refs/heads/377-feature-request-gpml-file-management-workflow/Notebooks/NotebookFiles/Notebook14/icosahedron_mesh.png" width="300">
+#  <img src="https://raw.githubusercontent.com/GPlates/gplately/refs/heads/master/Notebooks/NotebookFiles/Notebook14/icosahedron_mesh.png" width="300">
 #  <figcaption><b>Icosahedron Mesh</b></figcaption>
 # </figure>
 
@@ -545,7 +545,7 @@ print(
 # as well as a polygon feature that represents the region of interest defined by the bounding box.
 
 # <figure>
-#  <img src="https://raw.githubusercontent.com/GPlates/gplately/refs/heads/377-feature-request-gpml-file-management-workflow/Notebooks/NotebookFiles/Notebook14/icosahedron_vertices_in_region.png" width="300">
+#  <img src="https://raw.githubusercontent.com/GPlates/gplately/refs/heads/master/Notebooks/NotebookFiles/Notebook14/icosahedron_vertices_in_region.png" width="300">
 #  <figcaption><b>Icosahedron Vertices within (120, 140, -10, 10)</b></figcaption>
 # </figure>
 
@@ -604,6 +604,6 @@ print(
 # are located within the mainland of Australia, as well as a polygon feature that represents the mainland of Australia
 
 # <figure>
-#  <img src="https://raw.githubusercontent.com/GPlates/gplately/refs/heads/377-feature-request-gpml-file-management-workflow/Notebooks/NotebookFiles/Notebook14/icosahedron_vertices_within_australia.png" width="300">
+#  <img src="https://raw.githubusercontent.com/GPlates/gplately/refs/heads/master/Notebooks/NotebookFiles/Notebook14/icosahedron_vertices_within_australia.png" width="300">
 #  <figcaption><b>Icosahedron Vertices within Australia</b></figcaption>
 # </figure>
