@@ -1,0 +1,57 @@
+name: Run notebook and publish HTML
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  execute-and-publish:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash -el {0}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up micromamba
+        uses: mamba-org/setup-micromamba@v1
+        with:
+          micromamba-version: "1.5.8-0"
+          environment-file: conda/doc-env.yml
+          init-shell: bash
+          cache-environment: true
+          post-cleanup: all
+
+      - name: Install current gplately
+        run: |
+          pip install . --no-binary :all: --no-cache-dir --no-dependencies
+
+      - name: Execute notebook
+        run: |
+          mkdir -p /tmp/notebook-run
+          jupyter nbconvert \
+            --to notebook \
+            --execute \
+            --output executed-notebook.ipynb \
+            --output-dir /tmp/notebook-run \
+            Notebooks/14-RuleBasedGPMLProcessingPipeline.ipynb
+
+      - name: Convert executed notebook to HTML
+        run: |
+          mkdir -p notebook-html
+          jupyter nbconvert \
+            --to html \
+            --output 14-RuleBasedGPMLProcessingPipeline.html \
+            --output-dir notebook-html \
+            /tmp/notebook-run/executed-notebook.ipynb
+
+      - name: Deploy HTML to gh-pages
+        uses: JamesIves/github-pages-deploy-action@v4.2.2
+        with:
+          branch: gh-pages
+          folder: notebook-html
+          target-folder: sphinx-latest/notebook-html
