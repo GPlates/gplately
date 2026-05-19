@@ -1,0 +1,47 @@
+name: Generate Rule-Based Pipeline Notebook
+
+on:
+  push:
+    paths:
+      - Notebooks/14-RuleBasedGPMLProcessingPipeline.py
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  generate-notebook:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install jupytext
+        run: python -m pip install --upgrade pip jupytext
+
+      - name: Generate notebook
+        run: |
+          jupytext --to notebook \
+            Notebooks/14-RuleBasedGPMLProcessingPipeline.py \
+            -o Notebooks/14-RuleBasedGPMLProcessingPipeline.ipynb
+
+      - name: Commit updated notebook
+        run: |
+          if git diff --quiet -- Notebooks/14-RuleBasedGPMLProcessingPipeline.ipynb; then
+            echo "No notebook changes detected."
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add Notebooks/14-RuleBasedGPMLProcessingPipeline.ipynb
+          git commit -m "ci: regenerate RuleBasedGPMLProcessingPipeline notebook"
+          git push
