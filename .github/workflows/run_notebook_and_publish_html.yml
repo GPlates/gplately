@@ -55,3 +55,4 @@ jobs:
           branch: gh-pages
           folder: notebook-html
           target-folder: sphinx-latest/notebook-html
+          clean: false
