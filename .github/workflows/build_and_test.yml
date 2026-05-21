@@ -7,11 +7,13 @@ on:
   push:
     branches:
       - master
-    paths-ignore:
-      - Notebooks/14-RuleBasedGPMLProcessingPipeline.ipynb
+    paths:
+      - gplately/**
   pull_request:
     branches:
       - master
+    paths:
+      - gplately/**
 
 jobs:
   build:
@@ -21,8 +23,8 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-        # Conda-forge currently supports Python >=3.9 ...
-        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
+        # Conda-forge currently supports Python >=3.10 ...
+        python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
 
     defaults:
       run:

@@ -20,6 +20,7 @@ as well as `pygplates.Feature` and `pygplates.FeatureCollection` objects.
 """
 
 import os
+import warnings
 from typing import List
 
 
@@ -162,6 +163,33 @@ def gpml_to_pandas_dataframe(
     gdf = gpd.GeoDataFrame(data)
     gdf.index = feature_ids
     return gdf
+
+
+def load_feature_collection_from_files(file_paths):
+    """Load a feature collection from one or more feature files.
+
+    Parameters
+    ----------
+    file_paths : str, os.PathLike, or sequence
+        One file path, or a sequence of file paths.
+
+    Returns
+    -------
+    pygplates.FeatureCollection
+        A feature collection containing all features loaded from the input file(s).
+
+    Raises
+    ------
+    TypeError
+        If ``file_paths`` is None or not a valid file path / sequence of file paths.
+    """
+    if file_paths is None:
+        raise TypeError("file_paths cannot be None")
+
+    if isinstance(file_paths, (str, bytes, os.PathLike)):
+        file_paths = [file_paths]
+
+    return merge_feature_collections(file_paths)
 
 
 def merge_feature_collections(feature_collections):
