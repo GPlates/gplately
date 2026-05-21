@@ -60,6 +60,10 @@ Workflows
    Generates regional plots for Mutschler world porphyry copper deposits.
 - `13 - Reconstructing Zircon Data`_
    Demonstrates how to reconstruct and plot Zircon data on a global map through geological time.
+- `14 - Rule Based GPML Processing Pipeline`_
+   Demonstrates how to use the rule-based GPML processing pipeline to filter and transform geological data.
+- `15 - Convert Grid Reference Frame`_
+   Demonstrates how to convert reference frame of grids.
 
 .. _`01 - Getting Started`: ../../notebook-html/01-GettingStarted.html
 .. _`02 - Plate Reconstructions`: ../../notebook-html/02-PlateReconstructions.html
@@ -74,6 +78,8 @@ Workflows
 .. _`11 - Andes Fluxes`: ../../notebook-html/11-AndesFluxes.html
 .. _`12 - Mutschler World Porphyry Copper Deposits Regional Plots`: ../../notebook-html/12-MutschlerWorldPorphyryCopperDepositsRegionalPlots.html
 .. _`13 - Reconstructing Zircon Data`: ../../notebook-html/13-ReconstructingZirconData.html
+.. _`14 - Rule Based GPML Processing Pipeline`: ../../notebook-html/14-RuleBasedGPMLProcessingPipeline.html
+.. _`15 - Convert Grid Reference Frame`: ../../notebook-html/15-ConvertGridReferenceFrame.html
 .. _`GPlates 2.3's sample data sets`: https://www.earthbyte.org/gplates-2-3-software-and-data-sets/
 
 .. note::
