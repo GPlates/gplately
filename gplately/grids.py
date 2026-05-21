@@ -826,9 +826,14 @@ def sample_grid(
 
     if isinstance(grid, Raster):
         extent = grid.extent
-        grid = np.array(grid.data)
+        if np.ma.isMaskedArray(grid.data):
+            grid = grid.data.astype(float).filled(np.nan)
+        else:
+            grid = np.array(grid.data)
     else:
         extent = _parse_extent_origin(extent, origin)
+        if np.ma.isMaskedArray(grid):
+            grid = grid.astype(float).filled(np.nan)
         grid = _check_grid(grid)
 
     # Do not wrap from North to South Pole (or vice versa)
@@ -1725,6 +1730,8 @@ class Raster(object):
                 y_dimension_name=y_dimension_name,
                 data_variable_name=data_variable_name,
             )
+            if np.ma.isMaskedArray(self._data):
+                self._data = self._data.astype(float).filled(np.nan)
             self._lons = lons
             self._lats = lats
         else:
@@ -1741,6 +1748,8 @@ class Raster(object):
                     f"Raster.__init__(): Use the extent extracted from data: {extent}."
                 )
 
+            if np.ma.isMaskedArray(data):
+                data = data.astype(float).filled(np.nan)
             data = _check_grid(data)
             self._data = np.array(data)
             self._lons = np.linspace(extent[0], extent[1], self.data.shape[1])

@@ -2,6 +2,7 @@ import copy
 import os
 
 import numpy as np
+import pygplates
 import pytest
 from conftest import (
     gplately_merdith_raster,
@@ -73,6 +74,25 @@ def test_nearest_neighbour_interpolation():
         ilon, ilat, method="nearest", return_indices=True
     )
     assert ci == 1 and cj == 1, "Indices of interpolation are incorrect"
+
+
+def test_rotate_reference_frames_ignores_masked_fill_values():
+    fill_value = np.float64(9.969209968386869e36)
+    data = np.linspace(0, 100, 100).reshape(10, 10).astype(float)
+    data[3:6, 3:6] = fill_value
+    masked_data = np.ma.masked_values(data, fill_value)
+
+    raster = gplately.Raster(data=masked_data, extent=(-180, 180, -90, 90))
+    empty_rotation_model = pygplates.FeatureCollection()
+    rotated = raster.rotate_reference_frames(
+        grid_spacing_degrees=0.5,
+        reconstruction_time=0,
+        from_rotation_features_or_model=empty_rotation_model,
+        to_rotation_features_or_model=empty_rotation_model,
+    )
+    rotated_data = np.asarray(rotated.data)
+
+    assert not np.any(np.abs(rotated_data) > 1e20)
 
 
 # TEST AGE GRID RESIZING (AT RESOLUTIONS OF RES_X = 1000, RES_Y = 400)
