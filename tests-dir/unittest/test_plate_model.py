@@ -4,7 +4,7 @@ import os
 os.environ["DISABLE_GPLATELY_DEV_WARNING"] = "true"
 
 from common import MODEL_REPO_DIR
-from plate_model_manager import PlateModelManager
+from plate_model_manager import PlateModelManager  # type: ignore
 
 
 def main():
