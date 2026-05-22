@@ -4,14 +4,14 @@ import os
 os.environ["DISABLE_GPLATELY_DEV_WARNING"] = "true"
 from common import get_logger
 
+logger = get_logger()
+
 import gplately
 
 print(gplately.__file__)
 
-if __name__ == "__main__":
 
-    logger = get_logger()
-
+def test_data_server_1():
     logger.info("Start test_data_server .......")
 
     logger.info(gplately.auxiliary.get_data_server_cache_path())
@@ -42,4 +42,12 @@ if __name__ == "__main__":
     assert len(r3) == 3
     logger.info(r3)
 
+
+if __name__ == "__main__":
+
+    test_data_server_1()
+    print(gplately.DataServer.get_feature_data("SeafloorFabric"))
+    print(gplately.DataServer.get_feature_data("Johansson2018"))
+    print(gplately.DataServer.get_feature_data("Whittaker2015"))
+    print(gplately.DataServer.get_feature_data("Hotspots"))
     logger.info("test_data_server has finished successfully!")

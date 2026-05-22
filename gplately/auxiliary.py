@@ -21,6 +21,9 @@ minimizing the coding effort required from users."""
 import logging
 from typing import Union
 
+# pyright: reportMissingImports=false
+# pyright: reportMissingModuleSource=false
+
 import pygplates
 
 logger = logging.getLogger("gplately")
@@ -28,9 +31,10 @@ try:
     import pygmt
 except:
     logger.error("Failed to import PyGMT. PyGMT requires Python>=3.11.")
+    pygmt = None
 from plate_model_manager import PlateModel, PlateModelManager
 
-from .download import path_to_cache
+from .data_server import DataServer
 from .mapping.cartopy_plot import CartopyPlotEngine
 from .mapping.plot_engine import PlotEngine
 from .plot import PlotTopologies
@@ -186,6 +190,9 @@ def get_pygmt_basemap_figure(projection="N180/10c", region="d"):
        a ``pygmt.Figure()`` object for map plotting
 
     """
+    assert (
+        pygmt is not None
+    ), "PyGMT is not available. Please install PyGMT to use this function."
     fig = pygmt.Figure()
     fig.basemap(region=region, projection=projection, frame="lrtb")
     return fig
@@ -196,6 +203,6 @@ def get_data_server_cache_path():
 
     .. seealso::
 
-        :py:attr:`gplately.DataServer.cache_path`
+        :py:meth:`gplately.DataServer.cache_path`
     """
-    return path_to_cache()
+    return DataServer.cache_path()

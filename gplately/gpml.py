@@ -20,7 +20,6 @@ as well as `pygplates.Feature` and `pygplates.FeatureCollection` objects.
 """
 
 import os
-import warnings
 from typing import List
 
 

@@ -1,5 +1,5 @@
 #
-#    Copyright (C) 2024-2025 The University of Sydney, Australia
+#    Copyright (C) 2024-2026 The University of Sydney, Australia
 #
 #    This program is free software; you can redistribute it and/or modify it under
 #    the terms of the GNU General Public License, version 2, as published by
@@ -41,6 +41,9 @@ import warnings
 from multiprocessing import cpu_count
 from typing import Tuple, Union
 
+# pyright: reportMissingImports=false
+# pyright: reportMissingModuleSource=false
+
 import matplotlib.colors
 import matplotlib.pyplot as plt
 import netCDF4
@@ -54,7 +57,7 @@ from rasterio.transform import from_bounds as _from_bounds
 from scipy.interpolate import RegularGridInterpolator as _RGI
 from scipy.interpolate import griddata
 from scipy.ndimage import distance_transform_edt, map_coordinates
-from scipy.spatial import cKDTree as _cKDTree  # type: ignore
+from scipy.spatial import cKDTree as _cKDTree
 from scipy.spatial.transform import Rotation as _Rotation
 
 from .geometry import pygplates_to_shapely

@@ -1,5 +1,5 @@
 #
-#    Copyright (C) 2024-2025 The University of Sydney, Australia
+#    Copyright (C) 2024-2026 The University of Sydney, Australia
 #
 #    This program is free software; you can redistribute it and/or modify it under
 #    the terms of the GNU General Public License, version 2, as published by
@@ -17,10 +17,13 @@
 import re as _re
 
 import numpy as _np
-from numpy import size as _size
 
 # ============ LINKS FOR DOWNLOADING PLATE RECONSTRUCTION FILES ON-THE-FLY ==============
-""" This auxiliary script contains links to download plate model data from web servers
+""" 
+Warning: This module is obsolete and will be removed in a future release. 
+It is not intended for use by GPlately users. 
+
+This auxiliary script contains links to download plate model data from web servers
 such as EarthByte's webDAV server. These links are accessed by GPlately's DataServer object
 and downloaded into the "gplately" folder in your machine's cache via Pooch.
 """
@@ -40,13 +43,20 @@ def _find_needed_collection(collection_identifier, data_dictionary, time=None):
                     collection_identifier
                 ).plate_model_valid_reconstruction_times()
 
+                min_time = None
+                max_time = None
                 for collection, valid_times in list(valid_times_dict.items()):
                     if collection_identifier.lower() == collection.lower():
                         min_time = valid_times[0]
                         max_time = valid_times[1]
+                        break
+
+                if min_time is None or max_time is None:
+                    if isinstance(time, list) or isinstance(time, _np.ndarray):
+                        return [None for _ in time]
+                    return [None]
 
                 if isinstance(time, list) or isinstance(time, _np.ndarray):
-
                     for t in time:
                         if t < min_time or t > max_time:
                             all_urls.append(None)
