@@ -31,6 +31,7 @@ import pygplates
 from matplotlib import image
 from plate_model_manager import PlateModelManager, PresentDayRasterManager
 from plate_model_manager.utils.download import FileDownloader
+from plate_model_manager import ReferenceFrame, GenerationMethod
 import pooch
 
 logger = logging.getLogger("gplately")
@@ -112,23 +113,61 @@ class DataServer(object):
         return DataServer._path_to_cache()
 
     @property
-    def rotation_model(self):
-        """A pygplates.RotationModel object for the plate reconstruction model."""
-        if self._rotation_model is None and self.pmm:
-            self._rotation_model = pygplates.RotationModel(
-                self.pmm.get_rotation_model()
-            )
-            self._rotation_model.reconstruction_identifier = self.file_collection
-            # Setting an attribute on a pyGPlates object produces the following error in version 1.0 of pyGPlates:
-            #   RuntimeError: Incomplete pickle support (__getstate_manages_dict__ not set)
-            #
-            # This is fixed in pyGPlates 1.1 (which implements __getstate__ to copy __dict__ just to be sure),
-            # but until that's released we can just set __getstate_manages_dict__ to True.
-            #
-            # This is because it turns out that Boost.Python (used in pyGPlates) copies the __dict__ in its default __getstate__
-            # so we can just manually set __getstate_manages_dict__ to True (I'm not sure why Boost.Python doesn't set it).
-            self._rotation_model.__getstate_manages_dict__ = True
-        return self._rotation_model
+    def rotation_model(
+        self, reference_frame: ReferenceFrame = ReferenceFrame.MantleReferenceFrame
+    ):
+        """Return the model rotation tree as a ``pygplates.RotationModel``.
+
+        The rotation model is created lazily and cached on first access.
+        By default, rotations are loaded in the mantle reference frame.
+        If ``reference_frame`` is ``ReferenceFrame.PmagReferenceFrame``,
+        the model is loaded with the paleomagnetic reference frame and its
+        corresponding anchor plate ID from ``plate_model_manager``.
+
+        Parameters
+        ----------
+        reference_frame : ReferenceFrame, default=ReferenceFrame.MantleReferenceFrame
+            Reference frame used to build the returned rotation model.
+
+        Returns
+        -------
+        pygplates.RotationModel
+            Rotation model for the selected plate model collection.
+
+        Raises
+        ------
+        Exception
+            If the underlying plate model manager object is not initialized.
+        """
+        if self._rotation_model is None:
+            if self.pmm:
+                if reference_frame == ReferenceFrame.PmagReferenceFrame:
+                    rot_files, anchor_pid = self.pmm.get_rotation_model(
+                        reference_frame=reference_frame
+                    )
+                    self._rotation_model = pygplates.RotationModel(
+                        rot_files, default_anchor_plate_id=anchor_pid
+                    )
+                else:
+                    self._rotation_model = pygplates.RotationModel(
+                        self.pmm.get_rotation_model()
+                    )
+                self._rotation_model.reconstruction_identifier = self.file_collection
+                # Setting an attribute on a pyGPlates object produces the following error in version 1.0 of pyGPlates:
+                #   RuntimeError: Incomplete pickle support (__getstate_manages_dict__ not set)
+                #
+                # This is fixed in pyGPlates 1.1 (which implements __getstate__ to copy __dict__ just to be sure),
+                # but until that's released we can just set __getstate_manages_dict__ to True.
+                #
+                # This is because it turns out that Boost.Python (used in pyGPlates) copies the __dict__ in its default __getstate__
+                # so we can just manually set __getstate_manages_dict__ to True (I'm not sure why Boost.Python doesn't set it).
+                self._rotation_model.__getstate_manages_dict__ = True
+            else:
+                raise Exception(
+                    "Unable to get rotation model. The PlateModel object is not initialized in DataServer."
+                )
+        else:
+            return self._rotation_model
 
     @property
     def topology_features(self):
@@ -313,33 +352,75 @@ class DataServer(object):
 
         return self.coastlines, self.continents, self.COBs
 
-    def get_age_grid(self, times: Union[int, list[int]]):
-        """Download the seafloor age grids for the plate model. Save the grids in the ``GPlately cache folder``.
+    def _get_time_dependent_rasters(
+        self,
+        name: str,
+        times: Union[int, list[int]],
+        reference_frame: Union[ReferenceFrame, None] = None,
+        generated_from: Union[GenerationMethod, None] = None,
+    ):
+        """Download the time-dependent grids for the plate model."""
+        if not self.pmm:
+            raise Exception(
+                "The plate model object is not initialized. Unable to get age grid."
+            )
+
+        if not isinstance(times, list):
+            times = [times]
+
+        for time in times:
+            try:
+                time_i = int(time)
+            except Exception:
+                raise ValueError(
+                    f"Invalid time {time}. Reconstruction time must be a number."
+                )
+            if time_i < self.to_age or time_i > self.from_age:
+                raise ValueError(
+                    f"Invalid time {time}. Reconstruction time must be between {self.time_range}."
+                )
+
+        if reference_frame is None and generated_from is None:
+            # backwards compatibility with old code that calls get_age_grid() without reference_frame and generated_from parameters
+            grid_files = self.pmm.get_rasters(
+                name,
+                times=times,
+            )
+        else:
+            grid_files = self.pmm.get_rasters(
+                name,
+                times=times,
+                reference_frame=reference_frame,
+                generated_from=generated_from,
+            )
+        assert len(grid_files) == len(
+            times
+        ), "The number of downloaded age grid files does not match the number of requested times."
+
+        grids = []
+        for f in grid_files:
+            grids.append(Raster(data=f))
+
+        if not grids:
+            raise Exception(f"Unable to get the {name} grids for times: {times}")
+
+        if len(grids) == 1:
+            return grids[0]
+        else:
+            return grids
+
+    def get_age_grid(
+        self,
+        times: Union[int, list[int]],
+        reference_frame: Union[ReferenceFrame, None] = None,
+        generated_from: Union[GenerationMethod, None] = None,
+    ):
+        """Download the seafloor age grids for the plate model.
+        Save the grids in the ``GPlately cache folder``.
 
         .. seealso::
 
             :meth:`DataServer.cache_path`
-
-        The available seafloor age grids are listed below.
-
-        * Muller et al. 2019
-
-            * ``file_collection`` = ``Muller2019``
-            * Time range: 0-250 Ma
-            * Seafloor age grids in netCDF format.
-
-        * Muller et al. 2016
-
-            * ``file_collection`` = ``Muller2016``
-            * Time range: 0-240 Ma
-            * Seafloor age grids in netCDF format.
-
-        * Seton et al. 2012
-
-            * ``file_collection`` = ``Seton2012``
-            * Time range: 0-200 Ma
-            * Seafloor age grids in netCDF format.
-
 
         Parameters
         ----------
@@ -353,14 +434,15 @@ class DataServer(object):
 
         .. note::
 
-            The age grid data can be accessed as a numpy ndarray or MaskedArray via the :attr:`gplately.Raster.data` attribute.
+            The age grid data can be accessed as a numpy ndarray or MaskedArray via
+            the :attr:`gplately.Raster.data` attribute.
 
             For example:
 
             .. code-block:: python
                 :linenos:
 
-                data_server = gplately.DataServer("Muller2019")
+                data_server = gplately.DataServer("zahirovic2022")
                 graster = data_server.get_age_grid(100)
                 graster_data = graster.data
 
@@ -374,12 +456,12 @@ class DataServer(object):
 
         Example
         -------
-        To download  Muller et al. (2019) seafloor age grids for 0Ma, 1Ma and 100 Ma:
+        To download  Zahirovic et al. (2022) seafloor age grids for 0Ma, 1Ma and 100 Ma:
 
             .. code-block:: python
                 :linenos:
 
-                data_server = gplately.DataServer("Muller2019")
+                data_server = gplately.DataServer("zahirovic2022")
                 age_grids = data_server.get_age_grid([0, 1, 100])
 
         .. seealso::
@@ -393,56 +475,29 @@ class DataServer(object):
 
                 from gplately import PlateModelManager
 
-                model = PlateModelManager().get_model("Muller2019")
+                model = PlateModelManager().get_model("zahirovic2022")
                 print(model.get_rasters("AgeGrids", times=[10, 20, 30]))
                 print(model.get_raster("AgeGrids", time=100))
 
         """
-        if not self.pmm:
-            raise Exception("The plate model object is None. Unable to get age grid.")
+        return self._get_time_dependent_rasters(
+            name="AgeGrids",
+            times=times,
+            reference_frame=reference_frame,
+            generated_from=generated_from,
+        )
 
-        if "AgeGrids" not in self.pmm.get_cfg()["TimeDepRasters"]:
-            raise ValueError(
-                f"The time-dependent seafloor age grids are not currently available for {self.file_collection}."
-            )
-
-        age_grids = []
-        for time in np.atleast_1d(times):
-            try:
-                time_i = int(time)
-            except Exception:
-                raise ValueError(
-                    f"Invalid time {time}. Reconstruction time must be a number."
-                )
-            if time_i < self.to_age or time_i > self.from_age:
-                raise ValueError(
-                    f"Invalid time {time}. Reconstruction time must be between {self.time_range}."
-                )
-            age_grids.append(Raster(data=self.pmm.get_raster("AgeGrids", time_i)))
-
-        if not age_grids:
-            raise Exception(f"Unable to get the seafloor age grids for times: {times}")
-
-        if len(age_grids) == 1:
-            return age_grids[0]
-        else:
-            return age_grids
-
-    def get_spreading_rate_grid(self, times):
+    def get_spreading_rate_grid(
+        self,
+        times,
+        reference_frame: Union[ReferenceFrame, None] = None,
+        generated_from: Union[GenerationMethod, None] = None,
+    ):
         """Download seafloor spreading rate grids from the plate reconstruction model and save the grids in the ``GPlately cache folder``.
 
         .. seealso::
 
             :meth:`DataServer.cache_path`
-
-        The available seafloor spreading rate grids are listed below.
-
-        * Clennett et al. 2020
-
-            * `file_collection` = `Clennett2020`
-            * Time range: 0-250 Ma
-            * Seafloor spreading rate grids in netCDF format.
-
 
         Parameters
         ----------
@@ -454,43 +509,12 @@ class DataServer(object):
         :class:`gplately.Raster` or a list of :class:`gplately.Raster`
         """
 
-        if not self.pmm:
-            raise Exception(
-                "The plate model object is None. Unable to get spreading rate grids."
-            )
-
-        if "SpreadingRateGrids" not in self.pmm.get_cfg()["TimeDepRasters"]:
-            raise ValueError(
-                "The time-dependant SpreadingRateGrids are not currently available for {}".format(
-                    self.file_collection
-                )
-            )
-
-        spread_grids = []
-        for time in np.atleast_1d(times):
-            try:
-                time_i = int(time)
-            except Exception:
-                raise ValueError(
-                    f"Invalid time {time}. Reconstruction time must be a number."
-                )
-            if time_i < self.to_age or time_i > self.from_age:
-                raise ValueError(
-                    f"Invalid time {time}. Reconstruction time must be between {self.time_range}."
-                )
-            spread_grids.append(
-                Raster(data=self.pmm.get_raster("SpreadingRateGrids", time_i))
-            )
-
-        if not spread_grids:
-            raise Exception(
-                f"Unable to get the seafloor spreading rate grids for times: {times}"
-            )
-
-        if len(spread_grids) == 1:
-            return spread_grids[0]
-        else:
-            return spread_grids
+        return self._get_time_dependent_rasters(
+            name="SpreadingRate",
+            times=times,
+            reference_frame=reference_frame,
+            generated_from=generated_from,
+        )
 
     def get_valid_times(self):
         """Deprecated!!! Use :attr:`DataServer.valid_times` instead.
