@@ -60,8 +60,41 @@ class CartopyPlotEngine(PlotEngine):
         return gdf.plot(ax=ax_or_fig, **kwargs)
 
     def plot_pygplates_features(self, ax_or_fig, features, **kwargs):
-        """Not implemented yet"""
-        pass
+        """Use Cartopy to plot one or more pygplates features onto a map."""
+        from gplately.geometry import pygplates_to_shapely
+
+        if isinstance(features, pygplates.Feature):
+            features = [features]
+
+        edgecolor = kwargs.pop("edgecolor", "blue")
+        facecolor = kwargs.pop("facecolor", "none")
+        crs = kwargs.pop("crs", ccrs.PlateCarree())
+
+        for feature in features:
+            valid_time = feature.get_valid_time(None)  # type: ignore
+            if valid_time is not None and valid_time[1] not in [
+                pygplates.GeoTimeInstant.create_distant_future(),  # type: ignore
+                0,
+            ]:
+                continue
+
+            geometries = feature.get_geometries()  # type: ignore
+            if not geometries:
+                continue
+
+            for geometry in geometries:
+                shapely_geometry = pygplates_to_shapely(geometry)  # type: ignore
+                if shapely_geometry is None:
+                    continue
+
+                ax_or_fig.add_geometries(  # type: ignore
+                    [shapely_geometry],
+                    crs=crs,
+                    edgecolor=edgecolor,
+                    facecolor=facecolor,
+                    **kwargs,
+                )
+        return ax_or_fig
 
     def plot_subduction_zones(
         self,

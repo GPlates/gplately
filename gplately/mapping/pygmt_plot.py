@@ -17,6 +17,8 @@
 import logging
 from pathlib import Path
 
+import pygplates
+
 logger = logging.getLogger("gplately")
 try:
     import pygmt
@@ -95,8 +97,37 @@ class PygmtPlotEngine(PlotEngine):
         )
 
     def plot_pygplates_features(self, ax_or_fig, features, **kwargs):
-        """Not implemented yet"""
-        pass
+        """Use PyGMT to plot one or more pygplates features onto a map."""
+        from gplately.geometry import pygplates_to_shapely
+
+        if isinstance(features, pygplates.Feature):
+            features = [features]
+
+        shapely_geometries = []
+        for feature in features:
+            valid_time = feature.get_valid_time(None)  # type: ignore
+            if valid_time is not None and valid_time[1] not in [
+                pygplates.GeoTimeInstant.create_distant_future(),  # type: ignore
+                0,
+            ]:
+                continue
+
+            geometries = feature.get_geometries()  # type: ignore
+            if not geometries:
+                continue
+
+            for geometry in geometries:
+                shapely_geometry = pygplates_to_shapely(geometry)  # type: ignore
+                if shapely_geometry is not None:
+                    shapely_geometries.append(shapely_geometry)
+
+        gdf = GeoDataFrame(
+            {"geometry": shapely_geometries}, geometry="geometry", crs="EPSG:4326"
+        )
+        if len(gdf) == 0:
+            return ax_or_fig
+
+        return self.plot_geo_data_frame(ax_or_fig, gdf, **kwargs)
 
     def plot_subduction_zones(
         self,
