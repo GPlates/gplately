@@ -5,11 +5,18 @@ os.environ["DISABLE_GPLATELY_DEV_WARNING"] = "true"
 from common import get_logger
 
 # pyright: reportMissingImports=false
-from plate_model_manager import (
-    ReferenceFrame,
-    GenerationMethod,
-)
-
+test_new_parameters = True
+try:
+    from plate_model_manager import (
+        ReferenceFrame,
+        GenerationMethod,
+    )
+except ImportError:
+    test_new_parameters = False
+    from gplately.data_server import (
+        ReferenceFrame,  # pyright: ignore[reportAttributeAccessIssue]
+        GenerationMethod,  # pyright: ignore[reportAttributeAccessIssue]
+    )
 logger = get_logger()
 
 import gplately
@@ -88,7 +95,8 @@ def test_data_server_2():
 if __name__ == "__main__":
 
     test_data_server_1()
-    test_data_server_2()
+    if test_new_parameters:
+        test_data_server_2()
     print(gplately.DataServer.get_feature_data("SeafloorFabric"))
     print(gplately.DataServer.get_feature_data("Johansson2018"))
     print(gplately.DataServer.get_feature_data("Whittaker2015"))

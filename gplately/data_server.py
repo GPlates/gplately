@@ -21,9 +21,10 @@ import logging
 from pathlib import Path
 from typing import Union
 
-import numpy as np
-
 from .grids import Raster
+from .gpml import (
+    load_feature_collection_from_files,
+)
 
 # pyright: reportMissingImports=false
 # pyright: reportMissingModuleSource=false
@@ -31,7 +32,24 @@ import pygplates
 from matplotlib import image
 from plate_model_manager import PlateModelManager, PresentDayRasterManager
 from plate_model_manager.utils.download import FileDownloader
-from plate_model_manager import ReferenceFrame, GenerationMethod
+
+try:
+    from plate_model_manager import ReferenceFrame, GenerationMethod
+except ImportError:
+    # temporarily keep this for backward compatibility with older versions of plate_model_manager
+    # that do not have ReferenceFrame and GenerationMethod enums
+    # the code below should be remove once we update the minimum required version of plate_model_manager
+    from enum import Enum
+
+    class ReferenceFrame(Enum):
+        PmagReferenceFrame = "PMAG"
+        MantleReferenceFrame = "MantleFrame"
+
+    class GenerationMethod(Enum):
+        Isochrons = "UsingIsochrons"
+        Topologies = "UsingTopologies"
+
+
 import pooch
 
 logger = logging.getLogger("gplately")
@@ -39,11 +57,34 @@ logger = logging.getLogger("gplately")
 
 class DataServer(object):
     """
-    Download the plate reconstruction models from the `EarthByte server <https://repo.gplates.org/webdav/pmm/>`__.
+    Access, download, and cache plate-model data and related geospatial datasets.
 
-    The :class:`DataServer` object downloads the model files to the ``GPlately cache folder``.
-    If the same model is requested again, a new :class:`DataServer` instance will retrieve the files from the cache --
-    provided they haven't been moved or deleted.
+    ``DataServer`` is a convenience interface over ``plate_model_manager``.
+    It downloads requested assets into the local
+    GPlately cache directory and reuses cached files when available.
+
+    Main capabilities include:
+
+    - Loading rotation/topology/static-polygon inputs for plate reconstruction.
+    - Loading optional topology geometries (coastlines, continents, COBs).
+    - Fetching time-dependent rasters (for example age and spreading-rate grids).
+    - Fetching supported present-day rasters and curated feature datasets.
+
+    Notes
+    -----
+    Cache reuse is automatic. Repeated calls generally avoid re-downloading
+    unchanged files.
+
+    Example
+    -------
+    .. code-block:: python
+
+        import gplately
+
+        data_server = gplately.DataServer("Muller2025")
+        rotation_model, topology_features, static_polygons = (
+            data_server.get_plate_reconstruction_files()
+        )
 
     .. seealso::
 
@@ -54,44 +95,51 @@ class DataServer(object):
 
     @staticmethod
     def _path_to_cache():
+        """Don't use this method directly. Use :meth:`DataServer.cache_path` instead."""
         return pooch.utils.cache_location(
             pooch.os_cache("gplately"), env=None, version=None
         )
 
-    def __init__(self, file_collection, data_dir=None, verbose=True):
-        """Constructor. Create a :class:`DataServer` object.
+    def __init__(self, model_name, data_dir=None):
+        """Initialize a data server for a plate model .
+
+        Parameters
+        ----------
+        model_name : str
+            Plate model name (for example ``"Muller2025"``).
+        data_dir : str or os.PathLike, optional
+            Local directory used by ``plate_model_manager`` to store or read
+            model data. If not provided, the default GPlately cache path is
+            used.
+
+        Raises
+        ------
+        Exception
+            If the requested model collection cannot be resolved.
 
         Example
         -------
         .. code-block:: python
 
-            # create a DataServer object for the Cao2024 model (https://zenodo.org/records/11536686)
-            data_server = gplately.DataServer("Cao2024")
+            import gplately
 
-        Parameters
-        ----------
-        file_collection: str
-            The model name of interest.
-
-        verbose: bool, default=True
-            Toggle print messages regarding server/internet connection status, file availability, etc.
+            data_server = gplately.DataServer("Muller2025")
         """
 
         if not data_dir:
-            _data_dir = self._path_to_cache()
+            self._data_dir = self._path_to_cache()
         else:
-            _data_dir = data_dir
+            self._data_dir = data_dir
 
-        self.file_collection = file_collection.capitalize()
+        self._model_name = model_name
         self.pmm = PlateModelManager().get_model(
-            self.file_collection, data_dir=str(_data_dir)
+            self._model_name, data_dir=str(self._data_dir)
         )
         if not self.pmm:
             raise Exception(
-                f"Unable to get plate model {self.file_collection}. Check if the model name is correct."
+                f"Unable to get plate model {self._model_name}. Check if the model name is correct."
             )
         self._available_layers = self.pmm.get_avail_layers()
-        self.verbose = verbose
 
         # initialise empty attributes
         self._rotation_model = None
@@ -100,12 +148,6 @@ class DataServer(object):
         self._coastlines = None
         self._continents = None
         self._COBs = None
-
-    def _create_feature_collection(self, file_list):
-        feature_collection = pygplates.FeatureCollection()
-        for feature in file_list:
-            feature_collection.add(pygplates.FeatureCollection(feature))
-        return feature_collection
 
     @staticmethod
     def cache_path():
@@ -127,7 +169,8 @@ class DataServer(object):
         Parameters
         ----------
         reference_frame : ReferenceFrame, default=ReferenceFrame.MantleReferenceFrame
-            Reference frame used to build the returned rotation model.
+            `Reference frame <https://gplates.github.io/plate-model-manager/latest/plate_model_manager.utils.html#plate_model_manager.utils.enums.ReferenceFrame>`__
+            used to build the returned rotation model.
 
         Returns
         -------
@@ -152,7 +195,7 @@ class DataServer(object):
                     self._rotation_model = pygplates.RotationModel(
                         self.pmm.get_rotation_model()
                     )
-                self._rotation_model.reconstruction_identifier = self.file_collection
+                self._rotation_model.reconstruction_identifier = self._model_name
                 # Setting an attribute on a pyGPlates object produces the following error in version 1.0 of pyGPlates:
                 #   RuntimeError: Incomplete pickle support (__getstate_manages_dict__ not set)
                 #
@@ -174,7 +217,7 @@ class DataServer(object):
         """A pygplates.FeatureCollection object containing topology features."""
         if self._topology_features is None and self.pmm:
             if "Topologies" in self._available_layers:
-                self._topology_features = self._create_feature_collection(
+                self._topology_features = load_feature_collection_from_files(
                     self.pmm.get_topologies()
                 )
             else:
@@ -186,7 +229,7 @@ class DataServer(object):
         """A pygplates.FeatureCollection object containing static polygons."""
         if self._static_polygons is None and self.pmm:
             if "StaticPolygons" in self._available_layers:
-                self._static_polygons = self._create_feature_collection(
+                self._static_polygons = load_feature_collection_from_files(
                     self.pmm.get_static_polygons()
                 )
             else:
@@ -198,7 +241,7 @@ class DataServer(object):
         """A pygplates.FeatureCollection object containing coastlines."""
         if self._coastlines is None and self.pmm:
             if "Coastlines" in self._available_layers:
-                self._coastlines = self._create_feature_collection(
+                self._coastlines = load_feature_collection_from_files(
                     self.pmm.get_coastlines()
                 )
             else:
@@ -210,7 +253,7 @@ class DataServer(object):
         """A pygplates.FeatureCollection object containing continental polygons."""
         if self._continents is None and self.pmm:
             if "ContinentalPolygons" in self._available_layers:
-                self._continents = self._create_feature_collection(
+                self._continents = load_feature_collection_from_files(
                     self.pmm.get_continental_polygons()
                 )
             else:
@@ -222,7 +265,7 @@ class DataServer(object):
         """A pygplates.FeatureCollection object containing continent-ocean boundaries."""
         if self._COBs is None and self.pmm:
             if "COBs" in self._available_layers:
-                self._COBs = self._create_feature_collection(self.pmm.get_COBs())
+                self._COBs = load_feature_collection_from_files(self.pmm.get_COBs())
             else:
                 self._COBs = pygplates.FeatureCollection()
         return self._COBs
@@ -293,7 +336,7 @@ class DataServer(object):
 
                 import gplately
 
-                data_server = gplately.DataServer("Muller2019")
+                data_server = gplately.DataServer("Muller2025")
                 rotation_model, topology_features, static_polygons = (
                     data_server.get_plate_reconstruction_files()
                 )
@@ -328,13 +371,13 @@ class DataServer(object):
         .. note::
 
             The example code below will attempt to download ``coastlines``, ``continents`` and ``COBs`` from the Muller
-            et al. (2019) plate reconstruction model and create a :class:`gplately.PlotTopologies` object.
+            et al. (2025) plate reconstruction model and create a :class:`gplately.PlotTopologies` object.
 
             .. code-block:: python
                 :linenos:
                 :emphasize-lines: 9, 12
 
-                data_server = gplately.download.DataServer("Muller2019")
+                data_server = gplately.download.DataServer("Muller2025")
                 rotation_model, topology_features, static_polygons = (
                     data_server.get_plate_reconstruction_files()
                 )
@@ -503,7 +546,12 @@ class DataServer(object):
         ----------
         time : int, or list of int
             Request spreading grid(s) for one (an integer) or multiple reconstruction times (a list of integers).
-
+        reference_frame : ReferenceFrame, optional
+            The `reference frame <https://gplates.github.io/plate-model-manager/latest/plate_model_manager.utils.html#plate_model_manager.utils.enums.ReferenceFrame>`__
+            used to build the returned rotation model.
+        generated_from : GenerationMethod, optional
+            The `generation method <https://gplates.github.io/plate-model-manager/latest/plate_model_manager.utils.html#plate_model_manager.utils.enums.GenerationMethod>`__
+            used to generate the spreading rate grid.
         Returns
         -------
         :class:`gplately.Raster` or a list of :class:`gplately.Raster`
@@ -524,7 +572,8 @@ class DataServer(object):
 
     @staticmethod
     def get_raster(raster_name: str):
-        """Download rasters that are not associated with any plate reconstruction models. Store the rasters in the ``GPlately cache``.
+        """Download rasters that are not associated with any plate reconstruction models.
+        Store the rasters in the ``GPlately cache``.
 
         The available present-day rasters are listed below.
 

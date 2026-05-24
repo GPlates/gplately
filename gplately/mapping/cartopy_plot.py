@@ -185,8 +185,10 @@ def _plot_feature_collection(
     figsize=(8, 4),
     projection=ccrs.Robinson(central_longitude=180),
 ):
-    """Helper function to plot a pygplates FeatureCollection using Cartopy. Not part of the public API.
-    Mostly this function is for testing and debugging purposes, and to provide a simple example of how to plot pygplates features with Cartopy.
+    """Helper function to plot a pygplates FeatureCollection using Cartopy.
+    Not part of the public API.
+    Mostly this function is for testing and debugging purposes,
+    and to provide a simple example of how to plot pygplates features with Cartopy.
     """
     import cartopy.crs as ccrs  # type: ignore
     import matplotlib.pyplot as plt  # type: ignore
