@@ -65,6 +65,8 @@
 <li class="toctree-l4"><a class="reference internal" href="#gplately.PlateModel.download_all_layers"><code class="docutils literal notranslate"><span class="pre">PlateModel.download_all_layers()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#gplately.PlateModel.download_time_dependent_rasters"><code class="docutils literal notranslate"><span class="pre">PlateModel.download_time_dependent_rasters()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#gplately.PlateModel.get_COBs"><code class="docutils literal notranslate"><span class="pre">PlateModel.get_COBs()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gplately.PlateModel.get_age_grid"><code class="docutils literal notranslate"><span class="pre">PlateModel.get_age_grid()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gplately.PlateModel.get_age_grids"><code class="docutils literal notranslate"><span class="pre">PlateModel.get_age_grids()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#gplately.PlateModel.get_avail_layers"><code class="docutils literal notranslate"><span class="pre">PlateModel.get_avail_layers()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#gplately.PlateModel.get_avail_time_dependent_raster_names"><code class="docutils literal notranslate"><span class="pre">PlateModel.get_avail_time_dependent_raster_names()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#gplately.PlateModel.get_big_time"><code class="docutils literal notranslate"><span class="pre">PlateModel.get_big_time()</span></code></a></li>
@@ -73,15 +75,19 @@
 <li class="toctree-l4"><a class="reference internal" href="#gplately.PlateModel.get_continental_polygons"><code class="docutils literal notranslate"><span class="pre">PlateModel.get_continental_polygons()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#gplately.PlateModel.get_data_dir"><code class="docutils literal notranslate"><span class="pre">PlateModel.get_data_dir()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#gplately.PlateModel.get_layer"><code class="docutils literal notranslate"><span class="pre">PlateModel.get_layer()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gplately.PlateModel.get_layer_metadata"><code class="docutils literal notranslate"><span class="pre">PlateModel.get_layer_metadata()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#gplately.PlateModel.get_model_dir"><code class="docutils literal notranslate"><span class="pre">PlateModel.get_model_dir()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#gplately.PlateModel.get_raster"><code class="docutils literal notranslate"><span class="pre">PlateModel.get_raster()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#gplately.PlateModel.get_rasters"><code class="docutils literal notranslate"><span class="pre">PlateModel.get_rasters()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#gplately.PlateModel.get_rotation_model"><code class="docutils literal notranslate"><span class="pre">PlateModel.get_rotation_model()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#gplately.PlateModel.get_small_time"><code class="docutils literal notranslate"><span class="pre">PlateModel.get_small_time()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gplately.PlateModel.get_spreading_rate_grid"><code class="docutils literal notranslate"><span class="pre">PlateModel.get_spreading_rate_grid()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gplately.PlateModel.get_spreading_rate_grids"><code class="docutils literal notranslate"><span class="pre">PlateModel.get_spreading_rate_grids()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#gplately.PlateModel.get_static_polygons"><code class="docutils literal notranslate"><span class="pre">PlateModel.get_static_polygons()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#gplately.PlateModel.get_topologies"><code class="docutils literal notranslate"><span class="pre">PlateModel.get_topologies()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#gplately.PlateModel.is_model_dir"><code class="docutils literal notranslate"><span class="pre">PlateModel.is_model_dir()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#gplately.PlateModel.model"><code class="docutils literal notranslate"><span class="pre">PlateModel.model</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gplately.PlateModel.model_dir"><code class="docutils literal notranslate"><span class="pre">PlateModel.model_dir</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#gplately.PlateModel.purge"><code class="docutils literal notranslate"><span class="pre">PlateModel.purge()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#gplately.PlateModel.purge_layer"><code class="docutils literal notranslate"><span class="pre">PlateModel.purge_layer()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#gplately.PlateModel.purge_time_dependent_rasters"><code class="docutils literal notranslate"><span class="pre">PlateModel.purge_time_dependent_rasters()</span></code></a></li>
@@ -129,36 +135,40 @@
 <h1>gplately.PlateModel<a class="headerlink" href="#gplately-platemodel" title="Link to this heading"></a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="gplately.PlateModel">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">gplately.</span></span><span class="sig-name descname"><span class="pre">PlateModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_cfg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'.'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">readonly</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(None,</span> <span class="pre">None)</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/plate_model_manager/plate_model.html#PlateModel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PlateModel" title="Link to this definition"></a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">gplately.</span></span><span class="sig-name descname"><span class="pre">PlateModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_cfg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'.'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reference_frame</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ReferenceFrame</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">readonly</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(None,</span> <span class="pre">None)</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/plate_model_manager/plate_model.html#PlateModel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PlateModel" title="Link to this definition"></a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
-<p>Download and manage files required for a plate reconstruction model.</p>
-<p>👀👇 <strong>LOOK HERE!!!</strong> 👀👇</p>
-<p>Normally you should always use <a class="reference internal" href="gplately.PlateModelManager.html#gplately.PlateModelManager.get_model" title="gplately.PlateModelManager.get_model"><code class="xref py py-meth docutils literal notranslate"><span class="pre">PlateModelManager.get_model()</span></code></a> to get a <a class="reference internal" href="#gplately.PlateModel" title="gplately.PlateModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">PlateModel</span></code></a> object.
-Create a <a class="reference internal" href="#gplately.PlateModel" title="gplately.PlateModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">PlateModel</span></code></a> object directly only when you don’t have Internet connection and would like
-to use the local model files in <code class="docutils literal notranslate"><span class="pre">readonly</span></code> mode.
-Do not create a <a class="reference internal" href="#gplately.PlateModel" title="gplately.PlateModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">PlateModel</span></code></a> object directly if you have no idea what’s going on.</p>
+<p>Download and manage files for a plate reconstruction model.</p>
+<p>In most workflows, create instances through
+<a class="reference internal" href="gplately.PlateModelManager.html#gplately.PlateModelManager.get_model" title="gplately.PlateModelManager.get_model"><code class="xref py py-meth docutils literal notranslate"><span class="pre">PlateModelManager.get_model()</span></code></a> so model configuration and metadata
+are resolved automatically. Direct instantiation is primarily intended for
+advanced or offline use (for example, <code class="docutils literal notranslate"><span class="pre">readonly=True</span></code> with pre-downloaded
+local files).</p>
 <div class="admonition seealso">
 <p class="admonition-title">See also</p>
 <p><a class="reference external" href="examples.html#use-without-internet">Use PlateModel class in readonly mode.</a></p>
 </div>
 <dl class="py method">
 <dt class="sig sig-object py" id="gplately.PlateModel.__init__">
-<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_cfg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'.'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">readonly</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(None,</span> <span class="pre">None)</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/plate_model_manager/plate_model.html#PlateModel.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PlateModel.__init__" title="Link to this definition"></a></dt>
-<dd><p>Constructor. Create a <a class="reference internal" href="#gplately.PlateModel" title="gplately.PlateModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">PlateModel</span></code></a> instance.</p>
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_cfg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'.'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reference_frame</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ReferenceFrame</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">readonly</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(None,</span> <span class="pre">None)</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/plate_model_manager/plate_model.html#PlateModel.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PlateModel.__init__" title="Link to this definition"></a></dt>
+<dd><p>Create a <a class="reference internal" href="#gplately.PlateModel" title="gplately.PlateModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">PlateModel</span></code></a> instance.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>model_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – The model name of interest.</p></li>
-<li><p><strong>model_cfg</strong> – The model configuration in JSON format.
-The configuration is either downloaded from the server or
-loaded from a local file <code class="docutils literal notranslate"><span class="pre">.metadata.json</span></code>. If you are confused by this parameter,
-use <a class="reference internal" href="gplately.PlateModelManager.html#gplately.PlateModelManager.get_model" title="gplately.PlateModelManager.get_model"><code class="xref py py-meth docutils literal notranslate"><span class="pre">PlateModelManager.get_model()</span></code></a> to get a <a class="reference internal" href="#gplately.PlateModel" title="gplately.PlateModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">PlateModel</span></code></a> object instead.</p></li>
-<li><p><strong>data_dir</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>default=&quot;.&quot;</em>) – The folder path to save the model data.</p></li>
-<li><p><strong>readonly</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>default=False</em>) – If this flag is set to <code class="docutils literal notranslate"><span class="pre">True</span></code>, The <a class="reference internal" href="#gplately.PlateModel" title="gplately.PlateModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">PlateModel</span></code></a> object will use
-the files in the local folder and will not attempt to
-download/update the files from the server.</p></li>
-<li><p><strong>timeout</strong> – Network connection <a class="reference external" href="https://requests.readthedocs.io/en/latest/user/advanced/#timeouts">timeout parameter</a>.</p></li>
+<li><p><strong>model_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Model name to load.</p></li>
+<li><p><strong>model_cfg</strong> – Model configuration dictionary. This is typically
+provided by <a class="reference internal" href="gplately.PlateModelManager.html#gplately.PlateModelManager.get_model" title="gplately.PlateModelManager.get_model"><code class="xref py py-meth docutils literal notranslate"><span class="pre">PlateModelManager.get_model()</span></code></a>, or loaded from
+local metadata in readonly mode.</p></li>
+<li><p><strong>data_dir</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>default=&quot;.&quot;</em>) – Parent directory used to store model files.</p></li>
+<li><p><strong>reference_frame</strong> (<em>ReferenceFrame</em><em> or </em><em>None</em>) – Default reference frame associated with this
+instance.</p></li>
+<li><p><strong>readonly</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>default=False</em>) – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, use only local files and do not perform
+downloads or updates.</p></li>
+<li><p><strong>timeout</strong> – Network timeout tuple passed to file downloads.</p></li>
 </ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#Exception" title="(in Python v3.14)"><strong>Exception</strong></a> – If <code class="docutils literal notranslate"><span class="pre">readonly=True</span></code> and the local model directory is
+invalid.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -167,82 +177,97 @@ download/update the files from the server.</p></li>
 <table class="autosummary longtable docutils align-default">
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="#gplately.PlateModel.__init__" title="gplately.PlateModel.__init__"><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code></a>(model_name[, model_cfg, data_dir, ...])</p></td>
-<td><p>Constructor.</p></td>
+<td><p>Create a <a class="reference internal" href="#gplately.PlateModel" title="gplately.PlateModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">PlateModel</span></code></a> instance.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#gplately.PlateModel.create_model_dir" title="gplately.PlateModel.create_model_dir"><code class="xref py py-obj docutils literal notranslate"><span class="pre">create_model_dir</span></code></a>()</p></td>
-<td><p>Create a folder with a file <code class="docutils literal notranslate"><span class="pre">.metadata.json</span></code> in it to keep the model files.</p></td>
+<td><p>Ensure the model folder exists and refresh local metadata files.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#gplately.PlateModel.download_all" title="gplately.PlateModel.download_all"><code class="xref py py-obj docutils literal notranslate"><span class="pre">download_all</span></code></a>()</p></td>
-<td><p>Download everything in this plate model.</p></td>
+<td><p>Download all layers and all configured time-dependent rasters.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#gplately.PlateModel.download_all_layers" title="gplately.PlateModel.download_all_layers"><code class="xref py py-obj docutils literal notranslate"><span class="pre">download_all_layers</span></code></a>()</p></td>
-<td><p>Download all layers.</p></td>
+<td><p>Download all configured layers for this model.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#gplately.PlateModel.download_time_dependent_rasters" title="gplately.PlateModel.download_time_dependent_rasters"><code class="xref py py-obj docutils literal notranslate"><span class="pre">download_time_dependent_rasters</span></code></a>(raster_name)</p></td>
-<td><p>Download time-dependent rasters for a given raster name.</p></td>
+<td><p>Download and cache a time series of rasters for <code class="docutils literal notranslate"><span class="pre">raster_name</span></code>.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#gplately.PlateModel.get_COBs" title="gplately.PlateModel.get_COBs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_COBs</span></code></a>([return_none_if_not_exist])</p></td>
-<td><p>Return a list of <code class="docutils literal notranslate"><span class="pre">Continent-Ocean</span> <span class="pre">Boundaries</span></code> files.</p></td>
+<td><p>Return local file paths for the <code class="docutils literal notranslate"><span class="pre">COBs</span></code> layer.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#gplately.PlateModel.get_age_grid" title="gplately.PlateModel.get_age_grid"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_age_grid</span></code></a>(time[, reference_frame, ...])</p></td>
+<td><p>Return a local path for an <code class="docutils literal notranslate"><span class="pre">AgeGrids</span></code> raster at <code class="docutils literal notranslate"><span class="pre">time</span></code> Ma.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#gplately.PlateModel.get_age_grids" title="gplately.PlateModel.get_age_grids"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_age_grids</span></code></a>(times[, reference_frame, ...])</p></td>
+<td><p>Return local paths for <code class="docutils literal notranslate"><span class="pre">AgeGrids</span></code> rasters at multiple times.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#gplately.PlateModel.get_avail_layers" title="gplately.PlateModel.get_avail_layers"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_avail_layers</span></code></a>()</p></td>
-<td><p>Get all available layers in this plate model.</p></td>
+<td><p>Return all available geometry layer names in this model.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#gplately.PlateModel.get_avail_time_dependent_raster_names" title="gplately.PlateModel.get_avail_time_dependent_raster_names"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_avail_time_dependent_raster_names</span></code></a>()</p></td>
-<td><p>Return all time-dependent raster names in this plate model.</p></td>
+<td><p>Return configured names of time-dependent rasters.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#gplately.PlateModel.get_big_time" title="gplately.PlateModel.get_big_time"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_big_time</span></code></a>()</p></td>
-<td><p>The max (big number in Ma) reconstruction time in the model.</p></td>
+<td><p>Return the maximum reconstruction time in Ma.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#gplately.PlateModel.get_cfg" title="gplately.PlateModel.get_cfg"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_cfg</span></code></a>()</p></td>
-<td><p>Return the model configuration.</p></td>
+<td><p>Return the model configuration dictionary.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#gplately.PlateModel.get_coastlines" title="gplately.PlateModel.get_coastlines"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_coastlines</span></code></a>([return_none_if_not_exist])</p></td>
-<td><p>Return a list of <code class="docutils literal notranslate"><span class="pre">coastlines</span></code> files.</p></td>
+<td><p>Return local file paths for the <code class="docutils literal notranslate"><span class="pre">Coastlines</span></code> layer.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#gplately.PlateModel.get_continental_polygons" title="gplately.PlateModel.get_continental_polygons"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_continental_polygons</span></code></a>([...])</p></td>
-<td><p>Return a list of <code class="docutils literal notranslate"><span class="pre">continental</span> <span class="pre">polygons</span></code> files.</p></td>
+<td><p>Return local file paths for the <code class="docutils literal notranslate"><span class="pre">ContinentalPolygons</span></code> layer.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#gplately.PlateModel.get_data_dir" title="gplately.PlateModel.get_data_dir"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_data_dir</span></code></a>()</p></td>
-<td><p>Return the path to a folder (parent folder of the <code class="docutils literal notranslate"><span class="pre">model</span> <span class="pre">dir</span></code>) containing a set of downloaded models.</p></td>
+<td><p>Return the parent directory containing downloaded models.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#gplately.PlateModel.get_layer" title="gplately.PlateModel.get_layer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_layer</span></code></a>(layer_name[, return_none_if_not_exist])</p></td>
-<td><p>Get a list of layer files by a layer name.</p></td>
+<td><p>Return local file paths for a geometry layer.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#gplately.PlateModel.get_model_dir" title="gplately.PlateModel.get_model_dir"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_model_dir</span></code></a>()</p></td>
-<td><p>Return the path to a folder containing the model files.</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#gplately.PlateModel.get_layer_metadata" title="gplately.PlateModel.get_layer_metadata"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_layer_metadata</span></code></a>(layer_name[, ...])</p></td>
+<td><p>Return metadata for a layer as a dictionary.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#gplately.PlateModel.get_raster" title="gplately.PlateModel.get_raster"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_raster</span></code></a>(raster_name, time)</p></td>
-<td><p>Return a local path for the raster file.</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#gplately.PlateModel.get_model_dir" title="gplately.PlateModel.get_model_dir"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_model_dir</span></code></a>()</p></td>
+<td><p>Return the local directory path for this model.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#gplately.PlateModel.get_rasters" title="gplately.PlateModel.get_rasters"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_rasters</span></code></a>(raster_name, times)</p></td>
-<td><p>Return local paths for the raster files.</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#gplately.PlateModel.get_raster" title="gplately.PlateModel.get_raster"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_raster</span></code></a>(raster_name, time[, ...])</p></td>
+<td><p>Return a local path for a single time-dependent raster.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#gplately.PlateModel.get_rotation_model" title="gplately.PlateModel.get_rotation_model"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_rotation_model</span></code></a>()</p></td>
-<td><p>Return a list of rotation files.</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#gplately.PlateModel.get_rasters" title="gplately.PlateModel.get_rasters"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_rasters</span></code></a>(raster_name, times[, ...])</p></td>
+<td><p>Return local paths for a sequence of time-dependent rasters.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#gplately.PlateModel.get_small_time" title="gplately.PlateModel.get_small_time"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_small_time</span></code></a>()</p></td>
-<td><p>The min (small number in Ma) reconstruction time in the model.</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#gplately.PlateModel.get_rotation_model" title="gplately.PlateModel.get_rotation_model"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_rotation_model</span></code></a>([reference_frame])</p></td>
+<td><p>Return rotation files, and optionally a PMAG anchor plate ID.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#gplately.PlateModel.get_static_polygons" title="gplately.PlateModel.get_static_polygons"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_static_polygons</span></code></a>([return_none_if_not_exist])</p></td>
-<td><p>Return a list of <code class="docutils literal notranslate"><span class="pre">static</span> <span class="pre">polygons</span></code> files.</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#gplately.PlateModel.get_small_time" title="gplately.PlateModel.get_small_time"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_small_time</span></code></a>()</p></td>
+<td><p>Return the minimum reconstruction time in Ma.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#gplately.PlateModel.get_topologies" title="gplately.PlateModel.get_topologies"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_topologies</span></code></a>([return_none_if_not_exist])</p></td>
-<td><p>Return a list of <code class="docutils literal notranslate"><span class="pre">topologies</span></code> files.</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#gplately.PlateModel.get_spreading_rate_grid" title="gplately.PlateModel.get_spreading_rate_grid"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_spreading_rate_grid</span></code></a>(time[, ...])</p></td>
+<td><p>Return a local path for a <code class="docutils literal notranslate"><span class="pre">SpreadingRate</span></code> raster at <code class="docutils literal notranslate"><span class="pre">time</span></code> Ma.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#gplately.PlateModel.is_model_dir" title="gplately.PlateModel.is_model_dir"><code class="xref py py-obj docutils literal notranslate"><span class="pre">is_model_dir</span></code></a>(folder_path)</p></td>
-<td><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the folder contains files of a plate model, otherwise <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#gplately.PlateModel.get_spreading_rate_grids" title="gplately.PlateModel.get_spreading_rate_grids"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_spreading_rate_grids</span></code></a>(times[, ...])</p></td>
+<td><p>Return local paths for <code class="docutils literal notranslate"><span class="pre">SpreadingRate</span></code> rasters at multiple times.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#gplately.PlateModel.purge" title="gplately.PlateModel.purge"><code class="xref py py-obj docutils literal notranslate"><span class="pre">purge</span></code></a>()</p></td>
-<td><p>Remove the model folder and everything inside the folder.</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#gplately.PlateModel.get_static_polygons" title="gplately.PlateModel.get_static_polygons"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_static_polygons</span></code></a>([return_none_if_not_exist])</p></td>
+<td><p>Return local file paths for the <code class="docutils literal notranslate"><span class="pre">StaticPolygons</span></code> layer.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#gplately.PlateModel.purge_layer" title="gplately.PlateModel.purge_layer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">purge_layer</span></code></a>(layer_name)</p></td>
-<td><p>Remove the layer folder of the given layer name.</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#gplately.PlateModel.get_topologies" title="gplately.PlateModel.get_topologies"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_topologies</span></code></a>([return_none_if_not_exist])</p></td>
+<td><p>Return local file paths for the <code class="docutils literal notranslate"><span class="pre">Topologies</span></code> layer.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#gplately.PlateModel.purge_time_dependent_rasters" title="gplately.PlateModel.purge_time_dependent_rasters"><code class="xref py py-obj docutils literal notranslate"><span class="pre">purge_time_dependent_rasters</span></code></a>(raster_name)</p></td>
-<td><p>Remove the raster folder of the given raster name.</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#gplately.PlateModel.is_model_dir" title="gplately.PlateModel.is_model_dir"><code class="xref py py-obj docutils literal notranslate"><span class="pre">is_model_dir</span></code></a>(folder_path)</p></td>
+<td><p>Return whether <code class="docutils literal notranslate"><span class="pre">folder_path</span></code> looks like a local model directory.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#gplately.PlateModel.set_data_dir" title="gplately.PlateModel.set_data_dir"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_data_dir</span></code></a>(new_dir)</p></td>
-<td><p>Change the folder (parent folder of the <code class="docutils literal notranslate"><span class="pre">model</span> <span class="pre">dir</span></code>) in which you would like to save your model.</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#gplately.PlateModel.purge" title="gplately.PlateModel.purge"><code class="xref py py-obj docutils literal notranslate"><span class="pre">purge</span></code></a>()</p></td>
+<td><p>Delete the model directory and all files under it, if present.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#gplately.PlateModel.purge_layer" title="gplately.PlateModel.purge_layer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">purge_layer</span></code></a>(layer_name)</p></td>
+<td><p>Delete a local layer directory for <code class="docutils literal notranslate"><span class="pre">layer_name</span></code>, if present.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#gplately.PlateModel.purge_time_dependent_rasters" title="gplately.PlateModel.purge_time_dependent_rasters"><code class="xref py py-obj docutils literal notranslate"><span class="pre">purge_time_dependent_rasters</span></code></a>(raster_name)</p></td>
+<td><p>Delete local cached rasters for <code class="docutils literal notranslate"><span class="pre">raster_name</span></code>, if present.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#gplately.PlateModel.set_data_dir" title="gplately.PlateModel.set_data_dir"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_data_dir</span></code></a>(new_dir)</p></td>
+<td><p>Set a new parent directory for this model.</p></td>
 </tr>
 </tbody>
 </table>
@@ -250,39 +275,63 @@ download/update the files from the server.</p></li>
 <table class="autosummary longtable docutils align-default">
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="#gplately.PlateModel.model" title="gplately.PlateModel.model"><code class="xref py py-obj docutils literal notranslate"><span class="pre">model</span></code></a></p></td>
-<td><p>The model metadata.</p></td>
+<td><p>Return model metadata for this instance.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#gplately.PlateModel.model_dir" title="gplately.PlateModel.model_dir"><code class="xref py py-obj docutils literal notranslate"><span class="pre">model_dir</span></code></a></p></td>
+<td><p>Return the model folder path under <code class="docutils literal notranslate"><span class="pre">data_dir</span></code>.</p></td>
 </tr>
 </tbody>
 </table>
 <dl class="py method">
 <dt class="sig sig-object py" id="gplately.PlateModel.create_model_dir">
 <span class="sig-name descname"><span class="pre">create_model_dir</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/plate_model_manager/plate_model.html#PlateModel.create_model_dir"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PlateModel.create_model_dir" title="Link to this definition"></a></dt>
-<dd><p>Create a folder with a file <code class="docutils literal notranslate"><span class="pre">.metadata.json</span></code> in it to keep the model files.</p>
+<dd><p>Ensure the model folder exists and refresh local metadata files.</p>
+<p>This method creates <code class="docutils literal notranslate"><span class="pre">self.model_dir</span></code> when missing, then always rewrites
+<code class="docutils literal notranslate"><span class="pre">.metadata.json</span></code> and <code class="docutils literal notranslate"><span class="pre">readme.txt</span></code> from the current in-memory model
+configuration, even if the folder already exists.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The model folder path.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)">str</a></p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#Exception" title="(in Python v3.14)"><strong>Exception</strong></a> – If running in readonly mode, if <code class="docutils literal notranslate"><span class="pre">self.model_dir</span></code> is
+invalid/empty, or if the model path exists as a file.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="gplately.PlateModel.download_all">
 <span class="sig-name descname"><span class="pre">download_all</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/plate_model_manager/plate_model.html#PlateModel.download_all"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PlateModel.download_all" title="Link to this definition"></a></dt>
-<dd><p>Download everything in this plate model.</p>
+<dd><p>Download all layers and all configured time-dependent rasters.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="gplately.PlateModel.download_all_layers">
 <span class="sig-name descname"><span class="pre">download_all_layers</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/plate_model_manager/plate_model.html#PlateModel.download_all_layers"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PlateModel.download_all_layers" title="Link to this definition"></a></dt>
-<dd><p>Download all layers. This function calls <code class="xref py py-meth docutils literal notranslate"><span class="pre">download_layer_files()</span></code> on every available layer.</p>
+<dd><p>Download all configured layers for this model.</p>
+<p>This includes <code class="docutils literal notranslate"><span class="pre">Rotations</span></code> when available, plus every entry under
+<code class="docutils literal notranslate"><span class="pre">model[&quot;Layers&quot;]</span></code>.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="gplately.PlateModel.download_time_dependent_rasters">
 <span class="sig-name descname"><span class="pre">download_time_dependent_rasters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">raster_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">times</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/plate_model_manager/plate_model.html#PlateModel.download_time_dependent_rasters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PlateModel.download_time_dependent_rasters" title="Link to this definition"></a></dt>
-<dd><p>Download time-dependent rasters for a given raster name.</p>
-<p>Call <a class="reference internal" href="#gplately.PlateModel.get_avail_time_dependent_raster_names" title="gplately.PlateModel.get_avail_time_dependent_raster_names"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_avail_time_dependent_raster_names()</span></code></a> to see all the available raster names in this model.</p>
+<dd><p>Download and cache a time series of rasters for <code class="docutils literal notranslate"><span class="pre">raster_name</span></code>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>raster_name</strong> – the raster name of interest</p></li>
-<li><p><strong>times</strong> – if not given, download from begin to end with 1My interval</p></li>
+<li><p><strong>raster_name</strong> – Raster key in <code class="docutils literal notranslate"><span class="pre">model[&quot;TimeDepRasters&quot;]</span></code>.</p></li>
+<li><p><strong>times</strong> – Iterable of reconstruction times (Ma). If omitted, download
+every integer time from <code class="docutils literal notranslate"><span class="pre">SmallTime</span></code> to <code class="docutils literal notranslate"><span class="pre">BigTime</span></code> inclusive.</p></li>
 </ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#Exception" title="(in Python v3.14)"><strong>Exception</strong></a> – If called in readonly mode or raster configuration is
+missing.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -290,166 +339,357 @@ download/update the files from the server.</p></li>
 <dl class="py method">
 <dt class="sig sig-object py" id="gplately.PlateModel.get_COBs">
 <span class="sig-name descname"><span class="pre">get_COBs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">return_none_if_not_exist</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.14)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../_modules/plate_model_manager/plate_model.html#PlateModel.get_COBs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PlateModel.get_COBs" title="Link to this definition"></a></dt>
-<dd><p>Return a list of <code class="docutils literal notranslate"><span class="pre">Continent-Ocean</span> <span class="pre">Boundaries</span></code> files.</p>
+<dd><p>Return local file paths for the <code class="docutils literal notranslate"><span class="pre">COBs</span></code> layer.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gplately.PlateModel.get_age_grid">
+<span class="sig-name descname"><span class="pre">get_age_grid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">reference_frame</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ReferenceFrame</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">generated_from</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">GenerationMethod</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></span><a class="reference internal" href="../_modules/plate_model_manager/plate_model.html#PlateModel.get_age_grid"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PlateModel.get_age_grid" title="Link to this definition"></a></dt>
+<dd><p>Return a local path for an <code class="docutils literal notranslate"><span class="pre">AgeGrids</span></code> raster at <code class="docutils literal notranslate"><span class="pre">time</span></code> Ma.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gplately.PlateModel.get_age_grids">
+<span class="sig-name descname"><span class="pre">get_age_grids</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">times</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.14)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reference_frame</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ReferenceFrame</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">generated_from</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">GenerationMethod</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.14)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/plate_model_manager/plate_model.html#PlateModel.get_age_grids"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PlateModel.get_age_grids" title="Link to this definition"></a></dt>
+<dd><p>Return local paths for <code class="docutils literal notranslate"><span class="pre">AgeGrids</span></code> rasters at multiple times.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="gplately.PlateModel.get_avail_layers">
 <span class="sig-name descname"><span class="pre">get_avail_layers</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/plate_model_manager/plate_model.html#PlateModel.get_avail_layers"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PlateModel.get_avail_layers" title="Link to this definition"></a></dt>
-<dd><p>Get all available layers in this plate model.</p>
+<dd><p>Return all available geometry layer names in this model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Layer names.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)">list</a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)">str</a>]</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#Exception" title="(in Python v3.14)"><strong>Exception</strong></a> – If model configuration is missing.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="gplately.PlateModel.get_avail_time_dependent_raster_names">
 <span class="sig-name descname"><span class="pre">get_avail_time_dependent_raster_names</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/plate_model_manager/plate_model.html#PlateModel.get_avail_time_dependent_raster_names"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PlateModel.get_avail_time_dependent_raster_names" title="Link to this definition"></a></dt>
-<dd><p>Return all time-dependent raster names in this plate model.</p>
+<dd><p>Return configured names of time-dependent rasters.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Raster names from <code class="docutils literal notranslate"><span class="pre">TimeDepRasters</span></code>, or an empty list when
+the model defines none.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)">list</a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)">str</a>]</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="gplately.PlateModel.get_big_time">
 <span class="sig-name descname"><span class="pre">get_big_time</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/plate_model_manager/plate_model.html#PlateModel.get_big_time"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PlateModel.get_big_time" title="Link to this definition"></a></dt>
-<dd><p>The max (big number in Ma) reconstruction time in the model.</p>
+<dd><p>Return the maximum reconstruction time in Ma.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="gplately.PlateModel.get_cfg">
 <span class="sig-name descname"><span class="pre">get_cfg</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/plate_model_manager/plate_model.html#PlateModel.get_cfg"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PlateModel.get_cfg" title="Link to this definition"></a></dt>
-<dd><p>Return the model configuration.</p>
+<dd><p>Return the model configuration dictionary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Model metadata dictionary.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>Dict</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="gplately.PlateModel.get_coastlines">
 <span class="sig-name descname"><span class="pre">get_coastlines</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">return_none_if_not_exist</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.14)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../_modules/plate_model_manager/plate_model.html#PlateModel.get_coastlines"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PlateModel.get_coastlines" title="Link to this definition"></a></dt>
-<dd><p>Return a list of <code class="docutils literal notranslate"><span class="pre">coastlines</span></code> files.</p>
+<dd><p>Return local file paths for the <code class="docutils literal notranslate"><span class="pre">Coastlines</span></code> layer.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="gplately.PlateModel.get_continental_polygons">
 <span class="sig-name descname"><span class="pre">get_continental_polygons</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">return_none_if_not_exist</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.14)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../_modules/plate_model_manager/plate_model.html#PlateModel.get_continental_polygons"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PlateModel.get_continental_polygons" title="Link to this definition"></a></dt>
-<dd><p>Return a list of <code class="docutils literal notranslate"><span class="pre">continental</span> <span class="pre">polygons</span></code> files.</p>
+<dd><p>Return local file paths for the <code class="docutils literal notranslate"><span class="pre">ContinentalPolygons</span></code> layer.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="gplately.PlateModel.get_data_dir">
 <span class="sig-name descname"><span class="pre">get_data_dir</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/plate_model_manager/plate_model.html#PlateModel.get_data_dir"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PlateModel.get_data_dir" title="Link to this definition"></a></dt>
-<dd><p>Return the path to a folder (parent folder of the <code class="docutils literal notranslate"><span class="pre">model</span> <span class="pre">dir</span></code>) containing a set of downloaded models.</p>
+<dd><p>Return the parent directory containing downloaded models.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Data directory path.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)">str</a></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="gplately.PlateModel.get_layer">
 <span class="sig-name descname"><span class="pre">get_layer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">layer_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_none_if_not_exist</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.14)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../_modules/plate_model_manager/plate_model.html#PlateModel.get_layer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PlateModel.get_layer" title="Link to this definition"></a></dt>
-<dd><p>Get a list of layer files by a layer name. Call <a class="reference internal" href="#gplately.PlateModel.get_avail_layers" title="gplately.PlateModel.get_avail_layers"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_avail_layers()</span></code></a> to get all the available layer names.</p>
-<p>Raise <code class="xref py py-class docutils literal notranslate"><span class="pre">LayerNotFoundInModel</span></code> exception to get user’s attention by default.
-Set <code class="docutils literal notranslate"><span class="pre">return_none_if_not_exist</span></code> to <code class="docutils literal notranslate"><span class="pre">True</span></code> if you don’t want to see the <code class="xref py py-class docutils literal notranslate"><span class="pre">LayerNotFoundInModel</span></code> exception.</p>
+<dd><p>Return local file paths for a geometry layer.</p>
+<p>In writable mode, layer data are downloaded or updated before paths are
+returned. In readonly mode, paths are resolved from the local model
+folder.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>layer_name</strong> – Layer name. Call <a class="reference internal" href="#gplately.PlateModel.get_avail_layers" title="gplately.PlateModel.get_avail_layers"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_avail_layers()</span></code></a> to list
+valid names.</p></li>
+<li><p><strong>return_none_if_not_exist</strong> – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, return <code class="docutils literal notranslate"><span class="pre">None</span></code> instead
+of raising when the layer is missing.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>List of matching layer file paths, or <code class="docutils literal notranslate"><span class="pre">None</span></code> when
+<code class="docutils literal notranslate"><span class="pre">return_none_if_not_exist=True</span></code> and the layer is missing.</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>LayerNotFoundInModel</strong> – If the layer does not exist and
+<code class="docutils literal notranslate"><span class="pre">return_none_if_not_exist</span></code> is <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gplately.PlateModel.get_layer_metadata">
+<span class="sig-name descname"><span class="pre">get_layer_metadata</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">layer_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_none_if_not_exist</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.14)"><span class="pre">Dict</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../_modules/plate_model_manager/plate_model.html#PlateModel.get_layer_metadata"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PlateModel.get_layer_metadata" title="Link to this definition"></a></dt>
+<dd><p>Return metadata for a layer as a dictionary.</p>
+<p>In writable mode, this method ensures the layer is downloaded/updated
+before reading metadata. In readonly mode, it reads from the local
+layer folder directly.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>layer_name</strong> – The layer name of interest.</p></li>
-<li><p><strong>return_none_if_not_exist</strong> – If set to <code class="docutils literal notranslate"><span class="pre">True</span></code>, return <code class="docutils literal notranslate"><span class="pre">None</span></code> when the layer does not exist in the model.</p></li>
+<li><p><strong>return_none_if_not_exist</strong> – If set to <code class="docutils literal notranslate"><span class="pre">True</span></code>, return <code class="docutils literal notranslate"><span class="pre">None</span></code>
+when the layer does not exist in the
+model.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>A list of file names or <code class="docutils literal notranslate"><span class="pre">None</span></code> if <code class="docutils literal notranslate"><span class="pre">return_none_if_not_exist</span></code> is set to <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p>
+<dd class="field-even"><p>Layer metadata dictionary, or <code class="docutils literal notranslate"><span class="pre">None</span></code> if
+<code class="docutils literal notranslate"><span class="pre">return_none_if_not_exist</span></code> is set to <code class="docutils literal notranslate"><span class="pre">True</span></code> and the layer
+is not found.</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>LayerNotFoundInModel</strong> – Raise this exception if the layer name
+does not exist in this model.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#Exception" title="(in Python v3.14)"><strong>Exception</strong></a> – If the layer metadata file is missing.</p></li>
+</ul>
 </dd>
 </dl>
-<p>:raises <code class="xref py py-class docutils literal notranslate"><span class="pre">LayerNotFoundInModel</span></code>: Raise this exception if the layer name does not exist in this model.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="gplately.PlateModel.get_model_dir">
 <span class="sig-name descname"><span class="pre">get_model_dir</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/plate_model_manager/plate_model.html#PlateModel.get_model_dir"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PlateModel.get_model_dir" title="Link to this definition"></a></dt>
-<dd><p>Return the path to a folder containing the model files.</p>
+<dd><p>Return the local directory path for this model.</p>
+<p>In writable mode, the model directory is created when missing.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Absolute or relative path to this model folder.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)">str</a></p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#Exception" title="(in Python v3.14)"><strong>Exception</strong></a> – If the folder is missing in readonly mode.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="gplately.PlateModel.get_raster">
-<span class="sig-name descname"><span class="pre">get_raster</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">raster_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></span><a class="reference internal" href="../_modules/plate_model_manager/plate_model.html#PlateModel.get_raster"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PlateModel.get_raster" title="Link to this definition"></a></dt>
-<dd><p>Return a local path for the raster file.</p>
+<span class="sig-name descname"><span class="pre">get_raster</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">raster_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">reference_frame</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ReferenceFrame</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">generated_from</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">GenerationMethod</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></span><a class="reference internal" href="../_modules/plate_model_manager/plate_model.html#PlateModel.get_raster"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PlateModel.get_raster" title="Link to this definition"></a></dt>
+<dd><p>Return a local path for a single time-dependent raster.</p>
+<p>The final raster key is built from <code class="docutils literal notranslate"><span class="pre">raster_name</span></code> and optional suffixes
+from <code class="docutils literal notranslate"><span class="pre">generated_from</span></code> and <code class="docutils literal notranslate"><span class="pre">reference_frame</span></code> (in that order), matching
+the naming convention used in <code class="docutils literal notranslate"><span class="pre">model[&quot;TimeDepRasters&quot;]</span></code>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>time</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – A single time of interest.</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>raster_name</strong> – Base raster name in <code class="docutils literal notranslate"><span class="pre">TimeDepRasters</span></code> (for example,
+<code class="docutils literal notranslate"><span class="pre">&quot;AgeGrids&quot;</span></code>).</p></li>
+<li><p><strong>time</strong> – Reconstruction time (Ma) to fetch.</p></li>
+<li><p><strong>reference_frame</strong> – Optional reference-frame suffix to append to the
+raster name.</p></li>
+<li><p><strong>generated_from</strong> – Optional generation-method suffix to append to the
+raster name.</p></li>
+</ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>A local path of the raster file.</p>
+<dd class="field-even"><p>Local file path for the requested raster at <code class="docutils literal notranslate"><span class="pre">time</span></code>.</p>
 </dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)">str</a></p>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#Exception" title="(in Python v3.14)"><strong>Exception</strong></a> – If this model has no <code class="docutils literal notranslate"><span class="pre">TimeDepRasters</span></code> entry, if the
+constructed raster name is not configured, if the file
+is missing in readonly mode, or if a download fails in
+writable mode.</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="gplately.PlateModel.get_rasters">
-<span class="sig-name descname"><span class="pre">get_rasters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">raster_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">times</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.14)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.14)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/plate_model_manager/plate_model.html#PlateModel.get_rasters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PlateModel.get_rasters" title="Link to this definition"></a></dt>
-<dd><p>Return local paths for the raster files.</p>
+<span class="sig-name descname"><span class="pre">get_rasters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">raster_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">times</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.14)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reference_frame</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ReferenceFrame</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">generated_from</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">GenerationMethod</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.14)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/plate_model_manager/plate_model.html#PlateModel.get_rasters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PlateModel.get_rasters" title="Link to this definition"></a></dt>
+<dd><p>Return local paths for a sequence of time-dependent rasters.</p>
+<p>The final raster key is built from <code class="docutils literal notranslate"><span class="pre">raster_name</span></code> and optional suffixes
+from <code class="docutils literal notranslate"><span class="pre">generated_from</span></code> and <code class="docutils literal notranslate"><span class="pre">reference_frame</span></code> (in that order), matching
+the naming convention used in <code class="docutils literal notranslate"><span class="pre">model[&quot;TimeDepRasters&quot;]</span></code>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>times</strong> – A list of times</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>raster_name</strong> – Base raster name in <code class="docutils literal notranslate"><span class="pre">TimeDepRasters</span></code> (for example,
+<code class="docutils literal notranslate"><span class="pre">&quot;AgeGrids&quot;</span></code>).</p></li>
+<li><p><strong>times</strong> – Reconstruction times (Ma) to fetch.</p></li>
+<li><p><strong>reference_frame</strong> – Optional reference-frame suffix to append to the
+raster name.</p></li>
+<li><p><strong>generated_from</strong> – Optional generation-method suffix to append to the
+raster name.</p></li>
+</ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>A list of local paths</p>
+<dd class="field-even"><p>Local file paths for the requested times, in the same order as
+<code class="docutils literal notranslate"><span class="pre">times</span></code>.</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#Exception" title="(in Python v3.14)"><strong>Exception</strong></a> – If this model has no <code class="docutils literal notranslate"><span class="pre">TimeDepRasters</span></code> entry, if the
+constructed raster name is not configured, if a
+requested file is missing in readonly mode, or if a
+download fails in writable mode.</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="gplately.PlateModel.get_rotation_model">
-<span class="sig-name descname"><span class="pre">get_rotation_model</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/plate_model_manager/plate_model.html#PlateModel.get_rotation_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PlateModel.get_rotation_model" title="Link to this definition"></a></dt>
-<dd><p>Return a list of rotation files.</p>
+<span class="sig-name descname"><span class="pre">get_rotation_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reference_frame</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ReferenceFrame</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/plate_model_manager/plate_model.html#PlateModel.get_rotation_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PlateModel.get_rotation_model" title="Link to this definition"></a></dt>
+<dd><p>Return rotation files, and optionally a PMAG anchor plate ID.</p>
+<p>Rotation files are read from the local model directory in <code class="docutils literal notranslate"><span class="pre">readonly</span></code>
+mode, or downloaded/updated first in writable mode.</p>
+<p>When <code class="docutils literal notranslate"><span class="pre">reference_frame</span></code> is
+<code class="xref py py-attr docutils literal notranslate"><span class="pre">ReferenceFrame.PmagReferenceFrame</span></code>, this method also returns the
+anchor plate ID required by consumers that need PMAG reference frame rotations.
+The anchor ID is read from
+<code class="docutils literal notranslate"><span class="pre">model[&quot;Attributes&quot;][&quot;PmagReferenceFrameAnchorPID&quot;]</span></code> when present.
+If that value is missing but this model is
+already under PMAG reference frame, set the anchor ID to <code class="docutils literal notranslate"><span class="pre">0</span></code>,
+such as <code class="docutils literal notranslate"><span class="pre">matthews2016_pmag_ref</span></code> model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>reference_frame</strong> – Optional reference frame for
+the returned rotation model. (since version 1.4.0)</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>If <code class="docutils literal notranslate"><span class="pre">reference_frame</span></code> is PMAG, returns
+<code class="docutils literal notranslate"><span class="pre">(rotation_files,</span> <span class="pre">anchor_pid)</span></code> where <code class="docutils literal notranslate"><span class="pre">rotation_files</span></code> is
+a list of <code class="docutils literal notranslate"><span class="pre">.rot</span></code>/<code class="docutils literal notranslate"><span class="pre">.grot</span></code> file paths and <code class="docutils literal notranslate"><span class="pre">anchor_pid</span></code> is
+an integer. Otherwise returns only <code class="docutils literal notranslate"><span class="pre">rotation_files</span></code>.</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#Exception" title="(in Python v3.14)"><strong>Exception</strong></a> – If PMAG is requested but the model is not PMAG and
+<code class="docutils literal notranslate"><span class="pre">Attributes.PmagReferenceFrameAnchorPID</span></code> is not
+defined.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="gplately.PlateModel.get_small_time">
 <span class="sig-name descname"><span class="pre">get_small_time</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/plate_model_manager/plate_model.html#PlateModel.get_small_time"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PlateModel.get_small_time" title="Link to this definition"></a></dt>
-<dd><p>The min (small number in Ma) reconstruction time in the model.</p>
+<dd><p>Return the minimum reconstruction time in Ma.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gplately.PlateModel.get_spreading_rate_grid">
+<span class="sig-name descname"><span class="pre">get_spreading_rate_grid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">reference_frame</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ReferenceFrame</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">generated_from</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">GenerationMethod</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></span><a class="reference internal" href="../_modules/plate_model_manager/plate_model.html#PlateModel.get_spreading_rate_grid"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PlateModel.get_spreading_rate_grid" title="Link to this definition"></a></dt>
+<dd><p>Return a local path for a <code class="docutils literal notranslate"><span class="pre">SpreadingRate</span></code> raster at <code class="docutils literal notranslate"><span class="pre">time</span></code> Ma.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gplately.PlateModel.get_spreading_rate_grids">
+<span class="sig-name descname"><span class="pre">get_spreading_rate_grids</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">times</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.14)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reference_frame</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ReferenceFrame</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">generated_from</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">GenerationMethod</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.14)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/plate_model_manager/plate_model.html#PlateModel.get_spreading_rate_grids"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PlateModel.get_spreading_rate_grids" title="Link to this definition"></a></dt>
+<dd><p>Return local paths for <code class="docutils literal notranslate"><span class="pre">SpreadingRate</span></code> rasters at multiple times.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="gplately.PlateModel.get_static_polygons">
 <span class="sig-name descname"><span class="pre">get_static_polygons</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">return_none_if_not_exist</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.14)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../_modules/plate_model_manager/plate_model.html#PlateModel.get_static_polygons"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PlateModel.get_static_polygons" title="Link to this definition"></a></dt>
-<dd><p>Return a list of <code class="docutils literal notranslate"><span class="pre">static</span> <span class="pre">polygons</span></code> files.</p>
+<dd><p>Return local file paths for the <code class="docutils literal notranslate"><span class="pre">StaticPolygons</span></code> layer.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="gplately.PlateModel.get_topologies">
 <span class="sig-name descname"><span class="pre">get_topologies</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">return_none_if_not_exist</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.14)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../_modules/plate_model_manager/plate_model.html#PlateModel.get_topologies"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PlateModel.get_topologies" title="Link to this definition"></a></dt>
-<dd><p>Return a list of <code class="docutils literal notranslate"><span class="pre">topologies</span></code> files.</p>
+<dd><p>Return local file paths for the <code class="docutils literal notranslate"><span class="pre">Topologies</span></code> layer.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="gplately.PlateModel.is_model_dir">
 <span class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">is_model_dir</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">folder_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/plate_model_manager/plate_model.html#PlateModel.is_model_dir"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PlateModel.is_model_dir" title="Link to this definition"></a></dt>
-<dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the folder contains files of a plate model, otherwise <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p>
+<dd><p>Return whether <code class="docutils literal notranslate"><span class="pre">folder_path</span></code> looks like a local model directory.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="gplately.PlateModel.model">
 <span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">model</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.14)"><span class="pre">Dict</span></a></span><a class="headerlink" href="#gplately.PlateModel.model" title="Link to this definition"></a></dt>
-<dd><p>The model metadata.</p>
+<dd><p>Return model metadata for this instance.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Model configuration dictionary.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>Dict</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#Exception" title="(in Python v3.14)"><strong>Exception</strong></a> – If model configuration is unexpectedly unavailable.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="gplately.PlateModel.model_dir">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">model_dir</span></span><a class="headerlink" href="#gplately.PlateModel.model_dir" title="Link to this definition"></a></dt>
+<dd><p>Return the model folder path under <code class="docutils literal notranslate"><span class="pre">data_dir</span></code>.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="gplately.PlateModel.purge">
 <span class="sig-name descname"><span class="pre">purge</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/plate_model_manager/plate_model.html#PlateModel.purge"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PlateModel.purge" title="Link to this definition"></a></dt>
-<dd><p>Remove the model folder and everything inside the folder.</p>
+<dd><p>Delete the model directory and all files under it, if present.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="gplately.PlateModel.purge_layer">
 <span class="sig-name descname"><span class="pre">purge_layer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">layer_name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/plate_model_manager/plate_model.html#PlateModel.purge_layer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PlateModel.purge_layer" title="Link to this definition"></a></dt>
-<dd><p>Remove the layer folder of the given layer name.</p>
+<dd><p>Delete a local layer directory for <code class="docutils literal notranslate"><span class="pre">layer_name</span></code>, if present.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="gplately.PlateModel.purge_time_dependent_rasters">
 <span class="sig-name descname"><span class="pre">purge_time_dependent_rasters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">raster_name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/plate_model_manager/plate_model.html#PlateModel.purge_time_dependent_rasters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PlateModel.purge_time_dependent_rasters" title="Link to this definition"></a></dt>
-<dd><p>Remove the raster folder of the given raster name.</p>
+<dd><p>Delete local cached rasters for <code class="docutils literal notranslate"><span class="pre">raster_name</span></code>, if present.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="gplately.PlateModel.set_data_dir">
 <span class="sig-name descname"><span class="pre">set_data_dir</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">new_dir</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/plate_model_manager/plate_model.html#PlateModel.set_data_dir"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PlateModel.set_data_dir" title="Link to this definition"></a></dt>
-<dd><p>Change the folder (parent folder of the <code class="docutils literal notranslate"><span class="pre">model</span> <span class="pre">dir</span></code>) in which you would like to save your model.</p>
+<dd><p>Set a new parent directory for this model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>new_dir</strong> – New data directory path.</p>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>

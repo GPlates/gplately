@@ -19,6 +19,8 @@
       ~PlateModel.download_all_layers
       ~PlateModel.download_time_dependent_rasters
       ~PlateModel.get_COBs
+      ~PlateModel.get_age_grid
+      ~PlateModel.get_age_grids
       ~PlateModel.get_avail_layers
       ~PlateModel.get_avail_time_dependent_raster_names
       ~PlateModel.get_big_time
@@ -27,11 +29,14 @@
       ~PlateModel.get_continental_polygons
       ~PlateModel.get_data_dir
       ~PlateModel.get_layer
+      ~PlateModel.get_layer_metadata
       ~PlateModel.get_model_dir
       ~PlateModel.get_raster
       ~PlateModel.get_rasters
       ~PlateModel.get_rotation_model
       ~PlateModel.get_small_time
+      ~PlateModel.get_spreading_rate_grid
+      ~PlateModel.get_spreading_rate_grids
       ~PlateModel.get_static_polygons
       ~PlateModel.get_topologies
       ~PlateModel.is_model_dir
@@ -49,5 +54,6 @@
    .. autosummary::
    
       ~PlateModel.model
+      ~PlateModel.model_dir
    
    

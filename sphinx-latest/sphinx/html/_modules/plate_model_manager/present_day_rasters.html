@@ -101,24 +101,28 @@
 
 
 <span class="k">class</span><span class="w"> </span><span class="nc">RasterNameNotFound</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Raised when a requested raster name is not present in the manifest.&quot;&quot;&quot;</span>
+
     <span class="k">pass</span>
 
 
 <div class="viewcode-block" id="PresentDayRasterManager">
 <a class="viewcode-back" href="../../generated/gplately.PresentDayRasterManager.html#gplately.PresentDayRasterManager">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">PresentDayRasterManager</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Manage the present-day rasters.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Manage present-day raster metadata retrieval and local raster access.&quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="PresentDayRasterManager.__init__">
 <a class="viewcode-back" href="../../generated/gplately.PresentDayRasterManager.html#gplately.PresentDayRasterManager.__init__">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data_dir</span><span class="o">=</span><span class="s2">&quot;present-day-rasters&quot;</span><span class="p">,</span> <span class="n">raster_manifest</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Constructor. Create a :class:`PresentDayRasterManager` instance.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a :class:`PresentDayRasterManager` instance.</span>
 
-<span class="sd">        :param raster_manifest: The URL to a ``present_day_rasters.json`` metadata file.</span>
-<span class="sd">                                Normally you don&#39;t need to provide this parameter unless</span>
-<span class="sd">                                you would like to setup your own present-day raster server.</span>
+<span class="sd">        The raster manifest can be provided either as a local file path or as an</span>
+<span class="sd">        HTTP(S) URL. If omitted, the default PMM raster manifest endpoint is used.</span>
 
-<span class="sd">        :param data_dir: The path to a folder to save the present-day raster files.</span>
+<span class="sd">        :param data_dir: Directory where raster files and metadata are stored.</span>
+<span class="sd">        :param raster_manifest: Local path or URL to a ``present_day_rasters.json``</span>
+<span class="sd">            manifest. Provide this only when using a custom raster service.</span>
+<span class="sd">        :raises Exception: If the manifest source is invalid or cannot be fetched.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">raster_manifest</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">raster_manifest</span> <span class="o">=</span> <span class="n">DEFAULT_PRESENT_DAY_RASTERS_MANIFEST</span>
@@ -153,7 +157,12 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">rasters</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;The metadata of rasters.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return raster metadata loaded from the configured manifest.</span>
+
+<span class="sd">        :returns: Mapping of raster names to raster metadata.</span>
+<span class="sd">        :rtype: Dict</span>
+<span class="sd">        :raises Exception: If raster metadata is unexpectedly unavailable.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rasters</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rasters</span>
         <span class="k">else</span><span class="p">:</span>
@@ -168,19 +177,32 @@
 <div class="viewcode-block" id="PresentDayRasterManager.set_data_dir">
 <a class="viewcode-back" href="../../generated/gplately.PresentDayRasterManager.html#gplately.PresentDayRasterManager.set_data_dir">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">set_data_dir</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data_dir</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set a new data folder to save the present-day rasters.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the directory used to store downloaded raster files.</span>
+
+<span class="sd">        :param data_dir: Directory path for local raster data.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">data_dir</span> <span class="o">=</span> <span class="n">data_dir</span></div>
 
 
 <div class="viewcode-block" id="PresentDayRasterManager.list_present_day_rasters">
 <a class="viewcode-back" href="../../generated/gplately.PresentDayRasterManager.html#gplately.PresentDayRasterManager.list_present_day_rasters">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">list_present_day_rasters</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return a list of available  present-day rasters.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the list of available present-day raster names.</span>
+
+<span class="sd">        :returns: Available raster names from the manifest.</span>
+<span class="sd">        :rtype: list[str]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="p">[</span><span class="n">name</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">rasters</span><span class="p">]</span></div>
 
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_check_raster_avail</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check if the raster name is in raster configuration.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Validate that a raster name exists in the loaded manifest.</span>
+
+<span class="sd">        :param _name: Raster name to validate.</span>
+<span class="sd">        :returns: Lowercase raster name.</span>
+<span class="sd">        :rtype: str</span>
+<span class="sd">        :raises RasterNameNotFound: If the raster name is not defined.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">name</span> <span class="o">=</span> <span class="n">_name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">rasters</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">RasterNameNotFound</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Raster </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> is not found in </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">rasters</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
@@ -189,12 +211,16 @@
 <div class="viewcode-block" id="PresentDayRasterManager.is_wms">
 <a class="viewcode-back" href="../../generated/gplately.PresentDayRasterManager.html#gplately.PresentDayRasterManager.is_wms">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">is_wms</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">check_raster_avail_flag</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return ``True`` if the raster is served by ``Web Map Service``, otherwise ``False``</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return whether a raster is served through WMS metadata.</span>
 
 <span class="sd">        :param _name: The raster name of interest.</span>
 <span class="sd">        :type _name: str</span>
-<span class="sd">        :param check_raster_avail_flag: If the flag is ``True``, validate the raster name against the raster configuration.</span>
+<span class="sd">        :param check_raster_avail_flag: If ``True``, validate the raster name</span>
+<span class="sd">            against the loaded manifest before checking service type.</span>
 <span class="sd">        :type check_raster_avail_flag: bool</span>
+<span class="sd">        :returns: ``True`` when the raster metadata marks the service as ``WMS``;</span>
+<span class="sd">            otherwise ``False``.</span>
+<span class="sd">        :rtype: bool</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">check_raster_avail_flag</span><span class="p">:</span>
             <span class="n">name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_raster_avail</span><span class="p">(</span><span class="n">_name</span><span class="p">)</span>
@@ -220,15 +246,32 @@
         <span class="n">bbox</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="mi">180</span><span class="p">,</span> <span class="o">-</span><span class="mi">80</span><span class="p">,</span> <span class="mi">180</span><span class="p">,</span> <span class="mi">80</span><span class="p">],</span>
         <span class="n">large_file_hint</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
     <span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Download a raster file by name, save the raster file in ``self.data_dir`` and return the local path to the raster file.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Download or fetch a raster and return its local file path.</span>
 
-<span class="sd">        Call :meth:`list_present_day_rasters()` to see a list of available present-day raster names.</span>
+<span class="sd">        For file-based rasters, this method downloads and caches files under</span>
+<span class="sd">        ``self.data_dir``. For WMS rasters, it requests a GeoTIFF with the given</span>
+<span class="sd">        output dimensions and bounding box, and caches the result using a hash of</span>
+<span class="sd">        the WMS request URL.</span>
+
+<span class="sd">        Call :meth:`list_present_day_rasters` to inspect available raster names.</span>
 
 <span class="sd">        :param _name: The raster name of interest.</span>
 <span class="sd">        :type _name: str</span>
+<span class="sd">        :param width: Output raster width in pixels for WMS requests.</span>
+<span class="sd">        :type width: int</span>
+<span class="sd">        :param height: Output raster height in pixels for WMS requests.</span>
+<span class="sd">        :type height: int</span>
+<span class="sd">        :param bbox: Geographic bounding box ``[min_lon, min_lat, max_lon, max_lat]``</span>
+<span class="sd">            used for WMS requests.</span>
+<span class="sd">        :type bbox: list[float]</span>
+<span class="sd">        :param large_file_hint: Passed to file downloader to optimize large-file</span>
+<span class="sd">            handling for non-WMS rasters.</span>
+<span class="sd">        :type large_file_hint: bool</span>
 
-<span class="sd">        :return: The local path to the downloaded raster file.</span>
+<span class="sd">        :return: Local path to the downloaded or cached raster file.</span>
 <span class="sd">        :rtype: str</span>
+<span class="sd">        :raises RasterNameNotFound: If the raster name is not in the manifest.</span>
+<span class="sd">        :raises Exception: If raster retrieval fails.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_raster_avail</span><span class="p">(</span><span class="n">_name</span><span class="p">)</span>
         <span class="n">is_wms_flag</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_wms</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">check_raster_avail_flag</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>

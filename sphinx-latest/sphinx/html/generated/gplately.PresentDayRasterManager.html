@@ -110,19 +110,23 @@
 <dt class="sig sig-object py" id="gplately.PresentDayRasterManager">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">gplately.</span></span><span class="sig-name descname"><span class="pre">PresentDayRasterManager</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'present-day-rasters'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">raster_manifest</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/plate_model_manager/present_day_rasters.html#PresentDayRasterManager"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PresentDayRasterManager" title="Link to this definition"></a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
-<p>Manage the present-day rasters.</p>
+<p>Manage present-day raster metadata retrieval and local raster access.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="gplately.PresentDayRasterManager.__init__">
 <span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'present-day-rasters'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">raster_manifest</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/plate_model_manager/present_day_rasters.html#PresentDayRasterManager.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PresentDayRasterManager.__init__" title="Link to this definition"></a></dt>
-<dd><p>Constructor. Create a <a class="reference internal" href="#gplately.PresentDayRasterManager" title="gplately.PresentDayRasterManager"><code class="xref py py-class docutils literal notranslate"><span class="pre">PresentDayRasterManager</span></code></a> instance.</p>
+<dd><p>Create a <a class="reference internal" href="#gplately.PresentDayRasterManager" title="gplately.PresentDayRasterManager"><code class="xref py py-class docutils literal notranslate"><span class="pre">PresentDayRasterManager</span></code></a> instance.</p>
+<p>The raster manifest can be provided either as a local file path or as an
+HTTP(S) URL. If omitted, the default PMM raster manifest endpoint is used.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>raster_manifest</strong> – The URL to a <code class="docutils literal notranslate"><span class="pre">present_day_rasters.json</span></code> metadata file.
-Normally you don’t need to provide this parameter unless
-you would like to setup your own present-day raster server.</p></li>
-<li><p><strong>data_dir</strong> – The path to a folder to save the present-day raster files.</p></li>
+<li><p><strong>data_dir</strong> – Directory where raster files and metadata are stored.</p></li>
+<li><p><strong>raster_manifest</strong> – Local path or URL to a <code class="docutils literal notranslate"><span class="pre">present_day_rasters.json</span></code>
+manifest. Provide this only when using a custom raster service.</p></li>
 </ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#Exception" title="(in Python v3.14)"><strong>Exception</strong></a> – If the manifest source is invalid or cannot be fetched.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -131,19 +135,19 @@ you would like to setup your own present-day raster server.</p></li>
 <table class="autosummary longtable docutils align-default">
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="#gplately.PresentDayRasterManager.__init__" title="gplately.PresentDayRasterManager.__init__"><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code></a>([data_dir, raster_manifest])</p></td>
-<td><p>Constructor.</p></td>
+<td><p>Create a <a class="reference internal" href="#gplately.PresentDayRasterManager" title="gplately.PresentDayRasterManager"><code class="xref py py-class docutils literal notranslate"><span class="pre">PresentDayRasterManager</span></code></a> instance.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#gplately.PresentDayRasterManager.get_raster" title="gplately.PresentDayRasterManager.get_raster"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_raster</span></code></a>(_name[, width, height, bbox, ...])</p></td>
-<td><p>Download a raster file by name, save the raster file in <code class="docutils literal notranslate"><span class="pre">self.data_dir</span></code> and return the local path to the raster file.</p></td>
+<td><p>Download or fetch a raster and return its local file path.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#gplately.PresentDayRasterManager.is_wms" title="gplately.PresentDayRasterManager.is_wms"><code class="xref py py-obj docutils literal notranslate"><span class="pre">is_wms</span></code></a>(_name[, check_raster_avail_flag])</p></td>
-<td><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the raster is served by <code class="docutils literal notranslate"><span class="pre">Web</span> <span class="pre">Map</span> <span class="pre">Service</span></code>, otherwise <code class="docutils literal notranslate"><span class="pre">False</span></code></p></td>
+<td><p>Return whether a raster is served through WMS metadata.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#gplately.PresentDayRasterManager.list_present_day_rasters" title="gplately.PresentDayRasterManager.list_present_day_rasters"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list_present_day_rasters</span></code></a>()</p></td>
-<td><p>Return a list of available  present-day rasters.</p></td>
+<td><p>Return the list of available present-day raster names.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#gplately.PresentDayRasterManager.set_data_dir" title="gplately.PresentDayRasterManager.set_data_dir"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_data_dir</span></code></a>(data_dir)</p></td>
-<td><p>Set a new data folder to save the present-day rasters.</p></td>
+<td><p>Set the directory used to store downloaded raster files.</p></td>
 </tr>
 </tbody>
 </table>
@@ -151,24 +155,42 @@ you would like to setup your own present-day raster server.</p></li>
 <table class="autosummary longtable docutils align-default">
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="#gplately.PresentDayRasterManager.rasters" title="gplately.PresentDayRasterManager.rasters"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rasters</span></code></a></p></td>
-<td><p>The metadata of rasters.</p></td>
+<td><p>Return raster metadata loaded from the configured manifest.</p></td>
 </tr>
 </tbody>
 </table>
 <dl class="py method">
 <dt class="sig sig-object py" id="gplately.PresentDayRasterManager.get_raster">
 <span class="sig-name descname"><span class="pre">get_raster</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">width</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1800</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">height</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">800</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bbox</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[-180,</span> <span class="pre">-80,</span> <span class="pre">180,</span> <span class="pre">80]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">large_file_hint</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/plate_model_manager/present_day_rasters.html#PresentDayRasterManager.get_raster"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PresentDayRasterManager.get_raster" title="Link to this definition"></a></dt>
-<dd><p>Download a raster file by name, save the raster file in <code class="docutils literal notranslate"><span class="pre">self.data_dir</span></code> and return the local path to the raster file.</p>
-<p>Call <a class="reference internal" href="#gplately.PresentDayRasterManager.list_present_day_rasters" title="gplately.PresentDayRasterManager.list_present_day_rasters"><code class="xref py py-meth docutils literal notranslate"><span class="pre">list_present_day_rasters()</span></code></a> to see a list of available present-day raster names.</p>
+<dd><p>Download or fetch a raster and return its local file path.</p>
+<p>For file-based rasters, this method downloads and caches files under
+<code class="docutils literal notranslate"><span class="pre">self.data_dir</span></code>. For WMS rasters, it requests a GeoTIFF with the given
+output dimensions and bounding box, and caches the result using a hash of
+the WMS request URL.</p>
+<p>Call <a class="reference internal" href="#gplately.PresentDayRasterManager.list_present_day_rasters" title="gplately.PresentDayRasterManager.list_present_day_rasters"><code class="xref py py-meth docutils literal notranslate"><span class="pre">list_present_day_rasters()</span></code></a> to inspect available raster names.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – The raster name of interest.</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – The raster name of interest.</p></li>
+<li><p><strong>width</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Output raster width in pixels for WMS requests.</p></li>
+<li><p><strong>height</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Output raster height in pixels for WMS requests.</p></li>
+<li><p><strong>bbox</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em>]</em>) – Geographic bounding box <code class="docutils literal notranslate"><span class="pre">[min_lon,</span> <span class="pre">min_lat,</span> <span class="pre">max_lon,</span> <span class="pre">max_lat]</span></code>
+used for WMS requests.</p></li>
+<li><p><strong>large_file_hint</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a>) – Passed to file downloader to optimize large-file
+handling for non-WMS rasters.</p></li>
+</ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>The local path to the downloaded raster file.</p>
+<dd class="field-even"><p>Local path to the downloaded or cached raster file.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)">str</a></p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>RasterNameNotFound</strong> – If the raster name is not in the manifest.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#Exception" title="(in Python v3.14)"><strong>Exception</strong></a> – If raster retrieval fails.</p></li>
+</ul>
 </dd>
 </dl>
 </dd></dl>
@@ -176,13 +198,21 @@ you would like to setup your own present-day raster server.</p></li>
 <dl class="py method">
 <dt class="sig sig-object py" id="gplately.PresentDayRasterManager.is_wms">
 <span class="sig-name descname"><span class="pre">is_wms</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">check_raster_avail_flag</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/plate_model_manager/present_day_rasters.html#PresentDayRasterManager.is_wms"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PresentDayRasterManager.is_wms" title="Link to this definition"></a></dt>
-<dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the raster is served by <code class="docutils literal notranslate"><span class="pre">Web</span> <span class="pre">Map</span> <span class="pre">Service</span></code>, otherwise <code class="docutils literal notranslate"><span class="pre">False</span></code></p>
+<dd><p>Return whether a raster is served through WMS metadata.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – The raster name of interest.</p></li>
-<li><p><strong>check_raster_avail_flag</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a>) – If the flag is <code class="docutils literal notranslate"><span class="pre">True</span></code>, validate the raster name against the raster configuration.</p></li>
+<li><p><strong>check_raster_avail_flag</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a>) – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, validate the raster name
+against the loaded manifest before checking service type.</p></li>
 </ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">True</span></code> when the raster metadata marks the service as <code class="docutils literal notranslate"><span class="pre">WMS</span></code>;
+otherwise <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)">bool</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -190,19 +220,43 @@ you would like to setup your own present-day raster server.</p></li>
 <dl class="py method">
 <dt class="sig sig-object py" id="gplately.PresentDayRasterManager.list_present_day_rasters">
 <span class="sig-name descname"><span class="pre">list_present_day_rasters</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/plate_model_manager/present_day_rasters.html#PresentDayRasterManager.list_present_day_rasters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PresentDayRasterManager.list_present_day_rasters" title="Link to this definition"></a></dt>
-<dd><p>Return a list of available  present-day rasters.</p>
+<dd><p>Return the list of available present-day raster names.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Available raster names from the manifest.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)">list</a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)">str</a>]</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="gplately.PresentDayRasterManager.rasters">
 <span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">rasters</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.14)"><span class="pre">Dict</span></a></span><a class="headerlink" href="#gplately.PresentDayRasterManager.rasters" title="Link to this definition"></a></dt>
-<dd><p>The metadata of rasters.</p>
+<dd><p>Return raster metadata loaded from the configured manifest.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Mapping of raster names to raster metadata.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>Dict</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#Exception" title="(in Python v3.14)"><strong>Exception</strong></a> – If raster metadata is unexpectedly unavailable.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="gplately.PresentDayRasterManager.set_data_dir">
 <span class="sig-name descname"><span class="pre">set_data_dir</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_dir</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/plate_model_manager/present_day_rasters.html#PresentDayRasterManager.set_data_dir"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PresentDayRasterManager.set_data_dir" title="Link to this definition"></a></dt>
-<dd><p>Set a new data folder to save the present-day rasters.</p>
+<dd><p>Set the directory used to store downloaded raster files.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>data_dir</strong> – Directory path for local raster data.</p>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>

@@ -90,6 +90,8 @@
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">requests</span>
 
+<span class="kn">from</span><span class="w"> </span><span class="nn">.utils.enums</span><span class="w"> </span><span class="kn">import</span> <span class="n">ReferenceFrame</span>
+
 <span class="kn">from</span><span class="w"> </span><span class="nn">.exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="n">InvalidConfigFile</span><span class="p">,</span> <span class="n">ServerUnavailable</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.plate_model</span><span class="w"> </span><span class="kn">import</span> <span class="n">PlateModel</span>
 
@@ -99,9 +101,11 @@
 <div class="viewcode-block" id="PlateModelManager">
 <a class="viewcode-back" href="../../generated/gplately.PlateModelManager.html#gplately.PlateModelManager">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">PlateModelManager</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Manage a set of publicly available plate reconstruction models.</span>
-<span class="sd">    The model files are hosted on EarthByte servers.</span>
-<span class="sd">    You need Internet connection to use this class and download the files.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Manage discovery and loading of plate reconstruction model metadata.</span>
+
+<span class="sd">    Model manifests can be loaded from a local file or an HTTP(S) endpoint.</span>
+<span class="sd">    Retrieved model configurations are used to construct :class:`PlateModel`</span>
+<span class="sd">    instances.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="c1"># Load a models.json file and manage plate models.</span>
@@ -110,15 +114,17 @@
 <div class="viewcode-block" id="PlateModelManager.__init__">
 <a class="viewcode-back" href="../../generated/gplately.PlateModelManager.html#gplately.PlateModelManager.__init__">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model_manifest</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">)):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Constructor. Create a :class:`PlateModelManager` instance.</span>
-<span class="sd">        You need Internet connection to create an instance of this class.</span>
-<span class="sd">        If you don&#39;t have Internet connection, use :class:`PlateModel` class directly in ``readonly`` mode.</span>
-<span class="sd">        Visit `this page &lt;examples.html#use-without-internet&gt;`__ to see an example.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a :class:`PlateModelManager` instance.</span>
 
-<span class="sd">        :param model_manifest: The URL to a ``models.json`` metadata file.</span>
-<span class="sd">                               Normally you don&#39;t need to provide this parameter unless</span>
-<span class="sd">                               you would like to setup your own plate model server.</span>
+<span class="sd">        If ``model_manifest`` is omitted, the manager probes known PMM manifest</span>
+<span class="sd">        endpoints and uses the first reachable URL.</span>
 
+<span class="sd">        :param model_manifest: Local path or HTTP(S) URL for a ``models.json``</span>
+<span class="sd">            manifest. Use this when hosting a custom model repository.</span>
+<span class="sd">        :param timeout: Timeout tuple passed to HTTP requests.</span>
+<span class="sd">        :raises InvalidConfigFile: If the manifest path/URL is invalid or does</span>
+<span class="sd">            not contain valid JSON.</span>
+<span class="sd">        :raises ServerUnavailable: If the manifest URL cannot be reached.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">model_manifest</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">model_manifest</span> <span class="o">=</span> <span class="n">PlateModelManager</span><span class="o">.</span><span class="n">get_default_repo_url</span><span class="p">()</span>
@@ -174,7 +180,12 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">models</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;The metadata for all the models.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return metadata for all configured models.</span>
+
+<span class="sd">        :returns: Mapping from model names to model entries.</span>
+<span class="sd">        :rtype: Dict</span>
+<span class="sd">        :raises Exception: If model metadata is unavailable.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_models</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_models</span>
         <span class="k">else</span><span class="p">:</span>
@@ -187,7 +198,14 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_models</span> <span class="o">=</span> <span class="n">var</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_replace_vars_with_values</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var_dict</span><span class="p">,</span> <span class="n">json_obj</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Replace the variables in `json_obj` with the real values. The variables are defined in `var_dict`.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Expand template variables in-place within a manifest dictionary.</span>
+
+<span class="sd">        Variables use the marker format ``@&lt;&lt;name&gt;&gt;@`` and are resolved from</span>
+<span class="sd">        ``var_dict``.</span>
+
+<span class="sd">        :param var_dict: Variable name/value mapping.</span>
+<span class="sd">        :param json_obj: JSON-like dictionary to mutate in place.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">json_obj</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="k">if</span> <span class="n">key</span> <span class="o">==</span> <span class="s2">&quot;vars&quot;</span><span class="p">:</span>
                 <span class="k">continue</span>
@@ -202,52 +220,125 @@
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">continue</span>
 
+    <span class="k">def</span><span class="w"> </span><span class="nf">_resolve_model_config</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">model_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">data_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">visited</span><span class="p">:</span> <span class="nb">set</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">max_depth</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">dict</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Resolve a model entry to its final configuration dictionary.</span>
+
+<span class="sd">        Alias chains are resolved recursively with cycle/depth protection.</span>
+
+<span class="sd">        :param model_name: Model name to resolve (case-insensitive).</span>
+<span class="sd">        :param data_dir: Reserved for compatibility with existing call sites.</span>
+<span class="sd">        :param visited: Set of previously visited model names.</span>
+<span class="sd">        :param max_depth: Maximum alias-chain depth.</span>
+<span class="sd">        :returns: Resolved model configuration dictionary, or ``None`` when the</span>
+<span class="sd">            model name is not present.</span>
+<span class="sd">        :raises InvalidConfigFile: If alias resolution exceeds ``max_depth``.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">visited</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">visited</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">visited</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="n">max_depth</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">InvalidConfigFile</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Maximum alias resolution depth (</span><span class="si">{</span><span class="n">max_depth</span><span class="si">}</span><span class="s2">) exceeded. &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;Possible circular alias in model manifest </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">model_manifest</span><span class="si">}</span><span class="s2">. &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;Resolution chain: </span><span class="si">{</span><span class="s1">&#39; -&gt; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">visited</span><span class="p">)</span><span class="si">}</span><span class="s2"> -&gt; </span><span class="si">{</span><span class="n">model_name</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+
+        <span class="n">model_name</span> <span class="o">=</span> <span class="n">model_name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">model_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">models</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="n">model_entry</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">models</span><span class="p">[</span><span class="n">model_name</span><span class="p">]</span>
+        <span class="n">visited_copy</span> <span class="o">=</span> <span class="n">visited</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">visited_copy</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">model_name</span><span class="p">)</span>
+
+        <span class="c1"># If entry is a string, it&#39;s an alias reference</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">model_entry</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="c1"># Remove optional &#39;@&#39; prefix that marks aliases</span>
+            <span class="n">target_model_name</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">model_entry</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="k">if</span> <span class="n">model_entry</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;@&quot;</span><span class="p">)</span> <span class="k">else</span> <span class="n">model_entry</span>
+            <span class="p">)</span>
+
+            <span class="c1"># Recursively resolve the target</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_resolve_model_config</span><span class="p">(</span>
+                <span class="n">target_model_name</span><span class="p">,</span> <span class="n">data_dir</span><span class="p">,</span> <span class="n">visited_copy</span><span class="p">,</span> <span class="n">max_depth</span>
+            <span class="p">)</span>
+
+        <span class="c1"># Entry is a dict, return it as the configuration</span>
+        <span class="k">return</span> <span class="n">model_entry</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">model_entry</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="k">else</span> <span class="kc">None</span>
+
 <div class="viewcode-block" id="PlateModelManager.get_model">
 <a class="viewcode-back" href="../../generated/gplately.PlateModelManager.html#gplately.PlateModelManager.get_model">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_model</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span> <span class="n">model_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;default&quot;</span><span class="p">,</span> <span class="n">data_dir</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;.&quot;</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">model_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;default&quot;</span><span class="p">,</span>
+        <span class="n">data_dir</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;.&quot;</span><span class="p">,</span>
+        <span class="n">reference_frame</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">ReferenceFrame</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">PlateModel</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return a :class:`PlateModel` object for a given plate model name.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return a :class:`PlateModel` for ``model_name``.</span>
 
-<span class="sd">        Call :meth:`get_available_model_names()` to see a list of available plate model names.</span>
+<span class="sd">        The method resolves aliases, applies optional reference-frame handling,</span>
+<span class="sd">        and instantiates :class:`PlateModel` with the resolved configuration.</span>
 
-<span class="sd">        :param model_name: the plate model name of interest</span>
-<span class="sd">        :param data_dir: The folder to save the plate model files.</span>
-<span class="sd">                         This ``data_dir`` can be changed with :meth:`PlateModel.set_data_dir()` later.</span>
-
-<span class="sd">        :returns: a :class:`PlateModel` object or ``None`` if the plate model name is no good.</span>
-
+<span class="sd">        :param model_name: Model name or alias (case-insensitive). Defaults to</span>
+<span class="sd">            ``&quot;default&quot;``.</span>
+<span class="sd">        :param data_dir: Parent directory for model downloads and cache files.</span>
+<span class="sd">        :param reference_frame: Optional reference frame. When PMAG is requested</span>
+<span class="sd">            and a ``_pmag_ref`` variant exists, that variant is selected</span>
+<span class="sd">            automatically.</span>
+<span class="sd">        :returns: A configured :class:`PlateModel`, or ``None`` if the model is</span>
+<span class="sd">            unavailable or incompatible with the requested reference frame.</span>
+<span class="sd">        :raises InvalidConfigFile: If alias resolution detects an invalid alias</span>
+<span class="sd">            chain.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">model_name</span> <span class="o">=</span> <span class="n">model_name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
-        <span class="k">if</span> <span class="n">model_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">models</span><span class="p">:</span>
-            <span class="c1"># model name is an alias</span>
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">models</span><span class="p">[</span><span class="n">model_name</span><span class="p">],</span> <span class="nb">str</span><span class="p">):</span>
-                <span class="n">m_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">models</span><span class="p">[</span><span class="n">model_name</span><span class="p">]</span>
-                <span class="k">if</span> <span class="n">m_name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;@&quot;</span><span class="p">):</span>
-                    <span class="n">m_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">models</span><span class="p">[</span><span class="n">model_name</span><span class="p">][</span><span class="mi">1</span><span class="p">:]</span>
+        <span class="n">model_name_lower</span> <span class="o">=</span> <span class="n">model_name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">reference_frame</span> <span class="o">==</span> <span class="n">ReferenceFrame</span><span class="o">.</span><span class="n">PmagReferenceFrame</span><span class="p">:</span>
+            <span class="k">if</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">model_name_lower</span><span class="si">}</span><span class="s2">_pmag_ref&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">models</span><span class="p">:</span>
+                <span class="n">model_name_lower</span> <span class="o">+=</span> <span class="s2">&quot;_pmag_ref&quot;</span>
 
-                <span class="n">m</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_model</span><span class="p">(</span><span class="n">m_name</span><span class="p">,</span> <span class="n">data_dir</span><span class="o">=</span><span class="n">data_dir</span><span class="p">)</span>
-                <span class="k">if</span> <span class="n">m</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                    <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span>
-                        <span class="sa">f</span><span class="s2">&quot;Unable to find model </span><span class="si">{</span><span class="n">m_name</span><span class="si">}</span><span class="s2"> to resolve an alias. There must be errors in the </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">model_manifest</span><span class="si">}</span><span class="s2">&quot;</span>
-                    <span class="p">)</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="k">return</span> <span class="n">PlateModel</span><span class="p">(</span>
-                        <span class="n">model_name</span><span class="p">,</span> <span class="n">model_cfg</span><span class="o">=</span><span class="n">m</span><span class="o">.</span><span class="n">get_cfg</span><span class="p">(),</span> <span class="n">data_dir</span><span class="o">=</span><span class="n">data_dir</span>
-                    <span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="k">return</span> <span class="n">PlateModel</span><span class="p">(</span>
-                    <span class="n">model_name</span><span class="p">,</span> <span class="n">model_cfg</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">models</span><span class="p">[</span><span class="n">model_name</span><span class="p">],</span> <span class="n">data_dir</span><span class="o">=</span><span class="n">data_dir</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">model_cfg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_resolve_model_config</span><span class="p">(</span><span class="n">model_name_lower</span><span class="p">,</span> <span class="n">data_dir</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">InvalidConfigFile</span><span class="p">:</span>
+            <span class="k">raise</span>
+
+        <span class="k">if</span> <span class="n">model_cfg</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Model &#39;</span><span class="si">{</span><span class="n">model_name</span><span class="si">}</span><span class="s2">&#39; is not available.&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="k">if</span> <span class="p">(</span>
+            <span class="n">reference_frame</span> <span class="o">==</span> <span class="n">ReferenceFrame</span><span class="o">.</span><span class="n">PmagReferenceFrame</span>
+            <span class="ow">and</span> <span class="ow">not</span> <span class="n">model_name_lower</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;_pmag_ref&quot;</span><span class="p">)</span>
+        <span class="p">):</span>
+            <span class="k">if</span> <span class="p">(</span>
+                <span class="n">model_cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;Attributes&quot;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;PmagReferenceFrameAnchorPID&quot;</span><span class="p">)</span>
+                <span class="ow">is</span> <span class="kc">None</span>
+            <span class="p">):</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Model &#39;</span><span class="si">{</span><span class="n">model_name</span><span class="si">}</span><span class="s2">&#39; does not have a PMAG reference frame version available.&quot;</span>
                 <span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Model </span><span class="si">{</span><span class="n">model_name</span><span class="si">}</span><span class="s2"> is not available.&quot;</span><span class="p">)</span>
-            <span class="k">return</span> <span class="kc">None</span></div>
+                <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="k">return</span> <span class="n">PlateModel</span><span class="p">(</span>
+            <span class="n">model_name_lower</span><span class="p">,</span>
+            <span class="n">model_cfg</span><span class="o">=</span><span class="n">model_cfg</span><span class="p">,</span>
+            <span class="n">data_dir</span><span class="o">=</span><span class="n">data_dir</span><span class="p">,</span>
+            <span class="n">reference_frame</span><span class="o">=</span><span class="n">reference_frame</span><span class="p">,</span>
+        <span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="PlateModelManager.get_available_model_names">
 <a class="viewcode-back" href="../../generated/gplately.PlateModelManager.html#gplately.PlateModelManager.get_available_model_names">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_available_model_names</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the names of available models as a list.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return all model keys from the loaded manifest.</span>
+
+<span class="sd">        :returns: Available model names and aliases.</span>
+<span class="sd">        :rtype: list[str]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span></div>
 
 
@@ -255,10 +346,13 @@
 <a class="viewcode-back" href="../../generated/gplately.PlateModelManager.html#gplately.PlateModelManager.get_local_available_model_names">[docs]</a>
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_local_available_model_names</span><span class="p">(</span><span class="n">local_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return a list of model names in a local folder.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return locally available model names from ``local_dir``.</span>
 
 <span class="sd">        :param local_dir: The local folder containing models.</span>
 <span class="sd">        :type local_dir: str</span>
+<span class="sd">        :returns: Names of subdirectories that look like valid local PMM models</span>
+<span class="sd">            (contain ``.metadata.json``).</span>
+<span class="sd">        :rtype: list[str]</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">models</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">local_dir</span><span class="p">):</span>
@@ -272,7 +366,15 @@
 <a class="viewcode-back" href="../../generated/gplately.PlateModelManager.html#gplately.PlateModelManager.get_default_repo_url">[docs]</a>
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_default_repo_url</span><span class="p">():</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the URL to the configuration data of models.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the first reachable default model-manifest URL.</span>
+
+<span class="sd">        Endpoints are probed in order using HTTP ``HEAD`` requests.</span>
+
+<span class="sd">        :returns: Reachable manifest URL.</span>
+<span class="sd">        :rtype: str</span>
+<span class="sd">        :raises ServerUnavailable: If none of the default endpoints are</span>
+<span class="sd">            reachable.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">default_repo_url_list</span> <span class="o">=</span> <span class="p">[</span>
             <span class="s2">&quot;https://repo.gplates.org/webdav/pmm/config/models_v2.json&quot;</span><span class="p">,</span>
             <span class="s2">&quot;https://www.earthbyte.org/webdav/pmm/config/models_v2_eb.json&quot;</span><span class="p">,</span>
@@ -299,9 +401,9 @@
 <div class="viewcode-block" id="PlateModelManager.download_all_models">
 <a class="viewcode-back" href="../../generated/gplately.PlateModelManager.html#gplately.PlateModelManager.download_all_models">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">download_all_models</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data_dir</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;./&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Download all available models into the ``data_dir``.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Download layer data for all available models into ``data_dir``.</span>
 
-<span class="sd">        :param data_dir: The folder to save the model files.</span>
+<span class="sd">        :param data_dir: Destination directory for downloaded model data.</span>
 <span class="sd">        :type data_dir: str</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_available_model_names</span><span class="p">():</span>
