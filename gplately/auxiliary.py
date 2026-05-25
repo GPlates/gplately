@@ -173,7 +173,9 @@ def get_gplot(
     )
 
 
-def get_pygmt_basemap_figure(projection="N180/10c", region="d"):
+def get_pygmt_basemap_figure(
+    projection="N180/10c", region="d", frame: Union[str, list] = "lrtb"
+):
     """A helper function to return a ``pygmt.Figure()`` object
 
     Parameters
@@ -182,6 +184,8 @@ def get_pygmt_basemap_figure(projection="N180/10c", region="d"):
         string to define the map projection in GMT style
     region: str, default="d"
         string to define the map extent in GMT style
+    frame: str or list, default="lrtb"
+        GMT frame setting. Use ``"afg"`` to draw annotations, ticks, and gridlines.
 
 
     Returns
@@ -194,7 +198,7 @@ def get_pygmt_basemap_figure(projection="N180/10c", region="d"):
         pygmt is not None
     ), "PyGMT is not available. Please install PyGMT to use this function."
     fig = pygmt.Figure()
-    fig.basemap(region=region, projection=projection, frame="lrtb")
+    fig.basemap(region=region, projection=projection, frame=frame)
     return fig
 
 

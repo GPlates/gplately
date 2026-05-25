@@ -17,6 +17,8 @@
 import logging
 from pathlib import Path
 
+# pyright: reportMissingImports=false
+# pyright: reportMissingModuleSource=false
 import pygplates
 
 logger = logging.getLogger("gplately")
@@ -67,11 +69,13 @@ class PygmtPlotEngine(PlotEngine):
         style : str
             GMT "style" parameter
         gmtlabel : str
-            GMT "label" parameter
+            GMT "label" parameter for lines and polygons
+        pointlabel : str
+            Optional label applied only to point geometries.
 
         """
         line_color = kwargs.pop("edgecolor", "blue")
-        line_width = f"{kwargs.pop('linewidth',0.1)}p"
+        line_width = f"{kwargs.pop('linewidth',0.5)}p"
 
         fill = kwargs.pop("facecolor", None)
         if fill and fill.lower() == "none":
@@ -85,7 +89,74 @@ class PygmtPlotEngine(PlotEngine):
         else:
             pen = kwargs.pop("pen", f"{line_width},{line_color}")
         style = kwargs.pop("style", None)
+        kwargs.pop("label", None)
         label = kwargs.pop("gmtlabel", None)
+        point_label = kwargs.pop("pointlabel", None)
+
+        point_geometries = []
+        line_geometries = []
+        polygon_geometries = []
+        for geometry in gdf.geometry:
+            geom_type = getattr(geometry, "geom_type", "")
+            if geom_type in ("Point", "MultiPoint"):
+                point_geometries.append(geometry)
+            elif geom_type in ("LineString", "MultiLineString"):
+                line_geometries.append(geometry)
+            else:
+                polygon_geometries.append(geometry)
+
+        if point_geometries:
+            point_xs = []
+            point_ys = []
+            for geometry in point_geometries:
+                geom_type = getattr(geometry, "geom_type", "")
+                if geom_type == "Point":
+                    point_xs.append(geometry.x)
+                    point_ys.append(geometry.y)
+                elif geom_type == "MultiPoint":
+                    for point in getattr(geometry, "geoms", ()):
+                        x = getattr(point, "x", None)
+                        y = getattr(point, "y", None)
+                        if x is None or y is None:
+                            continue
+                        point_xs.append(x)
+                        point_ys.append(y)
+
+            if point_xs and point_ys:
+                point_style = kwargs.pop("pointstyle", "c0.08c")
+                point_fill = kwargs.pop("pointfill", None)
+                if point_fill in (None, "none"):
+                    point_fill = line_color
+                point_pen = kwargs.pop("pointpen", None)
+
+                ax_or_fig.plot(
+                    x=point_xs,
+                    y=point_ys,
+                    pen=point_pen,
+                    fill=point_fill,
+                    style=point_style,
+                    transparency=0,
+                    label=point_label,
+                    **kwargs,
+                )
+
+        if line_geometries:
+            line_gdf = GeoDataFrame(
+                {"geometry": line_geometries}, geometry="geometry", crs=gdf.crs
+            )
+            ax_or_fig.plot(
+                data=line_gdf.geometry,
+                pen=pen,
+                transparency=0,
+                **kwargs,
+            )
+
+        if not polygon_geometries:
+            return ax_or_fig
+
+        gdf = GeoDataFrame(
+            {"geometry": polygon_geometries}, geometry="geometry", crs=gdf.crs
+        )
 
         ax_or_fig.plot(
             data=gdf.geometry,
@@ -97,7 +168,32 @@ class PygmtPlotEngine(PlotEngine):
         )
 
     def plot_pygplates_features(self, ax_or_fig, features, **kwargs):
-        """Use PyGMT to plot one or more pygplates features onto a map."""
+        """Use PyGMT to plot one or more pygplates features onto a map.
+
+        Parameters
+        ----------
+        ax_or_fig : pygmt.Figure()
+            pygmt Figure object
+        features : pygplates.Feature or list of pygplates.Feature
+            One or more pygplates.Feature objects to be plotted.
+        edgecolor : str
+            For polygons, it is the border colour. For polylines, it is the line colour.
+        facecolor : str
+            The colour used to fill the polygon.
+        fill : str
+            GMT "fill" parameter
+        pen : str
+            GMT "pen" parameter
+
+        Warnings
+        --------
+        This method will not check features' valid time. It just simply plots all the geometries in the features.
+        You need to filter features by valid time yourself before passing them to this method if you want to plot features at a specific time.
+
+        .. seealso::
+
+            Use the class :class:`ValidTimeFilter` for filtering features by valid time.
+        """
         from gplately.geometry import pygplates_to_shapely
 
         if isinstance(features, pygplates.Feature):
@@ -105,14 +201,7 @@ class PygmtPlotEngine(PlotEngine):
 
         shapely_geometries = []
         for feature in features:
-            valid_time = feature.get_valid_time(None)  # type: ignore
-            if valid_time is not None and valid_time[1] not in [
-                pygplates.GeoTimeInstant.create_distant_future(),  # type: ignore
-                0,
-            ]:
-                continue
-
-            geometries = feature.get_geometries()  # type: ignore
+            geometries = feature.get_all_geometries()  # type: ignore
             if not geometries:
                 continue
 
@@ -199,7 +288,7 @@ class PygmtPlotEngine(PlotEngine):
             Additional keyword arguments.
         """
         from ..grids import Raster
-        import xarray as xr
+        import xarray as xr  # pyright: ignore[reportMissingImports]
 
         # we need to convert the grid data to xarray.DataArray for pygmt.grdimage().
         if isinstance(grid, Raster):

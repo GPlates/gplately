@@ -17,6 +17,8 @@
 import logging
 import math
 
+# pyright: reportMissingImports=false
+# pyright: reportMissingModuleSource=false
 import pygplates
 
 import cartopy.crs as ccrs
@@ -200,10 +202,9 @@ class CartopyPlotEngine(PlotEngine):
         try:
             projection = ax_or_fig.projection
         except AttributeError:
-            logger.warning(
+            raise ValueError(
                 "The ax.projection does not exist. You must set projection to plot Cartopy maps, such as ax = plt.subplot(211, projection=cartopy.crs.PlateCarree())"
             )
-            projection = None
 
         if isinstance(projection, ccrs.PlateCarree):
             spacing = math.degrees(spacing)

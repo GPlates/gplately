@@ -22,10 +22,10 @@ line_geom = pygplates.PolylineOnSphere(  # type: ignore
 )
 polygon_geom = pygplates.PolygonOnSphere(
     [
-        pygplates.PointOnSphere(0, 0),  # type: ignore
-        pygplates.PointOnSphere(0, 30),  # type: ignore
-        pygplates.PointOnSphere(30, 30),  # type: ignore
-        pygplates.PointOnSphere(30, 0),  # type: ignore
+        pygplates.PointOnSphere(5, 5),  # type: ignore
+        pygplates.PointOnSphere(10, 25),  # type: ignore
+        pygplates.PointOnSphere(35, 30),  # type: ignore
+        pygplates.PointOnSphere(45, -60),  # type: ignore
     ]
 )
 multipoint_geom = pygplates.MultiPointOnSphere(  # type: ignore
@@ -79,9 +79,16 @@ def test_plot_pygplates_features_cartopy(show):
 
 
 def test_plot_pygplates_features_pygmt(show):
+    import pygmt  # pyright: ignore[reportMissingImports]
+
     from gplately.auxiliary import get_pygmt_basemap_figure
 
-    fig = get_pygmt_basemap_figure(projection="N180/10c", region="d")
+    with pygmt.config(MAP_TITLE_OFFSET="-7p"):
+        fig = get_pygmt_basemap_figure(
+            projection="N0/10c",
+            region="d",
+            frame=["xafg30", "yafg30", "+tPyGMT Plot of Pygplates Features"],
+        )
 
     pygmt_plot_engine = gplately.PygmtPlotEngine()
     pygmt_plot_engine.plot_pygplates_features(
@@ -89,15 +96,16 @@ def test_plot_pygplates_features_pygmt(show):
         test_features,
         edgecolor="blue",
         facecolor="none",
-        gmtlabel="PyGPlates Features",
+        gmtlabel="Lines and Polygons",
+        pointlabel="Points",
     )
-    fig.legend(position="jBL+o0.2c", box="+gwhite+p0.25p")
+    fig.legend(position="jBL+o-1.1c/-.55c", box="+gwhite+p0.25p")
 
     if show:
-        fig.show()
+        fig.show(crop="+m0.4c")
     else:
         output_file = "./output/test_plot_pygplates_features_pygmt.pdf"
-        fig.savefig(output_file)
+        fig.savefig(output_file, crop="+m0.4c")
         print(f"Done! The {output_file} has been saved.")
 
 
