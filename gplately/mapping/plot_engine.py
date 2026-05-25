@@ -16,7 +16,11 @@
 #
 from abc import ABC, abstractmethod
 
-from geopandas.geodataframe import GeoDataFrame
+# pyright: reportMissingModuleSource=false
+
+from geopandas.geodataframe import (
+    GeoDataFrame,
+)
 
 
 class PlotEngine(ABC):
