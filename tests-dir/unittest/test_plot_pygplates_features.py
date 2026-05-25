@@ -79,12 +79,31 @@ def test_plot_pygplates_features_cartopy(show):
 
 
 def test_plot_pygplates_features_pygmt(show):
-    # @copilot, can you implement this test function to plot the same pygplates features using PyGMT? You can refer to the previous test function and the PygmtPlotEngine.plot_pygplates_features() method for implementation details.
-    pass
+    from gplately.auxiliary import get_pygmt_basemap_figure
+
+    fig = get_pygmt_basemap_figure(projection="N180/10c", region="d")
+
+    pygmt_plot_engine = gplately.PygmtPlotEngine()
+    pygmt_plot_engine.plot_pygplates_features(
+        fig,
+        test_features,
+        edgecolor="blue",
+        facecolor="none",
+        gmtlabel="PyGPlates Features",
+    )
+    fig.legend(position="jBL+o0.2c", box="+gwhite+p0.25p")
+
+    if show:
+        fig.show()
+    else:
+        output_file = "./output/test_plot_pygplates_features_pygmt.pdf"
+        fig.savefig(output_file)
+        print(f"Done! The {output_file} has been saved.")
 
 
 def main(show=True):
     test_plot_pygplates_features_cartopy(show)
+    test_plot_pygplates_features_pygmt(show)
 
 
 if __name__ == "__main__":
