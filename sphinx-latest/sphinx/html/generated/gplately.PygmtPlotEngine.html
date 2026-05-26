@@ -56,6 +56,7 @@
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../api.html">Main Classes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../functions.html">Functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../filters_and_transformers.html">Filters And Transformers</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="../secondaries.html">Other Classes</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="gplately.PlateModel.html">gplately.PlateModel</a></li>
 <li class="toctree-l2"><a class="reference internal" href="gplately.PlateModelManager.html">gplately.PlateModelManager</a></li>
@@ -128,7 +129,7 @@
 <td><p>Use PyGMT to plot a grid onto a map.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#gplately.PygmtPlotEngine.plot_pygplates_features" title="gplately.PygmtPlotEngine.plot_pygplates_features"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_pygplates_features</span></code></a>(ax_or_fig, features, ...)</p></td>
-<td><p>Not implemented yet</p></td>
+<td><p>Use PyGMT to plot one or more pygplates features onto a map.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#gplately.PygmtPlotEngine.plot_subduction_zones" title="gplately.PygmtPlotEngine.plot_subduction_zones"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_subduction_zones</span></code></a>(ax_or_fig, ...[, color])</p></td>
 <td><p>Use PyGMT to plot subduction zones with &quot;teeth&quot;</p></td>
@@ -150,7 +151,8 @@ Currently, only colour names are tested and officially supported, for example, �
 <li><p><strong>fill</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – GMT “fill” parameter</p></li>
 <li><p><strong>pen</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – GMT “pen” parameter</p></li>
 <li><p><strong>style</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – GMT “style” parameter</p></li>
-<li><p><strong>gmtlabel</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – GMT “label” parameter</p></li>
+<li><p><strong>gmtlabel</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – GMT “label” parameter for lines and polygons</p></li>
+<li><p><strong>pointlabel</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Optional label applied only to point geometries.</p></li>
 </ul>
 </dd>
 </dl>
@@ -179,7 +181,28 @@ Currently, only colour names are tested and officially supported, for example, �
 <dl class="py method">
 <dt class="sig sig-object py" id="gplately.PygmtPlotEngine.plot_pygplates_features">
 <span class="sig-name descname"><span class="pre">plot_pygplates_features</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ax_or_fig</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">features</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/mapping/pygmt_plot.html#PygmtPlotEngine.plot_pygplates_features"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PygmtPlotEngine.plot_pygplates_features" title="Link to this definition"></a></dt>
-<dd><p>Not implemented yet</p>
+<dd><p>Use PyGMT to plot one or more pygplates features onto a map.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ax_or_fig</strong> (<em>pygmt.Figure</em><em>(</em><em>)</em>) – pygmt Figure object</p></li>
+<li><p><strong>features</strong> (<em>pygplates.Feature</em><em> or </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em> of </em><em>pygplates.Feature</em>) – One or more pygplates.Feature objects to be plotted.</p></li>
+<li><p><strong>edgecolor</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – For polygons, it is the border colour. For polylines, it is the line colour.</p></li>
+<li><p><strong>facecolor</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – The colour used to fill the polygon.</p></li>
+<li><p><strong>fill</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – GMT “fill” parameter</p></li>
+<li><p><strong>pen</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – GMT “pen” parameter</p></li>
+</ul>
+</dd>
+</dl>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>This method will not check features’ valid time. It just simply plots all the geometries in the features.
+You need to filter features by valid time yourself before passing them to this method if you want to plot features at a specific time.</p>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p>Use the class <code class="xref py py-class docutils literal notranslate"><span class="pre">ValidTimeFilter</span></code> for filtering features by valid time.</p>
+</div>
+</div>
 </dd></dl>
 
 <dl class="py method">

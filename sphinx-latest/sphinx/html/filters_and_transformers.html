@@ -1,0 +1,802 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Filters And Transformers &mdash; gplately 2.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
+
+  
+    <link rel="shortcut icon" href="_static/favicon.ico"/>
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=51b770b3"></script>
+      <script src="_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Other Classes" href="secondaries.html" />
+    <link rel="prev" title="gplately.subduction_convergence" href="generated/gplately.subduction_convergence.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            gplately
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="basic_usages.html">Minimal Working Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="use_cases.html">Common Use Cases</a></li>
+<li class="toctree-l1"><a class="reference internal" href="faq.html">Troubleshooting and FAQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="command_line_interface.html">Command Line Interface (CLI)</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="api.html">Main Classes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="functions.html">Functions</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Filters And Transformers</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#feature-filters">Feature Filters</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#gplately.utils.feature_filter.FeatureFilter"><code class="docutils literal notranslate"><span class="pre">FeatureFilter</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#gplately.utils.feature_filter.FeatureFilter.filtrate_feature_collection"><code class="docutils literal notranslate"><span class="pre">FeatureFilter.filtrate_feature_collection</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gplately.utils.feature_filter.FeatureFilter.filtrate_features_as_list"><code class="docutils literal notranslate"><span class="pre">FeatureFilter.filtrate_features_as_list</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gplately.utils.feature_filter.FeatureFilter.residue_feature_collection"><code class="docutils literal notranslate"><span class="pre">FeatureFilter.residue_feature_collection</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gplately.utils.feature_filter.FeatureFilter.residue_features_as_list"><code class="docutils literal notranslate"><span class="pre">FeatureFilter.residue_features_as_list</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gplately.utils.feature_filter.FeatureFilter.should_keep"><code class="docutils literal notranslate"><span class="pre">FeatureFilter.should_keep()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#gplately.utils.feature_filter.FeatureNameFilter"><code class="docutils literal notranslate"><span class="pre">FeatureNameFilter</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#gplately.utils.feature_filter.FeatureNameFilter.should_keep"><code class="docutils literal notranslate"><span class="pre">FeatureNameFilter.should_keep()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#gplately.utils.feature_filter.PlateIDFilter"><code class="docutils literal notranslate"><span class="pre">PlateIDFilter</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#gplately.utils.feature_filter.PlateIDFilter.should_keep"><code class="docutils literal notranslate"><span class="pre">PlateIDFilter.should_keep()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#gplately.utils.feature_filter.BirthAgeFilter"><code class="docutils literal notranslate"><span class="pre">BirthAgeFilter</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#gplately.utils.feature_filter.BirthAgeFilter.should_keep"><code class="docutils literal notranslate"><span class="pre">BirthAgeFilter.should_keep()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#gplately.utils.feature_filter.EndTimeFilter"><code class="docutils literal notranslate"><span class="pre">EndTimeFilter</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#gplately.utils.feature_filter.EndTimeFilter.should_keep"><code class="docutils literal notranslate"><span class="pre">EndTimeFilter.should_keep()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#gplately.utils.feature_filter.FeatureTypeFilter"><code class="docutils literal notranslate"><span class="pre">FeatureTypeFilter</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#gplately.utils.feature_filter.FeatureTypeFilter.should_keep"><code class="docutils literal notranslate"><span class="pre">FeatureTypeFilter.should_keep()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#gplately.utils.feature_filter.PropertyExistsFilter"><code class="docutils literal notranslate"><span class="pre">PropertyExistsFilter</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#gplately.utils.feature_filter.PropertyExistsFilter.should_keep"><code class="docutils literal notranslate"><span class="pre">PropertyExistsFilter.should_keep()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#gplately.utils.feature_filter.PropertyValueFilter"><code class="docutils literal notranslate"><span class="pre">PropertyValueFilter</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#gplately.utils.feature_filter.PropertyValueFilter.should_keep"><code class="docutils literal notranslate"><span class="pre">PropertyValueFilter.should_keep()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#gplately.utils.feature_filter.RegionOfInterestFilter"><code class="docutils literal notranslate"><span class="pre">RegionOfInterestFilter</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#gplately.utils.feature_filter.RegionOfInterestFilter.should_keep"><code class="docutils literal notranslate"><span class="pre">RegionOfInterestFilter.should_keep()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#gplately.utils.feature_filter.TopologicalFeaturesWithDuplicateSectionsFilter"><code class="docutils literal notranslate"><span class="pre">TopologicalFeaturesWithDuplicateSectionsFilter</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#gplately.utils.feature_filter.TopologicalFeaturesWithDuplicateSectionsFilter.should_keep"><code class="docutils literal notranslate"><span class="pre">TopologicalFeaturesWithDuplicateSectionsFilter.should_keep()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#gplately.utils.feature_filter.TopologicalReferenceFilter"><code class="docutils literal notranslate"><span class="pre">TopologicalReferenceFilter</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#gplately.utils.feature_filter.TopologicalReferenceFilter.should_keep"><code class="docutils literal notranslate"><span class="pre">TopologicalReferenceFilter.should_keep()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gplately.utils.feature_filter.TopologicalReferenceFilter.topological_reference_map"><code class="docutils literal notranslate"><span class="pre">TopologicalReferenceFilter.topological_reference_map</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#gplately.utils.feature_filter.FeatureIDFilter"><code class="docutils literal notranslate"><span class="pre">FeatureIDFilter</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#gplately.utils.feature_filter.FeatureIDFilter.should_keep"><code class="docutils literal notranslate"><span class="pre">FeatureIDFilter.should_keep()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#gplately.utils.feature_filter.ValidTimeFilter"><code class="docutils literal notranslate"><span class="pre">ValidTimeFilter</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#gplately.utils.feature_filter.ValidTimeFilter.should_keep"><code class="docutils literal notranslate"><span class="pre">ValidTimeFilter.should_keep()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#feature-transformers">Feature Transformers</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#gplately.utils.feature_transformer.FeatureTransformer"><code class="docutils literal notranslate"><span class="pre">FeatureTransformer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#gplately.utils.feature_transformer.FeatureTransformer.transform"><code class="docutils literal notranslate"><span class="pre">FeatureTransformer.transform()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#gplately.utils.feature_transformer.SetReconstructionPlateIDTransformer"><code class="docutils literal notranslate"><span class="pre">SetReconstructionPlateIDTransformer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#gplately.utils.feature_transformer.SetReconstructionPlateIDTransformer.transform"><code class="docutils literal notranslate"><span class="pre">SetReconstructionPlateIDTransformer.transform()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#gplately.utils.feature_transformer.SetValidTimeTransformer"><code class="docutils literal notranslate"><span class="pre">SetValidTimeTransformer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#gplately.utils.feature_transformer.SetValidTimeTransformer.transform"><code class="docutils literal notranslate"><span class="pre">SetValidTimeTransformer.transform()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="secondaries.html">Other Classes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="plate_models.html">Plate Models</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">gplately</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Filters And Transformers</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/filters_and_transformers.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="filters-and-transformers">
+<h1>Filters And Transformers<a class="headerlink" href="#filters-and-transformers" title="Link to this heading"></a></h1>
+<p>This page lists filter and transformer classes available in GPlately.</p>
+<nav class="contents local" id="contents">
+<ul class="simple">
+<li><p><a class="reference internal" href="#feature-filters" id="id1">Feature Filters</a></p></li>
+<li><p><a class="reference internal" href="#feature-transformers" id="id2">Feature Transformers</a></p></li>
+</ul>
+</nav>
+<section id="feature-filters">
+<h2><a class="toc-backref" href="#id1" role="doc-backlink">Feature Filters</a><a class="headerlink" href="#feature-filters" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="gplately.utils.feature_filter.FeatureFilter">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">gplately.utils.feature_filter.</span></span><span class="sig-name descname"><span class="pre">FeatureFilter</span></span><a class="reference internal" href="_modules/gplately/utils/feature_filter.html#FeatureFilter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.utils.feature_filter.FeatureFilter" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Abstract base class for feature filters.</p>
+<dl class="py property">
+<dt class="sig sig-object py" id="gplately.utils.feature_filter.FeatureFilter.filtrate_feature_collection">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">filtrate_feature_collection</span></span><a class="headerlink" href="#gplately.utils.feature_filter.FeatureFilter.filtrate_feature_collection" title="Link to this definition"></a></dt>
+<dd><p>return the features that pass the filter as a pygplates.FeatureCollection.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="gplately.utils.feature_filter.FeatureFilter.filtrate_features_as_list">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">filtrate_features_as_list</span></span><a class="headerlink" href="#gplately.utils.feature_filter.FeatureFilter.filtrate_features_as_list" title="Link to this definition"></a></dt>
+<dd><p>return the features that pass the filter as a list.
+Use this property if you want to keep the order of the features.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="gplately.utils.feature_filter.FeatureFilter.residue_feature_collection">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">residue_feature_collection</span></span><a class="headerlink" href="#gplately.utils.feature_filter.FeatureFilter.residue_feature_collection" title="Link to this definition"></a></dt>
+<dd><p>return the features that do not pass the filter as a pygplates.FeatureCollection.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="gplately.utils.feature_filter.FeatureFilter.residue_features_as_list">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">residue_features_as_list</span></span><a class="headerlink" href="#gplately.utils.feature_filter.FeatureFilter.residue_features_as_list" title="Link to this definition"></a></dt>
+<dd><p>return the features that do not pass the filter as a list.
+Use this property if you want to keep the order of the features.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gplately.utils.feature_filter.FeatureFilter.should_keep">
+<span class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">should_keep</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">feature</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Feature</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span></span><a class="reference internal" href="_modules/gplately/utils/feature_filter.html#FeatureFilter.should_keep"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.utils.feature_filter.FeatureFilter.should_keep" title="Link to this definition"></a></dt>
+<dd><p>This abstract method must be implemented in subclass.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>feature</strong> (<em>pygplates.Feature</em>)</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>True if the feature should be kept; False otherwise.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)">bool</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="gplately.utils.feature_filter.FeatureNameFilter">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">gplately.utils.feature_filter.</span></span><span class="sig-name descname"><span class="pre">FeatureNameFilter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">names</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.14)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exact_match</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">case_sensitive</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reverse</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gplately/utils/feature_filter.html#FeatureNameFilter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.utils.feature_filter.FeatureNameFilter" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#gplately.utils.feature_filter.FeatureFilter" title="gplately.utils.feature_filter.FeatureFilter"><code class="xref py py-class docutils literal notranslate"><span class="pre">FeatureFilter</span></code></a></p>
+<p>filter features by name, keep features with name matching any of the specified strings by default</p>
+<p class="rubric">Examples</p>
+<p>Find features who name contains ‘Africa’ or ‘Asia’:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">FeatureNameFilter</span><span class="p">([</span><span class="s1">&#39;Africa&#39;</span><span class="p">,</span> <span class="s1">&#39;Asia&#39;</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>Find features who name <strong>doesn’t</strong> contain ‘Africa’ or ‘Asia’:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span> <span class="n">FeatureNameFilter</span><span class="p">([</span><span class="s1">&#39;Africa&#39;</span><span class="p">,</span> <span class="s1">&#39;Asia&#39;</span><span class="p">],</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Find features who name is exactly ‘Africa’ or ‘Asia’:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span> <span class="n">FeatureNameFilter</span><span class="p">([</span><span class="s1">&#39;Africa&#39;</span><span class="p">,</span> <span class="s1">&#39;Asia&#39;</span><span class="p">],</span> <span class="n">exact_match</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Find features who name is not ‘Africa’ or ‘Asia’:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span> <span class="n">FeatureNameFilter</span><span class="p">([</span><span class="s1">&#39;Africa&#39;</span><span class="p">,</span> <span class="s1">&#39;Asia&#39;</span><span class="p">],</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exact_match</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Find features who name is not ‘Africa’ or ‘Asia’ (case sensitive):</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span> <span class="n">FeatureNameFilter</span><span class="p">([</span><span class="s1">&#39;Africa&#39;</span><span class="p">,</span> <span class="s1">&#39;Asia&#39;</span><span class="p">],</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exact_match</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">case_sensitive</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="gplately.utils.feature_filter.FeatureNameFilter.should_keep">
+<span class="sig-name descname"><span class="pre">should_keep</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">feature</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Feature</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span></span><a class="reference internal" href="_modules/gplately/utils/feature_filter.html#FeatureNameFilter.should_keep"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.utils.feature_filter.FeatureNameFilter.should_keep" title="Link to this definition"></a></dt>
+<dd><p>This abstract method must be implemented in subclass.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>feature</strong> (<em>pygplates.Feature</em>)</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>True if the feature should be kept; False otherwise.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)">bool</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="gplately.utils.feature_filter.PlateIDFilter">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">gplately.utils.feature_filter.</span></span><span class="sig-name descname"><span class="pre">PlateIDFilter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pids</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.14)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reverse</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gplately/utils/feature_filter.html#PlateIDFilter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.utils.feature_filter.PlateIDFilter" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#gplately.utils.feature_filter.FeatureFilter" title="gplately.utils.feature_filter.FeatureFilter"><code class="xref py py-class docutils literal notranslate"><span class="pre">FeatureFilter</span></code></a></p>
+<p>filter features by plate ID, keep features with plate ID in a specified list by default</p>
+<p class="rubric">Examples</p>
+<p>Find features whose plate id is 101 or 201 or 301:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span> <span class="n">PlateIDFilter</span><span class="p">([</span><span class="mi">101</span><span class="p">,</span><span class="mi">201</span><span class="p">,</span><span class="mi">301</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>Find features whose plate id is not 101 nor 201 nor 301:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span> <span class="n">PlateIDFilter</span><span class="p">([</span><span class="mi">101</span><span class="p">,</span><span class="mi">201</span><span class="p">,</span><span class="mi">301</span><span class="p">],</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="gplately.utils.feature_filter.PlateIDFilter.should_keep">
+<span class="sig-name descname"><span class="pre">should_keep</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">feature</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Feature</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span></span><a class="reference internal" href="_modules/gplately/utils/feature_filter.html#PlateIDFilter.should_keep"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.utils.feature_filter.PlateIDFilter.should_keep" title="Link to this definition"></a></dt>
+<dd><p>This abstract method must be implemented in subclass.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>feature</strong> (<em>pygplates.Feature</em>)</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>True if the feature should be kept; False otherwise.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)">bool</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="gplately.utils.feature_filter.BirthAgeFilter">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">gplately.utils.feature_filter.</span></span><span class="sig-name descname"><span class="pre">BirthAgeFilter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">age</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">reverse</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gplately/utils/feature_filter.html#BirthAgeFilter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.utils.feature_filter.BirthAgeFilter" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#gplately.utils.feature_filter.FeatureFilter" title="gplately.utils.feature_filter.FeatureFilter"><code class="xref py py-class docutils literal notranslate"><span class="pre">FeatureFilter</span></code></a></p>
+<p>filter features by the time of appearance, keep older features by default</p>
+<p class="rubric">Examples</p>
+<p>Find features which appreared before 500 Ma:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span> <span class="n">BirthAgeFilter</span><span class="p">(</span><span class="mi">500</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Find features which appreared after 500 Ma:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">BirthAgeFilter</span><span class="p">(</span><span class="mi">500</span><span class="p">,</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="gplately.utils.feature_filter.BirthAgeFilter.should_keep">
+<span class="sig-name descname"><span class="pre">should_keep</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">feature</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Feature</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span></span><a class="reference internal" href="_modules/gplately/utils/feature_filter.html#BirthAgeFilter.should_keep"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.utils.feature_filter.BirthAgeFilter.should_keep" title="Link to this definition"></a></dt>
+<dd><p>This abstract method must be implemented in subclass.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>feature</strong> (<em>pygplates.Feature</em>)</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>True if the feature should be kept; False otherwise.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)">bool</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="gplately.utils.feature_filter.EndTimeFilter">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">gplately.utils.feature_filter.</span></span><span class="sig-name descname"><span class="pre">EndTimeFilter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">end_time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">reverse</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gplately/utils/feature_filter.html#EndTimeFilter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.utils.feature_filter.EndTimeFilter" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#gplately.utils.feature_filter.FeatureFilter" title="gplately.utils.feature_filter.FeatureFilter"><code class="xref py py-class docutils literal notranslate"><span class="pre">FeatureFilter</span></code></a></p>
+<p>filter features by the time of disappearance, keep features that disappeared before a certain time by default</p>
+<p class="rubric">Examples</p>
+<p>Find features which disappeared before 100 Ma:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">EndTimeFilter</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Find features which disappeared after 100 Ma, including features that have not disappeared yet:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">EndTimeFilter</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="gplately.utils.feature_filter.EndTimeFilter.should_keep">
+<span class="sig-name descname"><span class="pre">should_keep</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">feature</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Feature</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span></span><a class="reference internal" href="_modules/gplately/utils/feature_filter.html#EndTimeFilter.should_keep"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.utils.feature_filter.EndTimeFilter.should_keep" title="Link to this definition"></a></dt>
+<dd><p>This abstract method must be implemented in subclass.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>feature</strong> (<em>pygplates.Feature</em>)</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>True if the feature should be kept; False otherwise.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)">bool</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="gplately.utils.feature_filter.FeatureTypeFilter">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">gplately.utils.feature_filter.</span></span><span class="sig-name descname"><span class="pre">FeatureTypeFilter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">feature_types</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.14)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reverse</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gplately/utils/feature_filter.html#FeatureTypeFilter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.utils.feature_filter.FeatureTypeFilter" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#gplately.utils.feature_filter.FeatureFilter" title="gplately.utils.feature_filter.FeatureFilter"><code class="xref py py-class docutils literal notranslate"><span class="pre">FeatureFilter</span></code></a></p>
+<p>filter features by the feature type, keep features with feature type matching
+a specified regular expression by default. A list of feature types can also be provided,
+and the regular expression will be the combination of these feature types.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="gplately.utils.feature_filter.FeatureTypeFilter.should_keep">
+<span class="sig-name descname"><span class="pre">should_keep</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">feature</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Feature</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span></span><a class="reference internal" href="_modules/gplately/utils/feature_filter.html#FeatureTypeFilter.should_keep"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.utils.feature_filter.FeatureTypeFilter.should_keep" title="Link to this definition"></a></dt>
+<dd><p>This abstract method must be implemented in subclass.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>feature</strong> (<em>pygplates.Feature</em>)</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>True if the feature should be kept; False otherwise.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)">bool</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="gplately.utils.feature_filter.PropertyExistsFilter">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">gplately.utils.feature_filter.</span></span><span class="sig-name descname"><span class="pre">PropertyExistsFilter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">property_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">reverse</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gplately/utils/feature_filter.html#PropertyExistsFilter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.utils.feature_filter.PropertyExistsFilter" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#gplately.utils.feature_filter.FeatureFilter" title="gplately.utils.feature_filter.FeatureFilter"><code class="xref py py-class docutils literal notranslate"><span class="pre">FeatureFilter</span></code></a></p>
+<p>filter features by the existence of a property, keep features that have a specific property by default</p>
+<p>Depending on the value of reverse, this filter can be used to either keep features that have a specific property,
+or keep features that do not have that property.</p>
+<p class="rubric">Examples</p>
+<p>Keep features that do not have the property <code class="docutils literal notranslate"><span class="pre">gpml:subductionPolarity</span></code>:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">PropertyExistsFilter</span><span class="p">(</span><span class="s2">&quot;gpml:subductionPolarity&quot;</span><span class="p">,</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="gplately.utils.feature_filter.PropertyExistsFilter.should_keep">
+<span class="sig-name descname"><span class="pre">should_keep</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">feature</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Feature</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span></span><a class="reference internal" href="_modules/gplately/utils/feature_filter.html#PropertyExistsFilter.should_keep"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.utils.feature_filter.PropertyExistsFilter.should_keep" title="Link to this definition"></a></dt>
+<dd><p>This abstract method must be implemented in subclass.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>feature</strong> (<em>pygplates.Feature</em>)</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>True if the feature should be kept; False otherwise.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)">bool</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="gplately.utils.feature_filter.PropertyValueFilter">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">gplately.utils.feature_filter.</span></span><span class="sig-name descname"><span class="pre">PropertyValueFilter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">property_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">property_value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reverse</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gplately/utils/feature_filter.html#PropertyValueFilter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.utils.feature_filter.PropertyValueFilter" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#gplately.utils.feature_filter.FeatureFilter" title="gplately.utils.feature_filter.FeatureFilter"><code class="xref py py-class docutils literal notranslate"><span class="pre">FeatureFilter</span></code></a></p>
+<p>filter features by the value of a property, keep features that have a specific property with a specific value by default</p>
+<p>Depending on the value of “reverse” parameter, this filter can be used to either keep features that have the specific property and
+its value matches the specified value, or keep features that either do not have that property or its value does not match
+the specified value.</p>
+<p class="rubric">Examples</p>
+<p>Keep features whose <code class="docutils literal notranslate"><span class="pre">gpml:subductionPolarity</span></code> property value is not <code class="docutils literal notranslate"><span class="pre">Unknown</span></code>:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">PropertyValueFilter</span><span class="p">(</span><span class="s2">&quot;gpml:subductionPolarity&quot;</span><span class="p">,</span> <span class="s2">&quot;Unknown&quot;</span><span class="p">,</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="gplately.utils.feature_filter.PropertyValueFilter.should_keep">
+<span class="sig-name descname"><span class="pre">should_keep</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">feature</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Feature</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span></span><a class="reference internal" href="_modules/gplately/utils/feature_filter.html#PropertyValueFilter.should_keep"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.utils.feature_filter.PropertyValueFilter.should_keep" title="Link to this definition"></a></dt>
+<dd><p>This abstract method must be implemented in subclass.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>feature</strong> (<em>pygplates.Feature</em>)</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>True if the feature should be kept; False otherwise.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)">bool</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="gplately.utils.feature_filter.RegionOfInterestFilter">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">gplately.utils.feature_filter.</span></span><span class="sig-name descname"><span class="pre">RegionOfInterestFilter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">region_of_interest</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Tuple" title="(in Python v3.14)"><span class="pre">Tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">PolygonOnSphere</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reverse</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gplately/utils/feature_filter.html#RegionOfInterestFilter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.utils.feature_filter.RegionOfInterestFilter" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#gplately.utils.feature_filter.FeatureFilter" title="gplately.utils.feature_filter.FeatureFilter"><code class="xref py py-class docutils literal notranslate"><span class="pre">FeatureFilter</span></code></a></p>
+<p>filter features by whether they are inside a region of interest, which can be defined by a bounding box or a polygon.
+By default, features that are inside the region of interest will pass the filter.</p>
+<p class="rubric">Examples</p>
+<p>Keep features that are in the polygon:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">RegionOfInterestFilter</span><span class="p">(</span><span class="n">polygon</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Keep features that are not in the polygon:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">RegionOfInterestFilter</span><span class="p">(</span><span class="n">polygon</span><span class="p">,</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="gplately.utils.feature_filter.RegionOfInterestFilter.should_keep">
+<span class="sig-name descname"><span class="pre">should_keep</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">feature</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Feature</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span></span><a class="reference internal" href="_modules/gplately/utils/feature_filter.html#RegionOfInterestFilter.should_keep"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.utils.feature_filter.RegionOfInterestFilter.should_keep" title="Link to this definition"></a></dt>
+<dd><p>This abstract method must be implemented in subclass.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>feature</strong> (<em>pygplates.Feature</em>)</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>True if the feature should be kept; False otherwise.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)">bool</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="gplately.utils.feature_filter.TopologicalFeaturesWithDuplicateSectionsFilter">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">gplately.utils.feature_filter.</span></span><span class="sig-name descname"><span class="pre">TopologicalFeaturesWithDuplicateSectionsFilter</span></span><a class="reference internal" href="_modules/gplately/utils/feature_filter.html#TopologicalFeaturesWithDuplicateSectionsFilter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.utils.feature_filter.TopologicalFeaturesWithDuplicateSectionsFilter" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#gplately.utils.feature_filter.FeatureFilter" title="gplately.utils.feature_filter.FeatureFilter"><code class="xref py py-class docutils literal notranslate"><span class="pre">FeatureFilter</span></code></a></p>
+<p>find features whose topological geometries have duplicated section features.</p>
+<p>No parameter is needed to create this filter.
+For the given feature, if any of its topological geometries has duplicated section features,
+the feature will pass the filter.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="gplately.utils.feature_filter.TopologicalFeaturesWithDuplicateSectionsFilter.should_keep">
+<span class="sig-name descname"><span class="pre">should_keep</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">feature</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Feature</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span></span><a class="reference internal" href="_modules/gplately/utils/feature_filter.html#TopologicalFeaturesWithDuplicateSectionsFilter.should_keep"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.utils.feature_filter.TopologicalFeaturesWithDuplicateSectionsFilter.should_keep" title="Link to this definition"></a></dt>
+<dd><p>This abstract method must be implemented in subclass.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>feature</strong> (<em>pygplates.Feature</em>)</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>True if the feature should be kept; False otherwise.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)">bool</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="gplately.utils.feature_filter.TopologicalReferenceFilter">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">gplately.utils.feature_filter.</span></span><span class="sig-name descname"><span class="pre">TopologicalReferenceFilter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">topological_feature_collection</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">&lt;pygplates.pygplates.FeatureCollection</span> <span class="pre">object&gt;</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gplately/utils/feature_filter.html#TopologicalReferenceFilter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.utils.feature_filter.TopologicalReferenceFilter" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#gplately.utils.feature_filter.FeatureFilter" title="gplately.utils.feature_filter.FeatureFilter"><code class="xref py py-class docutils literal notranslate"><span class="pre">FeatureFilter</span></code></a></p>
+<p>find reference section features for given topological features</p>
+<p>Given a collection of topological features, this filter will find section features
+that are used in the topological geometries of these topological features
+from another feature collection containing the real geometries.</p>
+<p>A map of topological feature ID to the list of section feature IDs used in the topological geometries
+of that topological feature will also be created and stored in the filter,
+which can be accessed by the property “topological_reference_map”.
+The keys of this map are the string representation of the feature IDs of the topological
+features, and the values are lists of string representation of the feature IDs of
+the section features used in the topological geometries of that topological feature.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="gplately.utils.feature_filter.TopologicalReferenceFilter.should_keep">
+<span class="sig-name descname"><span class="pre">should_keep</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">feature</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Feature</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span></span><a class="reference internal" href="_modules/gplately/utils/feature_filter.html#TopologicalReferenceFilter.should_keep"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.utils.feature_filter.TopologicalReferenceFilter.should_keep" title="Link to this definition"></a></dt>
+<dd><p>This abstract method must be implemented in subclass.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>feature</strong> (<em>pygplates.Feature</em>)</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>True if the feature should be kept; False otherwise.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)">bool</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="gplately.utils.feature_filter.TopologicalReferenceFilter.topological_reference_map">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">topological_reference_map</span></span><a class="headerlink" href="#gplately.utils.feature_filter.TopologicalReferenceFilter.topological_reference_map" title="Link to this definition"></a></dt>
+<dd><p>return the map of topological feature ID to the list of section feature IDs used
+in the topological geometries of that topological feature</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="gplately.utils.feature_filter.FeatureIDFilter">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">gplately.utils.feature_filter.</span></span><span class="sig-name descname"><span class="pre">FeatureIDFilter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fids</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.14)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reverse</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gplately/utils/feature_filter.html#FeatureIDFilter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.utils.feature_filter.FeatureIDFilter" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#gplately.utils.feature_filter.FeatureFilter" title="gplately.utils.feature_filter.FeatureFilter"><code class="xref py py-class docutils literal notranslate"><span class="pre">FeatureFilter</span></code></a></p>
+<p>Filter features by feature ID.</p>
+<p>By default, this filter keeps features whose feature ID is present in <code class="docutils literal notranslate"><span class="pre">fids</span></code>.
+Set <code class="docutils literal notranslate"><span class="pre">reverse=True</span></code> to keep features whose feature ID is not present in <code class="docutils literal notranslate"><span class="pre">fids</span></code>.</p>
+<section id="ordering-behavior">
+<h3>Ordering behavior<a class="headerlink" href="#ordering-behavior" title="Link to this heading"></a></h3>
+<p>When <code class="docutils literal notranslate"><span class="pre">reverse=False</span></code>, the output list in <code class="docutils literal notranslate"><span class="pre">filtrate_features_as_list</span></code> is arranged
+to follow the order of IDs in <code class="docutils literal notranslate"><span class="pre">fids</span></code> (with <code class="docutils literal notranslate"><span class="pre">None</span></code> placeholders for IDs that are
+not found).</p>
+<p>When <code class="docutils literal notranslate"><span class="pre">reverse=True</span></code>, the output list in <code class="docutils literal notranslate"><span class="pre">residue_features_as_list</span></code> follows the
+order of IDs in <code class="docutils literal notranslate"><span class="pre">fids</span></code> (again with <code class="docutils literal notranslate"><span class="pre">None</span></code> placeholders for IDs that are not found).</p>
+<p class="rubric">Notes</p>
+<ul class="simple">
+<li><p>IDs in <code class="docutils literal notranslate"><span class="pre">fids</span></code> must be unique.</p></li>
+<li><dl class="simple">
+<dt>If multiple features share the same feature ID in the input collection, only the</dt><dd><p>first occurrence is kept in the ordered output list and a warning is logged.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<p class="rubric">Examples</p>
+<p>Find features with IDs <code class="docutils literal notranslate"><span class="pre">id1</span></code>, <code class="docutils literal notranslate"><span class="pre">id2</span></code>, or <code class="docutils literal notranslate"><span class="pre">id3</span></code>:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">FeatureIDFilter</span><span class="p">([</span><span class="s1">&#39;id1&#39;</span><span class="p">,</span> <span class="s1">&#39;id2&#39;</span><span class="p">,</span> <span class="s1">&#39;id3&#39;</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>Find features whose IDs are not <code class="docutils literal notranslate"><span class="pre">id1</span></code>, <code class="docutils literal notranslate"><span class="pre">id2</span></code>, or <code class="docutils literal notranslate"><span class="pre">id3</span></code>:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">FeatureIDFilter</span><span class="p">([</span><span class="s1">&#39;id1&#39;</span><span class="p">,</span> <span class="s1">&#39;id2&#39;</span><span class="p">,</span> <span class="s1">&#39;id3&#39;</span><span class="p">],</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="gplately.utils.feature_filter.FeatureIDFilter.should_keep">
+<span class="sig-name descname"><span class="pre">should_keep</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">feature</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Feature</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span></span><a class="reference internal" href="_modules/gplately/utils/feature_filter.html#FeatureIDFilter.should_keep"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.utils.feature_filter.FeatureIDFilter.should_keep" title="Link to this definition"></a></dt>
+<dd><p>This abstract method must be implemented in subclass.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>feature</strong> (<em>pygplates.Feature</em>)</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>True if the feature should be kept; False otherwise.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)">bool</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="gplately.utils.feature_filter.ValidTimeFilter">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">gplately.utils.feature_filter.</span></span><span class="sig-name descname"><span class="pre">ValidTimeFilter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">begin_time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">inf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end_time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">-inf</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gplately/utils/feature_filter.html#ValidTimeFilter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.utils.feature_filter.ValidTimeFilter" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#gplately.utils.feature_filter.FeatureFilter" title="gplately.utils.feature_filter.FeatureFilter"><code class="xref py py-class docutils literal notranslate"><span class="pre">FeatureFilter</span></code></a></p>
+<p>filter features by their valid time, keep features with valid time within a specified time range.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="gplately.utils.feature_filter.ValidTimeFilter.should_keep">
+<span class="sig-name descname"><span class="pre">should_keep</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">feature</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Feature</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span></span><a class="reference internal" href="_modules/gplately/utils/feature_filter.html#ValidTimeFilter.should_keep"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.utils.feature_filter.ValidTimeFilter.should_keep" title="Link to this definition"></a></dt>
+<dd><p>This abstract method must be implemented in subclass.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>feature</strong> (<em>pygplates.Feature</em>)</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>True if the feature should be kept; False otherwise.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)">bool</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="feature-transformers">
+<h2><a class="toc-backref" href="#id2" role="doc-backlink">Feature Transformers</a><a class="headerlink" href="#feature-transformers" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="gplately.utils.feature_transformer.FeatureTransformer">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">gplately.utils.feature_transformer.</span></span><span class="sig-name descname"><span class="pre">FeatureTransformer</span></span><a class="reference internal" href="_modules/gplately/utils/feature_transformer.html#FeatureTransformer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.utils.feature_transformer.FeatureTransformer" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Abstract base class for feature transformers.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="gplately.utils.feature_transformer.FeatureTransformer.transform">
+<span class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">transform</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">feature</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Feature</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Feature</span></span></span><a class="reference internal" href="_modules/gplately/utils/feature_transformer.html#FeatureTransformer.transform"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.utils.feature_transformer.FeatureTransformer.transform" title="Link to this definition"></a></dt>
+<dd><p>Transform a single feature.</p>
+<p>This abstract method must be implemented by all subclasses.
+Implementations may modify the feature in place and/or return
+a new feature object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>feature</strong> (<em>pygplates.Feature</em>) – The feature to transform.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The transformed feature (may be the same object or a new instance).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>pygplates.Feature</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="gplately.utils.feature_transformer.SetReconstructionPlateIDTransformer">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">gplately.utils.feature_transformer.</span></span><span class="sig-name descname"><span class="pre">SetReconstructionPlateIDTransformer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">plate_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gplately/utils/feature_transformer.html#SetReconstructionPlateIDTransformer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.utils.feature_transformer.SetReconstructionPlateIDTransformer" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#gplately.utils.feature_transformer.FeatureTransformer" title="gplately.utils.feature_transformer.FeatureTransformer"><code class="xref py py-class docutils literal notranslate"><span class="pre">FeatureTransformer</span></code></a></p>
+<p>Set the reconstruction plate ID of a feature to a specified value.</p>
+<p>This transformer updates the reconstruction plate ID property of features,
+which is essential for plate kinematic reconstructions.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>plate_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – The reconstruction plate ID to assign to features.
+Typically a positive integer (0 is valid but represents an unspecified plate).</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<p>Create a transformer that sets plate ID to 801:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">transformer</span> <span class="o">=</span> <span class="n">SetReconstructionPlateIDTransformer</span><span class="p">(</span><span class="n">plate_id</span><span class="o">=</span><span class="mi">801</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<dl class="simple">
+<dt><a class="reference internal" href="#gplately.utils.feature_transformer.SetValidTimeTransformer" title="gplately.utils.feature_transformer.SetValidTimeTransformer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SetValidTimeTransformer</span></code></a></dt><dd><p>Transformer for setting valid time intervals</p>
+</dd>
+</dl>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="gplately.utils.feature_transformer.SetReconstructionPlateIDTransformer.transform">
+<span class="sig-name descname"><span class="pre">transform</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">feature</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Feature</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Feature</span></span></span><a class="reference internal" href="_modules/gplately/utils/feature_transformer.html#SetReconstructionPlateIDTransformer.transform"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.utils.feature_transformer.SetReconstructionPlateIDTransformer.transform" title="Link to this definition"></a></dt>
+<dd><p>Transform a single feature.</p>
+<p>This abstract method must be implemented by all subclasses.
+Implementations may modify the feature in place and/or return
+a new feature object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>feature</strong> (<em>pygplates.Feature</em>) – The feature to transform.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The transformed feature (may be the same object or a new instance).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>pygplates.Feature</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="gplately.utils.feature_transformer.SetValidTimeTransformer">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">gplately.utils.feature_transformer.</span></span><span class="sig-name descname"><span class="pre">SetValidTimeTransformer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">begin_time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end_time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gplately/utils/feature_transformer.html#SetValidTimeTransformer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.utils.feature_transformer.SetValidTimeTransformer" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#gplately.utils.feature_transformer.FeatureTransformer" title="gplately.utils.feature_transformer.FeatureTransformer"><code class="xref py py-class docutils literal notranslate"><span class="pre">FeatureTransformer</span></code></a></p>
+<p>Set the valid time of a feature to specified begin and end times.</p>
+<p>This transformer allows partial updates to feature valid time intervals.
+If only one time bound is specified, the existing bound is preserved.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>begin_time</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em> or </em><em>None</em><em>, </em><em>optional</em>) – The begin time (valid from) for the feature in Ma (millions of years ago).
+If None, the existing begin time is preserved. Default is None.</p></li>
+<li><p><strong>end_time</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em> or </em><em>None</em><em>, </em><em>optional</em>) – The end time (valid until) for the feature in Ma (millions of years ago).
+If None, the existing end time is preserved. Default is None.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<p>Set both begin and end times:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">transformer</span> <span class="o">=</span> <span class="n">SetValidTimeTransformer</span><span class="p">(</span><span class="n">begin_time</span><span class="o">=</span><span class="mf">100.0</span><span class="p">,</span> <span class="n">end_time</span><span class="o">=</span><span class="mf">50.0</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Set only the begin time, preserving the existing end time:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">transformer</span> <span class="o">=</span> <span class="n">SetValidTimeTransformer</span><span class="p">(</span><span class="n">begin_time</span><span class="o">=</span><span class="mf">100.0</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<dl class="simple">
+<dt><a class="reference internal" href="#gplately.utils.feature_transformer.SetReconstructionPlateIDTransformer" title="gplately.utils.feature_transformer.SetReconstructionPlateIDTransformer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SetReconstructionPlateIDTransformer</span></code></a></dt><dd><p>Transformer for setting reconstruction plate ID</p>
+</dd>
+</dl>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="gplately.utils.feature_transformer.SetValidTimeTransformer.transform">
+<span class="sig-name descname"><span class="pre">transform</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">feature</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Feature</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Feature</span></span></span><a class="reference internal" href="_modules/gplately/utils/feature_transformer.html#SetValidTimeTransformer.transform"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.utils.feature_transformer.SetValidTimeTransformer.transform" title="Link to this definition"></a></dt>
+<dd><p>Transform a single feature.</p>
+<p>This abstract method must be implemented by all subclasses.
+Implementations may modify the feature in place and/or return
+a new feature object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>feature</strong> (<em>pygplates.Feature</em>) – The feature to transform.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The transformed feature (may be the same object or a new instance).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>pygplates.Feature</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="generated/gplately.subduction_convergence.html" class="btn btn-neutral float-left" title="gplately.subduction_convergence" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="secondaries.html" class="btn btn-neutral float-right" title="Other Classes" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023-2025, The University of Sydney.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

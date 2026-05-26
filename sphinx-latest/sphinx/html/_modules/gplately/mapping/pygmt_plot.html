@@ -53,6 +53,7 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../api.html">Main Classes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../functions.html">Functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../filters_and_transformers.html">Filters And Transformers</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../secondaries.html">Other Classes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../plate_models.html">Plate Models</a></li>
 </ul>
@@ -100,6 +101,10 @@
 <span class="c1">#</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+
+<span class="c1"># pyright: reportMissingImports=false</span>
+<span class="c1"># pyright: reportMissingModuleSource=false</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pygplates</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">&quot;gplately&quot;</span><span class="p">)</span>
 <span class="k">try</span><span class="p">:</span>
@@ -156,11 +161,13 @@
 <span class="sd">        style : str</span>
 <span class="sd">            GMT &quot;style&quot; parameter</span>
 <span class="sd">        gmtlabel : str</span>
-<span class="sd">            GMT &quot;label&quot; parameter</span>
+<span class="sd">            GMT &quot;label&quot; parameter for lines and polygons</span>
+<span class="sd">        pointlabel : str</span>
+<span class="sd">            Optional label applied only to point geometries.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">line_color</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;edgecolor&quot;</span><span class="p">,</span> <span class="s2">&quot;blue&quot;</span><span class="p">)</span>
-        <span class="n">line_width</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;linewidth&#39;</span><span class="p">,</span><span class="mf">0.1</span><span class="p">)</span><span class="si">}</span><span class="s2">p&quot;</span>
+        <span class="n">line_width</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;linewidth&#39;</span><span class="p">,</span><span class="mf">0.5</span><span class="p">)</span><span class="si">}</span><span class="s2">p&quot;</span>
 
         <span class="n">fill</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;facecolor&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">fill</span> <span class="ow">and</span> <span class="n">fill</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;none&quot;</span><span class="p">:</span>
@@ -174,7 +181,74 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="n">pen</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;pen&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">line_width</span><span class="si">}</span><span class="s2">,</span><span class="si">{</span><span class="n">line_color</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="n">style</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;style&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;label&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
         <span class="n">label</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;gmtlabel&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">point_label</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;pointlabel&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+        <span class="n">point_geometries</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">line_geometries</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">polygon_geometries</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">geometry</span> <span class="ow">in</span> <span class="n">gdf</span><span class="o">.</span><span class="n">geometry</span><span class="p">:</span>
+            <span class="n">geom_type</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">geometry</span><span class="p">,</span> <span class="s2">&quot;geom_type&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">geom_type</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;Point&quot;</span><span class="p">,</span> <span class="s2">&quot;MultiPoint&quot;</span><span class="p">):</span>
+                <span class="n">point_geometries</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">geometry</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">geom_type</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;LineString&quot;</span><span class="p">,</span> <span class="s2">&quot;MultiLineString&quot;</span><span class="p">):</span>
+                <span class="n">line_geometries</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">geometry</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">polygon_geometries</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">geometry</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">point_geometries</span><span class="p">:</span>
+            <span class="n">point_xs</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">point_ys</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">geometry</span> <span class="ow">in</span> <span class="n">point_geometries</span><span class="p">:</span>
+                <span class="n">geom_type</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">geometry</span><span class="p">,</span> <span class="s2">&quot;geom_type&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">geom_type</span> <span class="o">==</span> <span class="s2">&quot;Point&quot;</span><span class="p">:</span>
+                    <span class="n">point_xs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">geometry</span><span class="o">.</span><span class="n">x</span><span class="p">)</span>
+                    <span class="n">point_ys</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">geometry</span><span class="o">.</span><span class="n">y</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="n">geom_type</span> <span class="o">==</span> <span class="s2">&quot;MultiPoint&quot;</span><span class="p">:</span>
+                    <span class="k">for</span> <span class="n">point</span> <span class="ow">in</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">geometry</span><span class="p">,</span> <span class="s2">&quot;geoms&quot;</span><span class="p">,</span> <span class="p">()):</span>
+                        <span class="n">x</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">point</span><span class="p">,</span> <span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+                        <span class="n">y</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">point</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="n">x</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">y</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                            <span class="k">continue</span>
+                        <span class="n">point_xs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+                        <span class="n">point_ys</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">point_xs</span> <span class="ow">and</span> <span class="n">point_ys</span><span class="p">:</span>
+                <span class="n">point_style</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;pointstyle&quot;</span><span class="p">,</span> <span class="s2">&quot;c0.08c&quot;</span><span class="p">)</span>
+                <span class="n">point_fill</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;pointfill&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">point_fill</span> <span class="ow">in</span> <span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;none&quot;</span><span class="p">):</span>
+                    <span class="n">point_fill</span> <span class="o">=</span> <span class="n">line_color</span>
+                <span class="n">point_pen</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;pointpen&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+                <span class="n">ax_or_fig</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+                    <span class="n">x</span><span class="o">=</span><span class="n">point_xs</span><span class="p">,</span>
+                    <span class="n">y</span><span class="o">=</span><span class="n">point_ys</span><span class="p">,</span>
+                    <span class="n">pen</span><span class="o">=</span><span class="n">point_pen</span><span class="p">,</span>
+                    <span class="n">fill</span><span class="o">=</span><span class="n">point_fill</span><span class="p">,</span>
+                    <span class="n">style</span><span class="o">=</span><span class="n">point_style</span><span class="p">,</span>
+                    <span class="n">transparency</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                    <span class="n">label</span><span class="o">=</span><span class="n">point_label</span><span class="p">,</span>
+                    <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+                <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">line_geometries</span><span class="p">:</span>
+            <span class="n">line_gdf</span> <span class="o">=</span> <span class="n">GeoDataFrame</span><span class="p">(</span>
+                <span class="p">{</span><span class="s2">&quot;geometry&quot;</span><span class="p">:</span> <span class="n">line_geometries</span><span class="p">},</span> <span class="n">geometry</span><span class="o">=</span><span class="s2">&quot;geometry&quot;</span><span class="p">,</span> <span class="n">crs</span><span class="o">=</span><span class="n">gdf</span><span class="o">.</span><span class="n">crs</span>
+            <span class="p">)</span>
+            <span class="n">ax_or_fig</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+                <span class="n">data</span><span class="o">=</span><span class="n">line_gdf</span><span class="o">.</span><span class="n">geometry</span><span class="p">,</span>
+                <span class="n">pen</span><span class="o">=</span><span class="n">pen</span><span class="p">,</span>
+                <span class="n">transparency</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">polygon_geometries</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">ax_or_fig</span>
+
+        <span class="n">gdf</span> <span class="o">=</span> <span class="n">GeoDataFrame</span><span class="p">(</span>
+            <span class="p">{</span><span class="s2">&quot;geometry&quot;</span><span class="p">:</span> <span class="n">polygon_geometries</span><span class="p">},</span> <span class="n">geometry</span><span class="o">=</span><span class="s2">&quot;geometry&quot;</span><span class="p">,</span> <span class="n">crs</span><span class="o">=</span><span class="n">gdf</span><span class="o">.</span><span class="n">crs</span>
+        <span class="p">)</span>
 
         <span class="n">ax_or_fig</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
             <span class="n">data</span><span class="o">=</span><span class="n">gdf</span><span class="o">.</span><span class="n">geometry</span><span class="p">,</span>
@@ -189,8 +263,55 @@
 <div class="viewcode-block" id="PygmtPlotEngine.plot_pygplates_features">
 <a class="viewcode-back" href="../../../generated/gplately.PygmtPlotEngine.html#gplately.PygmtPlotEngine.plot_pygplates_features">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">plot_pygplates_features</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ax_or_fig</span><span class="p">,</span> <span class="n">features</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Not implemented yet&quot;&quot;&quot;</span>
-        <span class="k">pass</span></div>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Use PyGMT to plot one or more pygplates features onto a map.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        ax_or_fig : pygmt.Figure()</span>
+<span class="sd">            pygmt Figure object</span>
+<span class="sd">        features : pygplates.Feature or list of pygplates.Feature</span>
+<span class="sd">            One or more pygplates.Feature objects to be plotted.</span>
+<span class="sd">        edgecolor : str</span>
+<span class="sd">            For polygons, it is the border colour. For polylines, it is the line colour.</span>
+<span class="sd">        facecolor : str</span>
+<span class="sd">            The colour used to fill the polygon.</span>
+<span class="sd">        fill : str</span>
+<span class="sd">            GMT &quot;fill&quot; parameter</span>
+<span class="sd">        pen : str</span>
+<span class="sd">            GMT &quot;pen&quot; parameter</span>
+
+<span class="sd">        Warnings</span>
+<span class="sd">        --------</span>
+<span class="sd">        This method will not check features&#39; valid time. It just simply plots all the geometries in the features.</span>
+<span class="sd">        You need to filter features by valid time yourself before passing them to this method if you want to plot features at a specific time.</span>
+
+<span class="sd">        .. seealso::</span>
+
+<span class="sd">            Use the class :class:`ValidTimeFilter` for filtering features by valid time.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">gplately.geometry</span><span class="w"> </span><span class="kn">import</span> <span class="n">pygplates_to_shapely</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">features</span><span class="p">,</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">Feature</span><span class="p">):</span>
+            <span class="n">features</span> <span class="o">=</span> <span class="p">[</span><span class="n">features</span><span class="p">]</span>
+
+        <span class="n">shapely_geometries</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">feature</span> <span class="ow">in</span> <span class="n">features</span><span class="p">:</span>
+            <span class="n">geometries</span> <span class="o">=</span> <span class="n">feature</span><span class="o">.</span><span class="n">get_all_geometries</span><span class="p">()</span>  <span class="c1"># type: ignore</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">geometries</span><span class="p">:</span>
+                <span class="k">continue</span>
+
+            <span class="k">for</span> <span class="n">geometry</span> <span class="ow">in</span> <span class="n">geometries</span><span class="p">:</span>
+                <span class="n">shapely_geometry</span> <span class="o">=</span> <span class="n">pygplates_to_shapely</span><span class="p">(</span><span class="n">geometry</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
+                <span class="k">if</span> <span class="n">shapely_geometry</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">shapely_geometries</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">shapely_geometry</span><span class="p">)</span>
+
+        <span class="n">gdf</span> <span class="o">=</span> <span class="n">GeoDataFrame</span><span class="p">(</span>
+            <span class="p">{</span><span class="s2">&quot;geometry&quot;</span><span class="p">:</span> <span class="n">shapely_geometries</span><span class="p">},</span> <span class="n">geometry</span><span class="o">=</span><span class="s2">&quot;geometry&quot;</span><span class="p">,</span> <span class="n">crs</span><span class="o">=</span><span class="s2">&quot;EPSG:4326&quot;</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">gdf</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">ax_or_fig</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">plot_geo_data_frame</span><span class="p">(</span><span class="n">ax_or_fig</span><span class="p">,</span> <span class="n">gdf</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="PygmtPlotEngine.plot_subduction_zones">
@@ -268,7 +389,7 @@
 <span class="sd">            Additional keyword arguments.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="kn">from</span><span class="w"> </span><span class="nn">..grids</span><span class="w"> </span><span class="kn">import</span> <span class="n">Raster</span>
-        <span class="kn">import</span><span class="w"> </span><span class="nn">xarray</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">xr</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">xarray</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">xr</span>  <span class="c1"># pyright: ignore[reportMissingImports]</span>
 
         <span class="c1"># we need to convert the grid data to xarray.DataArray for pygmt.grdimage().</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">grid</span><span class="p">,</span> <span class="n">Raster</span><span class="p">):</span>

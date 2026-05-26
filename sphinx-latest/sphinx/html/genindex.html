@@ -53,6 +53,7 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="api.html">Main Classes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="functions.html">Functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="filters_and_transformers.html">Filters And Transformers</a></li>
 <li class="toctree-l1"><a class="reference internal" href="secondaries.html">Other Classes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="plate_models.html">Plate Models</a></li>
 </ul>
@@ -163,6 +164,8 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="generated/gplately.PlotTopologies.html#gplately.PlotTopologies.base_projection">base_projection (gplately.PlotTopologies attribute)</a>
 </li>
+      <li><a href="filters_and_transformers.html#gplately.utils.feature_filter.BirthAgeFilter">BirthAgeFilter (class in gplately.utils.feature_filter)</a>
+</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="generated/gplately.SeafloorGrid.html#gplately.SeafloorGrid.build_all_continental_masks">build_all_continental_masks() (gplately.SeafloorGrid method)</a>
@@ -247,6 +250,10 @@
 <h2 id="E">E</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="filters_and_transformers.html#gplately.utils.feature_filter.EndTimeFilter">EndTimeFilter (class in gplately.utils.feature_filter)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="generated/gplately.Raster.html#gplately.Raster.extent">extent (gplately.Raster property)</a>
 </li>
   </ul></td>
@@ -255,12 +262,26 @@
 <h2 id="F">F</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="filters_and_transformers.html#gplately.utils.feature_filter.FeatureFilter">FeatureFilter (class in gplately.utils.feature_filter)</a>
+</li>
+      <li><a href="filters_and_transformers.html#gplately.utils.feature_filter.FeatureIDFilter">FeatureIDFilter (class in gplately.utils.feature_filter)</a>
+</li>
+      <li><a href="filters_and_transformers.html#gplately.utils.feature_filter.FeatureNameFilter">FeatureNameFilter (class in gplately.utils.feature_filter)</a>
+</li>
+      <li><a href="filters_and_transformers.html#gplately.utils.feature_transformer.FeatureTransformer">FeatureTransformer (class in gplately.utils.feature_transformer)</a>
+</li>
+      <li><a href="filters_and_transformers.html#gplately.utils.feature_filter.FeatureTypeFilter">FeatureTypeFilter (class in gplately.utils.feature_filter)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="generated/gplately.Raster.html#gplately.Raster.filename">filename (gplately.Raster property)</a>
 </li>
       <li><a href="generated/gplately.Raster.html#gplately.Raster.fill_NaNs">fill_NaNs() (gplately.Raster method)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="filters_and_transformers.html#gplately.utils.feature_filter.FeatureFilter.filtrate_feature_collection">filtrate_feature_collection (gplately.utils.feature_filter.FeatureFilter property)</a>
+</li>
+      <li><a href="filters_and_transformers.html#gplately.utils.feature_filter.FeatureFilter.filtrate_features_as_list">filtrate_features_as_list (gplately.utils.feature_filter.FeatureFilter property)</a>
+</li>
       <li><a href="generated/gplately.Points.html#gplately.Points.flowline">flowline() (gplately.Points method)</a>
 </li>
       <li><a href="generated/gplately.DataServer.html#gplately.DataServer.from_age">from_age (gplately.DataServer property)</a>
@@ -529,6 +550,8 @@
       </ul></li>
       <li><a href="generated/gplately.Points.html#gplately.Points.plate_velocity">plate_velocity() (gplately.Points method)</a>
 </li>
+      <li><a href="filters_and_transformers.html#gplately.utils.feature_filter.PlateIDFilter">PlateIDFilter (class in gplately.utils.feature_filter)</a>
+</li>
       <li><a href="generated/gplately.PlateModel.html#gplately.PlateModel">PlateModel (class in gplately)</a>
 </li>
       <li><a href="generated/gplately.PlateModelManager.html#gplately.PlateModelManager">PlateModelManager (class in gplately)</a>
@@ -585,10 +608,10 @@
 </li>
       <li><a href="generated/gplately.PlotTopologies.html#gplately.PlotTopologies.plot_misc_transforms">plot_misc_transforms() (gplately.PlotTopologies method)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="generated/gplately.PlotTopologies.html#gplately.PlotTopologies.plot_orogenic_belts">plot_orogenic_belts() (gplately.PlotTopologies method)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="generated/gplately.PlotTopologies.html#gplately.PlotTopologies.plot_passive_continental_boundaries">plot_passive_continental_boundaries() (gplately.PlotTopologies method)</a>
 </li>
       <li><a href="generated/gplately.PlotTopologies.html#gplately.PlotTopologies.plot_plate_id">plot_plate_id() (gplately.PlotTopologies method)</a>
@@ -649,6 +672,10 @@
 </li>
       <li><a href="generated/gplately.PresentDayRasterManager.html#gplately.PresentDayRasterManager">PresentDayRasterManager (class in gplately)</a>
 </li>
+      <li><a href="filters_and_transformers.html#gplately.utils.feature_filter.PropertyExistsFilter">PropertyExistsFilter (class in gplately.utils.feature_filter)</a>
+</li>
+      <li><a href="filters_and_transformers.html#gplately.utils.feature_filter.PropertyValueFilter">PropertyValueFilter (class in gplately.utils.feature_filter)</a>
+</li>
       <li><a href="generated/gplately.PlateModel.html#gplately.PlateModel.purge">purge() (gplately.PlateModel method)</a>
 </li>
       <li><a href="generated/gplately.PlateModel.html#gplately.PlateModel.purge_layer">purge_layer() (gplately.PlateModel method)</a>
@@ -699,10 +726,16 @@
 </li>
       <li><a href="generated/gplately.Points.html#gplately.Points.reconstruct_to_birth_age">reconstruct_to_birth_age() (gplately.Points method)</a>
 </li>
+      <li><a href="filters_and_transformers.html#gplately.utils.feature_filter.RegionOfInterestFilter">RegionOfInterestFilter (class in gplately.utils.feature_filter)</a>
+</li>
       <li><a href="generated/gplately.Raster.html#gplately.Raster.resample">resample() (gplately.Raster method)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="filters_and_transformers.html#gplately.utils.feature_filter.FeatureFilter.residue_feature_collection">residue_feature_collection (gplately.utils.feature_filter.FeatureFilter property)</a>
+</li>
+      <li><a href="filters_and_transformers.html#gplately.utils.feature_filter.FeatureFilter.residue_features_as_list">residue_features_as_list (gplately.utils.feature_filter.FeatureFilter property)</a>
+</li>
       <li><a href="generated/gplately.Raster.html#gplately.Raster.resize">resize() (gplately.Raster method)</a>
 </li>
       <li><a href="generated/gplately.resolve_topological_snapshot.html#gplately.resolve_topological_snapshot">resolve_topological_snapshot() (in module gplately)</a>
@@ -755,10 +788,42 @@
         <li><a href="generated/gplately.PresentDayRasterManager.html#gplately.PresentDayRasterManager.set_data_dir">(gplately.PresentDayRasterManager method)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="filters_and_transformers.html#gplately.utils.feature_transformer.SetReconstructionPlateIDTransformer">SetReconstructionPlateIDTransformer (class in gplately.utils.feature_transformer)</a>
+</li>
+      <li><a href="filters_and_transformers.html#gplately.utils.feature_transformer.SetValidTimeTransformer">SetValidTimeTransformer (class in gplately.utils.feature_transformer)</a>
+</li>
       <li><a href="generated/gplately.Raster.html#gplately.Raster.shape">shape (gplately.Raster property)</a>
 </li>
+      <li><a href="filters_and_transformers.html#gplately.utils.feature_filter.BirthAgeFilter.should_keep">should_keep() (gplately.utils.feature_filter.BirthAgeFilter method)</a>
+
+      <ul>
+        <li><a href="filters_and_transformers.html#gplately.utils.feature_filter.EndTimeFilter.should_keep">(gplately.utils.feature_filter.EndTimeFilter method)</a>
+</li>
+        <li><a href="filters_and_transformers.html#gplately.utils.feature_filter.FeatureFilter.should_keep">(gplately.utils.feature_filter.FeatureFilter method)</a>
+</li>
+        <li><a href="filters_and_transformers.html#gplately.utils.feature_filter.FeatureIDFilter.should_keep">(gplately.utils.feature_filter.FeatureIDFilter method)</a>
+</li>
+        <li><a href="filters_and_transformers.html#gplately.utils.feature_filter.FeatureNameFilter.should_keep">(gplately.utils.feature_filter.FeatureNameFilter method)</a>
+</li>
+        <li><a href="filters_and_transformers.html#gplately.utils.feature_filter.FeatureTypeFilter.should_keep">(gplately.utils.feature_filter.FeatureTypeFilter method)</a>
+</li>
+        <li><a href="filters_and_transformers.html#gplately.utils.feature_filter.PlateIDFilter.should_keep">(gplately.utils.feature_filter.PlateIDFilter method)</a>
+</li>
+        <li><a href="filters_and_transformers.html#gplately.utils.feature_filter.PropertyExistsFilter.should_keep">(gplately.utils.feature_filter.PropertyExistsFilter method)</a>
+</li>
+        <li><a href="filters_and_transformers.html#gplately.utils.feature_filter.PropertyValueFilter.should_keep">(gplately.utils.feature_filter.PropertyValueFilter method)</a>
+</li>
+        <li><a href="filters_and_transformers.html#gplately.utils.feature_filter.RegionOfInterestFilter.should_keep">(gplately.utils.feature_filter.RegionOfInterestFilter method)</a>
+</li>
+        <li><a href="filters_and_transformers.html#gplately.utils.feature_filter.TopologicalFeaturesWithDuplicateSectionsFilter.should_keep">(gplately.utils.feature_filter.TopologicalFeaturesWithDuplicateSectionsFilter method)</a>
+</li>
+        <li><a href="filters_and_transformers.html#gplately.utils.feature_filter.TopologicalReferenceFilter.should_keep">(gplately.utils.feature_filter.TopologicalReferenceFilter method)</a>
+</li>
+        <li><a href="filters_and_transformers.html#gplately.utils.feature_filter.ValidTimeFilter.should_keep">(gplately.utils.feature_filter.ValidTimeFilter method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="generated/gplately.Points.html#gplately.Points.size">size (gplately.Points property)</a>
 
       <ul>
@@ -799,7 +864,13 @@
 </li>
       <li><a href="generated/gplately.PlotTopologies.html#gplately.PlotTopologies.topological_plate_boundaries">topological_plate_boundaries (gplately.PlotTopologies property)</a>
 </li>
+      <li><a href="filters_and_transformers.html#gplately.utils.feature_filter.TopologicalReferenceFilter.topological_reference_map">topological_reference_map (gplately.utils.feature_filter.TopologicalReferenceFilter property)</a>
+</li>
       <li><a href="generated/gplately.PlateReconstruction.html#gplately.PlateReconstruction.topological_snapshot">topological_snapshot() (gplately.PlateReconstruction method)</a>
+</li>
+      <li><a href="filters_and_transformers.html#gplately.utils.feature_filter.TopologicalFeaturesWithDuplicateSectionsFilter">TopologicalFeaturesWithDuplicateSectionsFilter (class in gplately.utils.feature_filter)</a>
+</li>
+      <li><a href="filters_and_transformers.html#gplately.utils.feature_filter.TopologicalReferenceFilter">TopologicalReferenceFilter (class in gplately.utils.feature_filter)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
@@ -817,6 +888,14 @@
 </li>
       <li><a href="generated/gplately.PlateReconstruction.html#gplately.PlateReconstruction.total_subduction_zone_length">total_subduction_zone_length() (gplately.PlateReconstruction method)</a>
 </li>
+      <li><a href="filters_and_transformers.html#gplately.utils.feature_transformer.FeatureTransformer.transform">transform() (gplately.utils.feature_transformer.FeatureTransformer method)</a>
+
+      <ul>
+        <li><a href="filters_and_transformers.html#gplately.utils.feature_transformer.SetReconstructionPlateIDTransformer.transform">(gplately.utils.feature_transformer.SetReconstructionPlateIDTransformer method)</a>
+</li>
+        <li><a href="filters_and_transformers.html#gplately.utils.feature_transformer.SetValidTimeTransformer.transform">(gplately.utils.feature_transformer.SetValidTimeTransformer method)</a>
+</li>
+      </ul></li>
       <li><a href="generated/gplately.PlotTopologies.html#gplately.PlotTopologies.transforms">transforms (gplately.PlotTopologies property)</a>
 </li>
       <li><a href="generated/gplately.PlotTopologies.html#gplately.PlotTopologies.trench_left">trench_left (gplately.PlotTopologies attribute)</a>
@@ -844,6 +923,8 @@
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="generated/gplately.DataServer.html#gplately.DataServer.valid_times">valid_times (gplately.DataServer property)</a>
+</li>
+      <li><a href="filters_and_transformers.html#gplately.utils.feature_filter.ValidTimeFilter">ValidTimeFilter (class in gplately.utils.feature_filter)</a>
 </li>
   </ul></td>
 </tr></table>

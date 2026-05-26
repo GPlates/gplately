@@ -1,0 +1,1071 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>gplately.utils.feature_filter &mdash; gplately 2.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
+
+  
+    <link rel="shortcut icon" href="../../../_static/favicon.ico"/>
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=51b770b3"></script>
+      <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            gplately
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../basic_usages.html">Minimal Working Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../use_cases.html">Common Use Cases</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../faq.html">Troubleshooting and FAQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../command_line_interface.html">Command Line Interface (CLI)</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../api.html">Main Classes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../functions.html">Functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../filters_and_transformers.html">Filters And Transformers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../secondaries.html">Other Classes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../plate_models.html">Plate Models</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">gplately</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">gplately.utils.feature_filter</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for gplately.utils.feature_filter</h1><div class="highlight"><pre>
+<span></span><span class="c1">#</span>
+<span class="c1">#    Copyright (C) 2024-2026 The University of Sydney, Australia</span>
+<span class="c1">#</span>
+<span class="c1">#    This program is free software; you can redistribute it and/or modify it under</span>
+<span class="c1">#    the terms of the GNU General Public License, version 2, as published by</span>
+<span class="c1">#    the Free Software Foundation.</span>
+<span class="c1">#</span>
+<span class="c1">#    This program is distributed in the hope that it will be useful, but WITHOUT</span>
+<span class="c1">#    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or</span>
+<span class="c1">#    FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License</span>
+<span class="c1">#    for more details.</span>
+<span class="c1">#</span>
+<span class="c1">#    You should have received a copy of the GNU General Public License along</span>
+<span class="c1">#    with this program; if not, write to Free Software Foundation, Inc.,</span>
+<span class="c1">#    51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.</span>
+<span class="c1">#</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">abc</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">pygplates</span>  <span class="c1"># type: ignore</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">&quot;gplately&quot;</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="FeatureFilter">
+<a class="viewcode-back" href="../../../filters_and_transformers.html#gplately.utils.feature_filter.FeatureFilter">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">FeatureFilter</span><span class="p">(</span><span class="n">metaclass</span><span class="o">=</span><span class="n">abc</span><span class="o">.</span><span class="n">ABCMeta</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Abstract base class for feature filters.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_filtrate_feature_collection</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Optional</span><span class="p">[</span><span class="n">pygplates</span><span class="o">.</span><span class="n">Feature</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_residue_feature_collection</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Optional</span><span class="p">[</span><span class="n">pygplates</span><span class="o">.</span><span class="n">Feature</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">__subclasshook__</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">subclass</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="nb">hasattr</span><span class="p">(</span><span class="n">subclass</span><span class="p">,</span> <span class="s2">&quot;should_keep&quot;</span><span class="p">)</span>
+            <span class="ow">and</span> <span class="nb">callable</span><span class="p">(</span><span class="n">subclass</span><span class="o">.</span><span class="n">should_keep</span><span class="p">)</span>
+            <span class="ow">or</span> <span class="bp">NotImplemented</span>
+        <span class="p">)</span>
+
+<div class="viewcode-block" id="FeatureFilter.should_keep">
+<a class="viewcode-back" href="../../../filters_and_transformers.html#gplately.utils.feature_filter.FeatureFilter.should_keep">[docs]</a>
+    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">should_keep</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">feature</span><span class="p">:</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">Feature</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>  <span class="c1"># type: ignore</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;This abstract method must be implemented in subclass.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        feature : pygplates.Feature</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        bool</span>
+<span class="sd">            True if the feature should be kept; False otherwise.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
+
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">filtrate_feature_collection</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;return the features that pass the filter as a pygplates.FeatureCollection.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">FeatureCollection</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_filtrate_feature_collection</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">residue_feature_collection</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;return the features that do not pass the filter as a pygplates.FeatureCollection.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">FeatureCollection</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_residue_feature_collection</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">filtrate_features_as_list</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;return the features that pass the filter as a list.</span>
+<span class="sd">        Use this property if you want to keep the order of the features.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_filtrate_feature_collection</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">residue_features_as_list</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;return the features that do not pass the filter as a list.</span>
+<span class="sd">        Use this property if you want to keep the order of the features.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_residue_feature_collection</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">filter_feature_collection</span><span class="p">(</span>
+    <span class="n">feature_collection</span><span class="p">:</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">FeatureCollection</span><span class="p">,</span> <span class="n">filters</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">FeatureFilter</span><span class="p">]</span>  <span class="c1"># type: ignore</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Filter a feature collection using a list of filters.</span>
+<span class="sd">    The filtrate and residue features of each filter can be obtained by</span>
+<span class="sd">    the properties of the filter after calling this function.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    feature_collection : pygplates.FeatureCollection</span>
+<span class="sd">        The input feature collection to be filtered.</span>
+<span class="sd">    filters : list of FeatureFilter</span>
+<span class="sd">        A list of filters to apply. A feature will be kept if it passes all the filters in the list.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    pygplates.FeatureCollection</span>
+<span class="sd">        The features that pass all filters.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">features_to_be_filtered</span> <span class="o">=</span> <span class="n">feature_collection</span>
+    <span class="k">for</span> <span class="nb">filter</span> <span class="ow">in</span> <span class="n">filters</span><span class="p">:</span>
+        <span class="n">filtrate_feature_collection</span> <span class="o">=</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">FeatureCollection</span><span class="p">()</span>  <span class="c1"># type: ignore</span>
+        <span class="k">for</span> <span class="n">feature</span> <span class="ow">in</span> <span class="n">features_to_be_filtered</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">filter</span><span class="o">.</span><span class="n">should_keep</span><span class="p">(</span><span class="n">feature</span><span class="p">):</span>
+                <span class="n">filtrate_feature_collection</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">feature</span><span class="p">)</span>
+
+        <span class="c1"># if the filter has its own filtrate_feature_collection, we prefer it and use it as the input for the next filter,</span>
+        <span class="c1"># otherwise we use the filtrate_feature_collection we just created.</span>
+        <span class="k">if</span> <span class="nb">filter</span><span class="o">.</span><span class="n">filtrate_feature_collection</span><span class="p">:</span>
+            <span class="n">features_to_be_filtered</span> <span class="o">=</span> <span class="nb">filter</span><span class="o">.</span><span class="n">filtrate_feature_collection</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">features_to_be_filtered</span> <span class="o">=</span> <span class="n">filtrate_feature_collection</span>
+
+    <span class="c1"># after going through all filters, the features that pass all filters are in &quot;features_to_be_filtered&quot;</span>
+    <span class="k">return</span> <span class="n">features_to_be_filtered</span>
+
+
+<div class="viewcode-block" id="FeatureNameFilter">
+<a class="viewcode-back" href="../../../filters_and_transformers.html#gplately.utils.feature_filter.FeatureNameFilter">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">FeatureNameFilter</span><span class="p">(</span><span class="n">FeatureFilter</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;filter features by name, keep features with name matching any of the specified strings by default</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    Find features who name contains &#39;Africa&#39; or &#39;Asia&#39;:</span>
+
+<span class="sd">    &gt;&gt;&gt; FeatureNameFilter([&#39;Africa&#39;, &#39;Asia&#39;])</span>
+
+<span class="sd">    Find features who name **doesn&#39;t** contain &#39;Africa&#39; or &#39;Asia&#39;:</span>
+
+<span class="sd">    &gt;&gt;&gt;  FeatureNameFilter([&#39;Africa&#39;, &#39;Asia&#39;], reverse=True)</span>
+
+<span class="sd">    Find features who name is exactly &#39;Africa&#39; or &#39;Asia&#39;:</span>
+
+<span class="sd">    &gt;&gt;&gt;  FeatureNameFilter([&#39;Africa&#39;, &#39;Asia&#39;], exact_match=True)</span>
+
+<span class="sd">    Find features who name is not &#39;Africa&#39; or &#39;Asia&#39;:</span>
+
+<span class="sd">    &gt;&gt;&gt;  FeatureNameFilter([&#39;Africa&#39;, &#39;Asia&#39;], reverse=True, exact_match=True)</span>
+
+<span class="sd">    Find features who name is not &#39;Africa&#39; or &#39;Asia&#39; (case sensitive):</span>
+
+<span class="sd">    &gt;&gt;&gt;  FeatureNameFilter([&#39;Africa&#39;, &#39;Asia&#39;], reverse=True, exact_match=True, case_sensitive=True)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">names</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">exact_match</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">case_sensitive</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">False</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Constructor for the feature name filter.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        names : list of str</span>
+<span class="sd">            A list of strings to match the feature name.</span>
+<span class="sd">        exact_match : bool, optional</span>
+<span class="sd">            If True, the feature name must be exactly the same as one of the strings in</span>
+<span class="sd">            ``names``; if False, the feature name only needs to contain one of the strings.</span>
+<span class="sd">            Default is False.</span>
+<span class="sd">        case_sensitive : bool, optional</span>
+<span class="sd">            If True, name matching is case-sensitive; if False, it is case-insensitive.</span>
+<span class="sd">            Default is False.</span>
+<span class="sd">        reverse : bool, optional</span>
+<span class="sd">            If False, features with a name matching one of the strings in ``names`` will</span>
+<span class="sd">            pass the filter; if True, features with a name not matching any string in</span>
+<span class="sd">            ``names`` will pass the filter. Default is False.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_names</span> <span class="o">=</span> <span class="n">names</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_exact_match</span> <span class="o">=</span> <span class="n">exact_match</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_case_sensitive</span> <span class="o">=</span> <span class="n">case_sensitive</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_reverse</span> <span class="o">=</span> <span class="n">reverse</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_check_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name_1</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">name_2</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;check if two names are the same or name_2 contains name_1&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_case_sensitive</span><span class="p">:</span>
+            <span class="n">name_1_tmp</span> <span class="o">=</span> <span class="n">name_1</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+            <span class="n">name_2_tmp</span> <span class="o">=</span> <span class="n">name_2</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">name_1_tmp</span> <span class="o">=</span> <span class="n">name_1</span>
+            <span class="n">name_2_tmp</span> <span class="o">=</span> <span class="n">name_2</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_exact_match</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">name_1_tmp</span> <span class="o">==</span> <span class="n">name_2_tmp</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">name_1_tmp</span> <span class="ow">in</span> <span class="n">name_2_tmp</span>
+
+<div class="viewcode-block" id="FeatureNameFilter.should_keep">
+<a class="viewcode-back" href="../../../filters_and_transformers.html#gplately.utils.feature_filter.FeatureNameFilter.should_keep">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">should_keep</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">feature</span><span class="p">:</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">Feature</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>  <span class="c1"># type: ignore</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reverse</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_names</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_name</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">feature</span><span class="o">.</span><span class="n">get_name</span><span class="p">()):</span>  <span class="c1"># type: ignore</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_residue_feature_collection</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">feature</span><span class="p">)</span>
+                    <span class="k">return</span> <span class="kc">False</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_filtrate_feature_collection</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">feature</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_names</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_name</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">feature</span><span class="o">.</span><span class="n">get_name</span><span class="p">()):</span>  <span class="c1"># type: ignore</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_filtrate_feature_collection</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">feature</span><span class="p">)</span>
+                    <span class="k">return</span> <span class="kc">True</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_residue_feature_collection</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">feature</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">False</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="PlateIDFilter">
+<a class="viewcode-back" href="../../../filters_and_transformers.html#gplately.utils.feature_filter.PlateIDFilter">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">PlateIDFilter</span><span class="p">(</span><span class="n">FeatureFilter</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;filter features by plate ID, keep features with plate ID in a specified list by default</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    Find features whose plate id is 101 or 201 or 301:</span>
+
+<span class="sd">    &gt;&gt;&gt;  PlateIDFilter([101,201,301])</span>
+
+<span class="sd">    Find features whose plate id is not 101 nor 201 nor 301:</span>
+
+<span class="sd">    &gt;&gt;&gt;  PlateIDFilter([101,201,301], reverse=True)</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pids</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Constructor for the plate ID filter.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        pids : list of int</span>
+<span class="sd">            A list of plate IDs to match.</span>
+<span class="sd">        reverse : bool, optional</span>
+<span class="sd">            If False, features with a plate ID matching one of the values in ``pids`` will</span>
+<span class="sd">            pass the filter; if True, features with a plate ID not matching any value in</span>
+<span class="sd">            ``pids`` will pass the filter. Default is False.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_pids</span> <span class="o">=</span> <span class="n">pids</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_reverse</span> <span class="o">=</span> <span class="n">reverse</span>
+
+<div class="viewcode-block" id="PlateIDFilter.should_keep">
+<a class="viewcode-back" href="../../../filters_and_transformers.html#gplately.utils.feature_filter.PlateIDFilter.should_keep">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">should_keep</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">feature</span><span class="p">:</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">Feature</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>  <span class="c1"># type: ignore</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reverse</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">feature</span><span class="o">.</span><span class="n">get_reconstruction_plate_id</span><span class="p">()</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pids</span><span class="p">:</span>  <span class="c1"># type: ignore</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_filtrate_feature_collection</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">feature</span><span class="p">)</span>
+                <span class="k">return</span> <span class="kc">True</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_residue_feature_collection</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">feature</span><span class="p">)</span>
+                <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">feature</span><span class="o">.</span><span class="n">get_reconstruction_plate_id</span><span class="p">()</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pids</span><span class="p">:</span>  <span class="c1"># type: ignore</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_filtrate_feature_collection</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">feature</span><span class="p">)</span>
+                <span class="k">return</span> <span class="kc">True</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_residue_feature_collection</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">feature</span><span class="p">)</span>
+                <span class="k">return</span> <span class="kc">False</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="BirthAgeFilter">
+<a class="viewcode-back" href="../../../filters_and_transformers.html#gplately.utils.feature_filter.BirthAgeFilter">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">BirthAgeFilter</span><span class="p">(</span><span class="n">FeatureFilter</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;filter features by the time of appearance, keep older features by default</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    Find features which appreared before 500 Ma:</span>
+
+<span class="sd">    &gt;&gt;&gt;  BirthAgeFilter(500)</span>
+
+<span class="sd">    Find features which appreared after 500 Ma:</span>
+
+<span class="sd">    &gt;&gt;&gt; BirthAgeFilter(500, reverse=False)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">age</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Constructor for the birth age filter.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        age : float</span>
+<span class="sd">            The age criterion.</span>
+<span class="sd">        reverse : bool, optional</span>
+<span class="sd">            If False, features older than the age criterion will pass the filter;</span>
+<span class="sd">            if True, features younger than the age criterion will pass the filter.</span>
+<span class="sd">            Default is False.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_age</span> <span class="o">=</span> <span class="n">age</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_reverse</span> <span class="o">=</span> <span class="n">reverse</span>
+
+<div class="viewcode-block" id="BirthAgeFilter.should_keep">
+<a class="viewcode-back" href="../../../filters_and_transformers.html#gplately.utils.feature_filter.BirthAgeFilter.should_keep">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">should_keep</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">feature</span><span class="p">:</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">Feature</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>  <span class="c1"># type: ignore</span>
+        <span class="n">valid_time</span> <span class="o">=</span> <span class="n">feature</span><span class="o">.</span><span class="n">get_valid_time</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">valid_time</span><span class="p">:</span>
+            <span class="n">begin_time</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">valid_time</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reverse</span><span class="p">:</span>  <span class="c1"># keep older features</span>
+                <span class="k">if</span> <span class="p">(</span>
+                    <span class="n">begin_time</span> <span class="o">==</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">GeoTimeInstant</span><span class="o">.</span><span class="n">create_distant_past</span><span class="p">()</span>  <span class="c1"># type: ignore</span>
+                    <span class="ow">or</span> <span class="n">begin_time</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_age</span>
+                <span class="p">):</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_filtrate_feature_collection</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">feature</span><span class="p">)</span>
+                    <span class="k">return</span> <span class="kc">True</span>
+            <span class="k">else</span><span class="p">:</span>  <span class="c1"># keep younger features</span>
+                <span class="k">if</span> <span class="p">(</span>
+                    <span class="n">begin_time</span> <span class="o">!=</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">GeoTimeInstant</span><span class="o">.</span><span class="n">create_distant_past</span><span class="p">()</span>  <span class="c1"># type: ignore</span>
+                    <span class="ow">and</span> <span class="n">begin_time</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_age</span>
+                <span class="p">):</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_filtrate_feature_collection</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">feature</span><span class="p">)</span>
+                    <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Feature </span><span class="si">{</span><span class="n">feature</span><span class="o">.</span><span class="n">get_feature_type</span><span class="p">()</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">feature</span><span class="o">.</span><span class="n">get_name</span><span class="p">()</span><span class="si">}</span><span class="s2"> does not have &#39;valid time&#39;, and will not pass BirthAgeFilter.&quot;</span>  <span class="c1"># type: ignore</span>
+            <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_residue_feature_collection</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">feature</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="EndTimeFilter">
+<a class="viewcode-back" href="../../../filters_and_transformers.html#gplately.utils.feature_filter.EndTimeFilter">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">EndTimeFilter</span><span class="p">(</span><span class="n">FeatureFilter</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;filter features by the time of disappearance, keep features that disappeared before a certain time by default</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    Find features which disappeared before 100 Ma:</span>
+
+<span class="sd">    &gt;&gt;&gt; EndTimeFilter(100)</span>
+
+<span class="sd">    Find features which disappeared after 100 Ma, including features that have not disappeared yet:</span>
+
+<span class="sd">    &gt;&gt;&gt; EndTimeFilter(100, reverse=False)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">end_time</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Constructor for the end time filter.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        end_time : float</span>
+<span class="sd">            The end time criterion.</span>
+<span class="sd">        reverse : bool, optional</span>
+<span class="sd">            If False, features that disappeared before the end time criterion will pass the filter;</span>
+<span class="sd">            if True, features that disappeared after the end time criterion will pass the filter,</span>
+<span class="sd">            including features that have not disappeared yet (end time is distant future).</span>
+<span class="sd">            Default is False.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_age</span> <span class="o">=</span> <span class="n">end_time</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_reverse</span> <span class="o">=</span> <span class="n">reverse</span>
+
+<div class="viewcode-block" id="EndTimeFilter.should_keep">
+<a class="viewcode-back" href="../../../filters_and_transformers.html#gplately.utils.feature_filter.EndTimeFilter.should_keep">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">should_keep</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">feature</span><span class="p">:</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">Feature</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>  <span class="c1"># type: ignore</span>
+        <span class="n">valid_time</span> <span class="o">=</span> <span class="n">feature</span><span class="o">.</span><span class="n">get_valid_time</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">valid_time</span><span class="p">:</span>
+            <span class="n">_</span><span class="p">,</span> <span class="n">end_time</span> <span class="o">=</span> <span class="n">valid_time</span>
+            <span class="k">if</span> <span class="p">(</span>
+                <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reverse</span>
+            <span class="p">):</span>  <span class="c1"># keep features disappeared before the &quot;end time&quot; criterion</span>
+                <span class="k">if</span> <span class="p">(</span>
+                    <span class="n">end_time</span> <span class="o">!=</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">GeoTimeInstant</span><span class="o">.</span><span class="n">create_distant_future</span><span class="p">()</span>  <span class="c1"># type: ignore</span>
+                    <span class="ow">and</span> <span class="n">end_time</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_age</span>
+                <span class="p">):</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_filtrate_feature_collection</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">feature</span><span class="p">)</span>
+                    <span class="k">return</span> <span class="kc">True</span>
+            <span class="k">else</span><span class="p">:</span>  <span class="c1"># keep features disappeared after the &quot;end time&quot; criterion, including features that have not disappeared yet (end time is distant future)</span>
+                <span class="k">if</span> <span class="p">(</span>
+                    <span class="n">end_time</span> <span class="o">==</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">GeoTimeInstant</span><span class="o">.</span><span class="n">create_distant_future</span><span class="p">()</span>  <span class="c1"># type: ignore</span>
+                    <span class="ow">or</span> <span class="n">end_time</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_age</span>
+                <span class="p">):</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_filtrate_feature_collection</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">feature</span><span class="p">)</span>
+                    <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Feature </span><span class="si">{</span><span class="n">feature</span><span class="o">.</span><span class="n">get_feature_type</span><span class="p">()</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">feature</span><span class="o">.</span><span class="n">get_name</span><span class="p">()</span><span class="si">}</span><span class="s2"> does not have &#39;valid time&#39;, and will not pass EndTimeFilter.&quot;</span>  <span class="c1"># type: ignore</span>
+            <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_residue_feature_collection</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">feature</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="FeatureTypeFilter">
+<a class="viewcode-back" href="../../../filters_and_transformers.html#gplately.utils.feature_filter.FeatureTypeFilter">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">FeatureTypeFilter</span><span class="p">(</span><span class="n">FeatureFilter</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;filter features by the feature type, keep features with feature type matching</span>
+<span class="sd">    a specified regular expression by default. A list of feature types can also be provided,</span>
+<span class="sd">    and the regular expression will be the combination of these feature types.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">feature_types</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]],</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Constructor for the feature type filter.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        feature_types : Union[str, List[str]]</span>
+<span class="sd">            The feature type(s) to filter by.</span>
+<span class="sd">        reverse : bool, optional</span>
+<span class="sd">            If False, features with matching feature types will pass the filter;</span>
+<span class="sd">            if True, features with non-matching feature types will pass the filter.</span>
+<span class="sd">            Default is False.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">feature_types</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_feature_types</span> <span class="o">=</span> <span class="s2">&quot;|&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">feature_types</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_feature_types</span> <span class="o">=</span> <span class="n">feature_types</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_reverse</span> <span class="o">=</span> <span class="n">reverse</span>
+
+<div class="viewcode-block" id="FeatureTypeFilter.should_keep">
+<a class="viewcode-back" href="../../../filters_and_transformers.html#gplately.utils.feature_filter.FeatureTypeFilter.should_keep">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">should_keep</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">feature</span><span class="p">:</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">Feature</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>  <span class="c1"># type: ignore</span>
+        <span class="n">feature_type</span> <span class="o">=</span> <span class="n">feature</span><span class="o">.</span><span class="n">get_feature_type</span><span class="p">()</span>
+        <span class="k">if</span> <span class="p">(</span>
+            <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reverse</span>
+        <span class="p">):</span>  <span class="c1"># keep features with feature type matching the regular expression</span>
+            <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">fullmatch</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_feature_types</span><span class="p">,</span> <span class="n">feature_type</span><span class="o">.</span><span class="n">to_qualified_string</span><span class="p">()):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_filtrate_feature_collection</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">feature</span><span class="p">)</span>
+                <span class="k">return</span> <span class="kc">True</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_residue_feature_collection</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">feature</span><span class="p">)</span>
+                <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">else</span><span class="p">:</span>  <span class="c1"># keep features with feature type not matching the regular expression</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">re</span><span class="o">.</span><span class="n">fullmatch</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_feature_types</span><span class="p">,</span> <span class="n">feature_type</span><span class="o">.</span><span class="n">to_qualified_string</span><span class="p">()</span>
+            <span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_filtrate_feature_collection</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">feature</span><span class="p">)</span>
+                <span class="k">return</span> <span class="kc">True</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_residue_feature_collection</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">feature</span><span class="p">)</span>
+                <span class="k">return</span> <span class="kc">False</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="PropertyExistsFilter">
+<a class="viewcode-back" href="../../../filters_and_transformers.html#gplately.utils.feature_filter.PropertyExistsFilter">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">PropertyExistsFilter</span><span class="p">(</span><span class="n">FeatureFilter</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;filter features by the existence of a property, keep features that have a specific property by default</span>
+
+<span class="sd">    Depending on the value of reverse, this filter can be used to either keep features that have a specific property,</span>
+<span class="sd">    or keep features that do not have that property.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    Keep features that do not have the property ``gpml:subductionPolarity``:</span>
+
+<span class="sd">    &gt;&gt;&gt; PropertyExistsFilter(&quot;gpml:subductionPolarity&quot;, reverse=True)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">property_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Constructor for the property existence filter.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        property_name : str</span>
+<span class="sd">            The name of the property to check (case-insensitive), e.g. ``gpml:subductionPolarity``.</span>
+<span class="sd">        reverse : bool, optional</span>
+<span class="sd">            If False, features that have the property will pass the filter;</span>
+<span class="sd">            if True, features that do not have the property will pass the filter.</span>
+<span class="sd">            Default is False.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_property_name</span> <span class="o">=</span> <span class="n">property_name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_reverse</span> <span class="o">=</span> <span class="n">reverse</span>
+
+<div class="viewcode-block" id="PropertyExistsFilter.should_keep">
+<a class="viewcode-back" href="../../../filters_and_transformers.html#gplately.utils.feature_filter.PropertyExistsFilter.should_keep">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">should_keep</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">feature</span><span class="p">:</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">Feature</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>  <span class="c1"># type: ignore</span>
+        <span class="k">for</span> <span class="nb">property</span> <span class="ow">in</span> <span class="n">feature</span><span class="p">:</span>
+            <span class="k">if</span> <span class="p">(</span>
+                <span class="nb">property</span><span class="o">.</span><span class="n">get_name</span><span class="p">()</span><span class="o">.</span><span class="n">to_qualified_string</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+                <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">_property_name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+            <span class="p">):</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reverse</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_filtrate_feature_collection</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">feature</span><span class="p">)</span>
+                    <span class="k">return</span> <span class="kc">True</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_residue_feature_collection</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">feature</span><span class="p">)</span>
+                    <span class="k">return</span> <span class="kc">False</span>
+
+        <span class="c1"># if we go through all properties and do not find the property we are looking for</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reverse</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_filtrate_feature_collection</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">feature</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_residue_feature_collection</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">feature</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">False</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="PropertyValueFilter">
+<a class="viewcode-back" href="../../../filters_and_transformers.html#gplately.utils.feature_filter.PropertyValueFilter">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">PropertyValueFilter</span><span class="p">(</span><span class="n">FeatureFilter</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;filter features by the value of a property, keep features that have a specific property with a specific value by default</span>
+
+<span class="sd">    Depending on the value of &quot;reverse&quot; parameter, this filter can be used to either keep features that have the specific property and</span>
+<span class="sd">    its value matches the specified value, or keep features that either do not have that property or its value does not match</span>
+<span class="sd">    the specified value.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    Keep features whose ``gpml:subductionPolarity`` property value is not ``Unknown``:</span>
+
+<span class="sd">    &gt;&gt;&gt; PropertyValueFilter(&quot;gpml:subductionPolarity&quot;, &quot;Unknown&quot;, reverse=True)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">property_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">property_value</span><span class="p">,</span>
+        <span class="n">reverse</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Constructor for the property value filter.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        property_name : str</span>
+<span class="sd">            The name of the property to check (case-insensitive), e.g. ``gpml:subductionPolarity``.</span>
+<span class="sd">        property_value :</span>
+<span class="sd">            The value of the property to check.</span>
+<span class="sd">        reverse : bool, optional</span>
+<span class="sd">            If False, features that have the property and whose value matches ``property_value``</span>
+<span class="sd">            will pass the filter; if True, features that either do not have the property or have</span>
+<span class="sd">            the property but its value does not match will pass the filter. Default is False.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_property_name</span> <span class="o">=</span> <span class="n">property_name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_property_value</span> <span class="o">=</span> <span class="n">property_value</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_reverse</span> <span class="o">=</span> <span class="n">reverse</span>
+
+<div class="viewcode-block" id="PropertyValueFilter.should_keep">
+<a class="viewcode-back" href="../../../filters_and_transformers.html#gplately.utils.feature_filter.PropertyValueFilter.should_keep">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">should_keep</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">feature</span><span class="p">:</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">Feature</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>  <span class="c1"># type: ignore</span>
+        <span class="k">for</span> <span class="nb">property</span> <span class="ow">in</span> <span class="n">feature</span><span class="p">:</span>
+            <span class="k">if</span> <span class="p">(</span>
+                <span class="nb">property</span><span class="o">.</span><span class="n">get_name</span><span class="p">()</span><span class="o">.</span><span class="n">to_qualified_string</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+                <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">_property_name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+                <span class="ow">and</span> <span class="nb">property</span><span class="o">.</span><span class="n">get_value</span><span class="p">()</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">_property_value</span>
+            <span class="p">):</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reverse</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_residue_feature_collection</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">feature</span><span class="p">)</span>
+                    <span class="k">return</span> <span class="kc">False</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_filtrate_feature_collection</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">feature</span><span class="p">)</span>
+                    <span class="k">return</span> <span class="kc">True</span>
+
+        <span class="c1"># if we go through all properties and do not find the property with the specified value</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reverse</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_filtrate_feature_collection</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">feature</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_residue_feature_collection</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">feature</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">False</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="RegionOfInterestFilter">
+<a class="viewcode-back" href="../../../filters_and_transformers.html#gplately.utils.feature_filter.RegionOfInterestFilter">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">RegionOfInterestFilter</span><span class="p">(</span><span class="n">FeatureFilter</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;filter features by whether they are inside a region of interest, which can be defined by a bounding box or a polygon.</span>
+<span class="sd">    By default, features that are inside the region of interest will pass the filter.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    Keep features that are in the polygon:</span>
+
+<span class="sd">    &gt;&gt;&gt; RegionOfInterestFilter(polygon)</span>
+
+<span class="sd">    Keep features that are not in the polygon:</span>
+
+<span class="sd">    &gt;&gt;&gt; RegionOfInterestFilter(polygon, reverse=True)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">region_of_interest</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">PolygonOnSphere</span><span class="p">],</span>  <span class="c1"># type: ignore</span>
+        <span class="n">reverse</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Constructor for the region of interest filter.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        region_of_interest : tuple of (float, float, float, float) or pygplates.PolygonOnSphere</span>
+<span class="sd">            The region of interest. Either a ``(left, right, bottom, top)`` bounding box tuple</span>
+<span class="sd">            or a ``pygplates.PolygonOnSphere``.</span>
+<span class="sd">        reverse : bool, optional</span>
+<span class="sd">            If False, features within the region of interest will pass the filter;</span>
+<span class="sd">            if True, features outside the region of interest will pass the filter.</span>
+<span class="sd">            Default is False.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">region_of_interest</span><span class="p">,</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">PolygonOnSphere</span><span class="p">):</span>  <span class="c1"># type: ignore</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_region_of_interest</span> <span class="o">=</span> <span class="n">region_of_interest</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">region_of_interest</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">region_of_interest</span><span class="p">)</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
+            <span class="n">left</span><span class="p">,</span> <span class="n">right</span><span class="p">,</span> <span class="n">bottom</span><span class="p">,</span> <span class="n">top</span> <span class="o">=</span> <span class="n">region_of_interest</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_region_of_interest</span> <span class="o">=</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">PolygonOnSphere</span><span class="p">((</span><span class="n">lat</span><span class="p">,</span> <span class="n">lon</span><span class="p">)</span> <span class="k">for</span> <span class="n">lon</span><span class="p">,</span> <span class="n">lat</span> <span class="ow">in</span> <span class="p">[(</span><span class="n">left</span><span class="p">,</span> <span class="n">bottom</span><span class="p">),</span> <span class="p">(</span><span class="n">left</span><span class="p">,</span> <span class="n">top</span><span class="p">),</span> <span class="p">(</span><span class="n">right</span><span class="p">,</span> <span class="n">top</span><span class="p">),</span> <span class="p">(</span><span class="n">right</span><span class="p">,</span> <span class="n">bottom</span><span class="p">)])</span>  <span class="c1"># type: ignore</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;region_of_interest should be either a tuple of (left, right, bottom, top) or a pygplates.PolygonOnSphere&quot;</span>
+            <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_reverse</span> <span class="o">=</span> <span class="n">reverse</span>
+        <span class="n">roi_feature</span> <span class="o">=</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">Feature</span><span class="p">()</span>  <span class="c1"># type: ignore</span>
+        <span class="n">roi_feature</span><span class="o">.</span><span class="n">set_geometry</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_region_of_interest</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_plate_partitioner</span> <span class="o">=</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">PlatePartitioner</span><span class="p">(</span>  <span class="c1"># type: ignore</span>
+            <span class="n">pygplates</span><span class="o">.</span><span class="n">FeatureCollection</span><span class="p">([</span><span class="n">roi_feature</span><span class="p">]),</span>
+            <span class="n">pygplates</span><span class="o">.</span><span class="n">RotationModel</span><span class="p">([]),</span>
+        <span class="p">)</span>
+
+<div class="viewcode-block" id="RegionOfInterestFilter.should_keep">
+<a class="viewcode-back" href="../../../filters_and_transformers.html#gplately.utils.feature_filter.RegionOfInterestFilter.should_keep">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">should_keep</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">feature</span><span class="p">:</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">Feature</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>  <span class="c1"># type: ignore</span>
+        <span class="c1"># Implementation for checking if feature is in the region of interest</span>
+        <span class="n">inside_geometries</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">outside_geometries</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_plate_partitioner</span><span class="o">.</span><span class="n">partition_geometry</span><span class="p">(</span><span class="n">feature</span><span class="o">.</span><span class="n">get_geometries</span><span class="p">(),</span> <span class="n">inside_geometries</span><span class="p">,</span> <span class="n">outside_geometries</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
+
+        <span class="c1"># TODO:</span>
+        <span class="c1"># we may want to add an option to specify the minimum area of the inside/outside geometry</span>
+        <span class="c1"># to be considered as inside/outside the region of interest,</span>
+        <span class="c1"># because for some features, such as large polygons, they may have a portion of their geometry</span>
+        <span class="c1"># inside the region of interest, and we may want to consider them as inside the region of interest.</span>
+        <span class="c1"># and the same for ploylines, they may have a portion of their geometry inside the region of interest,</span>
+        <span class="c1">#  and we may want to consider them as inside the region of interest.</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reverse</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">inside_geometries</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_residue_feature_collection</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">feature</span><span class="p">)</span>
+                <span class="k">return</span> <span class="kc">False</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_filtrate_feature_collection</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">feature</span><span class="p">)</span>
+                <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">outside_geometries</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_residue_feature_collection</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">feature</span><span class="p">)</span>
+                <span class="k">return</span> <span class="kc">False</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_filtrate_feature_collection</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">feature</span><span class="p">)</span>
+                <span class="k">return</span> <span class="kc">True</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="TopologicalFeaturesWithDuplicateSectionsFilter">
+<a class="viewcode-back" href="../../../filters_and_transformers.html#gplately.utils.feature_filter.TopologicalFeaturesWithDuplicateSectionsFilter">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">TopologicalFeaturesWithDuplicateSectionsFilter</span><span class="p">(</span><span class="n">FeatureFilter</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;find features whose topological geometries have duplicated section features.</span>
+
+<span class="sd">    No parameter is needed to create this filter.</span>
+<span class="sd">    For the given feature, if any of its topological geometries has duplicated section features,</span>
+<span class="sd">    the feature will pass the filter.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="TopologicalFeaturesWithDuplicateSectionsFilter.should_keep">
+<a class="viewcode-back" href="../../../filters_and_transformers.html#gplately.utils.feature_filter.TopologicalFeaturesWithDuplicateSectionsFilter.should_keep">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">should_keep</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">feature</span><span class="p">:</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">Feature</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>  <span class="c1"># type: ignore</span>
+        <span class="n">geoms</span> <span class="o">=</span> <span class="n">feature</span><span class="o">.</span><span class="n">get_all_topological_geometries</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">geom</span> <span class="ow">in</span> <span class="n">geoms</span><span class="p">:</span>
+            <span class="n">_seen_feature_ids</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">geom</span><span class="p">,</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">GpmlTopologicalLine</span><span class="p">):</span>  <span class="c1"># type: ignore</span>
+                <span class="k">for</span> <span class="n">section</span> <span class="ow">in</span> <span class="n">geom</span><span class="o">.</span><span class="n">get_boundary_sections</span><span class="p">():</span>
+                    <span class="n">feature_id</span> <span class="o">=</span> <span class="n">section</span><span class="o">.</span><span class="n">get_property_delegate</span><span class="p">()</span><span class="o">.</span><span class="n">get_feature_id</span><span class="p">()</span>
+                    <span class="k">if</span> <span class="n">feature_id</span> <span class="ow">in</span> <span class="n">_seen_feature_ids</span><span class="p">:</span>
+                        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+                            <span class="sa">f</span><span class="s2">&quot;Duplicate feature found: </span><span class="si">{</span><span class="n">feature_id</span><span class="si">}</span><span class="s2"> in feature </span><span class="si">{</span><span class="n">feature</span><span class="o">.</span><span class="n">get_feature_id</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span>
+                        <span class="p">)</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_filtrate_feature_collection</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">feature</span><span class="p">)</span>
+                        <span class="k">return</span> <span class="kc">True</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">_seen_feature_ids</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">feature_id</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">section</span> <span class="ow">in</span> <span class="n">geom</span><span class="o">.</span><span class="n">get_sections</span><span class="p">():</span>
+                    <span class="n">feature_id</span> <span class="o">=</span> <span class="n">section</span><span class="o">.</span><span class="n">get_property_delegate</span><span class="p">()</span><span class="o">.</span><span class="n">get_feature_id</span><span class="p">()</span>
+                    <span class="k">if</span> <span class="n">feature_id</span> <span class="ow">in</span> <span class="n">_seen_feature_ids</span><span class="p">:</span>
+                        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+                            <span class="sa">f</span><span class="s2">&quot;Duplicate feature found: </span><span class="si">{</span><span class="n">feature_id</span><span class="si">}</span><span class="s2"> in feature </span><span class="si">{</span><span class="n">feature</span><span class="o">.</span><span class="n">get_feature_id</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span>
+                        <span class="p">)</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_filtrate_feature_collection</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">feature</span><span class="p">)</span>
+                        <span class="k">return</span> <span class="kc">True</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">_seen_feature_ids</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">feature_id</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_residue_feature_collection</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">feature</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="TopologicalReferenceFilter">
+<a class="viewcode-back" href="../../../filters_and_transformers.html#gplately.utils.feature_filter.TopologicalReferenceFilter">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">TopologicalReferenceFilter</span><span class="p">(</span><span class="n">FeatureFilter</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;find reference section features for given topological features</span>
+
+<span class="sd">    Given a collection of topological features, this filter will find section features</span>
+<span class="sd">    that are used in the topological geometries of these topological features</span>
+<span class="sd">    from another feature collection containing the real geometries.</span>
+
+<span class="sd">    A map of topological feature ID to the list of section feature IDs used in the topological geometries</span>
+<span class="sd">    of that topological feature will also be created and stored in the filter,</span>
+<span class="sd">    which can be accessed by the property &quot;topological_reference_map&quot;.</span>
+<span class="sd">    The keys of this map are the string representation of the feature IDs of the topological</span>
+<span class="sd">    features, and the values are lists of string representation of the feature IDs of</span>
+<span class="sd">    the section features used in the topological geometries of that topological feature.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">topological_feature_collection</span><span class="o">=</span><span class="n">pygplates</span><span class="o">.</span><span class="n">FeatureCollection</span><span class="p">()):</span>  <span class="c1"># type: ignore</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct the filter with a collection of topological features.</span>
+
+<span class="sd">        The filtering will be applied to another collection of features containing the real</span>
+<span class="sd">        geometries.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        topological_feature_collection : pygplates.FeatureCollection, optional</span>
+<span class="sd">            A collection of topological features. The filter will find section features that</span>
+<span class="sd">            are referenced by the topological geometries of these features.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_topological_feature_collection</span> <span class="o">=</span> <span class="n">topological_feature_collection</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_the_ids_of_section_features</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_topological_reference_map</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">feature</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_topological_feature_collection</span><span class="p">:</span>
+            <span class="n">feature_id_str</span> <span class="o">=</span> <span class="n">feature</span><span class="o">.</span><span class="n">get_feature_id</span><span class="p">()</span><span class="o">.</span><span class="n">get_string</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_topological_reference_map</span><span class="p">[</span><span class="n">feature_id_str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">geom</span> <span class="ow">in</span> <span class="n">feature</span><span class="o">.</span><span class="n">get_all_topological_geometries</span><span class="p">():</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">geom</span><span class="p">,</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">GpmlTopologicalLine</span><span class="p">):</span>  <span class="c1"># type: ignore</span>
+                    <span class="k">for</span> <span class="n">section</span> <span class="ow">in</span> <span class="n">geom</span><span class="o">.</span><span class="n">get_boundary_sections</span><span class="p">():</span>
+                        <span class="n">section_id</span> <span class="o">=</span> <span class="p">(</span>
+                            <span class="n">section</span><span class="o">.</span><span class="n">get_property_delegate</span><span class="p">()</span>
+                            <span class="o">.</span><span class="n">get_feature_id</span><span class="p">()</span>
+                            <span class="o">.</span><span class="n">get_string</span><span class="p">()</span>
+                        <span class="p">)</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_the_ids_of_section_features</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">section_id</span><span class="p">)</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_topological_reference_map</span><span class="p">[</span><span class="n">feature_id_str</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                            <span class="n">section_id</span>
+                        <span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">for</span> <span class="n">section</span> <span class="ow">in</span> <span class="n">geom</span><span class="o">.</span><span class="n">get_sections</span><span class="p">():</span>
+                        <span class="n">section_id</span> <span class="o">=</span> <span class="p">(</span>
+                            <span class="n">section</span><span class="o">.</span><span class="n">get_property_delegate</span><span class="p">()</span>
+                            <span class="o">.</span><span class="n">get_feature_id</span><span class="p">()</span>
+                            <span class="o">.</span><span class="n">get_string</span><span class="p">()</span>
+                        <span class="p">)</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_the_ids_of_section_features</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">section_id</span><span class="p">)</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_topological_reference_map</span><span class="p">[</span><span class="n">feature_id_str</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                            <span class="n">section_id</span>
+                        <span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">topological_reference_map</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;return the map of topological feature ID to the list of section feature IDs used</span>
+<span class="sd">        in the topological geometries of that topological feature&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_topological_reference_map</span>
+
+<div class="viewcode-block" id="TopologicalReferenceFilter.should_keep">
+<a class="viewcode-back" href="../../../filters_and_transformers.html#gplately.utils.feature_filter.TopologicalReferenceFilter.should_keep">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">should_keep</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">feature</span><span class="p">:</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">Feature</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>  <span class="c1"># type: ignore</span>
+        <span class="k">if</span> <span class="n">feature</span><span class="o">.</span><span class="n">get_feature_id</span><span class="p">()</span><span class="o">.</span><span class="n">get_string</span><span class="p">()</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_the_ids_of_section_features</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_filtrate_feature_collection</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">feature</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_residue_feature_collection</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">feature</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">False</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="FeatureIDFilter">
+<a class="viewcode-back" href="../../../filters_and_transformers.html#gplately.utils.feature_filter.FeatureIDFilter">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">FeatureIDFilter</span><span class="p">(</span><span class="n">FeatureFilter</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Filter features by feature ID.</span>
+
+<span class="sd">    By default, this filter keeps features whose feature ID is present in ``fids``.</span>
+<span class="sd">    Set ``reverse=True`` to keep features whose feature ID is not present in ``fids``.</span>
+
+<span class="sd">    Ordering behavior</span>
+<span class="sd">    -----------------</span>
+<span class="sd">    When ``reverse=False``, the output list in ``filtrate_features_as_list`` is arranged</span>
+<span class="sd">    to follow the order of IDs in ``fids`` (with ``None`` placeholders for IDs that are</span>
+<span class="sd">    not found).</span>
+
+<span class="sd">    When ``reverse=True``, the output list in ``residue_features_as_list`` follows the</span>
+<span class="sd">    order of IDs in ``fids`` (again with ``None`` placeholders for IDs that are not found).</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    - IDs in ``fids`` must be unique.</span>
+<span class="sd">    - If multiple features share the same feature ID in the input collection, only the</span>
+<span class="sd">        first occurrence is kept in the ordered output list and a warning is logged.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    Find features with IDs ``id1``, ``id2``, or ``id3``:</span>
+
+<span class="sd">    &gt;&gt;&gt; FeatureIDFilter([&#39;id1&#39;, &#39;id2&#39;, &#39;id3&#39;])</span>
+
+<span class="sd">    Find features whose IDs are not ``id1``, ``id2``, or ``id3``:</span>
+
+<span class="sd">    &gt;&gt;&gt; FeatureIDFilter([&#39;id1&#39;, &#39;id2&#39;, &#39;id3&#39;], reverse=True)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fids</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Constructor for the feature ID filter.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        fids : list of str</span>
+<span class="sd">            A list of feature IDs to match. Each feature ID should be a universally unique string.</span>
+<span class="sd">        reverse : bool, optional</span>
+<span class="sd">            If False, features with a feature ID matching one of the strings in ``fids`` will</span>
+<span class="sd">            pass the filter; if True, features with a feature ID not matching any string in</span>
+<span class="sd">            ``fids`` will pass the filter. Default is False.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_fids</span> <span class="o">=</span> <span class="n">fids</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_fids</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_fids</span><span class="p">)):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The feature IDs in the parameter &#39;fids&#39; must be unique.&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_reverse</span> <span class="o">=</span> <span class="n">reverse</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reverse</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_filtrate_feature_collection</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_fids</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_residue_feature_collection</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_fids</span><span class="p">)</span>
+
+<div class="viewcode-block" id="FeatureIDFilter.should_keep">
+<a class="viewcode-back" href="../../../filters_and_transformers.html#gplately.utils.feature_filter.FeatureIDFilter.should_keep">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">should_keep</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">feature</span><span class="p">:</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">Feature</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>  <span class="c1"># type: ignore</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">i</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fids</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">feature</span><span class="o">.</span><span class="n">get_feature_id</span><span class="p">()</span><span class="o">.</span><span class="n">get_string</span><span class="p">())</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="n">i</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reverse</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">i</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">:</span>  <span class="c1"># feature ID matches one of the strings in the parameter &quot;fids&quot;</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_filtrate_feature_collection</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_filtrate_feature_collection</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">feature</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;Duplicate feature ID found: </span><span class="si">{</span><span class="n">feature</span><span class="o">.</span><span class="n">get_feature_id</span><span class="p">()</span><span class="o">.</span><span class="n">get_string</span><span class="p">()</span><span class="si">}</span><span class="s2">. Only the first one will be kept in the filtrate feature collection.&quot;</span>
+                    <span class="p">)</span>
+                <span class="k">return</span> <span class="kc">True</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_residue_feature_collection</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">feature</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
+                <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_filtrate_feature_collection</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">feature</span><span class="p">)</span>
+                <span class="k">return</span> <span class="kc">True</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_residue_feature_collection</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_residue_feature_collection</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">feature</span>  <span class="c1"># type: ignore</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;Duplicate feature ID found: </span><span class="si">{</span><span class="n">feature</span><span class="o">.</span><span class="n">get_feature_id</span><span class="p">()</span><span class="o">.</span><span class="n">get_string</span><span class="p">()</span><span class="si">}</span><span class="s2">. Only the first one will be kept in the residue feature collection.&quot;</span>
+                    <span class="p">)</span>
+                <span class="k">return</span> <span class="kc">False</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="ValidTimeFilter">
+<a class="viewcode-back" href="../../../filters_and_transformers.html#gplately.utils.feature_filter.ValidTimeFilter">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">ValidTimeFilter</span><span class="p">(</span><span class="n">FeatureFilter</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;filter features by their valid time, keep features with valid time within a specified time range.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">begin_time</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="s2">&quot;inf&quot;</span><span class="p">),</span> <span class="n">end_time</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="s2">&quot;-inf&quot;</span><span class="p">)</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Constructor for the valid time filter.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        begin_time : float, optional</span>
+<span class="sd">            The begin time of the time range (inclusive). Default is ``inf``.</span>
+<span class="sd">        end_time : float, optional</span>
+<span class="sd">            The end time of the time range (inclusive). Default is ``-inf``.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_begin_time</span> <span class="o">=</span> <span class="n">begin_time</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_end_time</span> <span class="o">=</span> <span class="n">end_time</span>
+
+<div class="viewcode-block" id="ValidTimeFilter.should_keep">
+<a class="viewcode-back" href="../../../filters_and_transformers.html#gplately.utils.feature_filter.ValidTimeFilter.should_keep">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">should_keep</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">feature</span><span class="p">:</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">Feature</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>  <span class="c1"># type: ignore</span>
+        <span class="n">valid_time</span> <span class="o">=</span> <span class="n">feature</span><span class="o">.</span><span class="n">get_valid_time</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">valid_time</span><span class="p">:</span>
+            <span class="n">begin_time</span><span class="p">,</span> <span class="n">end_time</span> <span class="o">=</span> <span class="n">valid_time</span>
+
+            <span class="k">if</span> <span class="n">begin_time</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_begin_time</span> <span class="ow">and</span> <span class="n">end_time</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_end_time</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_filtrate_feature_collection</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">feature</span><span class="p">)</span>
+                <span class="k">return</span> <span class="kc">True</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_residue_feature_collection</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">feature</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
+</div>
+
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">PolygonAreaFilter</span><span class="p">(</span><span class="n">FeatureFilter</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;filter polygon features by their area, keep features with area larger than a specified threshold by default</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    Keep polygon features with area larger than 1 million square kilometers:</span>
+
+<span class="sd">    &gt;&gt;&gt; PolygonAreaFilter(1e6)</span>
+
+<span class="sd">    Keep polygon features with area smaller than 1 million square kilometers:</span>
+
+<span class="sd">    &gt;&gt;&gt; PolygonAreaFilter(1e6, reverse=True)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">area_threshold</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Constructor for the polygon area filter.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        area_threshold : float</span>
+<span class="sd">            The area threshold in square kilometers.</span>
+<span class="sd">        reverse : bool, optional</span>
+<span class="sd">            If False, polygon features with area larger than the threshold will pass the filter;</span>
+<span class="sd">            if True, polygon features with area smaller than the threshold will pass the filter.</span>
+<span class="sd">            Default is False.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_area_threshold</span> <span class="o">=</span> <span class="n">area_threshold</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_reverse</span> <span class="o">=</span> <span class="n">reverse</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">should_keep</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">feature</span><span class="p">:</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">Feature</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>  <span class="c1"># type: ignore</span>
+        <span class="n">geometries</span> <span class="o">=</span> <span class="n">feature</span><span class="o">.</span><span class="n">get_all_geometries</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">geometries</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">geom</span> <span class="ow">in</span> <span class="n">geometries</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">geom</span><span class="p">,</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">PolygonOnSphere</span><span class="p">):</span>  <span class="c1"># type: ignore</span>
+                    <span class="n">area</span> <span class="o">=</span> <span class="p">(</span>
+                        <span class="n">geom</span><span class="o">.</span><span class="n">get_area</span><span class="p">()</span> <span class="o">*</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">Earth</span><span class="o">.</span><span class="n">mean_radius_in_kms</span><span class="o">**</span><span class="mi">2</span>
+                    <span class="p">)</span>  <span class="c1"># convert to square kilometers</span>
+                    <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reverse</span> <span class="ow">and</span> <span class="n">area</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_area_threshold</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_reverse</span> <span class="ow">and</span> <span class="n">area</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_area_threshold</span>
+                    <span class="p">):</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_filtrate_feature_collection</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">feature</span><span class="p">)</span>
+                        <span class="k">return</span> <span class="kc">True</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_residue_feature_collection</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">feature</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">False</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023-2025, The University of Sydney.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

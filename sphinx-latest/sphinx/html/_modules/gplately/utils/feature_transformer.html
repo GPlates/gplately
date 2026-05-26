@@ -1,0 +1,305 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>gplately.utils.feature_transformer &mdash; gplately 2.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
+
+  
+    <link rel="shortcut icon" href="../../../_static/favicon.ico"/>
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=51b770b3"></script>
+      <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            gplately
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../basic_usages.html">Minimal Working Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../use_cases.html">Common Use Cases</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../faq.html">Troubleshooting and FAQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../command_line_interface.html">Command Line Interface (CLI)</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../api.html">Main Classes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../functions.html">Functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../filters_and_transformers.html">Filters And Transformers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../secondaries.html">Other Classes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../plate_models.html">Plate Models</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">gplately</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">gplately.utils.feature_transformer</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for gplately.utils.feature_transformer</h1><div class="highlight"><pre>
+<span></span><span class="c1">#</span>
+<span class="c1">#    Copyright (C) 2024-2026 The University of Sydney, Australia</span>
+<span class="c1">#</span>
+<span class="c1">#    This program is free software; you can redistribute it and/or modify it under</span>
+<span class="c1">#    the terms of the GNU General Public License, version 2, as published by</span>
+<span class="c1">#    the Free Software Foundation.</span>
+<span class="c1">#</span>
+<span class="c1">#    This program is distributed in the hope that it will be useful, but WITHOUT</span>
+<span class="c1">#    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or</span>
+<span class="c1">#    FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License</span>
+<span class="c1">#    for more details.</span>
+<span class="c1">#</span>
+<span class="c1">#    You should have received a copy of the GNU General Public License along</span>
+<span class="c1">#    with this program; if not, write to Free Software Foundation, Inc.,</span>
+<span class="c1">#    51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.</span>
+<span class="c1">#</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">abc</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pygplates</span>  <span class="c1"># type: ignore</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Union</span>
+
+
+<div class="viewcode-block" id="FeatureTransformer">
+<a class="viewcode-back" href="../../../filters_and_transformers.html#gplately.utils.feature_transformer.FeatureTransformer">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">FeatureTransformer</span><span class="p">(</span><span class="n">metaclass</span><span class="o">=</span><span class="n">abc</span><span class="o">.</span><span class="n">ABCMeta</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Abstract base class for feature transformers.&quot;&quot;&quot;</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">__subclasshook__</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">subclass</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="nb">hasattr</span><span class="p">(</span><span class="n">subclass</span><span class="p">,</span> <span class="s2">&quot;transform&quot;</span><span class="p">)</span>
+            <span class="ow">and</span> <span class="nb">callable</span><span class="p">(</span><span class="n">subclass</span><span class="o">.</span><span class="n">transform</span><span class="p">)</span>
+            <span class="ow">or</span> <span class="bp">NotImplemented</span>
+        <span class="p">)</span>
+
+<div class="viewcode-block" id="FeatureTransformer.transform">
+<a class="viewcode-back" href="../../../filters_and_transformers.html#gplately.utils.feature_transformer.FeatureTransformer.transform">[docs]</a>
+    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">feature</span><span class="p">:</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">Feature</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">Feature</span><span class="p">:</span>  <span class="c1"># type: ignore</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Transform a single feature.</span>
+
+<span class="sd">        This abstract method must be implemented by all subclasses.</span>
+<span class="sd">        Implementations may modify the feature in place and/or return</span>
+<span class="sd">        a new feature object.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        feature : pygplates.Feature</span>
+<span class="sd">            The feature to transform.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        pygplates.Feature</span>
+<span class="sd">            The transformed feature (may be the same object or a new instance).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
+</div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">transform_feature_collection</span><span class="p">(</span>
+    <span class="n">feature_collection</span><span class="p">:</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">FeatureCollection</span><span class="p">,</span> <span class="n">transformers</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">FeatureTransformer</span><span class="p">]</span>  <span class="c1"># type: ignore</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Transform a feature collection with a list of transformers.</span>
+
+<span class="sd">    Apply a sequence of transformers to each feature in the collection.</span>
+<span class="sd">    Transformers are applied sequentially and update features in place.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    feature_collection : pygplates.FeatureCollection</span>
+<span class="sd">        The feature collection to be transformed.</span>
+<span class="sd">    transformers : List[FeatureTransformer]</span>
+<span class="sd">        List of FeatureTransformer instances to be applied to each feature</span>
+<span class="sd">        in the collection, in order.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    pygplates.FeatureCollection</span>
+<span class="sd">        The transformed feature collection (same object, modified in place).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">transformed_feature_collection</span> <span class="o">=</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">FeatureCollection</span><span class="p">()</span>  <span class="c1"># type: ignore</span>
+    <span class="k">for</span> <span class="n">feature</span> <span class="ow">in</span> <span class="n">feature_collection</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">transformer</span> <span class="ow">in</span> <span class="n">transformers</span><span class="p">:</span>
+            <span class="n">transformed_feature</span> <span class="o">=</span> <span class="n">transformer</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">feature</span><span class="p">)</span>
+            <span class="n">transformed_feature_collection</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">transformed_feature</span><span class="p">)</span>
+    <span class="c1"># If the transformers modify features in place,</span>
+    <span class="c1"># the features in the input feature collection is already updated.</span>
+    <span class="c1"># The transformed_feature_collection is just a new collection containing the same feature objects.</span>
+    <span class="c1"># If transformers return new feature objects(not modifying in place),</span>
+    <span class="c1"># we return a new feature collection containing the transformed new features.</span>
+    <span class="k">return</span> <span class="n">transformed_feature_collection</span>
+
+
+<div class="viewcode-block" id="SetReconstructionPlateIDTransformer">
+<a class="viewcode-back" href="../../../filters_and_transformers.html#gplately.utils.feature_transformer.SetReconstructionPlateIDTransformer">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">SetReconstructionPlateIDTransformer</span><span class="p">(</span><span class="n">FeatureTransformer</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Set the reconstruction plate ID of a feature to a specified value.</span>
+
+<span class="sd">    This transformer updates the reconstruction plate ID property of features,</span>
+<span class="sd">    which is essential for plate kinematic reconstructions.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    plate_id : int</span>
+<span class="sd">        The reconstruction plate ID to assign to features.</span>
+<span class="sd">        Typically a positive integer (0 is valid but represents an unspecified plate).</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    Create a transformer that sets plate ID to 801:</span>
+
+<span class="sd">    &gt;&gt;&gt; transformer = SetReconstructionPlateIDTransformer(plate_id=801)</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    SetValidTimeTransformer : Transformer for setting valid time intervals</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">plate_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_plate_id</span> <span class="o">=</span> <span class="n">plate_id</span>
+
+<div class="viewcode-block" id="SetReconstructionPlateIDTransformer.transform">
+<a class="viewcode-back" href="../../../filters_and_transformers.html#gplately.utils.feature_transformer.SetReconstructionPlateIDTransformer.transform">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">feature</span><span class="p">:</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">Feature</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">Feature</span><span class="p">:</span>  <span class="c1"># type: ignore</span>
+        <span class="n">feature</span><span class="o">.</span><span class="n">set_reconstruction_plate_id</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_plate_id</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
+        <span class="k">return</span> <span class="n">feature</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="SetValidTimeTransformer">
+<a class="viewcode-back" href="../../../filters_and_transformers.html#gplately.utils.feature_transformer.SetValidTimeTransformer">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">SetValidTimeTransformer</span><span class="p">(</span><span class="n">FeatureTransformer</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Set the valid time of a feature to specified begin and end times.</span>
+
+<span class="sd">    This transformer allows partial updates to feature valid time intervals.</span>
+<span class="sd">    If only one time bound is specified, the existing bound is preserved.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    begin_time : float or None, optional</span>
+<span class="sd">        The begin time (valid from) for the feature in Ma (millions of years ago).</span>
+<span class="sd">        If None, the existing begin time is preserved. Default is None.</span>
+<span class="sd">    end_time : float or None, optional</span>
+<span class="sd">        The end time (valid until) for the feature in Ma (millions of years ago).</span>
+<span class="sd">        If None, the existing end time is preserved. Default is None.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    Set both begin and end times:</span>
+
+<span class="sd">    &gt;&gt;&gt; transformer = SetValidTimeTransformer(begin_time=100.0, end_time=50.0)</span>
+
+<span class="sd">    Set only the begin time, preserving the existing end time:</span>
+
+<span class="sd">    &gt;&gt;&gt; transformer = SetValidTimeTransformer(begin_time=100.0)</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    SetReconstructionPlateIDTransformer : Transformer for setting reconstruction plate ID</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">begin_time</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">end_time</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>  <span class="c1"># type: ignore</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_begin_time</span> <span class="o">=</span> <span class="n">begin_time</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_end_time</span> <span class="o">=</span> <span class="n">end_time</span>
+
+<div class="viewcode-block" id="SetValidTimeTransformer.transform">
+<a class="viewcode-back" href="../../../filters_and_transformers.html#gplately.utils.feature_transformer.SetValidTimeTransformer.transform">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">feature</span><span class="p">:</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">Feature</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">Feature</span><span class="p">:</span>  <span class="c1"># type: ignore</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_begin_time</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_end_time</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">feature</span>
+        <span class="n">begin_time</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="s2">&quot;inf&quot;</span><span class="p">)</span>
+        <span class="n">end_time</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="s2">&quot;-inf&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_begin_time</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">valid_time</span> <span class="o">=</span> <span class="n">feature</span><span class="o">.</span><span class="n">get_valid_time</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
+            <span class="k">if</span> <span class="n">valid_time</span><span class="p">:</span>
+                <span class="n">begin_time</span> <span class="o">=</span> <span class="n">valid_time</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">begin_time</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_begin_time</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_end_time</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">valid_time</span> <span class="o">=</span> <span class="n">feature</span><span class="o">.</span><span class="n">get_valid_time</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
+            <span class="k">if</span> <span class="n">valid_time</span><span class="p">:</span>
+                <span class="n">end_time</span> <span class="o">=</span> <span class="n">valid_time</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">end_time</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_end_time</span>
+        <span class="n">feature</span><span class="o">.</span><span class="n">set_valid_time</span><span class="p">(</span><span class="n">begin_time</span><span class="p">,</span> <span class="n">end_time</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
+        <span class="k">return</span> <span class="n">feature</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023-2025, The University of Sydney.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

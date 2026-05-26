@@ -73,6 +73,7 @@
 </li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="../filters_and_transformers.html">Filters And Transformers</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../secondaries.html">Other Classes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../plate_models.html">Plate Models</a></li>
 </ul>
@@ -118,7 +119,7 @@ minimizing the coding effort required from users.</p>
 <tr class="row-odd"><td><p><a class="reference internal" href="#gplately.auxiliary.get_plate_reconstruction" title="gplately.auxiliary.get_plate_reconstruction"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_plate_reconstruction</span></code></a>(model[, ...])</p></td>
 <td><p>Return a <a class="reference internal" href="gplately.PlateReconstruction.html#gplately.PlateReconstruction" title="gplately.PlateReconstruction"><code class="xref py py-class docutils literal notranslate"><span class="pre">gplately.PlateReconstruction</span></code></a> object for a given model name or <a class="reference internal" href="gplately.PlateModel.html#gplately.PlateModel" title="gplately.PlateModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">gplately.PlateModel</span></code></a> object.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#gplately.auxiliary.get_pygmt_basemap_figure" title="gplately.auxiliary.get_pygmt_basemap_figure"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_pygmt_basemap_figure</span></code></a>([projection, region])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#gplately.auxiliary.get_pygmt_basemap_figure" title="gplately.auxiliary.get_pygmt_basemap_figure"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_pygmt_basemap_figure</span></code></a>([projection, ...])</p></td>
 <td><p>A helper function to return a <code class="docutils literal notranslate"><span class="pre">pygmt.Figure()</span></code> object</p></td>
 </tr>
 </tbody>
@@ -187,13 +188,14 @@ minimizing the coding effort required from users.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="gplately.auxiliary.get_pygmt_basemap_figure">
-<span class="sig-prename descclassname"><span class="pre">gplately.auxiliary.</span></span><span class="sig-name descname"><span class="pre">get_pygmt_basemap_figure</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">projection</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'N180/10c'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">region</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'d'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/auxiliary.html#get_pygmt_basemap_figure"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.auxiliary.get_pygmt_basemap_figure" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">gplately.auxiliary.</span></span><span class="sig-name descname"><span class="pre">get_pygmt_basemap_figure</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">projection</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'N180/10c'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">region</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'d'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frame</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><span class="pre">list</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'lrtb'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/auxiliary.html#get_pygmt_basemap_figure"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.auxiliary.get_pygmt_basemap_figure" title="Link to this definition"></a></dt>
 <dd><p>A helper function to return a <code class="docutils literal notranslate"><span class="pre">pygmt.Figure()</span></code> object</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>projection</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>default=&quot;N180/10c&quot;</em>) – string to define the map projection in GMT style</p></li>
 <li><p><strong>region</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>default=&quot;d&quot;</em>) – string to define the map extent in GMT style</p></li>
+<li><p><strong>frame</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em>, </em><em>default=&quot;lrtb&quot;</em>) – GMT frame setting. Use <code class="docutils literal notranslate"><span class="pre">&quot;afg&quot;</span></code> to draw annotations, ticks, and gridlines.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
