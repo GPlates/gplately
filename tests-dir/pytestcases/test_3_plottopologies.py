@@ -1,10 +1,11 @@
-import matplotlib.pyplot as plt
-import pytest
+import matplotlib.pyplot as plt  # pyright: ignore[reportMissingModuleSource]
+import pytest  # pyright: ignore[reportMissingImports]
 from conftest import gplately_plot_topologies_object as gplot
 from conftest import logger, muller_2019_model, reconstruction_times
-from pygplates import FeatureCollection
+from pygplates import FeatureCollection  # pyright: ignore[reportMissingModuleSource]
 
 import gplately
+from gplately.gpml import load_feature_collection_from_files  # type: ignore
 
 # ========================================= <gplately.PlotTopologies> =========================================
 
@@ -152,11 +153,24 @@ def test_PlotTopologies_features(time, gplot):
         ), "trenchn (R) is not gpml:SubductionZone."
 
 
-# Subduction teeth
 def test_PlotTopologies_subduction_teeth(gplot):
-    ax = plt.gca()
-    gplot.plot_subduction_teeth(ax=ax)
-    fig = plt.gcf()
+    """Test that the plot_subduction_teeth method adds artists to the target axes when plotting subduction teeth."""
+    ccrs = pytest.importorskip("cartopy.crs")
+
+    fig = plt.figure(figsize=(8, 4))
+    ax = fig.add_subplot(111, projection=ccrs.PlateCarree())
+
+    assert gplot.trench_left, "No left-trench features available for plotting."
+    assert gplot.trench_right, "No right-trench features available for plotting."
+
+    collections_before = len(ax.collections)
+    gplot.plot_subduction_teeth(ax=ax, color="black")
+    collections_after = len(ax.collections)
+
+    assert (
+        collections_after > collections_before
+    ), "plot_subduction_teeth did not add any artists to the target axes."
+
     plt.close(fig)
 
 
@@ -164,15 +178,16 @@ def test_pickle_plotTopologies_object(gplot, muller_2019_model):
     import pickle
 
     # Also create a plot object from actual pygplates objects (instead of filenames).
-    pygplates_coastline_features = [
-        FeatureCollection(f) for f in muller_2019_model.get_layer("Coastlines")
-    ]
-    pygplates_continent_features = [
-        FeatureCollection(f) for f in muller_2019_model.get_layer("ContinentalPolygons")
-    ]
-    pygplates_COB_features = [
-        FeatureCollection(f) for f in muller_2019_model.get_layer("COBs")
-    ]
+    pygplates_coastline_features = load_feature_collection_from_files(
+        muller_2019_model.get_layer("Coastlines")
+    )
+    pygplates_continent_features = load_feature_collection_from_files(
+        muller_2019_model.get_layer("ContinentalPolygons")
+    )
+    pygplates_COB_features = load_feature_collection_from_files(
+        muller_2019_model.get_layer("COBs")
+    )
+
     pygplates_gplot = gplately.PlotTopologies(
         gplot.plate_reconstruction,
         coastlines=pygplates_coastline_features,
@@ -186,7 +201,14 @@ def test_pickle_plotTopologies_object(gplot, muller_2019_model):
     #
     # Pickling of the former will be faster than the latter.
     for g in (gplot, pygplates_gplot):
+        assert isinstance(g, gplately.PlotTopologies)
+        g.time = 0
         pickled_plot = pickle.loads(pickle.dumps(g))
+
+        assert pickled_plot is not g
+        assert pickled_plot.time == pytest.approx(g.time)
+        assert pickled_plot.anchor_plate_id == g.anchor_plate_id
+        assert isinstance(pickled_plot._plot_engine, type(g._plot_engine))
 
         # Check the associated PlateReconstruction model got pickled properly.
         assert pickled_plot.plate_reconstruction.rotation_model.get_rotation(
@@ -201,13 +223,21 @@ def test_pickle_plotTopologies_object(gplot, muller_2019_model):
 
         # Test pickled coastline/continent/COB.
         # Since these are handled specially when pickling.
-        assert pickled_plot.coastlines and len(pickled_plot.coastlines) == len(
-            g.coastlines
-        )
-        assert pickled_plot.continents and len(pickled_plot.continents) == len(
-            g.continents
-        )
-        assert pickled_plot.COBs and len(pickled_plot.COBs) == len(g.COBs)
+        assert g.coastlines
+        assert pickled_plot.coastlines
+        assert len(pickled_plot.coastlines) == len(g.coastlines)
+
+        assert g.continents
+        assert pickled_plot.continents
+        assert len(pickled_plot.continents) == len(g.continents)
+
+        assert g.COBs
+        assert pickled_plot.COBs
+        assert len(pickled_plot.COBs) == len(g.COBs)
+
+        # Reconstructed trench sections should be available after unpickling.
+        assert len(pickled_plot.trench_left) == len(g.trench_left)
+        assert len(pickled_plot.trench_right) == len(g.trench_right)
 
 
 def test_set_invalid_time(gplot):

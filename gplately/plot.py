@@ -33,6 +33,10 @@ import warnings
 from functools import partial
 from typing import Union
 
+# pyright: reportMissingImports=false
+# pyright: reportMissingModuleSource=false
+
+
 import cartopy.crs as ccrs
 import geopandas as gpd
 import numpy as np
