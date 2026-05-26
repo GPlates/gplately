@@ -4,6 +4,7 @@ import statistics
 import numpy as np
 import pandas as pd
 import pytest
+from netCDF4 import Dataset
 from conftest import gplately_seafloorgrid_object as seafloorgrid
 from conftest import gridding_times, logger
 
@@ -146,3 +147,17 @@ def test_lat_lon_z_to_netCDF(zval_name, seafloorgrid):
         age_grid_unmasked.data.any()
     ), "Could not produce an unmasked {} grid.".format(zval_name)
     assert age_grid.data.any(), "Could not produce a masked {} grid.".format(zval_name)
+
+    with Dataset(grid_output_unmasked) as ds:
+        assert ds.getncattr("metadata_source") == "SeafloorGrid.lat_lon_z_to_netCDF"
+        assert ds.getncattr("zvalue_name") == zval_name
+        assert ds.getncattr("is_masked_grid") == 0
+        assert ds.getncattr("reconstruction_time_ma") == pytest.approx(time)
+        assert ds.getncattr("unique_input_point_count") > 0
+
+    with Dataset(grid_output_dir) as ds:
+        assert ds.getncattr("metadata_source") == "SeafloorGrid.lat_lon_z_to_netCDF"
+        assert ds.getncattr("zvalue_name") == zval_name
+        assert ds.getncattr("is_masked_grid") == 1
+        assert ds.getncattr("reconstruction_time_ma") == pytest.approx(time)
+        assert ds.getncattr("unique_input_point_count") > 0

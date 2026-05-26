@@ -1543,6 +1543,23 @@ def _save_netcdf_file(
     grid_output_unmasked = os.path.join(output_dir, unmasked_basename)
     grid_output = os.path.join(output_dir, grid_basename)
 
+    common_metadata = {
+        "metadata_source": "SeafloorGrid.save_netcdf_files",
+        "zvalue_name": name,
+        "reconstruction_time_ma": float(time),
+        "file_collection": file_collection if file_collection else "",
+        "interpolation_method": "nearest",
+        "input_point_count": int(len(df)),
+        "unique_input_point_count": int(len(unique_data)),
+        "grid_lon_count": int(resX),
+        "grid_lat_count": int(resY),
+        "grid_extent": list(extent),
+        "continent_mask_file": continent_mask_filename.format(time),
+        "sample_points_file": sample_points_file_path.format(time),
+        "zvalue_min": float(np.nanmin(zdata)) if len(zdata) else None,
+        "zvalue_max": float(np.nanmax(zdata)) if len(zdata) else None,
+    }
+
     if unmasked:
         grids.write_netcdf_grid(
             grid_output_unmasked,
@@ -1550,6 +1567,7 @@ def _save_netcdf_file(
             extent=extent,
             significant_digits=2,
             fill_value=None,
+            metadata={**common_metadata, "is_masked_grid": 0},
         )
 
     # Identify regions in the grid in the continental mask
@@ -1569,6 +1587,7 @@ def _save_netcdf_file(
         extent=extent,
         significant_digits=2,
         fill_value=np.nan,
+        metadata={**common_metadata, "is_masked_grid": 1},
     )
     logger.info(f"Save {name} netCDF grid at {time:0.2f} Ma completed!")
 
@@ -1635,6 +1654,26 @@ def _lat_lon_z_to_netCDF_time(
     grid_output_unmasked = os.path.join(output_dir, unmasked_basename)
     grid_output = os.path.join(output_dir, grid_basename)
 
+    common_metadata = {
+        "metadata_source": "SeafloorGrid.lat_lon_z_to_netCDF",
+        "zvalue_name": zval_name,
+        "reconstruction_time_ma": float(time),
+        "file_collection": file_collection if file_collection else "",
+        "interpolation_method": "nearest",
+        "input_point_count": int(len(curr_data)),
+        "unique_input_point_count": int(len(unique_data)),
+        "grid_lon_count": int(resX),
+        "grid_lat_count": int(resY),
+        "grid_extent": list(extent),
+        "continent_mask_file": continent_mask_filename.format(time),
+        "gridding_input_file": gridding_input_filename.format(time),
+        "zvalue_min": float(np.nanmin(zdata)) if len(zdata) else None,
+        "zvalue_max": float(np.nanmax(zdata)) if len(zdata) else None,
+        "total_column_headers": ",".join(total_column_headers),
+    }
+    if zval_name == "SEAFLOOR_AGE":
+        common_metadata["seafloor_age_filter_ma"] = 350.0
+
     if unmasked:
         grids.write_netcdf_grid(
             grid_output_unmasked,
@@ -1642,6 +1681,7 @@ def _lat_lon_z_to_netCDF_time(
             extent=extent,
             significant_digits=2,
             fill_value=None,
+            metadata={**common_metadata, "is_masked_grid": 0},
         )
 
     # Identify regions in the grid in the continental mask
@@ -1661,6 +1701,7 @@ def _lat_lon_z_to_netCDF_time(
         extent=extent,
         significant_digits=2,
         fill_value=np.nan,
+        metadata={**common_metadata, "is_masked_grid": 1},
     )
     logger.info(f"{zval_name} netCDF grids for {time:0.2f} Ma complete!")
 

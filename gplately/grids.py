@@ -412,6 +412,7 @@ def write_netcdf_grid(
     extent: Union[tuple, str] = "global",
     significant_digits=None,
     fill_value: Union[float, None] = np.nan,
+    metadata: Union[dict, None] = None,
 ):
     """Write geological data contained in a `grid` to a netCDF4 grid with a specified `filename`.
 
@@ -450,6 +451,9 @@ def write_netcdf_grid(
     fill_value : scalar, NoneType, default: np.nan
         Value used to fill in missing data. By default this is np.nan.
 
+    metadata : dict, default=None
+        Optional metadata to store as global netCDF attributes.
+
     Returns
     -------
     A netCDF grid will be saved to the path specified in `filename`.
@@ -474,6 +478,22 @@ def write_netcdf_grid(
 
     with netCDF4.Dataset(filename, "w", driver=None) as cdf:
         cdf.title = "Grid produced by gplately " + str(_version)
+        if metadata:
+            for key, value in metadata.items():
+                if value is None:
+                    continue
+                attr_name = str(key).strip()
+                if not attr_name:
+                    continue
+                if isinstance(value, np.generic):
+                    value = value.item()
+                elif isinstance(value, tuple):
+                    value = list(value)
+                elif isinstance(value, (list, dict, str, int, float, bool)):
+                    pass
+                else:
+                    value = str(value)
+                cdf.setncattr(attr_name, value)
         cdf.createDimension("lon", lon_grid.size)
         cdf.createDimension("lat", lat_grid.size)
         cdf_lon = cdf.createVariable("lon", lon_grid.dtype, ("lon",), **data_kwds)
