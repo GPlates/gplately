@@ -17,6 +17,8 @@
 import logging
 import math
 
+# pyright: reportMissingImports=false
+# pyright: reportMissingModuleSource=false
 import pygplates
 
 import cartopy.crs as ccrs
@@ -60,8 +62,110 @@ class CartopyPlotEngine(PlotEngine):
         return gdf.plot(ax=ax_or_fig, **kwargs)
 
     def plot_pygplates_features(self, ax_or_fig, features, **kwargs):
-        """Not implemented yet"""
-        pass
+        """Use Cartopy to plot one or more pygplates features onto a map.
+
+        Point-like geometries are rendered with ``scatter`` so marker styling
+        behaves as expected, while line/polygon geometries are rendered with
+        ``add_geometries``.
+
+        Parameters
+        ----------
+        ax_or_fig : cartopy.mpl.geoaxes.GeoAxes
+            Cartopy GeoAxes instance
+        features : pygplates.Feature or list of pygplates.Feature
+            One or more pygplates features to plot
+        edgecolor : str
+            For polygons, it is the border colour. For polylines, it is the line colour.
+        facecolor : str
+            The colour used to fill the polygon.
+        crs : cartopy.crs.Projection
+            The coordinate reference system of the input geometries. Default is PlateCarree (lon/lat).
+        **kwargs :
+            Keyword arguments for plotting the features.
+            see Matplotlib's ``plot()`` and ``scatter()`` keyword arguments for line/polygon and point geometries, respectively.
+
+        Warnings
+        --------
+        This method will not check features' valid time. It just simply plots all the geometries in the features.
+        You need to filter features by valid time yourself before passing them to this method if you want to plot features at a specific time.
+
+        .. seealso::
+
+            Use the class :class:`ValidTimeFilter` for filtering features by valid time.
+        """
+        from gplately.geometry import pygplates_to_shapely
+
+        if isinstance(features, pygplates.Feature):
+            features = [features]
+
+        edgecolor = kwargs.pop("edgecolor", "blue")
+        facecolor = kwargs.pop("facecolor", "none")
+        crs = kwargs.pop("crs", ccrs.PlateCarree())
+
+        for feature in features:
+            geometries = feature.get_all_geometries()  # type: ignore
+            if not geometries:
+                continue
+
+            for geometry in geometries:
+                shapely_geometry = pygplates_to_shapely(geometry)  # type: ignore
+                if shapely_geometry is None:
+                    continue
+
+                geom_type = getattr(shapely_geometry, "geom_type", "")
+                if geom_type in ("Point", "MultiPoint"):
+                    if geom_type == "Point":
+                        coords = getattr(shapely_geometry, "coords", None)
+                        if not coords:
+                            continue
+                        xs = [coords[0][0]]
+                        ys = [coords[0][1]]
+                    else:
+                        geoms = getattr(shapely_geometry, "geoms", ())
+                        xs = [
+                            getattr(pt, "x", None)
+                            for pt in geoms
+                            if getattr(pt, "x", None) is not None
+                        ]
+                        ys = [
+                            getattr(pt, "y", None)
+                            for pt in geoms
+                            if getattr(pt, "y", None) is not None
+                        ]
+                        if not xs or not ys:
+                            continue
+
+                    point_kwargs = kwargs.copy()
+                    point_kwargs.pop("transform", None)
+                    point_kwargs.pop("color", None)
+                    point_kwargs.pop("c", None)
+
+                    # Use small, filled dots for points unless explicitly overridden.
+                    point_size = point_kwargs.pop("s", 12)
+                    point_color = point_kwargs.pop("facecolors", None)
+                    if point_color in (None, "none"):
+                        point_color = edgecolor
+                    point_edgecolors = point_kwargs.pop("edgecolors", "none")
+
+                    ax_or_fig.scatter(  # type: ignore
+                        xs,
+                        ys,
+                        transform=crs,
+                        s=point_size,
+                        edgecolors=point_edgecolors,
+                        facecolors=point_color,
+                        **point_kwargs,
+                    )
+                    continue
+
+                ax_or_fig.add_geometries(  # type: ignore
+                    [shapely_geometry],
+                    crs=crs,
+                    edgecolor=edgecolor,
+                    facecolor=facecolor,
+                    **kwargs,
+                )
+        return ax_or_fig
 
     def plot_subduction_zones(
         self,
@@ -98,10 +202,9 @@ class CartopyPlotEngine(PlotEngine):
         try:
             projection = ax_or_fig.projection
         except AttributeError:
-            logger.warning(
+            raise ValueError(
                 "The ax.projection does not exist. You must set projection to plot Cartopy maps, such as ax = plt.subplot(211, projection=cartopy.crs.PlateCarree())"
             )
-            projection = None
 
         if isinstance(projection, ccrs.PlateCarree):
             spacing = math.degrees(spacing)
@@ -201,6 +304,7 @@ def _plot_feature_collection(
         ax = fig.add_subplot(111, projection=projection)
 
     ax.set_global()  # type: ignore
+
     # Add gridlines and lat/lon labels
     gl = ax.gridlines(  # type: ignore
         crs=ccrs.PlateCarree(),
@@ -236,21 +340,8 @@ def _plot_feature_collection(
     gl.xlabel_style = {"size": 10}
     gl.ylabel_style = {"size": 10}
 
-    for feature in feature_collection:
-        valid_time = feature.get_valid_time(None)  # type: ignore
-        if valid_time is not None:
-            if valid_time[1] not in [pygplates.GeoTimeInstant.create_distant_future(), 0]:  # type: ignore
-                continue  # skip features that are not valid at 0 Ma
-        geometries = feature.get_geometries()  # type: ignore
-        if geometries:
-            for geometry in geometries:
-                shapely_geometry = pygplates_to_shapely(geometry)  # type: ignore
-                if shapely_geometry is not None:
-                    ax.add_geometries(  # type: ignore
-                        [shapely_geometry],
-                        crs=ccrs.PlateCarree(),
-                        edgecolor="blue",
-                        facecolor="none",
-                    )
+    cartopy_plot_engine = CartopyPlotEngine()
+    cartopy_plot_engine.plot_pygplates_features(ax, feature_collection)
+
     ax.set_title(title)
     # plt.show()

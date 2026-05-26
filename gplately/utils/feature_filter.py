@@ -26,6 +26,8 @@ logger = logging.getLogger("gplately")
 
 
 class FeatureFilter(metaclass=abc.ABCMeta):
+    """Abstract base class for feature filters."""
+
     def __init__(self):
         self._filtrate_feature_collection: List[Optional[pygplates.Feature]] = []
         self._residue_feature_collection: List[Optional[pygplates.Feature]] = []
@@ -56,10 +58,12 @@ class FeatureFilter(metaclass=abc.ABCMeta):
 
     @property
     def filtrate_feature_collection(self):
+        """return the features that pass the filter as a pygplates.FeatureCollection."""
         return pygplates.FeatureCollection(self._filtrate_feature_collection)
 
     @property
     def residue_feature_collection(self):
+        """return the features that do not pass the filter as a pygplates.FeatureCollection."""
         return pygplates.FeatureCollection(self._residue_feature_collection)
 
     @property
@@ -115,12 +119,27 @@ def filter_feature_collection(
 class FeatureNameFilter(FeatureFilter):
     """filter features by name, keep features with name matching any of the specified strings by default
 
-    for example:
-        FeatureNameFilter(['Africa', 'Asia']) -- keep features who name contains 'Africa' or 'Asia'
-        FeatureNameFilter(['Africa', 'Asia'], reverse=True) -- keep features who name does not contain 'Africa' or 'Asia'
-        FeatureNameFilter(['Africa', 'Asia'], exact_match=True) -- keep features who name is 'Africa' or 'Asia'
-        FeatureNameFilter(['Africa', 'Asia'], reverse=True, exact_match=True) -- keep features who name is not 'Africa' or 'Asia'
-        FeatureNameFilter(['Africa', 'Asia'], reverse=True, exact_match=True, case_sensitive=True) -- keep features who name is not 'Africa' or 'Asia' (case sensitive)
+    Examples
+    --------
+    Find features who name contains 'Africa' or 'Asia':
+
+    >>> FeatureNameFilter(['Africa', 'Asia'])
+
+    Find features who name **doesn't** contain 'Africa' or 'Asia':
+
+    >>>  FeatureNameFilter(['Africa', 'Asia'], reverse=True)
+
+    Find features who name is exactly 'Africa' or 'Asia':
+
+    >>>  FeatureNameFilter(['Africa', 'Asia'], exact_match=True)
+
+    Find features who name is not 'Africa' or 'Asia':
+
+    >>>  FeatureNameFilter(['Africa', 'Asia'], reverse=True, exact_match=True)
+
+    Find features who name is not 'Africa' or 'Asia' (case sensitive):
+
+    >>>  FeatureNameFilter(['Africa', 'Asia'], reverse=True, exact_match=True, case_sensitive=True)
     """
 
     def __init__(
@@ -183,9 +202,15 @@ class FeatureNameFilter(FeatureFilter):
 class PlateIDFilter(FeatureFilter):
     """filter features by plate ID, keep features with plate ID in a specified list by default
 
-    for example:
-        PlateIDFilter([101,201,301]) -- keep features whose plate id is 101 or 201 or 301
-        PlateIDFilter([101,201,301], reverse=True) -- keep features whose plate id is not 101 nor 201 nor 301
+    Examples
+    --------
+    Find features whose plate id is 101 or 201 or 301:
+
+    >>>  PlateIDFilter([101,201,301])
+
+    Find features whose plate id is not 101 nor 201 nor 301:
+
+    >>>  PlateIDFilter([101,201,301], reverse=True)
 
     """
 
@@ -225,9 +250,15 @@ class PlateIDFilter(FeatureFilter):
 class BirthAgeFilter(FeatureFilter):
     """filter features by the time of appearance, keep older features by default
 
-    for example:
-        BirthAgeFilter(500) -- keep features which appreared before 500 Ma
-        BirthAgeFilter(500, reverse=False) --  keep features which appreared after 500 Ma
+    Examples
+    --------
+    Find features which appreared before 500 Ma:
+
+    >>>  BirthAgeFilter(500)
+
+    Find features which appreared after 500 Ma:
+
+    >>> BirthAgeFilter(500, reverse=False)
     """
 
     def __init__(self, age: float, reverse=False):
@@ -276,9 +307,15 @@ class BirthAgeFilter(FeatureFilter):
 class EndTimeFilter(FeatureFilter):
     """filter features by the time of disappearance, keep features that disappeared before a certain time by default
 
-    for example:
-        EndTimeFilter(100) -- keep features which disappeared before 100 Ma
-        EndTimeFilter(100, reverse=False) --  keep features which disappeared after 100 Ma, including features that have not disappeared yet (end time is distant future)
+    Examples
+    --------
+    Find features which disappeared before 100 Ma:
+
+    >>> EndTimeFilter(100)
+
+    Find features which disappeared after 100 Ma, including features that have not disappeared yet:
+
+    >>> EndTimeFilter(100, reverse=False)
     """
 
     def __init__(self, end_time: float, reverse=False):
@@ -378,8 +415,11 @@ class PropertyExistsFilter(FeatureFilter):
     Depending on the value of reverse, this filter can be used to either keep features that have a specific property,
     or keep features that do not have that property.
 
-    For example, if we want to keep features that do not have the property "gpml:subductionPolarity",
-    we can use PropertyExistsFilter("gpml:subductionPolarity", reverse=True).
+    Examples
+    --------
+    Keep features that do not have the property ``gpml:subductionPolarity``:
+
+    >>> PropertyExistsFilter("gpml:subductionPolarity", reverse=True)
     """
 
     def __init__(self, property_name: str, reverse=False):
@@ -428,8 +468,11 @@ class PropertyValueFilter(FeatureFilter):
     its value matches the specified value, or keep features that either do not have that property or its value does not match
     the specified value.
 
-    For example, if we want to keep features whose "gpml:subductionPolarity" property value is not "Unknown",
-    we can use PropertyValueFilter("gpml:subductionPolarity", "Unknown", reverse=True).
+    Examples
+    --------
+    Keep features whose ``gpml:subductionPolarity`` property value is not ``Unknown``:
+
+    >>> PropertyValueFilter("gpml:subductionPolarity", "Unknown", reverse=True)
     """
 
     def __init__(
@@ -483,9 +526,15 @@ class RegionOfInterestFilter(FeatureFilter):
     """filter features by whether they are inside a region of interest, which can be defined by a bounding box or a polygon.
     By default, features that are inside the region of interest will pass the filter.
 
-    for example:
-        RegionOfInterestFilter(polygon) -- keep features that are in the polygon
-        RegionOfInterestFilter(polygon, reverse=True) -- keep features that are not in the polygon
+    Examples
+    --------
+    Keep features that are in the polygon:
+
+    >>> RegionOfInterestFilter(polygon)
+
+    Keep features that are not in the polygon:
+
+    >>> RegionOfInterestFilter(polygon, reverse=True)
     """
 
     def __init__(
@@ -687,8 +736,13 @@ class FeatureIDFilter(FeatureFilter):
 
     Examples
     --------
-    - ``FeatureIDFilter(['id1', 'id2', 'id3'])`` keeps features with IDs ``id1``, ``id2``, or ``id3``.
-    - ``FeatureIDFilter(['id1', 'id2', 'id3'], reverse=True)`` keeps features whose IDs are not in that list.
+    Find features with IDs ``id1``, ``id2``, or ``id3``:
+
+    >>> FeatureIDFilter(['id1', 'id2', 'id3'])
+
+    Find features whose IDs are not ``id1``, ``id2``, or ``id3``:
+
+    >>> FeatureIDFilter(['id1', 'id2', 'id3'], reverse=True)
     """
 
     def __init__(self, fids: List[str], reverse=False):
@@ -771,6 +825,54 @@ class ValidTimeFilter(FeatureFilter):
             if begin_time <= self._begin_time and end_time >= self._end_time:
                 self._filtrate_feature_collection.append(feature)
                 return True
+
+        self._residue_feature_collection.append(feature)
+        return False
+
+
+class PolygonAreaFilter(FeatureFilter):
+    """filter polygon features by their area, keep features with area larger than a specified threshold by default
+
+    Examples
+    --------
+    Keep polygon features with area larger than 1 million square kilometers:
+
+    >>> PolygonAreaFilter(1e6)
+
+    Keep polygon features with area smaller than 1 million square kilometers:
+
+    >>> PolygonAreaFilter(1e6, reverse=True)
+    """
+
+    def __init__(self, area_threshold: float, reverse=False):
+        """Constructor for the polygon area filter.
+
+        Parameters
+        ----------
+        area_threshold : float
+            The area threshold in square kilometers.
+        reverse : bool, optional
+            If False, polygon features with area larger than the threshold will pass the filter;
+            if True, polygon features with area smaller than the threshold will pass the filter.
+            Default is False.
+        """
+        super().__init__()
+        self._area_threshold = area_threshold
+        self._reverse = reverse
+
+    def should_keep(self, feature: pygplates.Feature) -> bool:  # type: ignore
+        geometries = feature.get_all_geometries()
+        if geometries:
+            for geom in geometries:
+                if isinstance(geom, pygplates.PolygonOnSphere):  # type: ignore
+                    area = (
+                        geom.get_area() * pygplates.Earth.mean_radius_in_kms**2
+                    )  # convert to square kilometers
+                    if (not self._reverse and area >= self._area_threshold) or (
+                        self._reverse and area < self._area_threshold
+                    ):
+                        self._filtrate_feature_collection.append(feature)
+                        return True
 
         self._residue_feature_collection.append(feature)
         return False

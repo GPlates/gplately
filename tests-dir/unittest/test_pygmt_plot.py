@@ -4,7 +4,7 @@
 
 import os
 
-import pygmt
+import pygmt  # pyright: ignore[reportMissingImports]
 
 os.environ["DISABLE_GPLATELY_DEV_WARNING"] = "true"
 
@@ -63,7 +63,7 @@ if __name__ == "__main__":
     with pygmt.config(FONT_ANNOT_PRIMARY=4):
         fig.legend(position="jBL+o-1.0/0", box="+gwhite+p0.25p")
 
-    # fig.show(width=1200)
+    fig.show(width=1200)
     output_file = "./output/test-pygmt-plot.pdf"
-    fig.savefig(output_file)
+    # fig.savefig(output_file)
     print(f"The figure has been saved to: {output_file}.")
