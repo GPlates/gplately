@@ -304,6 +304,7 @@ def _plot_feature_collection(
         ax = fig.add_subplot(111, projection=projection)
 
     ax.set_global()  # type: ignore
+
     # Add gridlines and lat/lon labels
     gl = ax.gridlines(  # type: ignore
         crs=ccrs.PlateCarree(),
@@ -339,21 +340,8 @@ def _plot_feature_collection(
     gl.xlabel_style = {"size": 10}
     gl.ylabel_style = {"size": 10}
 
-    for feature in feature_collection:
-        valid_time = feature.get_valid_time(None)  # type: ignore
-        if valid_time is not None:
-            if valid_time[1] not in [pygplates.GeoTimeInstant.create_distant_future(), 0]:  # type: ignore
-                continue  # skip features that are not valid at 0 Ma
-        geometries = feature.get_geometries()  # type: ignore
-        if geometries:
-            for geometry in geometries:
-                shapely_geometry = pygplates_to_shapely(geometry)  # type: ignore
-                if shapely_geometry is not None:
-                    ax.add_geometries(  # type: ignore
-                        [shapely_geometry],
-                        crs=ccrs.PlateCarree(),
-                        edgecolor="blue",
-                        facecolor="none",
-                    )
+    cartopy_plot_engine = CartopyPlotEngine()
+    cartopy_plot_engine.plot_pygplates_features(ax, feature_collection)
+
     ax.set_title(title)
     # plt.show()

@@ -6,11 +6,15 @@
 # which can be based on various criteria such as feature name, plate ID, birth age, disappearance age, region of interest, and more.
 # This allows users to create customized GPML processing pipelines that can be applied to a wide range of use cases in geoscience research.
 
+# Built-in feature filters and transformers are available in GPlately to facilitate the creation of custom processing pipelines.
+# For more information, see [**the documentation**](https://gplates.github.io/gplately/latest/sphinx/html/filters_and_transformers.html#)
+# for each filter and transformer class.
+#
 
 # %% [markdown]
 
-# 📒 This notebook is generated from 14-RuleBasedGPMLProcessingPipeline.py using the command `jupytext --to notebook Notebooks/14-RuleBasedGPMLProcessingPipeline.py -o Notebooks/14-RuleBasedGPMLProcessingPipeline.ipynb`.
-# If you need to commit changes to this notebook to the GPlately repository, make your edits in 14-RuleBasedGPMLProcessingPipeline.py and then regenerate this Jupyter Notebook file.
+# ⚠️ This notebook is generated from 14-RuleBasedGPMLProcessingPipeline.py using the command `jupytext --to notebook Notebooks/14-RuleBasedGPMLProcessingPipeline.py -o Notebooks/14-RuleBasedGPMLProcessingPipeline.ipynb`.
+# If you need to commit changes to this notebook to the GPlately repository, make your edits in 14-RuleBasedGPMLProcessingPipeline.py and a GitHub workflow will regenerate this Jupyter Notebook file automatically.
 # The reason that a .py file is used is to allow for easier version control and collaboration. And it is also more Copilot and code auto-formatting friendly.
 
 # %% [markdown]
@@ -32,6 +36,7 @@ from gplately.utils.feature_filter import (
     PlateIDFilter,
     BirthAgeFilter,
     FeatureTypeFilter,
+    PolygonAreaFilter,
     PropertyExistsFilter,
     PropertyValueFilter,
     RegionOfInterestFilter,
@@ -43,12 +48,13 @@ from gplately.mapping import cartopy_plot
 
 from gplately.gpml import (
     FeatureCollectionProcessor,
-    FeatureTransformer,
     gpml_to_pandas_dataframe,
-    feature_name_getter,
     merge_feature_collections,
 )
-from gplately.utils.feature_transformer import SetValidTimeTransformer
+from gplately.utils.feature_transformer import (
+    SetReconstructionPlateIDTransformer,
+    SetValidTimeTransformer,
+)
 
 DATA_DIR = "./rule-based-GPML-processing-pipeline-data"
 makedirs(DATA_DIR, exist_ok=True)
@@ -301,10 +307,15 @@ for case in cases:
 
     # plot the output feature collection to check if the search worked as expected.
     if case["ax"] is not None:
-        cartopy_plot._plot_feature_collection(
+        # we only plot the features that still exist at present day for better visualization.
+        present_day_features = filter_feature_collection(
             pygplates.FeatureCollection(  # type: ignore
                 case["output_file"],
             ),
+            [EndTimeFilter(0, reverse=True)],
+        )
+        cartopy_plot._plot_feature_collection(
+            present_day_features,
             title=f"Fig {idx}: {case['title']}",
             ax=case["ax"],
         )
@@ -550,54 +561,45 @@ print(
 # </figure>
 
 # %% [markdown]
-##### Search for the vertices that are located within the mainland of Australia.
+##### Find the points within the mainland of Australia and set their plate ID to 801.
 
 
 # %%
 # Firstly, we search for the feature that corresponds to the mainland of Australia in the global coastline feature collection.
 # Then we use the geometry of this feature to define the region of interest for filtering the vertices of the icosahedron mesh.
-filters = []
-filters.append(
-    FeatureNameFilter(
-        ["Australia"],
-        exact_match=True,
-        case_sensitive=True,
-    )
-)
-features = filter_feature_collection(
-    coastlines_feature_collection,
-    filters,
-)
 
-# find the largest polygon feature among the features whose name contains "Australia",
+# find the polygon feature with area greater than 7 million among the features whose name contains "Australia",
 # which should correspond to the mainland of Australia, and use its geometry as the region of interest
 # for filtering the vertices of the icosahedron mesh.
-australia_mainland_geometry = None
-australia_mainland_feature = None
-largest_area = 0
-for feature in features:
-    geometry = feature.get_geometry()  # type: ignore
-    if isinstance(geometry, pygplates.PolygonOnSphere):  # type: ignore
-        if geometry.get_area() > largest_area:  # type: ignore
-            largest_area = geometry.get_area()  # type: ignore
-            australia_mainland_geometry = geometry
-            australia_mainland_feature = feature
-    else:
-        continue
-
-##### search for the vertices that are located within the mainland of Australia
-filters = []
-filters.append(RegionOfInterestFilter(australia_mainland_geometry, reverse=False))
-
 features = filter_feature_collection(
-    mesh_feature_collection,
-    filters,
+    coastlines_feature_collection,
+    [
+        FeatureNameFilter(
+            ["Australia"],
+            exact_match=True,
+            case_sensitive=True,
+        ),
+        PolygonAreaFilter(7e6, reverse=False),
+    ],
 )
+assert (
+    len(features) == 1
+), f"Expected to find exactly one feature for the mainland of Australia, but found {len(features)} features."
+
+australia_mainland_feature = features[0]
+australia_mainland_geometry = australia_mainland_feature.get_geometry()  # type: ignore
+
+##### find the points within the mainland of Australia and set their plate ID to 801.
+features = FeatureCollectionProcessor(
+    filters=[RegionOfInterestFilter(australia_mainland_geometry, reverse=False)],
+    transformers=[SetReconstructionPlateIDTransformer(plate_id=801)],
+).process(mesh_feature_collection)
 
 features.add(australia_mainland_feature)  # type: ignore
-features.write(f"{DATA_DIR}/icosahedron_vertices_within_australia.gpmlz")
+output_file = f"{DATA_DIR}/icosahedron_vertices_within_australia.gpmlz"
+features.write(output_file)
 print(
-    f"Icosahedron vertices in the region of interest have been written to {DATA_DIR}/icosahedron_vertices_within_australia.gpmlz"
+    f"Icosahedron vertices in the region of interest have been written to {output_file}"
 )
 # %% [markdown]
 # If you open icosahedron_vertices_within_australia.gpmlz in GPlates, you will see the vertices of the icosahedron mesh that

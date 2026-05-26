@@ -20,6 +20,8 @@ from typing import List, Union
 
 
 class FeatureTransformer(metaclass=abc.ABCMeta):
+    """Abstract base class for feature transformers."""
+
     @classmethod
     def __subclasshook__(cls, subclass):
         return (
