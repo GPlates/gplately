@@ -209,8 +209,8 @@ class DataServer(object):
                 raise Exception(
                     "Unable to get rotation model. The PlateModel object is not initialized in DataServer."
                 )
-        else:
-            return self._rotation_model
+
+        return self._rotation_model
 
     @property
     def topology_features(self):
