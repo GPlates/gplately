@@ -319,7 +319,7 @@ class SeafloorGrid(object):
             self.continent_mask_is_provided = False
 
             self.use_continent_contouring = use_continent_contouring
-            # Create an object to reconstruct the continental polygons (and deforming them if topological model is deforming).
+            # Create an object to reconstruct the continental polygons.
             if not continent_polygon_features:
                 raise ValueError(
                     "'continent_polygon_features' must be specified since 'continent_mask_filename' was not specified"
@@ -661,13 +661,13 @@ class SeafloorGrid(object):
             points_in_continent[points_inside_contoured_continent] = True
 
         # Extract the points in ocean (ie, not in continent).
-        ocean_basin_point_mesh = pygplates.MultiPointOnSphere(  # type:ignore
+        ocean_basin_point_mesh = pygplates.MultiPointOnSphere(  # type: ignore
             icosahedral_multi_point[index]
             for index, point_in_continent in enumerate(points_in_continent)
             if not point_in_continent
         )
 
-        ocean_pt_feature = pygplates.Feature()  # type:ignore
+        ocean_pt_feature = pygplates.Feature()  # type: ignore
         ocean_pt_feature.set_geometry(ocean_basin_point_mesh)
         return ocean_pt_feature
 
@@ -824,10 +824,10 @@ class SeafloorGrid(object):
             #       are actually needed. For example, the topology features aren't needed here, so no point pickling them.
             #
             if self.use_continent_contouring:
-                # Note: When continent contouring we currently don't reconstruct (and deform) the continental polygons before
+                # Note: When continent contouring we currently don't reconstruct the continental polygons before
                 #       building the continent masks. This is because the continent contouring reconstructs the continental polygons
-                #       itself (although it doesn't deform them). An update would be to enable the continent contouring to use
-                #       the reconstructed continental polygons provided by class ReconstructContinents (which would include deformation).
+                #       itself. An update would be to enable the continent contouring to use
+                #       the reconstructed continental polygons provided by class ReconstructContinents.
                 if self.num_cpus > 1:
                     with Pool(self.num_cpus) as pool:
                         pool.map(
@@ -937,16 +937,16 @@ class SeafloorGrid(object):
         continent_contouring_area_threshold_steradians = (
             continent_contouring_area_threshold_square_kms
             / (
-                pygplates.Earth.mean_radius_in_kms  # type:ignore
-                * pygplates.Earth.mean_radius_in_kms  # type:ignore
+                pygplates.Earth.mean_radius_in_kms  # type: ignore
+                * pygplates.Earth.mean_radius_in_kms  # type: ignore
             )
         )
         continent_exclusion_area_threshold_square_kms = 800000
         continent_exclusion_area_threshold_steradians = (
             continent_exclusion_area_threshold_square_kms
             / (
-                pygplates.Earth.mean_radius_in_kms  # type:ignore
-                * pygplates.Earth.mean_radius_in_kms  # type:ignore
+                pygplates.Earth.mean_radius_in_kms  # type: ignore
+                * pygplates.Earth.mean_radius_in_kms  # type: ignore
             )
         )
         continent_separation_distance_threshold_radians = (
@@ -982,8 +982,8 @@ class SeafloorGrid(object):
             # Linearly reduce the buffer/gap distance for contoured continents with area smaller than 1 million km^2.
             area_threshold_square_kms = 500000
             area_threshold_steradians = area_threshold_square_kms / (
-                pygplates.Earth.mean_radius_in_kms  # type:ignore
-                * pygplates.Earth.mean_radius_in_kms  # type:ignore
+                pygplates.Earth.mean_radius_in_kms  # type: ignore
+                * pygplates.Earth.mean_radius_in_kms  # type: ignore
             )
             if area_steradians < area_threshold_steradians:
                 buffer_and_gap_distance_radians *= (
@@ -1151,7 +1151,7 @@ class SeafloorGrid(object):
         #
 
         # If we're building continental masks from reconstructed continental polygons (without contouring) then
-        # we first need to reconstruct the continental polygons (and deform them if topological model is deforming).
+        # we first need to reconstruct the continental polygons.
         if not self.continent_mask_is_provided and not self.use_continent_contouring:
             self.reconstruct_continents.reconstruct_continent_features(
                 self.plate_reconstruction, self.num_cpus

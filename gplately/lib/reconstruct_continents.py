@@ -16,7 +16,6 @@
 #
 
 from ..gpml import _load_FeatureCollection
-from ..parallel import get_num_cpus
 
 import numpy as np
 import pygplates
@@ -104,8 +103,6 @@ class ReconstructContinents(object):
     def reconstruct_continent_features(self, plate_reconstruction, nprocs=-2):
         """Reconstruct the continent features.
 
-        The continent features are also deformed if ``plate_reconstruction`` contains a *deforming* topological model.
-
         Parameters
         ----------
         plate_reconstruction : PlateReconstruction
@@ -120,26 +117,12 @@ class ReconstructContinents(object):
             If ``-2`` then all available CPUs except one are used, etc.
             Defaults to ``-2`` (ie, uses all available CPUs except one to keep system responsive).
         """
-        # See if model has any topological network features.
-        self._topological_model_is_deforming = self._is_topological_model_deforming(
-            plate_reconstruction
+        # We'll just rigidly reconstruct the continent features when the user asks for them.
+        self._valid_reconstruction_times = set(
+            np.arange(self.max_time, self.min_time - 1e-4, -self.time_step)
         )
-
-        # If the topological model has deforming networks then reconstruct and deform the continent features from min to max time.
-        # Otherwise don't do anything - we'll just rigidly reconstruct them when the user asks for them.
-        if self._topological_model_is_deforming:
-            # Determine number of CPUs to use.
-            num_cpus = get_num_cpus(nprocs)
-
-            self._valid_reconstructions = (
-                self._reconstruct_and_deform_continent_features(
-                    plate_reconstruction, num_cpus
-                )
-            )
-        else:
-            self._valid_reconstruction_times = set(
-                np.arange(self.max_time, self.min_time - 1e-4, -self.time_step)
-            )
+        #
+        # TODO: Implement reconstruction and deformation of continental polygons (when the plate model is deforming).
 
     def get_reconstructed_continents(self, time, plate_reconstruction):
         """Retrieve the reconstructed continent features.
@@ -151,17 +134,11 @@ class ReconstructContinents(object):
         plate_reconstruction : PlateReconstruction
             A :class:`PlateReconstruction` object for reconstruction.
         """
-        if self._topological_model_is_deforming:
-            # Get the already-reconstructed-and-deformed continents (indexed by time).
-            reconstructed_continents = self._valid_reconstructions.get(time, None)
-            if reconstructed_continents is not None:
-                return reconstructed_continents
-        else:
-            # If the time is one of the valid times then rigidly reconstruct the present-day continent features to 'time'.
-            if time in self._valid_reconstruction_times:
-                if not self.continent_features:
-                    return []
-                return plate_reconstruction.reconstruct(self.continent_features, time)
+        # If the time is one of the valid times then rigidly reconstruct the present-day continent features to 'time'.
+        if time in self._valid_reconstruction_times:
+            if not self.continent_features:
+                return []
+            return plate_reconstruction.reconstruct(self.continent_features, time)
 
         # The requested 'time' was not one of the valid times.
         raise ValueError(
@@ -181,35 +158,11 @@ class ReconstructContinents(object):
             # Exclude features with feature type motion path, flowline, VGP.
             feature_type = feature.get_feature_type()
             if (
-                feature_type == pygplates.FeatureType.gpml_motion_path  # type:ignore
-                or feature_type == pygplates.FeatureType.gpml_flowline  # type:ignore
+                feature_type == pygplates.FeatureType.gpml_motion_path  # type: ignore
+                or feature_type == pygplates.FeatureType.gpml_flowline  # type: ignore
                 or feature_type
-                == pygplates.FeatureType.gpml_virtual_geomagnetic_pole  # type:ignore
+                == pygplates.FeatureType.gpml_virtual_geomagnetic_pole  # type: ignore
             ):
                 return False
 
         return True
-
-    def _is_topological_model_deforming(self, plate_reconstruction):
-        # See if model has any topological network features.
-        return any(
-            feature.get_feature_type()
-            == pygplates.FeatureType.gpml_topological_network  # type:ignore
-            for feature in plate_reconstruction.topology_features
-        )
-
-    def _reconstruct_and_deform_continent_features(
-        self, plate_reconstruction, num_cpus
-    ):
-        # If there are no continent features then just return an empty list for each reconstruction time.
-        if not self.continent_features:
-            return {
-                time: []
-                for time in np.arange(
-                    self.max_time, self.min_time - 1e-4, -self.time_step
-                )
-            }
-
-        # TODO: Implement reconstruction and deformation of continental polygons.
-
-        return {}
