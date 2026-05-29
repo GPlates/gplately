@@ -1588,7 +1588,7 @@ def _save_netcdf_file(
         extent=extent,
         significant_digits=2,
         fill_value=np.nan,
-        metadata={**common_metadata, "is_masked_grid": 1},
+        metadata=common_metadata,
     )
     logger.info(f"Save {name} netCDF grid at {time:0.2f} Ma completed!")
 
