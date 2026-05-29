@@ -4,6 +4,7 @@ import statistics
 import numpy as np
 import pandas as pd
 import pytest
+from netCDF4 import Dataset
 from conftest import gplately_seafloorgrid_object as seafloorgrid
 from conftest import gridding_times, logger
 
@@ -33,9 +34,7 @@ zval_names = ["SEAFLOOR_AGE", "SPREADING_RATE"]
 # CALL THE SEAFLOORGRID OBJECT
 def test_gplately_SeafloorGrid_object(seafloorgrid):
     # assert gplot, "No <gplately.PlotTopologies> object made with {}.".format(model)
-    assert (
-        seafloorgrid
-    ), "Unable to create a <gplately.SeafloorGrid> object with \
+    assert seafloorgrid, "Unable to create a <gplately.SeafloorGrid> object with \
     Müller et al. (2019) at a max time of {} Ma, and a min time of {} Ma.".format(
         gridding_times[1], gridding_times[0]
     )
@@ -137,12 +136,24 @@ def test_lat_lon_z_to_netCDF(zval_name, seafloorgrid):
     grid_output_dir = f"{seafloorgrid.save_directory}/{zval_name}/{seafloorgrid.file_collection}_{zval_name}_grid_{time:0.2f}Ma.nc"
 
     age_grid_unmasked = gplately.Raster(
-        data=grid_output_unmasked, extent=[-180, 180, -90, 90]
+        data=grid_output_unmasked, extent=(-180, 180, -90, 90)
     )
 
-    age_grid = gplately.Raster(data=grid_output_dir, extent=[-180, 180, -90, 90])
+    age_grid = gplately.Raster(data=grid_output_dir, extent=(-180, 180, -90, 90))
 
     assert (
         age_grid_unmasked.data.any()
     ), "Could not produce an unmasked {} grid.".format(zval_name)
     assert age_grid.data.any(), "Could not produce a masked {} grid.".format(zval_name)
+
+    with Dataset(grid_output_unmasked) as ds:
+        assert ds.getncattr("metadata_source") == "GPlately.SeafloorGrid"
+        assert ds.getncattr("zvalue_name") == zval_name
+        assert ds.getncattr("reconstruction_time_ma") == pytest.approx(time)
+        assert ds.getncattr("unique_input_point_count") > 0
+
+    with Dataset(grid_output_dir) as ds:
+        assert ds.getncattr("metadata_source") == "GPlately.SeafloorGrid"
+        assert ds.getncattr("zvalue_name") == zval_name
+        assert ds.getncattr("reconstruction_time_ma") == pytest.approx(time)
+        assert ds.getncattr("unique_input_point_count") > 0

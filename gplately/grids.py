@@ -412,6 +412,8 @@ def write_netcdf_grid(
     extent: Union[tuple, str] = "global",
     significant_digits=None,
     fill_value: Union[float, None] = np.nan,
+    metadata: Union[dict, None] = None,
+    title: Union[str, None] = None,
 ):
     """Write geological data contained in a `grid` to a netCDF4 grid with a specified `filename`.
 
@@ -450,6 +452,13 @@ def write_netcdf_grid(
     fill_value : scalar, NoneType, default: np.nan
         Value used to fill in missing data. By default this is np.nan.
 
+    metadata : dict, default=None
+        Optional metadata to store as global netCDF attributes.
+
+    title : str, default=None
+        Title to store as the global ``title`` netCDF attribute. If ``None``,
+        defaults to ``"Grid produced by gplately <version>"``.
+
     Returns
     -------
     A netCDF grid will be saved to the path specified in `filename`.
@@ -472,21 +481,74 @@ def write_netcdf_grid(
 
     data_kwds = {"compression": "zlib", "complevel": 6}
 
+    def _compute_coordinate_bounds(coords):
+        coords = np.asarray(coords, dtype=float)
+        if coords.size == 1:
+            edges = np.array([coords[0] - 0.5, coords[0] + 0.5], dtype=float)
+        else:
+            edges = np.empty(coords.size + 1, dtype=float)
+            mids = 0.5 * (coords[:-1] + coords[1:])
+            edges[1:-1] = mids
+            edges[0] = coords[0] - (mids[0] - coords[0])
+            edges[-1] = coords[-1] + (coords[-1] - mids[-1])
+        return np.column_stack((edges[:-1], edges[1:]))
+
     with netCDF4.Dataset(filename, "w", driver=None) as cdf:
-        cdf.title = "Grid produced by gplately " + str(_version)
+        if title is None:
+            cdf.title = "Grid produced by gplately " + str(_version)
+        else:
+            cdf.title = str(title)
+        if metadata:
+            for key, value in metadata.items():
+                if value is None:
+                    continue
+                attr_name = str(key).strip()
+                if not attr_name:
+                    continue
+                if isinstance(value, np.generic):
+                    value = value.item()
+                elif isinstance(value, tuple):
+                    value = list(value)
+                elif isinstance(value, (list, dict, str, int, float, bool)):
+                    pass
+                else:
+                    value = str(value)
+                cdf.setncattr(attr_name, value)
+
+        # ACDD-style geospatial discovery metadata derived from extent.
+        lon_min = float(min(extent[0], extent[1]))
+        lon_max = float(max(extent[0], extent[1]))
+        lat_min = float(min(extent[2], extent[3]))
+        lat_max = float(max(extent[2], extent[3]))
+        cdf.geospatial_lon_min = lon_min
+        cdf.geospatial_lon_max = lon_max
+        cdf.geospatial_lat_min = lat_min
+        cdf.geospatial_lat_max = lat_max
+        cdf.geospatial_bounds = (
+            f"POLYGON (({lon_min} {lat_min}, {lon_max} {lat_min}, "
+            f"{lon_max} {lat_max}, {lon_min} {lat_max}, {lon_min} {lat_min}))"
+        )
+
         cdf.createDimension("lon", lon_grid.size)
         cdf.createDimension("lat", lat_grid.size)
+        cdf.createDimension("bnds", 2)
         cdf_lon = cdf.createVariable("lon", lon_grid.dtype, ("lon",), **data_kwds)
         cdf_lat = cdf.createVariable("lat", lat_grid.dtype, ("lat",), **data_kwds)
+        cdf_lon_bnds = cdf.createVariable("lon_bnds", "f8", ("lon", "bnds"))
+        cdf_lat_bnds = cdf.createVariable("lat_bnds", "f8", ("lat", "bnds"))
         cdf_lon[:] = lon_grid
         cdf_lat[:] = lat_grid
+        cdf_lon_bnds[:, :] = _compute_coordinate_bounds(lon_grid)
+        cdf_lat_bnds[:, :] = _compute_coordinate_bounds(lat_grid)
 
         # Units for Geographic Grid type
         cdf_lon.units = "degrees_east"
         cdf_lon.standard_name = "lon"
+        cdf_lon.bounds = "lon_bnds"
         cdf_lon.actual_range = [lon_grid[0], lon_grid[-1]]
         cdf_lat.units = "degrees_north"
         cdf_lat.standard_name = "lat"
+        cdf_lat.bounds = "lat_bnds"
         cdf_lat.actual_range = [lat_grid[0], lat_grid[-1]]
 
         # create container variable for CRS: lon/lat WGS84 datum
@@ -1797,7 +1859,7 @@ class Raster(object):
             self.reconstruct(new_time_f, inplace=True)
 
     @property
-    def data(self):
+    def data(self) -> np.ndarray:
         """Array containing the raster data. This attribute can be modified after creating the :class:`Raster` object.
 
         :type: ndarray, shape (ny, nx)
@@ -2062,9 +2124,11 @@ class Raster(object):
             self._lons = lons
             self._lats = lats
         else:
-            return Raster(data, self.plate_reconstruction, self.extent, self.time)
+            return Raster(data, self.plate_reconstruction, self.extent, time=self.time)
 
-    def resize(self, resX, resY, inplace=False, method="linear", return_array=False):
+    def resize(
+        self, resX, resY, inplace=False, method="linear", return_array=False
+    ) -> Union[np.ndarray, "Raster"]:
         """Resize the grid with a new resolution (``resX`` and ``resY``) using linear interpolation.
 
         .. note::
