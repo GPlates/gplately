@@ -955,114 +955,115 @@ class SeafloorGrid(object):
         self,
         time: float,
     ):
-        """Resolve mid-ocean ridges at ``time`` and divide them into points that make up their shared sub-segments.
-        Rotate these points to the left and right of the ridge using their stage rotation so that they spread from the ridge.
+        """Resolve mid-ocean ridges at ``time`` and divide them into uniformly spaced points.
+        Rotate these points to the left and right of the ridge using the left and right plate velocities so that they spread from the ridge.
 
         .. note::
 
-            This assumes that points spread from ridges symmetrically, with the exception of
-            large ridge jumps at successive timesteps. Therefore, spreading rates of ridge-emerging
-            points will appear symmetrical until changes in spreading ridge geometries create asymmetries.
-
-        .. seealso::
-
-            `Get tessellated points along a mid ocean ridge <https://github.com/siwill22/agegrid-0.1/blob/master/automatic_age_grid_seeding.py#L117>`__.
+            This supports spreading asymmetry across the ridge. Each point is shifted by a small angle (0.01 degrees) to the left and right of the ridge.
+            The left and right spreading rates are calculated as the difference between the left and right plate velocities and the ridge velocity at the point.
         """
+
+        # Generate statistics at uniformly spaced points along mid-ocean ridges.
+        mor_boundary_statistics = self.plate_reconstruction.topological_snapshot(
+            time,
+            # Ignore topological slab boundaries since they are not *plate* boundaries...
+            include_topological_slab_boundaries=False,
+        ).calculate_plate_boundary_statistics(
+            uniform_point_spacing_radians=np.radians(self.ridge_sampling),
+            velocity_units=pygplates.VelocityUnits.kms_per_my,  # km/Myr is the same as mm/yr # type: ignore
+            boundary_section_filter=pygplates.FeatureType.gpml_mid_ocean_ridge,  # type: ignore
+        )
+
+        # How much to rotate each ridge point off the ridge to get a point definitely inside the plate for later topological reconstruction.
+        boundary_rotation_angle_radians = np.radians(0.01)
+
+        def _calc_shifted_mor_point_and_spreading_rate(stat, plate, plate_velocity):
+            """Shift the mid-ocean ridge point at 'stat'to the left (or right) of the ridge and calculate the spreading rate for the left (or right) plate."""
+
+            # If there's no left (or right) plate then don't return a left (or right) shifted point.
+            if plate.not_located_in_resolved_topology():
+                return
+            # Note: The plate velocity should not be None since there IS a left (or right) plate.
+
+            # Get the pole of rotation to shift the point to the left (or right) of the ridge.
+            # The pole is perpendicular to the boundary point and the left (or right) plate velocity.
+            boundary_rotation_pole = pygplates.Vector3D.cross(  # type: ignore
+                stat.boundary_point.to_xyz(), plate_velocity
+            )
+            # If we can't shift the point then don't return a shifted point.
+            # This can happen when the plate velocity is zero.
+            # This would result in the point not shifting off the ridge and thus
+            # not definitely inside the plate for later topological reconstruction.
+            if boundary_rotation_pole.is_zero_magnitude():
+                return
+
+            # Shift the boundary point into the left (or right) plate.
+            boundary_rotation_pole = boundary_rotation_pole.to_normalised()
+            boundary_rotation = pygplates.FiniteRotation(  # type: ignore
+                boundary_rotation_pole.to_xyz(),
+                boundary_rotation_angle_radians,
+            )
+            shifted_boundary_point = boundary_rotation * stat.boundary_point
+
+            # If the left (or right) shifted point is OUTSIDE the left (or right) plate then don't return it.
+            # We want the shifted point to be inside the left (or right) plate so that it can later be reconstructed
+            # by that same plate to the next time step.
+            #
+            # Note: We give preference to networks since 'stat' (pygplates.PlateBoundaryStatistic) does that.
+            #       This is because it's possible that a network overlays a rigid plate.
+            plate_resolved_topology = (
+                plate.located_in_resolved_network()
+                or plate.located_in_resolved_boundary()
+            )
+            if (
+                not plate_resolved_topology  # should always be false since we checked plate.not_located_in_resolved_topology() above
+                or plate_resolved_topology.get_point_location(shifted_boundary_point)
+                != plate
+            ):
+                return
+
+            # The spreading rate is the left (or right) plate velocity relative to the ridge velocity.
+            spreading_rate = (plate_velocity - stat.boundary_velocity).get_magnitude()
+
+            return shifted_boundary_point, spreading_rate
 
         # Points and their spreading rates that emerge from MORs at this time.
         shifted_mor_points = []
         point_spreading_rates = []
 
-        # Resolve topologies to the current time.
-        topological_snapshot = self.plate_reconstruction.topological_snapshot(time)
-        shared_boundary_sections = (
-            topological_snapshot.get_resolved_topological_sections()
-        )
+        # Iterate over MOR boundary points and shift each point to the left and right plates.
+        for stat in mor_boundary_statistics:
 
-        # pygplates.ResolvedTopologicalSection objects.
-        for shared_boundary_section in shared_boundary_sections:
-            if (
-                shared_boundary_section.get_feature().get_feature_type()
-                == pygplates.FeatureType.gpml_mid_ocean_ridge
-            ):
-                spreading_feature = shared_boundary_section.get_feature()
-
-                # Find the stage rotation of the spreading feature in the
-                # frame of reference of its geometry at the current
-                # reconstruction time (the MOR is currently actively spreading).
-                # The stage pole can then be directly geometrically compared
-                # to the *reconstructed* spreading geometry.
-                stage_rotation = separate_ridge_transform_segments.get_stage_rotation_for_reconstructed_geometry(
-                    spreading_feature, self.plate_reconstruction.rotation_model, time
+            # Shift boundary point to the left and caculate spreading rate for the left plate.
+            left_shifted_mor_point_and_spreading_rate = (
+                _calc_shifted_mor_point_and_spreading_rate(
+                    stat,
+                    stat.left_plate,
+                    stat.left_plate_velocity,
                 )
-                if not stage_rotation:
-                    # Skip current feature - it's not a spreading feature.
-                    continue
-
-                # Get the stage pole of the stage rotation.
-                # Note that the stage rotation is already in frame of
-                # reference of the *reconstructed* geometry at the spreading time.
-                stage_pole, _ = stage_rotation.get_euler_pole_and_angle()
-
-                # One way rotates left and the other right, but don't know
-                # which - doesn't matter in our example though.
-                rotate_slightly_off_mor_one_way = pygplates.FiniteRotation(
-                    stage_pole, np.radians(0.01)
+            )
+            if left_shifted_mor_point_and_spreading_rate:
+                left_shifted_mor_point, left_spreading_rate = (
+                    left_shifted_mor_point_and_spreading_rate
                 )
-                rotate_slightly_off_mor_opposite_way = (
-                    rotate_slightly_off_mor_one_way.get_inverse()
+                shifted_mor_points.append(left_shifted_mor_point)
+                point_spreading_rates.append(left_spreading_rate)
+
+            # Shift boundary point to the right and caculate spreading rate for the right plate.
+            right_shifted_mor_point_and_spreading_rate = (
+                _calc_shifted_mor_point_and_spreading_rate(
+                    stat,
+                    stat.right_plate,
+                    stat.right_plate_velocity,
                 )
-
-                # Iterate over the shared sub-segments.
-                for (
-                    shared_sub_segment
-                ) in shared_boundary_section.get_shared_sub_segments():
-                    # Tessellate MOR section.
-                    mor_points = pygplates.MultiPointOnSphere(
-                        shared_sub_segment.get_resolved_geometry().to_tessellated(
-                            np.radians(self.ridge_sampling)
-                        )
-                    )
-
-                    coords = mor_points.to_lat_lon_list()
-                    lats = [i[0] for i in coords]
-                    lons = [i[1] for i in coords]
-                    boundary_feature = shared_boundary_section.get_feature()
-                    left_plate = boundary_feature.get_left_plate(None)
-                    right_plate = boundary_feature.get_right_plate(None)
-                    if left_plate is not None and right_plate is not None:
-                        # Get the spreading rates for all points in this sub segment
-                        (
-                            spreading_rates,
-                            _,
-                        ) = tools.calculate_spreading_rates(
-                            time=time,
-                            lons=lons,
-                            lats=lats,
-                            left_plates=[left_plate] * len(lons),
-                            right_plates=[right_plate] * len(lons),
-                            rotation_model=self.plate_reconstruction.rotation_model,
-                            delta_time=self._ridge_time_step,
-                        )
-
-                    else:
-                        spreading_rates = [np.nan] * len(lons)
-
-                    # Loop through all but the 1st and last points in the current sub segment
-                    for point, rate in zip(
-                        mor_points.get_points()[1:-1],
-                        spreading_rates[1:-1],
-                    ):
-                        # Add the point "twice" to the main shifted_mor_points list; once for a L-side
-                        # spread, another for a R-side spread. Then add the same spreading rate twice
-                        # to the list - this therefore assumes spreading rate is symmetric.
-                        shifted_mor_points.append(
-                            rotate_slightly_off_mor_one_way * point
-                        )
-                        shifted_mor_points.append(
-                            rotate_slightly_off_mor_opposite_way * point
-                        )
-                        point_spreading_rates.extend([rate] * 2)
+            )
+            if right_shifted_mor_point_and_spreading_rate:
+                right_shifted_mor_point, right_spreading_rate = (
+                    right_shifted_mor_point_and_spreading_rate
+                )
+                shifted_mor_points.append(right_shifted_mor_point)
+                point_spreading_rates.append(right_spreading_rate)
 
         logger.info(f"Finished building MOR seedpoints at {time} Ma!")
 
