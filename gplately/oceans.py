@@ -978,7 +978,9 @@ class SeafloorGrid(object):
         # How much to rotate each ridge point off the ridge to get a point definitely inside the plate for later topological reconstruction.
         boundary_rotation_angle_radians = np.radians(0.01)
 
-        def _calc_shifted_mor_point_and_spreading_rate(stat, plate, plate_velocity):
+        def _calc_shifted_mor_point_and_spreading_rate(
+            stat, is_left_plate, plate, plate_velocity
+        ):
             """Shift the mid-ocean ridge point at 'stat'to the left (or right) of the ridge and calculate the spreading rate for the left (or right) plate."""
 
             # If there's no left (or right) plate then don't return a left (or right) shifted point.
@@ -987,10 +989,14 @@ class SeafloorGrid(object):
             # Note: The plate velocity should not be None since there IS a left (or right) plate.
 
             # Get the pole of rotation to shift the point to the left (or right) of the ridge.
-            # The pole is perpendicular to the boundary point and the left (or right) plate velocity.
+            # The pole is perpendicular to both the boundary point (vector from Earth centre) and
+            # the boundary normal to the left (or right) plate.
             boundary_rotation_pole = pygplates.Vector3D.cross(  # type: ignore
-                stat.boundary_point.to_xyz(), plate_velocity
+                stat.boundary_point.to_xyz(), stat.boundary_normal
             )
+            # The boundary normal 'stat.boundary_normal' is defined to point to the left, so reverse it if the plate is to the right.
+            if not is_left_plate:
+                boundary_rotation_pole = -boundary_rotation_pole
             # If we can't shift the point then don't return a shifted point.
             # This can happen when the plate velocity is zero.
             # This would result in the point not shifting off the ridge and thus
@@ -1005,23 +1011,6 @@ class SeafloorGrid(object):
                 boundary_rotation_angle_radians,
             )
             shifted_boundary_point = boundary_rotation * stat.boundary_point
-
-            # If the left (or right) shifted point is OUTSIDE the left (or right) plate then don't return it.
-            # We want the shifted point to be inside the left (or right) plate so that it can later be reconstructed
-            # by that same plate to the next time step.
-            #
-            # Note: We give preference to networks since 'stat' (pygplates.PlateBoundaryStatistic) does that.
-            #       This is because it's possible that a network overlays a rigid plate.
-            plate_resolved_topology = (
-                plate.located_in_resolved_network()
-                or plate.located_in_resolved_boundary()
-            )
-            if (
-                not plate_resolved_topology  # should always be false since we checked plate.not_located_in_resolved_topology() above
-                or plate_resolved_topology.get_point_location(shifted_boundary_point)
-                != plate
-            ):
-                return
 
             # The spreading rate is the left (or right) plate velocity relative to the ridge velocity.
             spreading_rate = (plate_velocity - stat.boundary_velocity).get_magnitude()
@@ -1039,6 +1028,7 @@ class SeafloorGrid(object):
             left_shifted_mor_point_and_spreading_rate = (
                 _calc_shifted_mor_point_and_spreading_rate(
                     stat,
+                    True,  # is_left_plate
                     stat.left_plate,
                     stat.left_plate_velocity,
                 )
@@ -1054,6 +1044,7 @@ class SeafloorGrid(object):
             right_shifted_mor_point_and_spreading_rate = (
                 _calc_shifted_mor_point_and_spreading_rate(
                     stat,
+                    False,  # is_left_plate
                     stat.right_plate,
                     stat.right_plate_velocity,
                 )
