@@ -1530,7 +1530,8 @@ def _save_netcdf_file(
     X, Y = np.meshgrid(grid_lon, grid_lat)
 
     # Interpolate lons, lats and zvals over a regular grid using nearest neighbour interpolation
-    Z = tools.griddata_sphere((lons, lats), zdata, (X, Y), method="nearest")
+    interpolation_method = "nearest"
+    Z = tools.griddata_sphere((lons, lats), zdata, (X, Y), method=interpolation_method)
     Z = Z.astype("f4")
 
     unmasked_basename = f"{name}_grid_unmasked_{time:0.2f}_Ma.nc"
@@ -1544,11 +1545,11 @@ def _save_netcdf_file(
     grid_output = os.path.join(output_dir, grid_basename)
 
     common_metadata = {
-        "metadata_source": "SeafloorGrid.save_netcdf_files",
+        "metadata_source": "GPlately.SeafloorGrid",
         "zvalue_name": name,
         "reconstruction_time_ma": float(time),
-        "file_collection": file_collection if file_collection else "",
-        "interpolation_method": "nearest",
+        "model_name": file_collection if file_collection else "",
+        "interpolation_method": interpolation_method,
         "input_point_count": int(len(df)),
         "unique_input_point_count": int(len(unique_data)),
         "grid_lon_count": int(resX),
@@ -1567,7 +1568,7 @@ def _save_netcdf_file(
             extent=extent,
             significant_digits=2,
             fill_value=None,
-            metadata={**common_metadata, "is_masked_grid": 0},
+            metadata=common_metadata,
         )
 
     # Identify regions in the grid in the continental mask
@@ -1618,8 +1619,14 @@ def _lat_lon_z_to_netCDF_time(
     curr_data = curr_data.dropna(
         subset=["CURRENT_LONGITUDES", "CURRENT_LATITUDES", zval_name]
     )
+
+    # drop data with seafloor age greater than a certain threshold
+    # TODO: we may need some explaination -- MC 2026-05-30
+    seafloor_age_threshold_ma = 350.0
     if "SEAFLOOR_AGE" == zval_name:
-        curr_data = curr_data.drop(curr_data[curr_data.SEAFLOOR_AGE > 350].index)
+        curr_data = curr_data.drop(
+            curr_data[curr_data.SEAFLOOR_AGE > seafloor_age_threshold_ma].index
+        )
 
     # Drop duplicate latitudes and longitudes
     unique_data = curr_data.drop_duplicates(
@@ -1641,7 +1648,8 @@ def _lat_lon_z_to_netCDF_time(
     X, Y = np.meshgrid(grid_lon, grid_lat)
 
     # Interpolate lons, lats and zvals over a regular grid using nearest neighbour interpolation
-    Z = tools.griddata_sphere((lons, lats), zdata, (X, Y), method="nearest")
+    interpolation_method = "nearest"
+    Z = tools.griddata_sphere((lons, lats), zdata, (X, Y), method=interpolation_method)
     Z = Z.astype("f4")  # float32 precision
 
     unmasked_basename = f"{zval_name}_grid_unmasked_{time:0.2f}Ma.nc"
@@ -1655,11 +1663,11 @@ def _lat_lon_z_to_netCDF_time(
     grid_output = os.path.join(output_dir, grid_basename)
 
     common_metadata = {
-        "metadata_source": "SeafloorGrid.lat_lon_z_to_netCDF",
+        "metadata_source": "GPlately.SeafloorGrid",
         "zvalue_name": zval_name,
         "reconstruction_time_ma": float(time),
-        "file_collection": file_collection if file_collection else "",
-        "interpolation_method": "nearest",
+        "model_name": file_collection if file_collection else "",
+        "interpolation_method": interpolation_method,
         "input_point_count": int(len(curr_data)),
         "unique_input_point_count": int(len(unique_data)),
         "grid_lon_count": int(resX),
@@ -1672,7 +1680,7 @@ def _lat_lon_z_to_netCDF_time(
         "total_column_headers": ",".join(total_column_headers),
     }
     if zval_name == "SEAFLOOR_AGE":
-        common_metadata["seafloor_age_filter_ma"] = 350.0
+        common_metadata["seafloor_age_threshold_ma"] = seafloor_age_threshold_ma
 
     if unmasked:
         grids.write_netcdf_grid(
@@ -1681,7 +1689,7 @@ def _lat_lon_z_to_netCDF_time(
             extent=extent,
             significant_digits=2,
             fill_value=None,
-            metadata={**common_metadata, "is_masked_grid": 0},
+            metadata=common_metadata,
         )
 
     # Identify regions in the grid in the continental mask
@@ -1701,7 +1709,7 @@ def _lat_lon_z_to_netCDF_time(
         extent=extent,
         significant_digits=2,
         fill_value=np.nan,
-        metadata={**common_metadata, "is_masked_grid": 1},
+        metadata=common_metadata,
     )
     logger.info(f"{zval_name} netCDF grids for {time:0.2f} Ma complete!")
 
