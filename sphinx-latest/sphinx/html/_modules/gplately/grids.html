@@ -500,6 +500,8 @@
     <span class="n">extent</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">tuple</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;global&quot;</span><span class="p">,</span>
     <span class="n">significant_digits</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="n">fill_value</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span>
+    <span class="n">metadata</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">dict</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">title</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Write geological data contained in a `grid` to a netCDF4 grid with a specified `filename`.</span>
 
@@ -538,6 +540,13 @@
 <span class="sd">    fill_value : scalar, NoneType, default: np.nan</span>
 <span class="sd">        Value used to fill in missing data. By default this is np.nan.</span>
 
+<span class="sd">    metadata : dict, default=None</span>
+<span class="sd">        Optional metadata to store as global netCDF attributes.</span>
+
+<span class="sd">    title : str, default=None</span>
+<span class="sd">        Title to store as the global ``title`` netCDF attribute. If ``None``,</span>
+<span class="sd">        defaults to ``&quot;Grid produced by gplately &lt;version&gt;&quot;``.</span>
+
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    A netCDF grid will be saved to the path specified in `filename`.</span>
@@ -560,21 +569,74 @@
 
     <span class="n">data_kwds</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;compression&quot;</span><span class="p">:</span> <span class="s2">&quot;zlib&quot;</span><span class="p">,</span> <span class="s2">&quot;complevel&quot;</span><span class="p">:</span> <span class="mi">6</span><span class="p">}</span>
 
+    <span class="k">def</span><span class="w"> </span><span class="nf">_compute_coordinate_bounds</span><span class="p">(</span><span class="n">coords</span><span class="p">):</span>
+        <span class="n">coords</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">coords</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">edges</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">coords</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">coords</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">edges</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">coords</span><span class="o">.</span><span class="n">size</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+            <span class="n">mids</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">coords</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">coords</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+            <span class="n">edges</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">mids</span>
+            <span class="n">edges</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">coords</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="p">(</span><span class="n">mids</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">coords</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="n">edges</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">coords</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="n">coords</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">mids</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">column_stack</span><span class="p">((</span><span class="n">edges</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">edges</span><span class="p">[</span><span class="mi">1</span><span class="p">:]))</span>
+
     <span class="k">with</span> <span class="n">netCDF4</span><span class="o">.</span><span class="n">Dataset</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">,</span> <span class="n">driver</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="k">as</span> <span class="n">cdf</span><span class="p">:</span>
-        <span class="n">cdf</span><span class="o">.</span><span class="n">title</span> <span class="o">=</span> <span class="s2">&quot;Grid produced by gplately &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">_version</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">title</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">cdf</span><span class="o">.</span><span class="n">title</span> <span class="o">=</span> <span class="s2">&quot;Grid produced by gplately &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">_version</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">cdf</span><span class="o">.</span><span class="n">title</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">title</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">metadata</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">metadata</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">continue</span>
+                <span class="n">attr_name</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">key</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">attr_name</span><span class="p">:</span>
+                    <span class="k">continue</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">generic</span><span class="p">):</span>
+                    <span class="n">value</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+                <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
+                    <span class="n">value</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">dict</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">bool</span><span class="p">)):</span>
+                    <span class="k">pass</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">value</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+                <span class="n">cdf</span><span class="o">.</span><span class="n">setncattr</span><span class="p">(</span><span class="n">attr_name</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+
+        <span class="c1"># ACDD-style geospatial discovery metadata derived from extent.</span>
+        <span class="n">lon_min</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="n">extent</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">extent</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+        <span class="n">lon_max</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">extent</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">extent</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+        <span class="n">lat_min</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="n">extent</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">extent</span><span class="p">[</span><span class="mi">3</span><span class="p">]))</span>
+        <span class="n">lat_max</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">extent</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">extent</span><span class="p">[</span><span class="mi">3</span><span class="p">]))</span>
+        <span class="n">cdf</span><span class="o">.</span><span class="n">geospatial_lon_min</span> <span class="o">=</span> <span class="n">lon_min</span>
+        <span class="n">cdf</span><span class="o">.</span><span class="n">geospatial_lon_max</span> <span class="o">=</span> <span class="n">lon_max</span>
+        <span class="n">cdf</span><span class="o">.</span><span class="n">geospatial_lat_min</span> <span class="o">=</span> <span class="n">lat_min</span>
+        <span class="n">cdf</span><span class="o">.</span><span class="n">geospatial_lat_max</span> <span class="o">=</span> <span class="n">lat_max</span>
+        <span class="n">cdf</span><span class="o">.</span><span class="n">geospatial_bounds</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;POLYGON ((</span><span class="si">{</span><span class="n">lon_min</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">lat_min</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">lon_max</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">lat_min</span><span class="si">}</span><span class="s2">, &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">lon_max</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">lat_max</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">lon_min</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">lat_max</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">lon_min</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">lat_min</span><span class="si">}</span><span class="s2">))&quot;</span>
+        <span class="p">)</span>
+
         <span class="n">cdf</span><span class="o">.</span><span class="n">createDimension</span><span class="p">(</span><span class="s2">&quot;lon&quot;</span><span class="p">,</span> <span class="n">lon_grid</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
         <span class="n">cdf</span><span class="o">.</span><span class="n">createDimension</span><span class="p">(</span><span class="s2">&quot;lat&quot;</span><span class="p">,</span> <span class="n">lat_grid</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+        <span class="n">cdf</span><span class="o">.</span><span class="n">createDimension</span><span class="p">(</span><span class="s2">&quot;bnds&quot;</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
         <span class="n">cdf_lon</span> <span class="o">=</span> <span class="n">cdf</span><span class="o">.</span><span class="n">createVariable</span><span class="p">(</span><span class="s2">&quot;lon&quot;</span><span class="p">,</span> <span class="n">lon_grid</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;lon&quot;</span><span class="p">,),</span> <span class="o">**</span><span class="n">data_kwds</span><span class="p">)</span>
         <span class="n">cdf_lat</span> <span class="o">=</span> <span class="n">cdf</span><span class="o">.</span><span class="n">createVariable</span><span class="p">(</span><span class="s2">&quot;lat&quot;</span><span class="p">,</span> <span class="n">lat_grid</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;lat&quot;</span><span class="p">,),</span> <span class="o">**</span><span class="n">data_kwds</span><span class="p">)</span>
+        <span class="n">cdf_lon_bnds</span> <span class="o">=</span> <span class="n">cdf</span><span class="o">.</span><span class="n">createVariable</span><span class="p">(</span><span class="s2">&quot;lon_bnds&quot;</span><span class="p">,</span> <span class="s2">&quot;f8&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;lon&quot;</span><span class="p">,</span> <span class="s2">&quot;bnds&quot;</span><span class="p">))</span>
+        <span class="n">cdf_lat_bnds</span> <span class="o">=</span> <span class="n">cdf</span><span class="o">.</span><span class="n">createVariable</span><span class="p">(</span><span class="s2">&quot;lat_bnds&quot;</span><span class="p">,</span> <span class="s2">&quot;f8&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;lat&quot;</span><span class="p">,</span> <span class="s2">&quot;bnds&quot;</span><span class="p">))</span>
         <span class="n">cdf_lon</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">lon_grid</span>
         <span class="n">cdf_lat</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">lat_grid</span>
+        <span class="n">cdf_lon_bnds</span><span class="p">[:,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">_compute_coordinate_bounds</span><span class="p">(</span><span class="n">lon_grid</span><span class="p">)</span>
+        <span class="n">cdf_lat_bnds</span><span class="p">[:,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">_compute_coordinate_bounds</span><span class="p">(</span><span class="n">lat_grid</span><span class="p">)</span>
 
         <span class="c1"># Units for Geographic Grid type</span>
         <span class="n">cdf_lon</span><span class="o">.</span><span class="n">units</span> <span class="o">=</span> <span class="s2">&quot;degrees_east&quot;</span>
         <span class="n">cdf_lon</span><span class="o">.</span><span class="n">standard_name</span> <span class="o">=</span> <span class="s2">&quot;lon&quot;</span>
+        <span class="n">cdf_lon</span><span class="o">.</span><span class="n">bounds</span> <span class="o">=</span> <span class="s2">&quot;lon_bnds&quot;</span>
         <span class="n">cdf_lon</span><span class="o">.</span><span class="n">actual_range</span> <span class="o">=</span> <span class="p">[</span><span class="n">lon_grid</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">lon_grid</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]]</span>
         <span class="n">cdf_lat</span><span class="o">.</span><span class="n">units</span> <span class="o">=</span> <span class="s2">&quot;degrees_north&quot;</span>
         <span class="n">cdf_lat</span><span class="o">.</span><span class="n">standard_name</span> <span class="o">=</span> <span class="s2">&quot;lat&quot;</span>
+        <span class="n">cdf_lat</span><span class="o">.</span><span class="n">bounds</span> <span class="o">=</span> <span class="s2">&quot;lat_bnds&quot;</span>
         <span class="n">cdf_lat</span><span class="o">.</span><span class="n">actual_range</span> <span class="o">=</span> <span class="p">[</span><span class="n">lat_grid</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">lat_grid</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]]</span>
 
         <span class="c1"># create container variable for CRS: lon/lat WGS84 datum</span>
@@ -1893,7 +1955,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">reconstruct</span><span class="p">(</span><span class="n">new_time_f</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">data</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Array containing the raster data. This attribute can be modified after creating the :class:`Raster` object.</span>
 
 <span class="sd">        :type: ndarray, shape (ny, nx)</span>
@@ -2166,12 +2228,14 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">_lons</span> <span class="o">=</span> <span class="n">lons</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_lats</span> <span class="o">=</span> <span class="n">lats</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">Raster</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">plate_reconstruction</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">extent</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">time</span><span class="p">)</span></div>
+            <span class="k">return</span> <span class="n">Raster</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">plate_reconstruction</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">extent</span><span class="p">,</span> <span class="n">time</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">time</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="Raster.resize">
 <a class="viewcode-back" href="../../generated/gplately.Raster.html#gplately.Raster.resize">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">resize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">resX</span><span class="p">,</span> <span class="n">resY</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;linear&quot;</span><span class="p">,</span> <span class="n">return_array</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">resize</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">resX</span><span class="p">,</span> <span class="n">resY</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;linear&quot;</span><span class="p">,</span> <span class="n">return_array</span><span class="o">=</span><span class="kc">False</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="s2">&quot;Raster&quot;</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Resize the grid with a new resolution (``resX`` and ``resY``) using linear interpolation.</span>
 
 <span class="sd">        .. note::</span>

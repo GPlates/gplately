@@ -1648,7 +1648,8 @@
     <span class="n">X</span><span class="p">,</span> <span class="n">Y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">grid_lon</span><span class="p">,</span> <span class="n">grid_lat</span><span class="p">)</span>
 
     <span class="c1"># Interpolate lons, lats and zvals over a regular grid using nearest neighbour interpolation</span>
-    <span class="n">Z</span> <span class="o">=</span> <span class="n">tools</span><span class="o">.</span><span class="n">griddata_sphere</span><span class="p">((</span><span class="n">lons</span><span class="p">,</span> <span class="n">lats</span><span class="p">),</span> <span class="n">zdata</span><span class="p">,</span> <span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">),</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;nearest&quot;</span><span class="p">)</span>
+    <span class="n">interpolation_method</span> <span class="o">=</span> <span class="s2">&quot;nearest&quot;</span>
+    <span class="n">Z</span> <span class="o">=</span> <span class="n">tools</span><span class="o">.</span><span class="n">griddata_sphere</span><span class="p">((</span><span class="n">lons</span><span class="p">,</span> <span class="n">lats</span><span class="p">),</span> <span class="n">zdata</span><span class="p">,</span> <span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">),</span> <span class="n">method</span><span class="o">=</span><span class="n">interpolation_method</span><span class="p">)</span>
     <span class="n">Z</span> <span class="o">=</span> <span class="n">Z</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;f4&quot;</span><span class="p">)</span>
 
     <span class="n">unmasked_basename</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">_grid_unmasked_</span><span class="si">{</span><span class="n">time</span><span class="si">:</span><span class="s2">0.2f</span><span class="si">}</span><span class="s2">_Ma.nc&quot;</span>
@@ -1661,6 +1662,23 @@
     <span class="n">grid_output_unmasked</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output_dir</span><span class="p">,</span> <span class="n">unmasked_basename</span><span class="p">)</span>
     <span class="n">grid_output</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output_dir</span><span class="p">,</span> <span class="n">grid_basename</span><span class="p">)</span>
 
+    <span class="n">common_metadata</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;metadata_source&quot;</span><span class="p">:</span> <span class="s2">&quot;GPlately.SeafloorGrid&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;zvalue_name&quot;</span><span class="p">:</span> <span class="n">name</span><span class="p">,</span>
+        <span class="s2">&quot;reconstruction_time_ma&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">time</span><span class="p">),</span>
+        <span class="s2">&quot;model_name&quot;</span><span class="p">:</span> <span class="n">file_collection</span> <span class="k">if</span> <span class="n">file_collection</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;interpolation_method&quot;</span><span class="p">:</span> <span class="n">interpolation_method</span><span class="p">,</span>
+        <span class="s2">&quot;input_point_count&quot;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="p">)),</span>
+        <span class="s2">&quot;unique_input_point_count&quot;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">unique_data</span><span class="p">)),</span>
+        <span class="s2">&quot;grid_lon_count&quot;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">resX</span><span class="p">),</span>
+        <span class="s2">&quot;grid_lat_count&quot;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">resY</span><span class="p">),</span>
+        <span class="s2">&quot;grid_extent&quot;</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="n">extent</span><span class="p">),</span>
+        <span class="s2">&quot;continent_mask_file&quot;</span><span class="p">:</span> <span class="n">continent_mask_filename</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">time</span><span class="p">),</span>
+        <span class="s2">&quot;sample_points_file&quot;</span><span class="p">:</span> <span class="n">sample_points_file_path</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">time</span><span class="p">),</span>
+        <span class="s2">&quot;zvalue_min&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">nanmin</span><span class="p">(</span><span class="n">zdata</span><span class="p">))</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">zdata</span><span class="p">)</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="s2">&quot;zvalue_max&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">nanmax</span><span class="p">(</span><span class="n">zdata</span><span class="p">))</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">zdata</span><span class="p">)</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">}</span>
+
     <span class="k">if</span> <span class="n">unmasked</span><span class="p">:</span>
         <span class="n">grids</span><span class="o">.</span><span class="n">write_netcdf_grid</span><span class="p">(</span>
             <span class="n">grid_output_unmasked</span><span class="p">,</span>
@@ -1668,6 +1686,7 @@
             <span class="n">extent</span><span class="o">=</span><span class="n">extent</span><span class="p">,</span>
             <span class="n">significant_digits</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
             <span class="n">fill_value</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">metadata</span><span class="o">=</span><span class="n">common_metadata</span><span class="p">,</span>
         <span class="p">)</span>
 
     <span class="c1"># Identify regions in the grid in the continental mask</span>
@@ -1687,6 +1706,7 @@
         <span class="n">extent</span><span class="o">=</span><span class="n">extent</span><span class="p">,</span>
         <span class="n">significant_digits</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
         <span class="n">fill_value</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span>
+        <span class="n">metadata</span><span class="o">=</span><span class="n">common_metadata</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Save </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> netCDF grid at </span><span class="si">{</span><span class="n">time</span><span class="si">:</span><span class="s2">0.2f</span><span class="si">}</span><span class="s2"> Ma completed!&quot;</span><span class="p">)</span>
 
@@ -1717,8 +1737,14 @@
     <span class="n">curr_data</span> <span class="o">=</span> <span class="n">curr_data</span><span class="o">.</span><span class="n">dropna</span><span class="p">(</span>
         <span class="n">subset</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;CURRENT_LONGITUDES&quot;</span><span class="p">,</span> <span class="s2">&quot;CURRENT_LATITUDES&quot;</span><span class="p">,</span> <span class="n">zval_name</span><span class="p">]</span>
     <span class="p">)</span>
+
+    <span class="c1"># drop data with seafloor age greater than a certain threshold</span>
+    <span class="c1"># TODO: we may need some explaination -- MC 2026-05-30</span>
+    <span class="n">seafloor_age_threshold_ma</span> <span class="o">=</span> <span class="mf">350.0</span>
     <span class="k">if</span> <span class="s2">&quot;SEAFLOOR_AGE&quot;</span> <span class="o">==</span> <span class="n">zval_name</span><span class="p">:</span>
-        <span class="n">curr_data</span> <span class="o">=</span> <span class="n">curr_data</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">curr_data</span><span class="p">[</span><span class="n">curr_data</span><span class="o">.</span><span class="n">SEAFLOOR_AGE</span> <span class="o">&gt;</span> <span class="mi">350</span><span class="p">]</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
+        <span class="n">curr_data</span> <span class="o">=</span> <span class="n">curr_data</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span>
+            <span class="n">curr_data</span><span class="p">[</span><span class="n">curr_data</span><span class="o">.</span><span class="n">SEAFLOOR_AGE</span> <span class="o">&gt;</span> <span class="n">seafloor_age_threshold_ma</span><span class="p">]</span><span class="o">.</span><span class="n">index</span>
+        <span class="p">)</span>
 
     <span class="c1"># Drop duplicate latitudes and longitudes</span>
     <span class="n">unique_data</span> <span class="o">=</span> <span class="n">curr_data</span><span class="o">.</span><span class="n">drop_duplicates</span><span class="p">(</span>
@@ -1740,7 +1766,8 @@
     <span class="n">X</span><span class="p">,</span> <span class="n">Y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">grid_lon</span><span class="p">,</span> <span class="n">grid_lat</span><span class="p">)</span>
 
     <span class="c1"># Interpolate lons, lats and zvals over a regular grid using nearest neighbour interpolation</span>
-    <span class="n">Z</span> <span class="o">=</span> <span class="n">tools</span><span class="o">.</span><span class="n">griddata_sphere</span><span class="p">((</span><span class="n">lons</span><span class="p">,</span> <span class="n">lats</span><span class="p">),</span> <span class="n">zdata</span><span class="p">,</span> <span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">),</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;nearest&quot;</span><span class="p">)</span>
+    <span class="n">interpolation_method</span> <span class="o">=</span> <span class="s2">&quot;nearest&quot;</span>
+    <span class="n">Z</span> <span class="o">=</span> <span class="n">tools</span><span class="o">.</span><span class="n">griddata_sphere</span><span class="p">((</span><span class="n">lons</span><span class="p">,</span> <span class="n">lats</span><span class="p">),</span> <span class="n">zdata</span><span class="p">,</span> <span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">),</span> <span class="n">method</span><span class="o">=</span><span class="n">interpolation_method</span><span class="p">)</span>
     <span class="n">Z</span> <span class="o">=</span> <span class="n">Z</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;f4&quot;</span><span class="p">)</span>  <span class="c1"># float32 precision</span>
 
     <span class="n">unmasked_basename</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">zval_name</span><span class="si">}</span><span class="s2">_grid_unmasked_</span><span class="si">{</span><span class="n">time</span><span class="si">:</span><span class="s2">0.2f</span><span class="si">}</span><span class="s2">Ma.nc&quot;</span>
@@ -1753,6 +1780,26 @@
     <span class="n">grid_output_unmasked</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output_dir</span><span class="p">,</span> <span class="n">unmasked_basename</span><span class="p">)</span>
     <span class="n">grid_output</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output_dir</span><span class="p">,</span> <span class="n">grid_basename</span><span class="p">)</span>
 
+    <span class="n">common_metadata</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;metadata_source&quot;</span><span class="p">:</span> <span class="s2">&quot;GPlately.SeafloorGrid&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;zvalue_name&quot;</span><span class="p">:</span> <span class="n">zval_name</span><span class="p">,</span>
+        <span class="s2">&quot;reconstruction_time_ma&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">time</span><span class="p">),</span>
+        <span class="s2">&quot;model_name&quot;</span><span class="p">:</span> <span class="n">file_collection</span> <span class="k">if</span> <span class="n">file_collection</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;interpolation_method&quot;</span><span class="p">:</span> <span class="n">interpolation_method</span><span class="p">,</span>
+        <span class="s2">&quot;input_point_count&quot;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">curr_data</span><span class="p">)),</span>
+        <span class="s2">&quot;unique_input_point_count&quot;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">unique_data</span><span class="p">)),</span>
+        <span class="s2">&quot;grid_lon_count&quot;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">resX</span><span class="p">),</span>
+        <span class="s2">&quot;grid_lat_count&quot;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">resY</span><span class="p">),</span>
+        <span class="s2">&quot;grid_extent&quot;</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="n">extent</span><span class="p">),</span>
+        <span class="s2">&quot;continent_mask_file&quot;</span><span class="p">:</span> <span class="n">continent_mask_filename</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">time</span><span class="p">),</span>
+        <span class="s2">&quot;gridding_input_file&quot;</span><span class="p">:</span> <span class="n">gridding_input_filename</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">time</span><span class="p">),</span>
+        <span class="s2">&quot;zvalue_min&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">nanmin</span><span class="p">(</span><span class="n">zdata</span><span class="p">))</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">zdata</span><span class="p">)</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="s2">&quot;zvalue_max&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">nanmax</span><span class="p">(</span><span class="n">zdata</span><span class="p">))</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">zdata</span><span class="p">)</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="s2">&quot;total_column_headers&quot;</span><span class="p">:</span> <span class="s2">&quot;,&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">total_column_headers</span><span class="p">),</span>
+    <span class="p">}</span>
+    <span class="k">if</span> <span class="n">zval_name</span> <span class="o">==</span> <span class="s2">&quot;SEAFLOOR_AGE&quot;</span><span class="p">:</span>
+        <span class="n">common_metadata</span><span class="p">[</span><span class="s2">&quot;seafloor_age_threshold_ma&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">seafloor_age_threshold_ma</span>
+
     <span class="k">if</span> <span class="n">unmasked</span><span class="p">:</span>
         <span class="n">grids</span><span class="o">.</span><span class="n">write_netcdf_grid</span><span class="p">(</span>
             <span class="n">grid_output_unmasked</span><span class="p">,</span>
@@ -1760,6 +1807,7 @@
             <span class="n">extent</span><span class="o">=</span><span class="n">extent</span><span class="p">,</span>
             <span class="n">significant_digits</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
             <span class="n">fill_value</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">metadata</span><span class="o">=</span><span class="n">common_metadata</span><span class="p">,</span>
         <span class="p">)</span>
 
     <span class="c1"># Identify regions in the grid in the continental mask</span>
@@ -1779,6 +1827,7 @@
         <span class="n">extent</span><span class="o">=</span><span class="n">extent</span><span class="p">,</span>
         <span class="n">significant_digits</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
         <span class="n">fill_value</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span>
+        <span class="n">metadata</span><span class="o">=</span><span class="n">common_metadata</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">zval_name</span><span class="si">}</span><span class="s2"> netCDF grids for </span><span class="si">{</span><span class="n">time</span><span class="si">:</span><span class="s2">0.2f</span><span class="si">}</span><span class="s2"> Ma complete!&quot;</span><span class="p">)</span>
 
