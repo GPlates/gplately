@@ -21,7 +21,7 @@ import logging
 import multiprocessing
 import time
 import warnings
-from typing import List
+from typing import List, Union
 
 from plate_model_manager import PlateModel, PlateModelManager
 from pygplates import FeaturesFunctionArgument  # type: ignore
@@ -160,6 +160,15 @@ def add_parser(parser):
         action="store_true",
         dest="use_continent_contouring",
     )
+    agegrid_cmd.add_argument(
+        "-a",
+        "--anchor-plate-id",
+        metavar="ANCHOR_PLATE_ID",
+        type=int,
+        help="anchor plate ID; default: 0",
+        default=None,  # if None the default anchor plate ID will effectively be 0
+        dest="anchor_plate_id",
+    )
 
 
 help_str = "Create age grids for a plate model."
@@ -190,6 +199,7 @@ def create_agegrids(
     plate_model_repo: str = "plate-model-repo",
     resume_from_checkpoints: bool = False,
     use_continent_contouring: bool = False,
+    anchor_plate_id: Union[int, None] = None,
 ) -> None:
     """Create age grids for a plate model."""
 
@@ -271,6 +281,7 @@ def create_agegrids(
         reconstruction = PlateReconstruction(
             rotation_model=rotation_files,
             topology_features=topology_files,
+            anchor_plate_id=anchor_plate_id,
         )
 
         grid = SeafloorGrid(
@@ -325,6 +336,7 @@ def _run_create_agegrids(args):
         unmasked=args.unmasked,
         resume_from_checkpoints=args.resume_from_checkpoints,
         use_continent_contouring=args.use_continent_contouring,
+        anchor_plate_id=args.anchor_plate_id,
     )
 
     end = time.time()
