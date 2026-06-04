@@ -21,6 +21,7 @@ import numpy as np
 import pandas as pd
 import pygplates
 import scipy
+import warnings
 
 from . import ptt as _ptt
 from .spatial import geocentric_radius, haversine_distance, lonlat2xyz, xyz2lonlat
@@ -789,8 +790,16 @@ def _get_rotation(plate_pair, rotation_model, time, delta_time=1.0, **kwargs):
 
 
 def _deg2pixels(deg_res, deg_min, deg_max):
-    return int(np.floor((deg_max - deg_min) / deg_res)) + 1
+    extent = deg_max - deg_min
+    # Spacing must be integral because number of pixels must be integral.
+    # Note: This can effectively change the grid resolution.
+    spacing = np.floor(extent / deg_res)
 
+    # Emit a warning if the grid resolution effectively changed so that the extent could be an integer multiple of it.
+    if np.abs(spacing * deg_res - extent) > 1e-6:
+        warnings.warn(
+            f"Grid resolution {deg_res} does not divide extent {extent} into an integer number of pixels. Changed grid resolution to {extent / spacing}."
+        )
 
-def _pixels2deg(spacing_pixel, deg_min, deg_max):
-    return (deg_max - deg_min) / np.floor(int(spacing_pixel - 1))
+    # Return number of pixels.
+    return int(spacing) + 1
