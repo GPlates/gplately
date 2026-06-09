@@ -17,14 +17,6 @@
 
 """
 This sub-module contains tools for reconstructing and plotting geological features and feature data through time.
-
-Methods in `plot.py` reconstruct geological features using
-`pyGPlates' reconstruct function <https://www.gplates.org/docs/pygplates/generated/pygplates.reconstruct.html>__,
-turns them into plottable Shapely geometries, and plots them onto Cartopy GeoAxes using Shapely and GeoPandas.
-
-Classes
--------
-PlotTopologies
 """
 
 import logging
@@ -36,12 +28,10 @@ from typing import Union
 # pyright: reportMissingImports=false
 # pyright: reportMissingModuleSource=false
 
-
 import cartopy.crs as ccrs
 import geopandas as gpd
 import numpy as np
 import pygplates
-import shapely
 from shapely.geometry.base import BaseGeometry, BaseMultipartGeometry
 from shapely.ops import linemerge
 
@@ -57,40 +47,11 @@ from .mapping.cartopy_plot import DEFAULT_CARTOPY_PROJECTION, CartopyPlotEngine
 from .mapping.plot_engine import PlotEngine
 from .tools import EARTH_RADIUS
 from .utils.feature_utils import shapelify_features as _shapelify_features
-from .utils.plot_utils import _meridian_from_ax
+from .utils.plot_utils import _meridian_from_ax, PLOT_DOCSTRING, GET_DATE_DOCSTRING
 from .utils.plot_utils import plot_subduction_teeth as _plot_subduction_teeth
+from .lib import deprecated
 
 logger = logging.getLogger("gplately")
-
-PLOT_DOCSTRING = """
-             
-Parameters
-----------
-ax :  
-    Cartopy ax or pygmt figure object
-
-color : str, default='black'
-    The edge colour of the geometries.
-
-**kwargs :
-    `Matplotlib keyword arguments <https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html>`__ or pygmt arguments
-        
-"""
-
-GET_DATE_DOCSTRING = """
-
-Parameters
-----------
-central_meridian : float, default=0.0
-    The central meridian of the map. This will affect the dateline wrapping.
-tessellate_degrees : float or None, default=1.0
-    If provided, geometries will be tessellated to this resolution prior to wrapping.
-
-Returns
--------
-`geopandas.GeoDataFrame`_
-    A `geopandas.GeoDataFrame`_ object containing the reconstructed **{0}** geometries. The geometry column name is "geometry".
-"""
 
 
 def shapelify_features(*args, **kwargs):
@@ -355,15 +316,12 @@ class PlotTopologies(object):
 
     @property
     def topological_plate_boundaries(self):
-        """
-        Resolved topologies for rigid boundaries ONLY.
-        """
+        """Resolved topologies for rigid boundaries ONLY."""
         return self._topological_plate_boundaries
 
     @property
     def topologies(self):
-        """
-        Resolved topologies for BOTH rigid boundaries and networks.
+        """Resolved topologies for BOTH rigid boundaries and networks.
         A list containing assorted topologies like:
 
         - pygplates.FeatureType.gpml_topological_network
@@ -382,13 +340,15 @@ class PlotTopologies(object):
 
         :type: iterable/list of `pygplates.Feature`_
         """
-        logger.debug(
+        warnings.warn(
             "The 'ridges' property has been changed since GPlately 1.3.0. "
             "You need to check your workflow to make sure the new 'ridges' property still suits your purpose. "
             "In earlier releases of GPlately, we used an algorithm to identify the 'ridges' and 'transforms' within the gpml:MidOceanRidge features. "
             "Unfortunately, the algorithm did not work very well. So we have removed the algorithm and now the 'ridges' property contains all the features "
-            "which are labelled as gpml:MidOceanRidge in the reconstruction model."
-        )  # use logger.debug to make the message less aggressive
+            "which are labelled as gpml:MidOceanRidge in the reconstruction model.",
+            UserWarning,
+            stacklevel=2,
+        )
         return self._ridges
 
     @property
@@ -398,13 +358,15 @@ class PlotTopologies(object):
 
         :type: iterable/list of `pygplates.Feature`_
         """
-        logger.debug(
+        warnings.warn(
             "The 'transforms' property has been changed since GPlately 1.3.0. "
             "You need to check your workflow to make sure the new 'transforms' property still suits your purpose. "
             "In earlier releases of GPlately, we used an algorithm to identify the 'ridges' and 'transforms' within the gpml:MidOceanRidge features. "
             "Unfortunately, the algorithm did not work very well. So we have removed the algorithm and now the 'transforms' property contains all the features "
-            "which are labelled as gpml:Transform in the reconstruction model."
-        )  # use logger.debug to make the message less aggressive
+            "which are labelled as gpml:Transform in the reconstruction model.",
+            UserWarning,
+            stacklevel=2,
+        )
         return self._transforms
 
     @property
@@ -487,29 +449,6 @@ class PlotTopologies(object):
         if id < 0:
             raise ValueError("Invalid anchor plate ID: {}".format(id))
         return id
-
-    @property
-    def ridge_transforms(self):
-        """
-        Deprecated! DO NOT USE!
-        """
-
-        warnings.warn(
-            "Deprecated! DO NOT USE!"
-            "The 'ridge_transforms' property will be removed in the future GPlately releases. "
-            "Update your workflow to use the 'ridges' and 'transforms' properties instead, "
-            "otherwise your workflow will not work with the future GPlately releases.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        logger.debug(
-            "The 'ridge_transforms' property has been changed since GPlately 1.3.0. "
-            "You need to check your workflow to make sure the new 'ridge_transforms' property still suits your purpose. "
-            "In earlier releases of GPlately, the 'ridge_transforms' property contains only the features "
-            "which are labelled as gpml:MidOceanRidge in the reconstruction model. "
-            "Now, the 'ridge_transforms' property contains both gpml:Transform and gpml:MidOceanRidge features."
-        )
-        return self._ridges + self._transforms
 
     def _update_time(self):
         """Rereconstruct features and topologies to the :attr:`gplately.PlotTopologies.time` attribute.
@@ -932,13 +871,15 @@ class PlotTopologies(object):
             Alternatively, use the convenience helper :meth:`plot_topology` which handles this
             ordering automatically.
         """
-        logger.debug(
+        warnings.warn(
             "The 'get_ridges' function has been changed since GPlately 1.3.0. "
             "You need to check your workflow to make sure the new 'get_ridges' function still suits your purpose. "
             "In earlier releases of GPlately, we used an algorithm to identify the 'ridges' and 'transforms' within the gpml:MidOceanRidge features. "
             "Unfortunately, the algorithm did not work very well. So we have removed the algorithm and now the 'get_ridges' function returns all the features "
-            "which are labelled as gpml:MidOceanRidge in the reconstruction model."
-        )  # use logger.debug to make the message less aggressive
+            "which are labelled as gpml:MidOceanRidge in the reconstruction model.",
+            UserWarning,
+            stacklevel=5,
+        )
 
         return self.get_feature(
             self.ridges,
@@ -968,13 +909,15 @@ class PlotTopologies(object):
             ordering automatically.
         """
 
-        logger.debug(
+        warnings.warn(
             "The 'plot_ridges' function has been changed since GPlately 1.3.0. "
             "You need to check your workflow to make sure the new 'plot_ridges' function still suits your purpose. "
             "In earlier releases of GPlately, we used an algorithm to identify the 'ridges' and 'transforms' within the gpml:MidOceanRidge features. "
             "Unfortunately, the algorithm did not work very well. So we have removed the algorithm and now the 'plot_ridges' function plots all the features "
-            "which are labelled as gpml:MidOceanRidge in the reconstruction model."
-        )  # use logger.debug to make the message less aggressive
+            "which are labelled as gpml:MidOceanRidge in the reconstruction model.",
+            UserWarning,
+            stacklevel=5,
+        )
 
         return self.plot_feature(
             ax,
@@ -1007,32 +950,6 @@ class PlotTopologies(object):
         """
         return self.get_feature(
             self.trenches,
-            central_meridian=central_meridian,
-            tessellate_degrees=tessellate_degrees,
-        )
-
-    @validate_reconstruction_time
-    def get_ridges_and_transforms(self, central_meridian=0.0, tessellate_degrees=1):
-        """
-        Deprecated! DO NOT USE.
-        """
-        warnings.warn(
-            "Deprecated! The 'get_ridges_and_transforms' function will be removed in the future GPlately releases. "
-            "Update your workflow to use the 'get_ridges' and 'get_transforms' functions instead, "
-            "otherwise your workflow will not work with the future GPlately releases.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        logger.debug(
-            "The 'get_ridges_and_transforms' function has been changed since GPlately 1.3.0. "
-            "You need to check your workflow to make sure the new 'get_ridges_and_transforms' function still suits your purpose. "
-            "In earlier releases of GPlately, we used an algorithm to identify the 'ridges' and 'transforms' within the gpml:MidOceanRidge features. "
-            "Unfortunately, the algorithm did not work very well. So we have removed the algorithm and now the 'get_ridges_and_transforms' function returns all the features "
-            "which are labelled as gpml:MidOceanRidge or gpml:Transform in the reconstruction model."
-        )  # use logger.debug to make the message less aggressive
-
-        return self.get_feature(
-            self._ridges + self._transforms,
             central_meridian=central_meridian,
             tessellate_degrees=tessellate_degrees,
         )
@@ -1088,66 +1005,6 @@ class PlotTopologies(object):
             edgecolor=color,
             **kwargs,
         )
-
-    def _plot_subduction_teeth_deprecated(
-        self, ax, spacing=0.1, size=2.0, aspect=1, color="black", **kwargs
-    ):
-        """Plot subduction teeth on a map.
-
-        Notes
-        -----
-        Subduction teeth are tessellated from :attr:`gplately.PlotTopologies.trench_left` and
-        :attr:`gplately.PlotTopologies.trench_right`, and transformed into Shapely polygons for plotting.
-
-        Parameters
-        ----------
-        ax :
-            Cartopy ax or pygmt figure object.
-
-        spacing : float, default=0.1
-            The tessellation threshold (in radians). Parametrises subduction tooth density.
-            Triangles are generated only along line segments with distances that exceed the given threshold ``spacing``.
-
-        size : float, default=2.0
-            Length of teeth triangle base.
-
-        aspect : float, default=1
-            Aspect ratio of teeth triangles. Ratio is 1.0 by default.
-
-        color : str, default='black'
-            The colour of the teeth. By default, it is set to black.
-
-        **kwargs :
-            Keyword arguments for parameters such as 'alpha', etc. for plotting subduction tooth polygons.
-            See `Matplotlib` keyword arguments `here <https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html>`__.
-        """
-
-        # add Subduction Teeth
-        subd_xL, subd_yL = self._tessellate_triangles(
-            self.trench_left,
-            tesselation_radians=spacing,
-            triangle_base_length=size,
-            triangle_aspect=-aspect,
-        )
-        subd_xR, subd_yR = self._tessellate_triangles(
-            self.trench_right,
-            tesselation_radians=spacing,
-            triangle_base_length=size,
-            triangle_aspect=aspect,
-        )
-
-        teeth = []
-        for tX, tY in zip(subd_xL, subd_yL):
-            triangle_xy_points = np.c_[tX, tY]
-            shp = shapely.geometry.Polygon(triangle_xy_points)
-            teeth.append(shp)
-
-        for tX, tY in zip(subd_xR, subd_yR):
-            triangle_xy_points = np.c_[tX, tY]
-            shp = shapely.geometry.Polygon(triangle_xy_points)
-            teeth.append(shp)
-
-        return ax.add_geometries(teeth, crs=self.base_projection, color=color, **kwargs)
 
     @validate_reconstruction_time
     def get_subduction_direction(self, central_meridian=0.0, tessellate_degrees=None):
@@ -1273,20 +1130,6 @@ class PlotTopologies(object):
             color=color,
             **kwargs,
         )
-
-    def plot_plate_id(self, *args, **kwargs):
-        """Deprecated! DO NOT USE!
-
-        The function name plot_plate_id() is bad and should be changed.
-        The new name is plot_plate_polygon_by_id().
-        For backward compatibility, we allow users to use the old name in their legcy code for now.
-        No new code should call this function.
-        """
-        # TODO: remove this function
-        logger.warning(
-            "The class method plot_plate_id is deprecated and will be removed in the future soon. Use plot_plate_polygon_by_id instead."
-        )
-        return self.plot_plate_polygon_by_id(*args, **kwargs)
 
     def plot_grid(self, ax, grid, extent=(-180, 180, -90, 90), **kwargs):
         """Plot a grid onto a map. The grid can be a NumPy `MaskedArray`_ object, a GPlately `Raster` object
@@ -1817,13 +1660,15 @@ class PlotTopologies(object):
             Alternatively, use the convenience helper :meth:`plot_topology` which handles this
             ordering automatically.
         """
-        logger.debug(
+        warnings.warn(
             "The 'get_transforms' function has been changed since GPlately 1.3.0. "
             "You need to check your workflow to make sure the new 'get_transforms' function still suits your purpose. "
             "In earlier releases of GPlately, we used an algorithm to identify the 'ridges' and 'transforms' within the gpml:MidOceanRidge features. "
             "Unfortunately, the algorithm did not work very well. So we have removed the algorithm and now the 'get_transforms' function returns all the features "
-            "which are labelled as gpml:Transform in the reconstruction model."
-        )  # use logger.debug to make the message less aggressive
+            "which are labelled as gpml:Transform in the reconstruction model.",
+            UserWarning,
+            stacklevel=5,
+        )
 
         return self.get_feature(
             self._transforms,
@@ -1852,13 +1697,15 @@ class PlotTopologies(object):
             ordering automatically.
         """
 
-        logger.debug(
+        warnings.warn(
             "The 'plot_transforms' function has been changed since GPlately 1.3.0. "
             "You need to check your workflow to make sure the new 'plot_transforms' function still suits your purpose. "
             "In earlier releases of GPlately, we used an algorithm to identify the 'ridges' and 'transforms' within the gpml:MidOceanRidge features. "
             "Unfortunately, the algorithm did not work very well. So we have removed the algorithm and now the 'plot_transforms' function plots all the features "
-            "which are labelled as gpml:Transform in the reconstruction model."
-        )  # use logger.debug to make the message less aggressive
+            "which are labelled as gpml:Transform in the reconstruction model.",
+            UserWarning,
+            stacklevel=5,
+        )
 
         return self.plot_feature(
             ax,
@@ -1867,28 +1714,6 @@ class PlotTopologies(object):
             edgecolor=color,
             **kwargs,
         )
-
-    def plot_ridges_and_transforms(self, ax, color="black", **kwargs):
-        """
-        Deprecated! DO NOT USE!
-        """
-        warnings.warn(
-            "Deprecated! The 'plot_ridges_and_transforms' function will be removed in the future GPlately releases. "
-            "Update your workflow to use the 'plot_ridges' and 'plot_transforms' functions instead, "
-            "otherwise your workflow will not work with the future GPlately releases.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        logger.debug(
-            "The 'plot_ridges_and_transforms' function has been changed since GPlately 1.3.0. "
-            "You need to check your workflow to make sure the new 'plot_ridges_and_transforms' function still suits your purpose. "
-            "In earlier releases of GPlately, we used an algorithm to identify the 'ridges' and 'transforms' within the gpml:MidOceanRidge features. "
-            "Unfortunately, the algorithm did not work very well. So we have removed the algorithm and now the 'plot_ridges_and_transforms' function plots all the features "
-            "which are labelled as gpml:Transform or gpml:MidOceanRidge in the reconstruction model."
-        )  # use logger.debug to make the message less aggressive
-
-        self.plot_ridges(ax, color=color, **kwargs)
-        self.plot_transforms(ax, color=color, **kwargs)
 
     @validate_reconstruction_time
     @append_docstring(GET_DATE_DOCSTRING.format("unclassified features"))
@@ -2166,11 +1991,10 @@ class PlotTopologies(object):
         # Layer the individually styled boundary types on top.
         if ridge_kwargs is not False:
             self.plot_ridges(ax, **ridge_kwargs)
-        if transform_kwargs is not False:
+        if isinstance(transform_kwargs, dict):
             self.plot_transforms(ax, **transform_kwargs)
         if trench_kwargs is not False:
             self.plot_trenches(ax, **trench_kwargs)
-
 
     def get_topological_plate_boundaries(
         self, central_meridian=0.0, tessellate_degrees=1
@@ -2195,47 +2019,35 @@ class PlotTopologies(object):
         )
 
     @property
+    @append_docstring(deprecated._ridge_transforms_impl.__doc__ or "")
+    def ridge_transforms(self):
+        return deprecated._ridge_transforms_impl(self)
+
+    @property
+    @append_docstring(deprecated._plot_misc_transforms_impl.__doc__ or "")
     def misc_transforms(self):
-        """
-        Deprecated! DO NOT USE.
-        """
-        warnings.warn(
-            "Deprecated! The 'misc_transforms' property will be removed in the future GPlately releases. "
-            "Update your workflow to use the 'transforms' property instead, "
-            "otherwise your workflow will not work with the future GPlately releases.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        return self._transforms
+        return deprecated._misc_transforms_impl(self)
 
+    @append_docstring(deprecated._plot_misc_transforms_impl.__doc__ or "")
     def plot_misc_transforms(self, ax, color="black", **kwargs):
-        """
-        Deprecated! DO NOT USE.
-        """
-        warnings.warn(
-            "Deprecated! The 'plot_misc_transforms' function will be removed in the future GPlately releases. "
-            "Update your workflow to use the 'plot_transforms' function instead, "
-            "otherwise your workflow will not work with the future GPlately releases.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        self.plot_transforms(ax=ax, color=color, **kwargs)
+        return deprecated._plot_misc_transforms_impl(self, ax, color=color, **kwargs)
 
-    def get_misc_transforms(
-        self,
-        central_meridian=0.0,
-        tessellate_degrees=None,
-    ):
-        """
-        Deprecated! DO NOT USE.
-        """
-        warnings.warn(
-            "Deprecated! The 'get_misc_transforms' function will be removed in the future GPlately releases. "
-            "Update your workflow to use the 'get_transforms' function instead, "
-            "otherwise your workflow will not work with the future GPlately releases.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        return self.get_transforms(
-            central_meridian=central_meridian, tessellate_degrees=tessellate_degrees
-        )
+    @append_docstring(deprecated._get_misc_transforms_impl.__doc__ or "")
+    def get_misc_transforms(self, central_meridian=0.0, tessellate_degrees=None): # fmt: skip
+        return deprecated._get_misc_transforms_impl(self, central_meridian=central_meridian, tessellate_degrees=tessellate_degrees) # fmt: skip
+
+    @append_docstring(deprecated._plot_ridges_and_transforms_impl.__doc__ or "")
+    def plot_ridges_and_transforms(self, ax, color="black", **kwargs):
+        return deprecated._plot_ridges_and_transforms_impl(self, ax, color=color, **kwargs) # fmt: skip
+
+    @append_docstring(deprecated._plot_plate_id_impl.__doc__ or "")
+    def plot_plate_id(self, *args, **kwargs):
+        return deprecated._plot_plate_id_impl(self, *args, **kwargs)
+
+    @append_docstring(deprecated._get_ridges_and_transforms_impl.__doc__ or "")
+    def get_ridges_and_transforms(self, central_meridian=0.0, tessellate_degrees=1):
+        return deprecated._get_ridges_and_transforms_impl(self, central_meridian=central_meridian, tessellate_degrees=tessellate_degrees )# fmt: skip
+
+    @append_docstring(deprecated._plot_subduction_teeth_deprecated.__doc__ or "")
+    def _plot_subduction_teeth_deprecated(self, ax, spacing=0.1, size=2.0, aspect=1, color="black", **kwargs): # fmt: skip
+        return deprecated._plot_subduction_teeth_deprecated(self, ax, spacing=spacing, size=size, aspect=aspect, color=color, **kwargs) # fmt: skip
