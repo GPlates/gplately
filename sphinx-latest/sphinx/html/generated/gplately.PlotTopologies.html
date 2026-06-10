@@ -291,7 +291,7 @@ Defaults to the current anchor plate ID of <code class="docutils literal notrans
 <td><p>Constructor.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#gplately.PlotTopologies.get_all_topological_sections" title="gplately.PlotTopologies.get_all_topological_sections"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_all_topological_sections</span></code></a>([...])</p></td>
-<td><p>Return the reconstructed topological features listed below as a <a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html">geopandas.GeoDataFrame</a> object.</p></td>
+<td><p>Return the reconstructed topological plate boundary sections listed below as a <a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html">geopandas.GeoDataFrame</a> object.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#gplately.PlotTopologies.get_all_topologies" title="gplately.PlotTopologies.get_all_topologies"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_all_topologies</span></code></a>([central_meridian, ...])</p></td>
 <td><p>Return the reconstructed topological features listed below as a <a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html">geopandas.GeoDataFrame</a> object.</p></td>
@@ -357,7 +357,7 @@ Defaults to the current anchor plate ID of <code class="docutils literal notrans
 <td><p>Return the reconstructed terrane boundary lines as a <a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html">geopandas.GeoDataFrame</a> object.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#gplately.PlotTopologies.get_topological_plate_boundaries" title="gplately.PlotTopologies.get_topological_plate_boundaries"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_topological_plate_boundaries</span></code></a>([...])</p></td>
-<td><p>Return the reconstructed &quot;topological plate boundaries&quot; lines as a <a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html">geopandas.GeoDataFrame</a> object.</p></td>
+<td><p>Return the reconstructed topological plate boundaries(polygons) as a <a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html">geopandas.GeoDataFrame</a> object.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#gplately.PlotTopologies.get_transforms" title="gplately.PlotTopologies.get_transforms"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_transforms</span></code></a>([central_meridian, ...])</p></td>
 <td><p>Return the reconstructed transform lines(gpml:Transform) as a <a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html">geopandas.GeoDataFrame</a> object.</p></td>
@@ -371,8 +371,8 @@ Defaults to the current anchor plate ID of <code class="docutils literal notrans
 <tr class="row-even"><td><p><a class="reference internal" href="#gplately.PlotTopologies.get_unclassified_features" title="gplately.PlotTopologies.get_unclassified_features"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_unclassified_features</span></code></a>([...])</p></td>
 <td><p>Return the reconstructed unclassified feature lines as a <a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html">geopandas.GeoDataFrame</a> object.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#gplately.PlotTopologies.plot_all_topological_sections" title="gplately.PlotTopologies.plot_all_topological_sections"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_all_topological_sections</span></code></a>(ax[, color])</p></td>
-<td><p>Plot the reconstructed topological features listed below on a map.</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#gplately.PlotTopologies.plot_all_topological_sections" title="gplately.PlotTopologies.plot_all_topological_sections"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_all_topological_sections</span></code></a>(ax[, color, ...])</p></td>
+<td><p>Plot the reconstructed topological boundary sections(polylines) on a map.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#gplately.PlotTopologies.plot_all_topologies" title="gplately.PlotTopologies.plot_all_topologies"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_all_topologies</span></code></a>(ax[, color])</p></td>
 <td><p>Plot the reconstructed topological features listed below on a map.</p></td>
@@ -414,7 +414,7 @@ Defaults to the current anchor plate ID of <code class="docutils literal notrans
 <td><p>Plot inferred paleo boundaries on a map.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#gplately.PlotTopologies.plot_misc_boundaries" title="gplately.PlotTopologies.plot_misc_boundaries"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_misc_boundaries</span></code></a>(ax[, color])</p></td>
-<td><p>Plot the reconstructed miscellaneous plate boundary lines on a map.</p></td>
+<td><p>Plot the reconstructed miscellaneous plate boundary sections(polylines) on a map.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#gplately.PlotTopologies.plot_misc_transforms" title="gplately.PlotTopologies.plot_misc_transforms"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_misc_transforms</span></code></a>(ax[, color])</p></td>
 <td><p>Deprecated! DO NOT USE.</p></td>
@@ -456,7 +456,7 @@ Defaults to the current anchor plate ID of <code class="docutils literal notrans
 <td><p>Plot terrane boundaries on a map.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#gplately.PlotTopologies.plot_topological_plate_boundaries" title="gplately.PlotTopologies.plot_topological_plate_boundaries"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_topological_plate_boundaries</span></code></a>(ax[, color])</p></td>
-<td><p>Plot the topological plate boundaries.</p></td>
+<td><p>Plot the topological plate boundaries(polygons).</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#gplately.PlotTopologies.plot_transforms" title="gplately.PlotTopologies.plot_transforms"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_transforms</span></code></a>(ax[, color])</p></td>
 <td><p>Plot transform boundaries(gpml:Transform) on a map.</p></td>
@@ -515,16 +515,16 @@ Defaults to the current anchor plate ID of <code class="docutils literal notrans
 <td><p>A list containing COB features reconstructed to the specified <code class="docutils literal notranslate"><span class="pre">time</span></code> attribute.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#gplately.PlotTopologies.trenches" title="gplately.PlotTopologies.trenches"><code class="xref py py-obj docutils literal notranslate"><span class="pre">trenches</span></code></a></p></td>
-<td><p>A list containing trench boundary sections of type <cite>pygplates.FeatureType.gpml_subduction_zone</cite>.</p></td>
+<td><p>A list of <cite>pygplates.FeatureType.gpml_subduction_zone</cite> features regardless of their subduction polarity.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#gplately.PlotTopologies.trench_left" title="gplately.PlotTopologies.trench_left"><code class="xref py py-obj docutils literal notranslate"><span class="pre">trench_left</span></code></a></p></td>
-<td><p>A list containing left subduction boundary sections of type <cite>pygplates.FeatureType.gpml_subduction_zone</cite>.</p></td>
+<td><p>A list of <cite>pygplates.FeatureType.gpml_subduction_zone</cite> features whose subduction polarity is &quot;left&quot;.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#gplately.PlotTopologies.trench_right" title="gplately.PlotTopologies.trench_right"><code class="xref py py-obj docutils literal notranslate"><span class="pre">trench_right</span></code></a></p></td>
-<td><p>A list containing right subduction boundary sections of type pygplates.FeatureType.gpml_subduction_zone</p></td>
+<td><p>A list of <cite>pygplates.FeatureType.gpml_subduction_zone</cite> features whose subduction polarity is &quot;right&quot;.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#gplately.PlotTopologies.other" title="gplately.PlotTopologies.other"><code class="xref py py-obj docutils literal notranslate"><span class="pre">other</span></code></a></p></td>
-<td><p>A list containing other geological features like unclassified features, extended continental crusts, continental rifts, faults, orogenic belts, fracture zones, inferred paleo boundaries, terrane boundaries and passive continental boundaries.</p></td>
+<td><p>A list of miscellaneous topological plate boundary sections, which are not subduction zones or mid-ocean ridges (ridge/transform).</p></td>
 </tr>
 </tbody>
 </table>
@@ -586,13 +586,11 @@ Defaults to <a class="reference internal" href="gplately.PlateReconstruction.htm
 <dl class="py method">
 <dt class="sig sig-object py" id="gplately.PlotTopologies.get_all_topological_sections">
 <span class="sig-name descname"><span class="pre">get_all_topological_sections</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">central_meridian</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tessellate_degrees</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/plot.html#PlotTopologies.get_all_topological_sections"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PlotTopologies.get_all_topological_sections" title="Link to this definition"></a></dt>
-<dd><p>Return the reconstructed topological features listed below as a <a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html">geopandas.GeoDataFrame</a> object.</p>
+<dd><p>Return the reconstructed topological plate boundary sections listed below as a <a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html">geopandas.GeoDataFrame</a> object.</p>
 <ul class="simple">
-<li><p>ridge and transform boundary</p></li>
-<li><p>subduction boundary</p></li>
-<li><p>left subduction boundary</p></li>
-<li><p>right subduction boundary</p></li>
-<li><p>other boundary that are not subduction zones or mid-ocean ridges (ridge/transform)</p></li>
+<li><p>ridges and transforms</p></li>
+<li><p>subduction zones (trenches)</p></li>
+<li><p>other miscellaneous boundary sections that are neither subduction zones nor mid-ocean ridges (ridge/transform)</p></li>
 </ul>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -602,7 +600,7 @@ Defaults to <a class="reference internal" href="gplately.PlateReconstruction.htm
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>A <a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html">geopandas.GeoDataFrame</a> object containing the reconstructed <strong>topological sections</strong> geometries. The geometry column name is “geometry”.</p>
+<dd class="field-even"><p>A <a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html">geopandas.GeoDataFrame</a> object containing the reconstructed <strong>all topological sections</strong> geometries. The geometry column name is “geometry”.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html">geopandas.GeoDataFrame</a></p>
@@ -908,6 +906,12 @@ This function converts the feature(s) into a set of Shapely geometries and put t
 <dt class="sig sig-object py" id="gplately.PlotTopologies.get_ridges">
 <span class="sig-name descname"><span class="pre">get_ridges</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">central_meridian</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tessellate_degrees</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/plot.html#PlotTopologies.get_ridges"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PlotTopologies.get_ridges" title="Link to this definition"></a></dt>
 <dd><p>Return the reconstructed mid-ocean ridge lines (gpml:MidOceanRidge) as a <a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html">geopandas.GeoDataFrame</a> object.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This function only returns the reconstructed mid-ocean ridges as polylines.
+If you need to plot gap-free topological plate boundaries, see <a class="reference internal" href="#gplately.PlotTopologies.plot_all_topological_sections" title="gplately.PlotTopologies.plot_all_topological_sections"><code class="xref py py-meth docutils literal notranslate"><span class="pre">plot_all_topological_sections()</span></code></a>,
+which allows you to plot all topological sections with different styles.</p>
+</div>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -1015,27 +1019,19 @@ This function converts the feature(s) into a set of Shapely geometries and put t
 <dl class="py method">
 <dt class="sig sig-object py" id="gplately.PlotTopologies.get_topological_plate_boundaries">
 <span class="sig-name descname"><span class="pre">get_topological_plate_boundaries</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">central_meridian</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tessellate_degrees</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/plot.html#PlotTopologies.get_topological_plate_boundaries"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PlotTopologies.get_topological_plate_boundaries" title="Link to this definition"></a></dt>
-<dd><p>Return the reconstructed “topological plate boundaries” lines as a <a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html">geopandas.GeoDataFrame</a> object.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>central_meridian</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em>, </em><em>default=0.0</em>) – The central meridian of the map. This will affect the dateline wrapping.</p></li>
-<li><p><strong>tessellate_degrees</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em> or </em><em>None</em><em>, </em><em>default=1.0</em>) – If provided, geometries will be tessellated to this resolution prior to wrapping.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>A <a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html">geopandas.GeoDataFrame</a> object containing the reconstructed <strong>topological plate boundaries</strong> geometries. The geometry column name is “geometry”.</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html">geopandas.GeoDataFrame</a></p>
-</dd>
-</dl>
+<dd><p>Return the reconstructed topological plate boundaries(polygons) as a <a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html">geopandas.GeoDataFrame</a> object.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="gplately.PlotTopologies.get_transforms">
 <span class="sig-name descname"><span class="pre">get_transforms</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">central_meridian</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tessellate_degrees</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/plot.html#PlotTopologies.get_transforms"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PlotTopologies.get_transforms" title="Link to this definition"></a></dt>
 <dd><p>Return the reconstructed transform lines(gpml:Transform) as a <a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html">geopandas.GeoDataFrame</a> object.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This function only returns the reconstructed transforms as polylines.
+If you need to plot gap-free topological plate boundaries, see <a class="reference internal" href="#gplately.PlotTopologies.plot_all_topological_sections" title="gplately.PlotTopologies.plot_all_topological_sections"><code class="xref py py-meth docutils literal notranslate"><span class="pre">plot_all_topological_sections()</span></code></a>,
+which allows you to plot all topological sections with different styles.</p>
+</div>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -1076,6 +1072,12 @@ This function converts the feature(s) into a set of Shapely geometries and put t
 <dt class="sig sig-object py" id="gplately.PlotTopologies.get_trenches">
 <span class="sig-name descname"><span class="pre">get_trenches</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">central_meridian</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tessellate_degrees</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/plot.html#PlotTopologies.get_trenches"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PlotTopologies.get_trenches" title="Link to this definition"></a></dt>
 <dd><p>Return the reconstructed trench lines as a <a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html">geopandas.GeoDataFrame</a> object.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This function only returns the reconstructed trenches as polylines.
+If you need to plot gap-free topological plate boundaries, see <a class="reference internal" href="#gplately.PlotTopologies.plot_all_topological_sections" title="gplately.PlotTopologies.plot_all_topological_sections"><code class="xref py py-meth docutils literal notranslate"><span class="pre">plot_all_topological_sections()</span></code></a>,
+which allows you to plot all topological sections with different styles.</p>
+</div>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -1121,7 +1123,9 @@ This function converts the feature(s) into a set of Shapely geometries and put t
 <dl class="py attribute">
 <dt class="sig sig-object py" id="gplately.PlotTopologies.other">
 <span class="sig-name descname"><span class="pre">other</span></span><a class="headerlink" href="#gplately.PlotTopologies.other" title="Link to this definition"></a></dt>
-<dd><p>A list containing other geological features like unclassified features, extended continental crusts,
+<dd><p>A list of miscellaneous topological plate boundary sections,
+which are not subduction zones or mid-ocean ridges (ridge/transform).
+This can include features like unclassified features, extended continental crusts,
 continental rifts, faults, orogenic belts, fracture zones, inferred paleo boundaries, terrane
 boundaries and passive continental boundaries.</p>
 <dl class="field-list simple">
@@ -1145,24 +1149,63 @@ which contains plate boundary features like trenches, ridges and transforms.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="gplately.PlotTopologies.plot_all_topological_sections">
-<span class="sig-name descname"><span class="pre">plot_all_topological_sections</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">color</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'black'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/plot.html#PlotTopologies.plot_all_topological_sections"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PlotTopologies.plot_all_topological_sections" title="Link to this definition"></a></dt>
-<dd><p>Plot the reconstructed topological features listed below on a map.</p>
-<ul class="simple">
-<li><p>ridge and transform boundary</p></li>
-<li><p>subduction boundary</p></li>
-<li><p>left subduction boundary</p></li>
-<li><p>right subduction boundary</p></li>
-<li><p>other boundary that are not subduction zones or mid-ocean ridges (ridge/transform)</p></li>
-</ul>
+<span class="sig-name descname"><span class="pre">plot_all_topological_sections</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">color</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'black'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_subduction_teeth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ridge_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transform_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trench_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">other_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/plot.html#PlotTopologies.plot_all_topological_sections"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PlotTopologies.plot_all_topological_sections" title="Link to this definition"></a></dt>
+<dd><p>Plot the reconstructed topological boundary sections(polylines) on a map.</p>
+<p>This function draws gap-free topological plate boundaries by layering the
+topological sections in the following order:</p>
+<ol class="arabic simple">
+<li><p>Miscellaneous topological boundary sections that are neither subduction zones nor
+mid-ocean ridges</p></li>
+<li><p>Ridges (gpml:MidOceanRidge)</p></li>
+<li><p>Transforms (gpml:Transform)</p></li>
+<li><p>Trenches (gpml:SubductionZone)</p></li>
+<li><p>Optional subduction teeth when <code class="docutils literal notranslate"><span class="pre">plot_subduction_teeth=True</span></code></p></li>
+</ol>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>ax</strong> – Cartopy ax or pygmt figure object</p></li>
-<li><p><strong>color</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>default='black'</em>) – The edge colour of the geometries.</p></li>
-<li><p><strong>**kwargs</strong> – <a class="reference external" href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html">Matplotlib keyword arguments</a> or pygmt arguments</p></li>
+<li><p><strong>ax</strong> – Cartopy GeoAxes or PyGMT Figure object to plot on.</p></li>
+<li><p><strong>color</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em>, </em><em>default=&quot;black&quot;</em>) – Default colour used for any layer that does not specify its own <code class="docutils literal notranslate"><span class="pre">color</span></code> or
+<code class="docutils literal notranslate"><span class="pre">edgecolor</span></code>.</p></li>
+<li><p><strong>plot_subduction_teeth</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>default=False</em>) – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, also plot subduction teeth using the trench layer styling.</p></li>
+<li><p><strong>ridge_kwargs</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a><em> or </em><em>None</em><em>, </em><em>optional</em>) – Layer-specific keyword arguments forwarded to the corresponding plotting call.
+If a layer-specific dict provides <code class="docutils literal notranslate"><span class="pre">color</span></code> or <code class="docutils literal notranslate"><span class="pre">edgecolor</span></code>, it overrides the
+shared <code class="docutils literal notranslate"><span class="pre">color</span></code> argument for that layer. Keys in these dictionaries override
+keys passed through <code class="docutils literal notranslate"><span class="pre">**kwargs</span></code>.</p></li>
+<li><p><strong>transform_kwargs</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a><em> or </em><em>None</em><em>, </em><em>optional</em>) – Layer-specific keyword arguments forwarded to the corresponding plotting call.
+If a layer-specific dict provides <code class="docutils literal notranslate"><span class="pre">color</span></code> or <code class="docutils literal notranslate"><span class="pre">edgecolor</span></code>, it overrides the
+shared <code class="docutils literal notranslate"><span class="pre">color</span></code> argument for that layer. Keys in these dictionaries override
+keys passed through <code class="docutils literal notranslate"><span class="pre">**kwargs</span></code>.</p></li>
+<li><p><strong>trench_kwargs</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a><em> or </em><em>None</em><em>, </em><em>optional</em>) – Layer-specific keyword arguments forwarded to the corresponding plotting call.
+If a layer-specific dict provides <code class="docutils literal notranslate"><span class="pre">color</span></code> or <code class="docutils literal notranslate"><span class="pre">edgecolor</span></code>, it overrides the
+shared <code class="docutils literal notranslate"><span class="pre">color</span></code> argument for that layer. Keys in these dictionaries override
+keys passed through <code class="docutils literal notranslate"><span class="pre">**kwargs</span></code>.</p></li>
+<li><p><strong>other_kwargs</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a><em> or </em><em>None</em><em>, </em><em>optional</em>) – Layer-specific keyword arguments forwarded to the corresponding plotting call.
+If a layer-specific dict provides <code class="docutils literal notranslate"><span class="pre">color</span></code> or <code class="docutils literal notranslate"><span class="pre">edgecolor</span></code>, it overrides the
+shared <code class="docutils literal notranslate"><span class="pre">color</span></code> argument for that layer. Keys in these dictionaries override
+keys passed through <code class="docutils literal notranslate"><span class="pre">**kwargs</span></code>.</p></li>
+<li><p><strong>**kwargs</strong> – Shared keyword arguments forwarded to each layer. Layer-specific dictionaries
+take precedence over overlapping keys in this shared set.</p></li>
 </ul>
 </dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The input axes/figure object, for convenience and chaining.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>ax</p>
+</dd>
 </dl>
+<p class="rubric">Examples</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">gplot</span><span class="o">.</span><span class="n">plot_all_topological_sections</span><span class="p">(</span>
+    <span class="n">ax</span><span class="p">,</span>
+    <span class="n">plot_subduction_teeth</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">other_kwargs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;color&quot;</span><span class="p">:</span> <span class="s2">&quot;lightgrey&quot;</span><span class="p">,</span> <span class="s2">&quot;linewidth&quot;</span><span class="p">:</span> <span class="mf">0.8</span><span class="p">},</span>
+    <span class="n">ridge_kwargs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;color&quot;</span><span class="p">:</span> <span class="s2">&quot;red&quot;</span><span class="p">,</span> <span class="s2">&quot;linewidth&quot;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">},</span>
+    <span class="n">transform_kwargs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;color&quot;</span><span class="p">:</span> <span class="s2">&quot;green&quot;</span><span class="p">,</span> <span class="s2">&quot;linewidth&quot;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">},</span>
+    <span class="n">trench_kwargs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;color&quot;</span><span class="p">:</span> <span class="s2">&quot;blue&quot;</span><span class="p">,</span> <span class="s2">&quot;linewidth&quot;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">},</span>
+<span class="p">)</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py method">
@@ -1381,7 +1424,8 @@ and <code class="xref py py-meth docutils literal notranslate"><span class="pre"
 <dl class="py method">
 <dt class="sig sig-object py" id="gplately.PlotTopologies.plot_misc_boundaries">
 <span class="sig-name descname"><span class="pre">plot_misc_boundaries</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">color</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'black'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/plot.html#PlotTopologies.plot_misc_boundaries"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PlotTopologies.plot_misc_boundaries" title="Link to this definition"></a></dt>
-<dd><p>Plot the reconstructed miscellaneous plate boundary lines on a map.</p>
+<dd><p>Plot the reconstructed miscellaneous plate boundary sections(polylines) on a map.
+Sections are neither subduction zones nor mid-ocean ridges, nor transforms.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -1509,6 +1553,12 @@ for a full list of plate IDs.</p></li>
 <dt class="sig sig-object py" id="gplately.PlotTopologies.plot_ridges">
 <span class="sig-name descname"><span class="pre">plot_ridges</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">color</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'black'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/plot.html#PlotTopologies.plot_ridges"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PlotTopologies.plot_ridges" title="Link to this definition"></a></dt>
 <dd><p>Plot the reconstructed mid-ocean ridge lines(gpml:MidOceanRidge) on a map.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This function only plots the reconstructed ridges as polylines.
+If you need to plot gap-free topological plate boundaries, see <a class="reference internal" href="#gplately.PlotTopologies.plot_all_topological_sections" title="gplately.PlotTopologies.plot_all_topological_sections"><code class="xref py py-meth docutils literal notranslate"><span class="pre">plot_all_topological_sections()</span></code></a>,
+which allows you to plot all topological sections with different styles.</p>
+</div>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -1599,7 +1649,7 @@ See Matplotlib keyword arguments <a class="reference external" href="https://mat
 <dl class="py method">
 <dt class="sig sig-object py" id="gplately.PlotTopologies.plot_topological_plate_boundaries">
 <span class="sig-name descname"><span class="pre">plot_topological_plate_boundaries</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">color</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'black'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/plot.html#PlotTopologies.plot_topological_plate_boundaries"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PlotTopologies.plot_topological_plate_boundaries" title="Link to this definition"></a></dt>
-<dd><p>Plot the topological plate boundaries.</p>
+<dd><p>Plot the topological plate boundaries(polygons).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -1615,6 +1665,12 @@ See Matplotlib keyword arguments <a class="reference external" href="https://mat
 <dt class="sig sig-object py" id="gplately.PlotTopologies.plot_transforms">
 <span class="sig-name descname"><span class="pre">plot_transforms</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">color</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'black'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/plot.html#PlotTopologies.plot_transforms"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PlotTopologies.plot_transforms" title="Link to this definition"></a></dt>
 <dd><p>Plot transform boundaries(gpml:Transform) on a map.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This function only plots the reconstructed transforms as polylines.
+If you need to plot gap-free topological plate boundaries, see <a class="reference internal" href="#gplately.PlotTopologies.plot_all_topological_sections" title="gplately.PlotTopologies.plot_all_topological_sections"><code class="xref py py-meth docutils literal notranslate"><span class="pre">plot_all_topological_sections()</span></code></a>,
+which allows you to plot all topological sections with different styles.</p>
+</div>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -1645,6 +1701,12 @@ See Matplotlib keyword arguments <a class="reference external" href="https://mat
 <dt class="sig sig-object py" id="gplately.PlotTopologies.plot_trenches">
 <span class="sig-name descname"><span class="pre">plot_trenches</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">color</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'black'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/plot.html#PlotTopologies.plot_trenches"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PlotTopologies.plot_trenches" title="Link to this definition"></a></dt>
 <dd><p>Plot the reconstructed trenches on a map.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This function only plots the reconstructed trenches as polylines.
+If you need to plot gap-free topological plate boundaries, see <a class="reference internal" href="#gplately.PlotTopologies.plot_all_topological_sections" title="gplately.PlotTopologies.plot_all_topological_sections"><code class="xref py py-meth docutils literal notranslate"><span class="pre">plot_all_topological_sections()</span></code></a>,
+which allows you to plot all topological sections with different styles.</p>
+</div>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -1750,7 +1812,7 @@ A list containing transform boundary sections of type <cite>pygplates.FeatureTyp
 <dl class="py attribute">
 <dt class="sig sig-object py" id="gplately.PlotTopologies.trench_left">
 <span class="sig-name descname"><span class="pre">trench_left</span></span><a class="headerlink" href="#gplately.PlotTopologies.trench_left" title="Link to this definition"></a></dt>
-<dd><p>A list containing left subduction boundary sections of type <cite>pygplates.FeatureType.gpml_subduction_zone</cite>.</p>
+<dd><p>A list of <cite>pygplates.FeatureType.gpml_subduction_zone</cite> features whose subduction polarity is “left”.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>iterable/list of <a class="reference external" href="https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature">pygplates.Feature</a></p>
@@ -1761,7 +1823,7 @@ A list containing transform boundary sections of type <cite>pygplates.FeatureTyp
 <dl class="py attribute">
 <dt class="sig sig-object py" id="gplately.PlotTopologies.trench_right">
 <span class="sig-name descname"><span class="pre">trench_right</span></span><a class="headerlink" href="#gplately.PlotTopologies.trench_right" title="Link to this definition"></a></dt>
-<dd><p>A list containing right subduction boundary sections of type pygplates.FeatureType.gpml_subduction_zone</p>
+<dd><p>A list of <cite>pygplates.FeatureType.gpml_subduction_zone</cite> features whose subduction polarity is “right”.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>iterable/list of <a class="reference external" href="https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature">pygplates.Feature</a></p>
@@ -1772,7 +1834,9 @@ A list containing transform boundary sections of type <cite>pygplates.FeatureTyp
 <dl class="py attribute">
 <dt class="sig sig-object py" id="gplately.PlotTopologies.trenches">
 <span class="sig-name descname"><span class="pre">trenches</span></span><a class="headerlink" href="#gplately.PlotTopologies.trenches" title="Link to this definition"></a></dt>
-<dd><p>A list containing trench boundary sections of type <cite>pygplates.FeatureType.gpml_subduction_zone</cite>.</p>
+<dd><p>A list of <cite>pygplates.FeatureType.gpml_subduction_zone</cite> features regardless of their subduction polarity.
+Normally, this list equals <cite>trench_left</cite> + <cite>trench_right</cite> but it can be different if there are some trench features
+with undefined subduction polarity in the model.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>iterable/list of <a class="reference external" href="https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature">pygplates.Feature</a></p>
