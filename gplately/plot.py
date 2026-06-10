@@ -49,7 +49,7 @@ from .tools import EARTH_RADIUS
 from .utils.feature_utils import shapelify_features as _shapelify_features
 from .utils.plot_utils import _meridian_from_ax, PLOT_DOCSTRING, GET_DATE_DOCSTRING
 from .utils.plot_utils import plot_subduction_teeth as _plot_subduction_teeth
-from .lib import deprecated
+from .utils import deprecated
 
 logger = logging.getLogger("gplately")
 
@@ -960,11 +960,13 @@ class PlotTopologies(object):
     @validate_reconstruction_time
     @append_docstring(PLOT_DOCSTRING.format("other"))
     def plot_misc_boundaries(self, ax, color="black", **kwargs):
-        """Plot the reconstructed miscellaneous plate boundary lines on a map."""
+        """Plot the reconstructed miscellaneous plate boundary sections(polylines) on a map.
+        Sections are neither subduction zones nor mid-ocean ridges, nor transforms.
+        """
         return self.plot_feature(
             ax,
             self.other,
-            feature_name="misc_boundaries",
+            feature_name="miscellaneous topological plate boundary sections",
             facecolor="none",
             edgecolor=color,
             **kwargs,
@@ -1874,18 +1876,13 @@ class PlotTopologies(object):
 
         .. code-block:: python
 
-            other_kwargs = {"color": "lightgrey", "linewidth": 0.8}
-            ridge_kwargs = {"color": "red", "linewidth": 1.0}
-            transform_kwargs = {"color": "green", "linewidth": 1.0}
-            trench_kwargs = {"color": "blue", "linewidth": 1.0}
-
             gplot.plot_all_topological_sections(
                 ax,
                 plot_subduction_teeth=True,
-                other_kwargs=other_kwargs,
-                ridge_kwargs=ridge_kwargs,
-                transform_kwargs=transform_kwargs,
-                trench_kwargs=trench_kwargs,
+                other_kwargs={"color": "lightgrey", "linewidth": 0.8},
+                ridge_kwargs={"color": "red", "linewidth": 1.0},
+                transform_kwargs={"color": "green", "linewidth": 1.0},
+                trench_kwargs={"color": "blue", "linewidth": 1.0},
             )
         """
         ridge_kwargs = {} if ridge_kwargs is None else dict(ridge_kwargs)
@@ -1931,11 +1928,17 @@ class PlotTopologies(object):
             trench_color = color
         trench_plot_kwargs = dict(shared_kwargs)
         trench_plot_kwargs.update(trench_kwargs)
-        self.plot_trenches(ax, color=trench_color, **trench_plot_kwargs)
         if plot_subduction_teeth:
+            trench_plot_kwargs_without_gmtlabel = trench_plot_kwargs.copy()
+            trench_plot_kwargs_without_gmtlabel.pop("gmtlabel", None)
+            self.plot_trenches(
+                ax, color=trench_color, **trench_plot_kwargs_without_gmtlabel
+            )
             trench_teeth_kwargs = dict(shared_kwargs)
             trench_teeth_kwargs.update(trench_kwargs)
             self.plot_subduction_teeth(ax, color=trench_color, **trench_teeth_kwargs)
+        else:
+            self.plot_trenches(ax, color=trench_color, **trench_plot_kwargs)
         return ax
 
     def get_topological_plate_boundaries(

@@ -148,6 +148,7 @@ class PygmtPlotEngine(PlotEngine):
                 data=line_gdf.geometry,
                 pen=pen,
                 transparency=0,
+                label=label,
                 **kwargs,
             )
 
