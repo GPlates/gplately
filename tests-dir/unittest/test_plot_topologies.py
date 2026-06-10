@@ -84,16 +84,6 @@ def plot_with_cartopy(show=True):
         trench_kwargs={"color": "blue", "linewidth": 1.0},
     )
 
-    # gplot.plot_all_topological_sections(ax)
-    # gplot.plot_misc_transforms(ax=ax, color="red", linewidth=0.5)
-    # gplot.misc_transforms
-    # gplot.get_misc_transforms()
-    # gplot.get_transforms()
-    # gplot.plot_all_topological_sections(ax, color="0.5", linewidth=0.5)
-    # gplot.plot_ridges(ax, color="red")
-    # gplot.plot_transforms(ax, color="goldenrod")
-    # gplot.plot_subduction_teeth(ax, color="blue")
-
     ax.set_title(f"{age} Ma")
 
     if show:

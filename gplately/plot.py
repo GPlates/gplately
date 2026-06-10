@@ -245,25 +245,29 @@ class PlotTopologies(object):
         """
 
         self.trenches = []
-        """A list containing trench boundary sections of type `pygplates.FeatureType.gpml_subduction_zone`.
+        """A list of `pygplates.FeatureType.gpml_subduction_zone` features regardless of their subduction polarity.
+        Normally, this list equals `trench_left` + `trench_right` but it can be different if there are some trench features 
+        with undefined subduction polarity in the model.
         
         :type: iterable/list of `pygplates.Feature`_
         """
 
         self.trench_left = []
-        """A list containing left subduction boundary sections of type `pygplates.FeatureType.gpml_subduction_zone`.
+        """A list of `pygplates.FeatureType.gpml_subduction_zone` features whose subduction polarity is "left".
         
         :type: iterable/list of `pygplates.Feature`_
         """
 
         self.trench_right = []
-        """A list containing right subduction boundary sections of type pygplates.FeatureType.gpml_subduction_zone
+        """A list of `pygplates.FeatureType.gpml_subduction_zone` features whose subduction polarity is "right". 
 
         :type: iterable/list of `pygplates.Feature`_
         """
 
         self.other = []
-        """A list containing other geological features like unclassified features, extended continental crusts,
+        """A list of miscellaneous topological plate boundary sections, 
+        which are not subduction zones or mid-ocean ridges (ridge/transform). 
+        This can include features like unclassified features, extended continental crusts,
         continental rifts, faults, orogenic belts, fracture zones, inferred paleo boundaries, terrane
         boundaries and passive continental boundaries.
         
@@ -577,6 +581,9 @@ class PlotTopologies(object):
 
             elif topol.get_feature_type() == pygplates.FeatureType.gpml_transform:  # type: ignore
                 self._transforms.append(topol)
+                # remove transform features from 'other' since 'other' is supposed to contain features that
+                # are not subduction zones or mid-ocean ridges(ridge/transform)
+                self.other.remove(topol)
 
             elif (
                 topol.get_feature_type()
@@ -612,82 +619,6 @@ class PlotTopologies(object):
                 anchor_plate_id=self._anchor_plate_id,
             )
 
-    # subduction teeth
-    def _tessellate_triangles(
-        self, features, tesselation_radians, triangle_base_length, triangle_aspect=1.0
-    ):
-        """Places subduction teeth along subduction boundary line segments within a MultiLineString shapefile.
-
-        Parameters
-        ----------
-        shapefilename  : str
-            Path to shapefile containing the subduction boundary features
-
-        tesselation_radians : float
-            Parametrises subduction teeth density. Triangles are generated only along line segments with distances
-            that exceed the given threshold tessellation_radians.
-
-        triangle_base_length : float
-            Length of teeth triangle base
-
-        triangle_aspect : float, default=1.0
-            Aspect ratio of teeth triangles. Ratio is 1.0 by default.
-
-        Returns
-        -------
-        X_points : (n,3) array
-            X points that define the teeth triangles
-        Y_points : (n,3) array
-            Y points that define the teeth triangles
-        """
-
-        tesselation_degrees = np.degrees(tesselation_radians)
-        triangle_pointsX = []
-        triangle_pointsY = []
-
-        date_line_wrapper = pygplates.DateLineWrapper()  # type: ignore
-
-        for feature in features:
-            cum_distance = 0.0
-
-            for geometry in feature.get_geometries():
-                wrapped_lines = date_line_wrapper.wrap(geometry)
-                for line in wrapped_lines:
-                    pts = np.array(
-                        [
-                            (p.get_longitude(), p.get_latitude())
-                            for p in line.get_points()
-                        ]
-                    )
-
-                    for p in range(0, len(pts) - 1):
-                        A = pts[p]
-                        B = pts[p + 1]
-
-                        AB_dist = B - A
-                        AB_norm = AB_dist / np.hypot(*AB_dist)
-                        cum_distance += np.hypot(*AB_dist)
-
-                        # create a new triangle if cumulative distance is exceeded.
-                        if cum_distance >= tesselation_degrees:
-                            C = A + triangle_base_length * AB_norm
-
-                            # find normal vector
-                            AD_dist = np.array([AB_norm[1], -AB_norm[0]])
-                            AD_norm = AD_dist / np.linalg.norm(AD_dist)
-
-                            C0 = A + 0.5 * triangle_base_length * AB_norm
-
-                            # project point along normal vector
-                            D = C0 + triangle_base_length * triangle_aspect * AD_norm
-
-                            triangle_pointsX.append([A[0], C[0], D[0]])
-                            triangle_pointsY.append([A[1], C[1], D[1]])
-
-                            cum_distance = 0.0
-
-        return np.array(triangle_pointsX), np.array(triangle_pointsY)
-
     @validate_reconstruction_time
     def get_feature(
         self,
@@ -718,7 +649,11 @@ class PlotTopologies(object):
 
         if not feature:
             raise ValueError(
-                "No feature(s) to convert. Make sure the `feature` parameter contains feature(s)."
+                "No feature to convert. Make sure the `feature` parameter contains feature(s)."
+            )
+        if not validate_reconstruction_time:
+            logger.debug(
+                "The 'validate_reconstruction_time' parameter is set to False. The reconstruction time is not validated."
             )
         shp = shapelify_features(
             feature,
@@ -1760,19 +1695,17 @@ class PlotTopologies(object):
         )
 
     @validate_reconstruction_time
-    @append_docstring(GET_DATE_DOCSTRING.format("topological sections"))
+    @append_docstring(GET_DATE_DOCSTRING.format("all topological sections"))
     def get_all_topological_sections(
         self,
         central_meridian=0.0,
         tessellate_degrees=1,
     ):
-        """Return the reconstructed topological features listed below as a `geopandas.GeoDataFrame`_ object.
+        """Return the reconstructed topological plate boundary sections listed below as a `geopandas.GeoDataFrame`_ object.
 
-        - ridge and transform boundary
-        - subduction boundary
-        - left subduction boundary
-        - right subduction boundary
-        - other boundary that are not subduction zones or mid-ocean ridges (ridge/transform)
+        - ridges and transforms
+        - subduction zones (trenches)
+        - other miscellaneous boundary sections that are neither subduction zones nor mid-ocean ridges (ridge/transform)
         """
 
         # get plate IDs and feature types to add to geodataframe
@@ -1783,8 +1716,7 @@ class PlotTopologies(object):
         for topo in [
             *self.ridges,
             *self.trenches,
-            *self.trench_left,
-            *self.trench_right,
+            *self.transforms,
             *self.other,
         ]:
             converted = shapelify_features(
@@ -1901,10 +1833,11 @@ class PlotTopologies(object):
         self.plot_feature(
             ax,
             self.other,
-            feature_name="other topological boundary sections",
+            feature_name="other miscellaneous topological boundary sections",
             color=other_color,
             **other_plot_kwargs,
         )
+
         ridge_color = ridge_kwargs.pop("color", None)
         if ridge_color is None:
             ridge_color = ridge_kwargs.pop("edgecolor", None)
@@ -1913,6 +1846,7 @@ class PlotTopologies(object):
         ridge_plot_kwargs = dict(shared_kwargs)
         ridge_plot_kwargs.update(ridge_kwargs)
         self.plot_ridges(ax, color=ridge_color, **ridge_plot_kwargs)
+
         transform_color = transform_kwargs.pop("color", None)
         if transform_color is None:
             transform_color = transform_kwargs.pop("edgecolor", None)
@@ -1921,6 +1855,7 @@ class PlotTopologies(object):
         transform_plot_kwargs = dict(shared_kwargs)
         transform_plot_kwargs.update(transform_kwargs)
         self.plot_transforms(ax, color=transform_color, **transform_plot_kwargs)
+
         trench_color = trench_kwargs.pop("color", None)
         if trench_color is None:
             trench_color = trench_kwargs.pop("edgecolor", None)
@@ -1944,7 +1879,7 @@ class PlotTopologies(object):
     def get_topological_plate_boundaries(
         self, central_meridian=0.0, tessellate_degrees=1
     ):
-        """Return the reconstructed "topological plate boundaries" lines as a `geopandas.GeoDataFrame`_ object."""
+        """Return the reconstructed topological plate boundaries(polygons) as a `geopandas.GeoDataFrame`_ object."""
         return self.get_feature(
             self._topological_plate_boundaries,
             central_meridian=central_meridian,
@@ -1954,7 +1889,7 @@ class PlotTopologies(object):
     @validate_topology_availability("topological plate boundaries")
     @append_docstring(PLOT_DOCSTRING.format("topological plate boundaries"))
     def plot_topological_plate_boundaries(self, ax, color="black", **kwargs):
-        """Plot the topological plate boundaries."""
+        """Plot the topological plate boundaries(polygons)."""
         return self.plot_feature(
             ax,
             self._topological_plate_boundaries,
@@ -2000,3 +1935,7 @@ class PlotTopologies(object):
     @append_docstring(deprecated._plot_subduction_teeth_deprecated.__doc__ or "")
     def _plot_subduction_teeth_deprecated(self, ax, spacing=0.1, size=2.0, aspect=1, color="black", **kwargs): # fmt: skip
         return deprecated._plot_subduction_teeth_deprecated(self, ax, spacing=spacing, size=size, aspect=aspect, color=color, **kwargs) # fmt: skip
+
+    @append_docstring(deprecated._tessellate_triangles_impl.__doc__ or "")
+    def _tessellate_triangles(self, features, tesselation_radians, triangle_base_length, triangle_aspect=1.0): # fmt: skip
+        return deprecated._tessellate_triangles_impl(self, features, tesselation_radians, triangle_base_length, triangle_aspect) # fmt: skip

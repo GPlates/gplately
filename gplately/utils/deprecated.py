@@ -238,3 +238,78 @@ def _plot_subduction_teeth_deprecated(
         teeth.append(shp)
 
     return ax.add_geometries(teeth, crs=self.base_projection, color=color, **kwargs)
+
+
+# subduction teeth
+# PlotTopologies._tessellate_triangles()
+def _tessellate_triangles_impl(
+    self, features, tesselation_radians, triangle_base_length, triangle_aspect=1.0
+):
+    """Places subduction teeth along subduction boundary line segments within a MultiLineString shapefile.
+
+    Parameters
+    ----------
+    shapefilename  : str
+        Path to shapefile containing the subduction boundary features
+
+    tesselation_radians : float
+        Parametrises subduction teeth density. Triangles are generated only along line segments with distances
+        that exceed the given threshold tessellation_radians.
+
+    triangle_base_length : float
+        Length of teeth triangle base
+
+    triangle_aspect : float, default=1.0
+        Aspect ratio of teeth triangles. Ratio is 1.0 by default.
+
+    Returns
+    -------
+    X_points : (n,3) array
+        X points that define the teeth triangles
+    Y_points : (n,3) array
+        Y points that define the teeth triangles
+    """
+
+    tesselation_degrees = np.degrees(tesselation_radians)
+    triangle_pointsX = []
+    triangle_pointsY = []
+
+    date_line_wrapper = pygplates.DateLineWrapper()  # type: ignore
+
+    for feature in features:
+        cum_distance = 0.0
+
+        for geometry in feature.get_geometries():
+            wrapped_lines = date_line_wrapper.wrap(geometry)
+            for line in wrapped_lines:
+                pts = np.array(
+                    [(p.get_longitude(), p.get_latitude()) for p in line.get_points()]
+                )
+
+                for p in range(0, len(pts) - 1):
+                    A = pts[p]
+                    B = pts[p + 1]
+
+                    AB_dist = B - A
+                    AB_norm = AB_dist / np.hypot(*AB_dist)
+                    cum_distance += np.hypot(*AB_dist)
+
+                    # create a new triangle if cumulative distance is exceeded.
+                    if cum_distance >= tesselation_degrees:
+                        C = A + triangle_base_length * AB_norm
+
+                        # find normal vector
+                        AD_dist = np.array([AB_norm[1], -AB_norm[0]])
+                        AD_norm = AD_dist / np.linalg.norm(AD_dist)
+
+                        C0 = A + 0.5 * triangle_base_length * AB_norm
+
+                        # project point along normal vector
+                        D = C0 + triangle_base_length * triangle_aspect * AD_norm
+
+                        triangle_pointsX.append([A[0], C[0], D[0]])
+                        triangle_pointsY.append([A[1], C[1], D[1]])
+
+                        cum_distance = 0.0
+
+    return np.array(triangle_pointsX), np.array(triangle_pointsY)
