@@ -274,6 +274,24 @@ class PlotTopologies(object):
         self._ridges = []
         self._transforms = []
 
+        # miscellaneous boundaries
+        self.continental_rifts = []
+        self.faults = []
+        self.fracture_zones = []
+        self.inferred_paleo_boundaries = []
+        self.terrane_boundaries = []
+        self.transitional_crusts = []
+        self.orogenic_belts = []
+        self.sutures = []
+        self.continental_crusts = []
+        self.extended_continental_crusts = []
+        self.passive_continental_boundaries = []
+        self.slab_edges = []
+        self.unclassified_features = []
+
+        self._ridges_do_not_use_for_now = None
+        self._transforms_do_not_use_for_now = None
+
         self._plot_engine = plot_engine
 
         if anchor_plate_id is None:
@@ -283,6 +301,7 @@ class PlotTopologies(object):
             self._anchor_plate_id = self._check_anchor_plate_id(anchor_plate_id)
 
         # Note: This calls 'update_time()' which reconstructs our features and topologies.
+        self._time = None
         self.time = time
 
     def __reduce__(self):
@@ -409,9 +428,7 @@ class PlotTopologies(object):
         if new_time_f < 0:
             raise ValueError(f"The new 'time' ({new_time}) must be greater than 0.")
 
-        if getattr(self, "_time", None) is None or not math.isclose(
-            new_time_f, self._time
-        ):
+        if self._time is None or not math.isclose(new_time_f, self._time):
             self._time = new_time_f
             self._update_time()
         else:
@@ -504,23 +521,6 @@ class PlotTopologies(object):
             # because the Mid-ocean ridges(and transforms) should not contain lines from topological networks
             resolve_topology_types=pygplates.ResolveTopologyType.boundary,  # type: ignore
         )
-
-        # miscellaneous boundaries
-        self.continental_rifts = []
-        self.faults = []
-        self.fracture_zones = []
-        self.inferred_paleo_boundaries = []
-        self.terrane_boundaries = []
-        self.transitional_crusts = []
-        self.orogenic_belts = []
-        self.sutures = []
-        self.continental_crusts = []
-        self.extended_continental_crusts = []
-        self.passive_continental_boundaries = []
-        self.slab_edges = []
-        self.unclassified_features = []
-
-        self._transforms = []
 
         for topol in self.other:
             if topol.get_feature_type() == pygplates.FeatureType.gpml_continental_rift:  # type: ignore
@@ -858,18 +858,9 @@ class PlotTopologies(object):
 
         .. note::
 
-            Plotting only ridges (or only transforms / trenches) will leave visible gaps along
-            the "other connection" segments that join the different boundary types.  To produce
-            a gap-free topology map, first draw :meth:`get_all_topological_sections` as a
-            continuous backbone in a neutral colour, then layer the styled boundary types on
-            top::
-
-                gdf_backbone = gplot.get_all_topological_sections()
-                gdf_ridges   = gplot.get_ridges()
-                gdf_trenches = gplot.get_trenches()
-
-            Alternatively, use the convenience helper :meth:`plot_topology` which handles this
-            ordering automatically.
+            This function only returns the reconstructed mid-ocean ridges as polylines.
+            If you need to plot gap-free topological plate boundaries, see :meth:`plot_all_topological_sections`,
+            which allows you to plot all topological sections with different styles.
         """
         warnings.warn(
             "The 'get_ridges' function has been changed since GPlately 1.3.0. "
@@ -895,18 +886,9 @@ class PlotTopologies(object):
 
         .. note::
 
-            Plotting only ridges (or only transforms / trenches) will leave visible gaps along
-            the "other connection" segments that join the different boundary types.  To produce
-            a gap-free topology map, first draw :meth:`plot_all_topological_sections` as a
-            continuous backbone in a neutral colour, then layer the styled boundary types on
-            top::
-
-                gplot.plot_all_topological_sections(ax, color="grey", linewidth=0.5)
-                gplot.plot_ridges(ax, color="red")
-                gplot.plot_trenches(ax, color="black")
-
-            Alternatively, use the convenience helper :meth:`plot_topology` which handles this
-            ordering automatically.
+            This function only plots the reconstructed ridges as polylines.
+            If you need to plot gap-free topological plate boundaries, see :meth:`plot_all_topological_sections`,
+            which allows you to plot all topological sections with different styles.
         """
 
         warnings.warn(
@@ -935,18 +917,9 @@ class PlotTopologies(object):
 
         .. note::
 
-            Plotting only trenches (or only ridges / transforms) will leave visible gaps along
-            the "other connection" segments that join the different boundary types.  To produce
-            a gap-free topology map, first draw :meth:`get_all_topological_sections` as a
-            continuous backbone in a neutral colour, then layer the styled boundary types on
-            top::
-
-                gdf_backbone = gplot.get_all_topological_sections()
-                gdf_ridges   = gplot.get_ridges()
-                gdf_trenches = gplot.get_trenches()
-
-            Alternatively, use the convenience helper :meth:`plot_topology` which handles this
-            ordering automatically.
+            This function only returns the reconstructed trenches as polylines.
+            If you need to plot gap-free topological plate boundaries, see :meth:`plot_all_topological_sections`,
+            which allows you to plot all topological sections with different styles.
         """
         return self.get_feature(
             self.trenches,
@@ -961,18 +934,9 @@ class PlotTopologies(object):
 
         .. note::
 
-            Plotting only trenches (or only ridges / transforms) will leave visible gaps along
-            the "other connection" segments that join the different boundary types.  To produce
-            a gap-free topology map, first draw :meth:`plot_all_topological_sections` as a
-            continuous backbone in a neutral colour, then layer the styled boundary types on
-            top::
-
-                gplot.plot_all_topological_sections(ax, color="grey", linewidth=0.5)
-                gplot.plot_ridges(ax, color="red")
-                gplot.plot_trenches(ax, color="black")
-
-            Alternatively, use the convenience helper :meth:`plot_topology` which handles this
-            ordering automatically.
+            This function only plots the reconstructed trenches as polylines.
+            If you need to plot gap-free topological plate boundaries, see :meth:`plot_all_topological_sections`,
+            which allows you to plot all topological sections with different styles.
         """
         return self.plot_feature(
             ax,
@@ -1647,18 +1611,9 @@ class PlotTopologies(object):
 
         .. note::
 
-            Plotting only transforms (or only ridges / trenches) will leave visible gaps along
-            the "other connection" segments that join the different boundary types.  To produce
-            a gap-free topology map, first draw :meth:`get_all_topological_sections` as a
-            continuous backbone in a neutral colour, then layer the styled boundary types on
-            top::
-
-                gdf_backbone   = gplot.get_all_topological_sections()
-                gdf_transforms = gplot.get_transforms()
-                gdf_trenches   = gplot.get_trenches()
-
-            Alternatively, use the convenience helper :meth:`plot_topology` which handles this
-            ordering automatically.
+            This function only returns the reconstructed transforms as polylines.
+            If you need to plot gap-free topological plate boundaries, see :meth:`plot_all_topological_sections`,
+            which allows you to plot all topological sections with different styles.
         """
         warnings.warn(
             "The 'get_transforms' function has been changed since GPlately 1.3.0. "
@@ -1683,18 +1638,9 @@ class PlotTopologies(object):
 
         .. note::
 
-            Plotting only transforms (or only ridges / trenches) will leave visible gaps along
-            the "other connection" segments that join the different boundary types.  To produce
-            a gap-free topology map, first draw :meth:`plot_all_topological_sections` as a
-            continuous backbone in a neutral colour, then layer the styled boundary types on
-            top::
-
-                gplot.plot_all_topological_sections(ax, color="grey", linewidth=0.5)
-                gplot.plot_ridges(ax, color="red")
-                gplot.plot_trenches(ax, color="black")
-
-            Alternatively, use the convenience helper :meth:`plot_topology` which handles this
-            ordering automatically.
+            This function only plots the reconstructed transforms as polylines.
+            If you need to plot gap-free topological plate boundaries, see :meth:`plot_all_topological_sections`,
+            which allows you to plot all topological sections with different styles.
         """
 
         warnings.warn(
@@ -1877,124 +1823,120 @@ class PlotTopologies(object):
         return gdf
 
     @validate_topology_availability("all topological sections")
-    @append_docstring(PLOT_DOCSTRING.format("topologies"))
-    def plot_all_topological_sections(self, ax, color="black", **kwargs):
-        """Plot the reconstructed topological features listed below on a map.
-
-        - ridge and transform boundary
-        - subduction boundary
-        - left subduction boundary
-        - right subduction boundary
-        - other boundary that are not subduction zones or mid-ocean ridges (ridge/transform)
-        """
-
-        return self._plot_feature(
-            ax,
-            self.get_all_topological_sections,
-            color=color,
-            **kwargs,
-        )
-
-    @validate_reconstruction_time
-    def plot_topology(
+    def plot_all_topological_sections(
         self,
         ax,
-        backbone_kwargs=None,
+        color="black",
+        plot_subduction_teeth=False,
         ridge_kwargs=None,
-        transform_kwargs=False,
+        transform_kwargs=None,
         trench_kwargs=None,
+        other_kwargs=None,
+        **kwargs,
     ):
-        """Plot a gap-free topology map by layering all boundary types in the correct order.
+        """Plot the reconstructed topological boundary sections(polylines) on a map.
 
-        Naively plotting individual boundary types (:meth:`plot_ridges`,
-        :meth:`plot_transforms`, :meth:`plot_trenches`) leaves visible gaps along the
-        "other connection" segments that join the styled boundary types.  This helper
-        eliminates those gaps by first rendering a continuous backbone of all topological
-        sections in a neutral colour and then layering the individually styled boundaries
-        on top.
+        This function draws gap-free topological plate boundaries by layering the
+        topological sections in the following order:
 
-        For each layer, pass a :class:`dict` of keyword arguments to customise the style,
-        pass ``None`` to draw that layer with its built-in default style, or pass
-        ``False`` to skip that layer entirely.
+        1. Miscellaneous topological boundary sections that are neither subduction zones nor
+           mid-ocean ridges
+        2. Ridges (gpml:MidOceanRidge)
+        3. Transforms (gpml:Transform)
+        4. Trenches (gpml:SubductionZone)
+        5. Optional subduction teeth when ``plot_subduction_teeth=True``
 
         Parameters
         ----------
         ax :
             Cartopy GeoAxes or PyGMT Figure object to plot on.
-        backbone_kwargs : dict, None, or False, optional
-            Keyword arguments forwarded to :meth:`plot_all_topological_sections` for the
-            continuous backbone layer (drawn first).  ``None`` uses the default style
-            ``{"color": "grey", "linewidth": 0.5}``.  ``False`` omits the backbone.
-            Default is ``None``.
-        ridge_kwargs : dict, None, or False, optional
-            Keyword arguments forwarded to :meth:`plot_ridges`.  ``None`` uses the
-            default style ``{"color": "red"}``.  ``False`` omits ridges.
-            Default is ``None``.
-        transform_kwargs : dict, None, or False, optional
-            Keyword arguments forwarded to :meth:`plot_transforms`.  ``None`` uses the
-            default style ``{"color": "green"}``.  ``False`` omits transforms.
-            Default is ``False`` (transforms are not plotted separately by default).
-        trench_kwargs : dict, None, or False, optional
-            Keyword arguments forwarded to :meth:`plot_trenches`.  ``None`` uses the
-            default style ``{"color": "black"}``.  ``False`` omits trenches.
-            Default is ``None``.
+        color : str or list, default="black"
+            Default colour used for any layer that does not specify its own ``color`` or
+            ``edgecolor``.
+        plot_subduction_teeth : bool, default=False
+            If ``True``, also plot subduction teeth using the trench layer styling.
+        ridge_kwargs, transform_kwargs, trench_kwargs, other_kwargs : dict or None, optional
+            Layer-specific keyword arguments forwarded to the corresponding plotting call.
+            If a layer-specific dict provides ``color`` or ``edgecolor``, it overrides the
+            shared ``color`` argument for that layer. Keys in these dictionaries override
+            keys passed through ``**kwargs``.
+        **kwargs :
+            Shared keyword arguments forwarded to each layer. Layer-specific dictionaries
+            take precedence over overlapping keys in this shared set.
+
+        Returns
+        -------
+        ax
+            The input axes/figure object, for convenience and chaining.
 
         Examples
         --------
-        Plot with default styles (light-grey backbone + red ridges + black trenches):
 
         .. code-block:: python
 
-            gplot.plot_topology(ax)
+            other_kwargs = {"color": "lightgrey", "linewidth": 0.8}
+            ridge_kwargs = {"color": "red", "linewidth": 1.0}
+            transform_kwargs = {"color": "green", "linewidth": 1.0}
+            trench_kwargs = {"color": "blue", "linewidth": 1.0}
 
-        Customise every layer:
-
-        .. code-block:: python
-
-            gplot.plot_topology(
+            gplot.plot_all_topological_sections(
                 ax,
-                backbone_kwargs={"color": "lightgrey", "linewidth": 0.5},
-                ridge_kwargs={"color": "red", "linewidth": 1},
-                transform_kwargs={"color": "green"},
-                trench_kwargs={"color": "blue", "linewidth": 1.5},
-            )
-
-        Draw only the backbone and trenches (omit ridges and transforms):
-
-        .. code-block:: python
-
-            gplot.plot_topology(
-                ax,
-                ridge_kwargs=False,
-                trench_kwargs={"color": "black"},
+                plot_subduction_teeth=True,
+                other_kwargs=other_kwargs,
+                ridge_kwargs=ridge_kwargs,
+                transform_kwargs=transform_kwargs,
+                trench_kwargs=trench_kwargs,
             )
         """
-        _default_backbone = {"color": "grey", "linewidth": 0.5}
-        _default_ridge = {"color": "red"}
-        _default_transform = {"color": "green"}
-        _default_trench = {"color": "black"}
+        ridge_kwargs = {} if ridge_kwargs is None else dict(ridge_kwargs)
+        transform_kwargs = {} if transform_kwargs is None else dict(transform_kwargs)
+        trench_kwargs = {} if trench_kwargs is None else dict(trench_kwargs)
+        other_kwargs = {} if other_kwargs is None else dict(other_kwargs)
+        shared_kwargs = dict(kwargs)
 
-        if backbone_kwargs is None:
-            backbone_kwargs = _default_backbone
-        if ridge_kwargs is None:
-            ridge_kwargs = _default_ridge
-        if transform_kwargs is None:
-            transform_kwargs = _default_transform
-        if trench_kwargs is None:
-            trench_kwargs = _default_trench
-
-        # Draw the continuous backbone first so that gaps between boundary types
-        # are filled with a uniform colour.
-        if backbone_kwargs is not False:
-            self.plot_all_topological_sections(ax, **backbone_kwargs)
-
-        # Layer the individually styled boundary types on top.
-        if ridge_kwargs is not False:
-            self.plot_ridges(ax, **ridge_kwargs)
-        if isinstance(transform_kwargs, dict):
-            self.plot_transforms(ax, **transform_kwargs)
-        if trench_kwargs is not False:
-            self.plot_trenches(ax, **trench_kwargs)
+        other_color = other_kwargs.pop("color", None)
+        if other_color is None:
+            other_color = other_kwargs.pop("edgecolor", None)
+        if other_color is None:
+            other_color = color
+        other_plot_kwargs = dict(shared_kwargs)
+        other_plot_kwargs.update(other_kwargs)
+        self.plot_feature(
+            ax,
+            self.other,
+            feature_name="other topological boundary sections",
+            color=other_color,
+            **other_plot_kwargs,
+        )
+        ridge_color = ridge_kwargs.pop("color", None)
+        if ridge_color is None:
+            ridge_color = ridge_kwargs.pop("edgecolor", None)
+        if ridge_color is None:
+            ridge_color = color
+        ridge_plot_kwargs = dict(shared_kwargs)
+        ridge_plot_kwargs.update(ridge_kwargs)
+        self.plot_ridges(ax, color=ridge_color, **ridge_plot_kwargs)
+        transform_color = transform_kwargs.pop("color", None)
+        if transform_color is None:
+            transform_color = transform_kwargs.pop("edgecolor", None)
+        if transform_color is None:
+            transform_color = color
+        transform_plot_kwargs = dict(shared_kwargs)
+        transform_plot_kwargs.update(transform_kwargs)
+        self.plot_transforms(ax, color=transform_color, **transform_plot_kwargs)
+        trench_color = trench_kwargs.pop("color", None)
+        if trench_color is None:
+            trench_color = trench_kwargs.pop("edgecolor", None)
+        if trench_color is None:
+            trench_color = color
+        trench_plot_kwargs = dict(shared_kwargs)
+        trench_plot_kwargs.update(trench_kwargs)
+        self.plot_trenches(ax, color=trench_color, **trench_plot_kwargs)
+        if plot_subduction_teeth:
+            trench_teeth_kwargs = dict(shared_kwargs)
+            trench_teeth_kwargs.update(trench_kwargs)
+            self.plot_subduction_teeth(ax, color=trench_color, **trench_teeth_kwargs)
+        return ax
 
     def get_topological_plate_boundaries(
         self, central_meridian=0.0, tessellate_degrees=1
@@ -2018,6 +1960,10 @@ class PlotTopologies(object):
             **kwargs,
         )
 
+    #
+    # The functions below are deprecated and will be removed in the future.
+    # Please do not use them in new code and check your workflow if you are using them in existing code.
+    #
     @property
     @append_docstring(deprecated._ridge_transforms_impl.__doc__ or "")
     def ridge_transforms(self):

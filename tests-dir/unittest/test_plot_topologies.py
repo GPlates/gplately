@@ -6,21 +6,17 @@
 import os
 import sys
 
+from gplately.mapping.cartopy_plot import _create_a_basic_cartopy_ax
+from gplately.auxiliary import get_gplot
+
 # pyright: reportMissingImports=false
 # pyright: reportMissingModuleSource=false
 
 os.environ["DISABLE_GPLATELY_DEV_WARNING"] = "true"
-import cartopy.crs as ccrs
 import matplotlib.pyplot as plt
-import numpy as np
 from common import MODEL_REPO_DIR, save_fig
-from plate_model_manager import (
-    PlateModel,
-    PlateModelManager,
-)
 
 import gplately
-from gplately import PlateReconstruction, PlotTopologies
 
 print(gplately.__file__)
 
@@ -28,40 +24,35 @@ MODEL_NAME = "Muller2025"
 
 
 def main(show=True):
-    try:
-        model = PlateModelManager().get_model(MODEL_NAME, data_dir=MODEL_REPO_DIR)
-    except:
-        model = PlateModel(MODEL_NAME, data_dir=MODEL_REPO_DIR, readonly=True)
-
-    if not model:
-        return
-
     age = 55
+    gplot = get_gplot(MODEL_NAME, model_repo_dir=MODEL_REPO_DIR, time=55)
+    ax = _create_a_basic_cartopy_ax()
 
-    test_model = PlateReconstruction(
-        model.get_rotation_model(),
-        topology_features=model.get_layer("Topologies"),
-        static_polygons=model.get_layer("StaticPolygons"),
-        plate_model=model,
+    other_kwargs = {"color": "lightgrey", "linewidth": 0.8}
+    ridge_kwargs = {"color": "red", "linewidth": 1.0}
+    transform_kwargs = {"color": "green", "linewidth": 1.0}
+    trench_kwargs = {"color": "blue", "linewidth": 1.0}
+
+    gplot.plot_all_topological_sections(
+        ax,
+        plot_subduction_teeth=True,
+        other_kwargs=other_kwargs,
+        ridge_kwargs=ridge_kwargs,
+        transform_kwargs=transform_kwargs,
+        trench_kwargs=trench_kwargs,
     )
-    gplot = PlotTopologies(
-        test_model,
-        coastlines=model.get_layer("Coastlines"),
-        COBs=model.get_layer("COBs", return_none_if_not_exist=True),
-        continents=model.get_layer("ContinentalPolygons"),
-        time=age,
-    )
 
-    fig = plt.figure(figsize=(10, 5), dpi=96)
-    ax = fig.add_subplot(111, projection=ccrs.Robinson(central_longitude=180))
-    ax.set_global()
+    # gplot.plot_all_topological_sections(ax)
+    # gplot.plot_misc_transforms(ax=ax, color="red", linewidth=0.5)
+    # gplot.misc_transforms
+    # gplot.get_misc_transforms()
+    # gplot.get_transforms()
+    # gplot.plot_all_topological_sections(ax, color="0.5", linewidth=0.5)
+    # gplot.plot_ridges(ax, color="red")
+    # gplot.plot_transforms(ax, color="goldenrod")
+    # gplot.plot_subduction_teeth(ax, color="blue")
 
-    gplot.plot_misc_transforms(ax=ax, color="red", linewidth=0.5)
-    gplot.misc_transforms
-    gplot.get_misc_transforms()
-    gplot.get_transforms()
-
-    plt.title(f"{age} Ma")
+    ax.set_title(f"{age} Ma")
 
     if show:
         # LOOK HERE! 👀👀 👇👇
