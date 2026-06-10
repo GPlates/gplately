@@ -17,7 +17,7 @@
 import logging.config
 import os
 
-import yaml
+import yaml  # pyright: ignore[reportMissingModuleSource]
 
 
 # configurate the logging utility

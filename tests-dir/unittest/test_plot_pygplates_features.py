@@ -93,13 +93,27 @@ def test_plot_pygplates_features_pygmt(show):
     pygmt_plot_engine = gplately.PygmtPlotEngine()
     pygmt_plot_engine.plot_pygplates_features(
         fig,
-        test_features,
-        edgecolor="blue",
+        [feature1, feature4],
+        edgecolor="purple",
         facecolor="none",
-        gmtlabel="Lines and Polygons",
         pointlabel="Points",
     )
-    fig.legend(position="jBL+o-1.1c/-.55c", box="+gwhite+p0.25p")
+    pygmt_plot_engine.plot_pygplates_features(
+        fig,
+        [feature2],
+        edgecolor="red",
+        facecolor="none",
+        gmtlabel="Line",
+    )
+    pygmt_plot_engine.plot_pygplates_features(
+        fig,
+        [feature3],
+        edgecolor="blue",
+        facecolor="lightgreen",
+        gmtlabel="Polygon",
+    )
+    with pygmt.config(FONT_ANNOT_PRIMARY="6p"):
+        fig.legend(position="jBL+o-1.1c/-.55c+w1.5c", box="+gwhite+p0.25p")
 
     if show:
         fig.show(crop="+m0.4c")
@@ -109,13 +123,19 @@ def test_plot_pygplates_features_pygmt(show):
         print(f"Done! The {output_file} has been saved.")
 
 
-def main(show=True):
-    test_plot_pygplates_features_cartopy(show)
-    test_plot_pygplates_features_pygmt(show)
+def main(show=True, use_pygmt=False):
+    if use_pygmt:
+        test_plot_pygplates_features_pygmt(show)
+    else:
+        test_plot_pygplates_features_cartopy(show)
 
 
 if __name__ == "__main__":
-    if len(sys.argv) == 2 and sys.argv[1] == "save":
-        main(show=False)
-    else:
-        main(show=True)
+    show = True
+    use_pygmt = False
+    if "save" in sys.argv:
+        show = False
+    if "pygmt" in sys.argv:
+        use_pygmt = True
+
+    main(show=show, use_pygmt=use_pygmt)

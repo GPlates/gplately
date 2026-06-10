@@ -18,6 +18,8 @@
 import logging
 import re
 
+# pyright: reportMissingImports=false
+# pyright: reportMissingModuleSource=false
 import cartopy.crs as ccrs
 import geopandas as gpd
 import matplotlib.pyplot as plt
@@ -29,6 +31,36 @@ from shapely.ops import linemerge
 from .io_utils import get_geometries as _get_geometries
 
 logger = logging.getLogger("gplately")
+
+PLOT_DOCSTRING = """
+             
+Parameters
+----------
+ax :  
+    Cartopy ax or pygmt figure object
+
+color : str, default='black'
+    The edge colour of the geometries.
+
+**kwargs :
+    `Matplotlib keyword arguments <https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html>`__ or pygmt arguments
+        
+"""
+
+GET_DATE_DOCSTRING = """
+
+Parameters
+----------
+central_meridian : float, default=0.0
+    The central meridian of the map. This will affect the dateline wrapping.
+tessellate_degrees : float or None, default=1.0
+    If provided, geometries will be tessellated to this resolution prior to wrapping.
+
+Returns
+-------
+`geopandas.GeoDataFrame`_
+    A `geopandas.GeoDataFrame`_ object containing the reconstructed **{0}** geometries. The geometry column name is "geometry".
+"""
 
 
 def _tessellate_triangles(

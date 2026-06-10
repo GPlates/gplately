@@ -65,5 +65,5 @@ if __name__ == "__main__":
 
     fig.show(width=1200)
     output_file = "./output/test-pygmt-plot.pdf"
-    # fig.savefig(output_file)
+    fig.savefig(output_file)
     print(f"The figure has been saved to: {output_file}.")

@@ -281,21 +281,16 @@ class CartopyPlotEngine(PlotEngine):
         )
 
 
-def _plot_feature_collection(
-    feature_collection: pygplates.FeatureCollection,  # type: ignore
-    title: str = "Untitled Feature Collection",
-    ax=None,
-    figsize=(8, 4),
-    projection=ccrs.Robinson(central_longitude=180),
+def _create_a_basic_cartopy_ax(
+    ax=None, figsize=(8, 4), projection=ccrs.Robinson(central_longitude=180)
 ):
-    """Helper function to plot a pygplates FeatureCollection using Cartopy.
+    """Helper function to create a basic Cartopy GeoAxes with gridlines and labels.
     Not part of the public API.
     Mostly this function is for testing and debugging purposes,
-    and to provide a simple example of how to plot pygplates features with Cartopy.
+    and to provide a simple example of how to set up a Cartopy map.
     """
     import cartopy.crs as ccrs  # type: ignore
     import matplotlib.pyplot as plt  # type: ignore
-    from gplately.geometry import pygplates_to_shapely
     from cartopy.mpl.ticker import LongitudeFormatter, LatitudeFormatter
     import matplotlib.ticker as mticker
 
@@ -339,6 +334,23 @@ def _plot_feature_collection(
     # Label style
     gl.xlabel_style = {"size": 10}
     gl.ylabel_style = {"size": 10}
+
+    return ax
+
+
+def _plot_feature_collection(
+    feature_collection: pygplates.FeatureCollection,  # type: ignore
+    title: str = "Untitled Feature Collection",
+    ax=None,
+    figsize=(8, 4),
+    projection=ccrs.Robinson(central_longitude=180),
+):
+    """Helper function to plot a pygplates FeatureCollection using Cartopy.
+    Not part of the public API.
+    Mostly this function is for testing and debugging purposes,
+    and to provide a simple example of how to plot pygplates features with Cartopy.
+    """
+    ax = _create_a_basic_cartopy_ax(ax=ax, figsize=figsize, projection=projection)
 
     cartopy_plot_engine = CartopyPlotEngine()
     cartopy_plot_engine.plot_pygplates_features(ax, feature_collection)

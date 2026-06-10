@@ -27,9 +27,15 @@ If `GeoPandas` is not found on the system, input files are read with
 
 """
 
+# pyright: reportMissingImports=false
+# pyright: reportMissingModuleSource=false
+
+
 from shapely.geometry import shape
 from shapely.geometry.base import BaseGeometry
 
+gpd = None
+shpreader = None
 try:
     import geopandas as gpd
 
@@ -97,6 +103,11 @@ def _get_geometries_geopandas(filename, buffer=None):
             geoms = geoms.buffer(buffer)
         return geoms
 
+    if gpd is None:
+        raise ImportError(
+            "Geopandas is not available. Please install geopandas to read files with geopandas."
+        )
+
     if isinstance(filename, gpd.GeoDataFrame):
         return buffer_func(filename.geometry, buffer)
     if isinstance(filename, gpd.GeoSeries):
@@ -137,6 +148,11 @@ def _get_geometries_cartopy(filename, buffer=None):
             break
     except TypeError:
         pass
+
+    if shpreader is None:
+        raise ImportError(
+            "Shapefile reader is not available. Please install pyshp to read shapefiles without geopandas."
+        )
 
     with shpreader.Reader(filename) as reader:
         shape_records = reader.shapeRecords()
