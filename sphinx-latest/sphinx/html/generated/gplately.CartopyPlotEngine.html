@@ -125,7 +125,7 @@
 <tr class="row-even"><td><p><a class="reference internal" href="#gplately.CartopyPlotEngine.plot_geo_data_frame" title="gplately.CartopyPlotEngine.plot_geo_data_frame"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_geo_data_frame</span></code></a>(ax_or_fig, gdf, **kwargs)</p></td>
 <td><p>Use Cartopy to plot geometries in a GeoDataFrame object onto a map</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#gplately.CartopyPlotEngine.plot_grid" title="gplately.CartopyPlotEngine.plot_grid"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_grid</span></code></a>(ax_or_fig, grid[, projection, extent])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#gplately.CartopyPlotEngine.plot_grid" title="gplately.CartopyPlotEngine.plot_grid"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_grid</span></code></a>(ax_or_fig, grid[, projection, ...])</p></td>
 <td><p>Plot a grid onto a map using Cartopy</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#gplately.CartopyPlotEngine.plot_pygplates_features" title="gplately.CartopyPlotEngine.plot_pygplates_features"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_pygplates_features</span></code></a>(ax_or_fig, features, ...)</p></td>
@@ -152,7 +152,7 @@
 
 <dl class="py method">
 <dt class="sig sig-object py" id="gplately.CartopyPlotEngine.plot_grid">
-<span class="sig-name descname"><span class="pre">plot_grid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ax_or_fig</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">projection</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(-180,</span> <span class="pre">180,</span> <span class="pre">-90,</span> <span class="pre">90)</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/mapping/cartopy_plot.html#CartopyPlotEngine.plot_grid"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.CartopyPlotEngine.plot_grid" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">plot_grid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ax_or_fig</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">projection</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(-180,</span> <span class="pre">180,</span> <span class="pre">-90,</span> <span class="pre">90)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shading</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/mapping/cartopy_plot.html#CartopyPlotEngine.plot_grid"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.CartopyPlotEngine.plot_grid" title="Link to this definition"></a></dt>
 <dd><p>Plot a grid onto a map using Cartopy</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -161,8 +161,26 @@
 <li><p><strong>grid</strong> (<em>2D array-like</em>) – The grid data to be plotted</p></li>
 <li><p><strong>projection</strong> (<em>cartopy.crs.Projection</em>) – The projection to use for the grid</p></li>
 <li><p><strong>extent</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><em>tuple</em></a>) – The extent of the grid in the form (min_lon, max_lon, min_lat, max_lat)</p></li>
-<li><p><strong>**kwargs</strong> – Keyword arguments for plotting the grid. See Matplotlib’s <code class="docutils literal notranslate"><span class="pre">imshow()</span></code> keyword arguments
-<a class="reference external" href="https://matplotlib.org/3.5.1/api/_as_gen/matplotlib.axes.Axes.imshow.html">here</a>.</p></li>
+<li><p><strong>shading</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>xarray.DataArray</em><em>, </em><em>array-like</em><em>, or </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a><em>, </em><em>optional</em>) – <p>Apply illumination/hillshading to the plotted grid.</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">None</span></code> or <code class="docutils literal notranslate"><span class="pre">False</span></code> (default): no shading is applied.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">True</span></code>: derive hillshade from <code class="docutils literal notranslate"><span class="pre">grid</span></code> using default parameters.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">xarray.DataArray</span></code> or array-like: use this as the intensity grid
+for shading (for example, a topography raster).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">dict</span></code>: configure shading with keys:</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">intensity</span></code>: optional intensity grid (DataArray or array-like).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">scale</span></code>: hillshade scale (default <code class="docutils literal notranslate"><span class="pre">10.0</span></code>).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">azdeg</span></code>: light azimuth in degrees (default <code class="docutils literal notranslate"><span class="pre">165.0</span></code>).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">altdeg</span></code>: light altitude in degrees (default <code class="docutils literal notranslate"><span class="pre">45.0</span></code>).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">cmap</span></code>: colormap used to colorize <code class="docutils literal notranslate"><span class="pre">grid</span></code> before shading.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">vmin</span></code>/<code class="docutils literal notranslate"><span class="pre">vmax</span></code>: normalization bounds for the base colormap.</p></li>
+</ul>
+</li>
+</ul>
+<p>Any unknown keys in the dict raise a <code class="docutils literal notranslate"><span class="pre">ValueError</span></code>.</p>
+</p></li>
+<li><p><strong>**kwargs</strong> – Keyword arguments for plotting the grid which are the same as Matplotlib’s <code class="docutils literal notranslate"><span class="pre">imshow()</span></code> keyword arguments.</p></li>
 </ul>
 </dd>
 </dl>
