@@ -551,18 +551,14 @@ def write_netcdf_grid(
         cdf.createDimension("bnds", 2)
         cdf_lon = cdf.createVariable("lon", lon_grid.dtype, ("lon",), **data_kwds)
         cdf_lat = cdf.createVariable("lat", lat_grid.dtype, ("lat",), **data_kwds)
-        cdf_lon_bnds = cdf.createVariable("lon_bnds", "f8", ("lon", "bnds"))
-        cdf_lat_bnds = cdf.createVariable("lat_bnds", "f8", ("lat", "bnds"))
         cdf_lon[:] = lon_grid
         cdf_lat[:] = lat_grid
-        cdf_lon_bnds[:, :] = _compute_coordinate_bounds(lon_grid)
-        cdf_lat_bnds[:, :] = _compute_coordinate_bounds(lat_grid)
 
-        # Units for Geographic Grid type
         cdf_lon.units = "degrees_east"
         cdf_lon.standard_name = "lon"
         cdf_lon.bounds = "lon_bnds"
         cdf_lon.actual_range = [lon_grid[0], lon_grid[-1]]
+
         cdf_lat.units = "degrees_north"
         cdf_lat.standard_name = "lat"
         cdf_lat.bounds = "lat_bnds"
@@ -639,6 +635,21 @@ def write_netcdf_grid(
         # cdf_data.add_offset = 0.0
         cdf_data.grid_mapping = "crs"
         # cdf_data.set_auto_maskandscale(False)
+
+        #
+        # NOTE: Create the lon/lat bounds variables AFTER creating the z variable so that 'gmt grdinfo' reports correctly.
+        #
+        #       Otherwise it reports, for example, (x_min, x_max) = (0, 1) and (y_min, y_max) = (179.9, -179.9) instead of
+        #       (x_min, x_max) = (-180, 180) and (y_min, y_max) = (-90, 90) for a grid with 0.2 degree resolution.
+        #       Apparently GMT scans variables based on the order they were written to the binary file structure, so if
+        #       'z' is created before 'lon_bnds' then GMT processes 'z' first. And since 'lon_bnds' is a 2D variable
+        #       with a column dimension of 2, we don't want GMT to get confused and try to read it as a grid plane.
+        #
+        cdf_lon_bnds = cdf.createVariable("lon_bnds", "f8", ("lon", "bnds"))
+        cdf_lon_bnds[:, :] = _compute_coordinate_bounds(lon_grid)
+        #
+        cdf_lat_bnds = cdf.createVariable("lat_bnds", "f8", ("lat", "bnds"))
+        cdf_lat_bnds[:, :] = _compute_coordinate_bounds(lat_grid)
 
         # write data
         cdf_data[:, :] = grid
