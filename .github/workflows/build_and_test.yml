@@ -58,6 +58,14 @@ jobs:
         run: |
           pip install . --no-binary :all: --no-cache-dir --no-dependencies
 
+      - name: Set SSL cert path (Windows workaround)
+        # This is a workaround for SSL certificate issues on Windows runners.
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $certPath = python -c "import certifi; print(certifi.where())"
+          echo "SSL_CERT_FILE=$certPath" >> $env:GITHUB_ENV
+
       - name: Test with pytest
         run: |
           python -m pytest -vv tests-dir/pytestcases

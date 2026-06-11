@@ -23,12 +23,14 @@ import pygplates
 
 import cartopy.crs as ccrs
 from geopandas.geodataframe import GeoDataFrame
-
+import matplotlib.pyplot as plt
+import xarray as xr
 from ..grids import Raster
 
 from ..tools import EARTH_RADIUS
 from ..utils.plot_utils import plot_subduction_teeth
 from .plot_engine import PlotEngine
+from .hillshade import set_shade
 
 logger = logging.getLogger("gplately")
 
@@ -242,7 +244,13 @@ class CartopyPlotEngine(PlotEngine):
         )
 
     def plot_grid(
-        self, ax_or_fig, grid, projection=None, extent=(-180, 180, -90, 90), **kwargs
+        self,
+        ax_or_fig,
+        grid,
+        projection=None,
+        extent=(-180, 180, -90, 90),
+        shading=None,
+        **kwargs,
     ):
         """Plot a grid onto a map using Cartopy
 
@@ -256,21 +264,78 @@ class CartopyPlotEngine(PlotEngine):
             The projection to use for the grid
         extent : tuple
             The extent of the grid in the form (min_lon, max_lon, min_lat, max_lat)
+        shading : bool, xarray.DataArray, array-like, or dict, optional
+            Apply illumination/hillshading to the plotted grid.
+
+            - ``None`` or ``False`` (default): no shading is applied.
+            - ``True``: derive hillshade from ``grid`` using default parameters.
+            - ``xarray.DataArray`` or array-like: use this as the intensity grid
+              for shading (for example, a topography raster).
+            - ``dict``: configure shading with keys:
+
+              - ``intensity``: optional intensity grid (DataArray or array-like).
+              - ``scale``: hillshade scale (default ``10.0``).
+              - ``azdeg``: light azimuth in degrees (default ``165.0``).
+              - ``altdeg``: light altitude in degrees (default ``45.0``).
+              - ``cmap``: colormap used to colorize ``grid`` before shading.
+              - ``vmin``/``vmax``: normalization bounds for the base colormap.
+
+            Any unknown keys in the dict raise a ``ValueError``.
         **kwargs :
-            Keyword arguments for plotting the grid. See Matplotlib's ``imshow()`` keyword arguments
-            `here <https://matplotlib.org/3.5.1/api/_as_gen/matplotlib.axes.Axes.imshow.html>`__.
+            Keyword arguments for plotting the grid which are the same as Matplotlib's ``imshow()`` keyword arguments.
+
 
         """
         # Override matplotlib default origin ('upper')
         origin = kwargs.pop("origin", "lower")
 
         if isinstance(grid, Raster):
-            # extract extent and origin
             extent = grid.extent
             origin = grid.origin
             data = grid.data
         else:
             data = grid
+
+        if shading is not None and shading is not False:
+            cmap = kwargs.pop("cmap", "jet")
+            if isinstance(cmap, str):
+                cmap = getattr(plt, "get_cmap")(cmap)
+
+            shading_kwargs = {}
+            intensity = None
+            if isinstance(shading, dict):
+                shading_kwargs = dict(shading)
+                intensity = shading_kwargs.pop("intensity", None)
+
+                cmap = shading_kwargs.pop("cmap", cmap)
+                if isinstance(cmap, str):
+                    cmap = getattr(plt, "get_cmap")(cmap)
+
+                allowed = {"scale", "azdeg", "altdeg", "vmin", "vmax"}
+                unknown = set(shading_kwargs.keys()) - allowed
+                if unknown:
+                    unknown_keys = ", ".join(sorted(unknown))
+                    raise ValueError(
+                        f"Unknown shading option(s): {unknown_keys}. "
+                        "Allowed options are intensity, cmap, scale, azdeg, altdeg, vmin, vmax."
+                    )
+            elif isinstance(shading, xr.DataArray):
+                intensity = shading.data
+            elif shading is True:
+                intensity = None
+            elif hasattr(shading, "shape") and not isinstance(shading, str):
+                intensity = shading
+            else:
+                raise TypeError(
+                    "shading must be None, False, True, xarray.DataArray, array-like, or a dict of shading options."
+                )
+
+            data = set_shade(
+                data,
+                intensity=intensity,
+                cmap=cmap,
+                **shading_kwargs,
+            )
 
         return ax_or_fig.imshow(
             data,

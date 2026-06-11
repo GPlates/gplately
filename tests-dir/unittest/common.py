@@ -2,7 +2,12 @@ import logging
 import os
 import sys
 from pathlib import Path
+from urllib.request import urlretrieve
 
+# pyright: reportMissingImports=false
+# pyright: reportMissingModuleSource=false
+
+import xarray as xr
 import matplotlib.pyplot as plt
 
 OUTPUT_DIR = "output"
@@ -41,3 +46,23 @@ def get_test_local_code_flag():
 
 if get_test_local_code_flag():
     sys.path.insert(0, f"{os.path.dirname(os.path.realpath(__file__))}/../..")
+
+
+def _get_topo_raster():
+    data_dir = Path(__file__).resolve().parent / "unittest-data"
+    data_dir.mkdir(parents=True, exist_ok=True)
+    topo_file = data_dir / "topo15-3601x1801.nc"
+    topo_url = "https://repo.gplates.org/webdav/mchin/data/topo15-3601x1801.nc"
+
+    if not topo_file.exists():
+        print(f"Downloading {topo_file.name} ...")
+        urlretrieve(topo_url, topo_file)
+
+    try:
+        raster_xr = xr.open_dataarray(topo_file)
+    except ValueError:
+        # Fallback for NetCDF files with multiple variables.
+        dataset = xr.open_dataset(topo_file)
+        first_var = next(iter(dataset.data_vars))
+        raster_xr = dataset[first_var]
+    return raster_xr

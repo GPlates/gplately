@@ -299,7 +299,7 @@ class PygmtPlotEngine(PlotEngine):
             Additional keyword arguments.
         """
         from ..grids import Raster
-        import xarray as xr  # pyright: ignore[reportMissingImports]
+        import xarray as xr
 
         # we need to convert the grid data to xarray.DataArray for pygmt.grdimage().
         if isinstance(grid, Raster):
