@@ -266,6 +266,7 @@ class PygmtPlotEngine(PlotEngine):
         extent=(-180, 180, -90, 90),
         cmap="gmt/geo",
         nan_transparent=False,
+        shading=None,
         **kwargs,
     ):
         """Use PyGMT to plot a grid onto a map.
@@ -285,6 +286,15 @@ class PygmtPlotEngine(PlotEngine):
             A built-in GMT colormaps name or a CPT file path.
         nan_transparent : bool
             If True, NaN values in the grid will be plotted as transparent.
+        shading : bool, str, or grid-like, optional
+            Apply illumination/hillshading to the grid image. Accepted values are:
+
+            - ``True``: use default shading parameters (equivalent to GMT ``-I+d``).
+            - A string such as ``"+a315+ne0.6"`` to pass directly as the GMT ``-I``
+              option (azimuth and intensity specification).
+            - An ``xarray.DataArray`` or file path pointing to an illumination grid
+              computed externally (e.g. via :func:`pygmt.grdgradient`).
+            - ``None`` (default): no shading is applied.
         **kwargs :
             Additional keyword arguments.
         """
@@ -309,9 +319,13 @@ class PygmtPlotEngine(PlotEngine):
             if not Path(cmap).exists():
                 raise FileNotFoundError(f"The CPT file '{cmap}' does not exist.")
 
-        ax_or_fig.grdimage(
+        grdimage_kwargs = dict(
             grid=data,
             cmap=cmap,
             region=extent,
             nan_transparent=nan_transparent,
         )
+        if shading is not None:
+            grdimage_kwargs["shading"] = shading
+
+        ax_or_fig.grdimage(**grdimage_kwargs)
