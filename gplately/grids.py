@@ -355,7 +355,7 @@ def read_netcdf_grid(
         dX = np.diff(cdf_lon).mean()
         dY = np.diff(cdf_lat).mean()
 
-        if spacingX != dX or spacingY != dY:
+        if not np.isclose(dX, spacingX) or not np.isclose(dY, spacingY):
             lon_grid = np.arange(cdf_lon.min(), cdf_lon.max() + spacingX, spacingX)
             lat_grid = np.arange(cdf_lat.min(), cdf_lat.max() + spacingY, spacingY)
             lonq, latq = np.meshgrid(lon_grid, lat_grid)
@@ -1942,7 +1942,7 @@ class Raster(object):
             if np.ma.isMaskedArray(data):
                 data = data.astype(float).filled(np.nan)
             data = _check_grid(data)
-            self._data = np.array(data)
+            self._data = np.array(data)  # copy to avoid modifying original data
             self._lons = np.linspace(extent[0], extent[1], self.data.shape[1])
             self._lats = np.linspace(extent[2], extent[3], self.data.shape[0])
 
@@ -2232,13 +2232,29 @@ class Raster(object):
         Returns
         -------
         Raster
-            The resampled grid. If ``inplace`` is set to ``True``, this raster overwrites the
-            one attributed to ``data``.
+            The resampled grid. If ``inplace`` is set to ``True`` the returned raster is ``self``,
+            otherwise a new :class:`Raster` object is returned.
         """
         spacingX = np.abs(spacingX)
         spacingY = np.abs(spacingY)
         if self.origin == "upper":
             spacingY *= -1.0
+
+        # Don't need to resample if the spacings are the same.
+        dX = np.diff(self.lons).mean()
+        dY = np.diff(self.lats).mean()
+        if np.isclose(dX, spacingX) and np.isclose(dY, spacingY):
+            if inplace:
+                # Return current Raster.
+                return self
+            else:
+                # Return a COPY of the current Raster.
+                return Raster(
+                    self.data,  # note: this gets copied in Raster constructor
+                    self.plate_reconstruction,
+                    self.extent,
+                    time=self.time,
+                )
 
         lons = np.arange(self.extent[0], self.extent[1] + spacingX, spacingX)
         lats = np.arange(self.extent[2], self.extent[3] + spacingY, spacingY)
@@ -2249,7 +2265,10 @@ class Raster(object):
             self._data = data
             self._lons = lons
             self._lats = lats
+            # Return current Raster.
+            return self
         else:
+            # Return a new Raster.
             return Raster(data, self.plate_reconstruction, self.extent, time=self.time)
 
     def resize(
@@ -2289,23 +2308,56 @@ class Raster(object):
 
         Returns
         -------
-        Raster
-            The resized grid. If ``inplace`` is set to ``True``, the data in :attr:`Raster.data` will be overwritten.
+        Raster or numpy.ndarray
+            The resized grid. If ``inplace`` is set to ``True`` the returned raster is ``self``
+            (or returned array is ``self.data`` if ``return_array`` is ``True``), otherwise a new :class:`Raster`
+            object is returned (or a new data array if ``return_array`` is ``True``).
         """
+        # Don't need to resize if the shape is the same.
+        if resX == len(self.lons) and resY == len(self.lats):
+            if inplace:
+                # Return the current data or Raster.
+                return self.data if return_array else self
+            else:
+                # Return a COPY of the current data or Raster.
+                return (
+                    self.data.copy()
+                    if return_array
+                    else Raster(
+                        self.data,  # note: this gets copied in Raster constructor
+                        self.plate_reconstruction,
+                        self.extent,
+                        time=self.time,
+                    )
+                )
+
         # construct grid
         lons = np.linspace(self.extent[0], self.extent[1], resX)
         lats = np.linspace(self.extent[2], self.extent[3], resY)
         lonq, latq = np.meshgrid(lons, lats)
 
         data = self.interpolate(lonq, latq, method=method)
+
         if inplace:
             self._data = data
             self._lons = lons
             self._lats = lats
-        if return_array:
-            return data
+
+            # Return the current data or Raster.
+            return self.data if return_array else self
+
         else:
-            return Raster(data, self.plate_reconstruction, self.extent, time=self.time)
+            # Return the new data or Raster.
+            return (
+                data
+                if return_array
+                else Raster(
+                    data,
+                    self.plate_reconstruction,
+                    self.extent,
+                    time=self.time,
+                )
+            )
 
     def fill_NaNs(self, inplace=False, return_array=False):
         """Search for the invalid ``data`` cells containing NaN-type entries and
