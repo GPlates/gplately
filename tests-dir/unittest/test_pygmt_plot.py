@@ -3,8 +3,6 @@
 # This test script generates a sample plot using the PygmtPlotEngine.
 
 import os
-from pathlib import Path
-from urllib.request import urlretrieve
 
 import pygmt  # pyright: ignore[reportMissingImports]
 import xarray as xr  # pyright: ignore[reportMissingImports]
@@ -13,30 +11,10 @@ os.environ["DISABLE_GPLATELY_DEV_WARNING"] = "true"
 
 from gplately.auxiliary import get_gplot, get_pygmt_basemap_figure
 from gplately.mapping.pygmt_plot import PygmtPlotEngine
-
-
-def _get_topo_raster():
-    data_dir = Path(__file__).resolve().parent / "test-pygmt-plot-data"
-    data_dir.mkdir(parents=True, exist_ok=True)
-    topo_file = data_dir / "topo15-3601x1801.nc"
-    topo_url = "https://repo.gplates.org/webdav/mchin/data/topo15-3601x1801.nc"
-
-    if not topo_file.exists():
-        print(f"Downloading {topo_file.name} ...")
-        urlretrieve(topo_url, topo_file)
-
-    try:
-        raster_xr = xr.open_dataarray(topo_file)
-    except ValueError:
-        # Fallback for NetCDF files with multiple variables.
-        dataset = xr.open_dataset(topo_file)
-        first_var = next(iter(dataset.data_vars))
-        raster_xr = dataset[first_var]
-    return raster_xr
-
+from common import _get_topo_raster
 
 if __name__ == "__main__":
-    model_name = "muller2019"
+    model_name = "muller2025"
     reconstruction_time = 55
 
     gplot = get_gplot(
@@ -47,9 +25,6 @@ if __name__ == "__main__":
     )
     fig = get_pygmt_basemap_figure(projection="N180/10c", region="d")
 
-    # Warning: the topography raster is present-day,
-    # so it may not be appropriate to plot it with a past reconstruction time.
-    # This is just for testing the plotting of raster data with pygmt.
     illumination = pygmt.grdgradient(grid=_get_topo_raster(), radiance=[315, 45])
     gplot.plot_grid(
         fig,

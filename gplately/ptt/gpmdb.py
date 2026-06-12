@@ -27,6 +27,9 @@ import os
 import sys
 from pathlib import Path
 
+# pyright: reportMissingImports=false
+# pyright: reportMissingModuleSource=false
+
 import numpy as np
 import pandas as pd
 import pygplates
@@ -66,8 +69,8 @@ def create_vgp_feature(
 
     # Create feature
     vgp_feature = pygplates.Feature(pygplates.FeatureType.gpml_virtual_geomagnetic_pole)
-    vgp_feature.set_name(str(RESULTNO))
-    vgp_feature.set_description(PAPER_URL)
+    vgp_feature.set_name(str(RESULTNO))  # type: ignore
+    vgp_feature.set_description(PAPER_URL)  # type: ignore
     vgp_feature.set(
         pygplates.PropertyName.gpml_average_sample_site_position,
         pygplates.GmlPoint(sample_site_position),
@@ -91,9 +94,9 @@ def create_vgp_feature(
         pygplates.PropertyName.gpml_average_age,
         pygplates.XsDouble((LOMAGAGE + HIMAGAGE) / 2.0),
     )
-    vgp_feature.set_valid_time(HIGHAGE, LOWAGE)
+    vgp_feature.set_valid_time(HIGHAGE, LOWAGE)  # type: ignore
 
-    vgp_feature.set_reconstruction_plate_id(plate_id)
+    vgp_feature.set_reconstruction_plate_id(plate_id)  # type: ignore
 
     return vgp_feature
 
@@ -341,3 +344,6 @@ if __name__ == "__main__":
 
     # call main function
     main(args)
+
+# https://gpmdb.net/api/search
+# https://jsoneditoronline.org/#left=local.vocere&right=local.ronomo

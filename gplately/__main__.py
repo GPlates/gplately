@@ -186,13 +186,14 @@ def main():
     )
     subduction_convergence.add_arguments(subduction_convergence_cmd)
 
+    # disable for now since it is not working right now due to the redesign of gpmdb.net
     # add gpmdb sub-command
-    gpmdb_cmd = subparser.add_parser(
-        "gpmdb",
-        help="Retrieve paleomagnetic data from https://www.gpmdb.net, create GPlates-compatible VGP features and save the VGP features in a .gpmlz file.",
-        add_help=True,
-    )
-    gpmdb.add_arguments(gpmdb_cmd)
+    # gpmdb_cmd = subparser.add_parser(
+    #    "gpmdb",
+    #    help="Retrieve paleomagnetic data from https://www.gpmdb.net, create GPlates-compatible VGP features and save the VGP features in a .gpmlz file.",
+    #    add_help=True,
+    # )
+    # gpmdb.add_arguments(gpmdb_cmd)
 
     # combine command arguments
     combine_cmd.set_defaults(func=_run_combine_feature_collections)

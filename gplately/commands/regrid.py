@@ -21,9 +21,7 @@ import logging
 import multiprocessing
 import pathlib
 import time
-import warnings
 from functools import partial
-from typing import Optional, Sequence, Union
 
 from ..grids import read_netcdf_grid, write_netcdf_grid
 

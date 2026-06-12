@@ -38,6 +38,7 @@ except:
 from geopandas.geodataframe import GeoDataFrame
 
 from .plot_engine import PlotEngine
+from ..grids import sample_grid
 
 # NW's example is at https://gist.github.com/nickywright/f53018a8eda29223cca6f39ab2cfa25d
 
@@ -325,7 +326,34 @@ class PygmtPlotEngine(PlotEngine):
             region=extent,
             nan_transparent=nan_transparent,
         )
+
         if shading is not None:
+            # check if shading is a xr.DataArray, if so, check the shape and coordinates
+            # to make sure it matches the grid data, then pass it to grdimage_kwargs
+            if isinstance(shading, xr.DataArray):
+                if shading.shape != data.shape or not all(
+                    shading.coords[dim].equals(data.coords[dim]) for dim in data.dims
+                ):
+                    # try to resample the shading to match the grid data
+                    lat_coords, lon_coords = xr.broadcast(
+                        data.coords["lat"], data.coords["lon"]
+                    )
+                    resampled = sample_grid(
+                        lat=lat_coords.values,
+                        lon=lon_coords.values,
+                        grid=shading.data,
+                        extent=extent,
+                    )
+                    shading = xr.DataArray(
+                        data=resampled,
+                        dims=("lat", "lon"),
+                        coords={
+                            "lat": data.coords["lat"].values,
+                            "lon": data.coords["lon"].values,
+                        },
+                        name="z",
+                    )
+
             grdimage_kwargs["shading"] = shading
 
         ax_or_fig.grdimage(**grdimage_kwargs)
