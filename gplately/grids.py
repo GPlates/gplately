@@ -39,7 +39,7 @@ import logging
 import math
 import warnings
 from multiprocessing import cpu_count
-from typing import Tuple, Union
+from typing import Tuple, Union, cast
 
 # pyright: reportMissingImports=false
 # pyright: reportMissingModuleSource=false
@@ -176,7 +176,9 @@ def _is_a_common_name_for_latitude(name: str) -> bool:
     return name in ["lat", "lats", "latitude", "y", "north", "northing", "northings"]
 
 
-def _find_extent_from_data(data) -> Union[Tuple[float, float, float, float], None]:
+def _find_extent_from_data(
+    data, origin
+) -> Union[Tuple[float, float, float, float], None]:
     """Try to find the extent from data. Return None if data doesn't contain coordinates.
     As of 2025-12-10, only support xarray.DataArray."""
     extent = None
@@ -198,7 +200,8 @@ def _find_extent_from_data(data) -> Union[Tuple[float, float, float, float], Non
     except Exception as ex:
         logger.debug(ex)
         return None
-    return extent
+
+    return _adjust_extent_for_origin(extent, origin)
 
 
 def read_netcdf_grid(
@@ -1004,7 +1007,7 @@ def sample_grid(
         else:
             grid = np.array(grid.data)
     else:
-        extent = _parse_extent_origin(extent, origin)
+        extent = _parse_extent(extent, origin)
         if np.ma.isMaskedArray(grid):
             grid = grid.astype(float).filled(np.nan)
         grid = _check_grid(grid)
@@ -1166,7 +1169,7 @@ def reconstruct_grid(
     elif rotation_model is None:
         raise TypeError("`rotation_model` must be provided if `to_time` != `from_time`")
 
-    extent = _parse_extent_origin(extent, origin)
+    extent = _parse_extent(extent, origin)
     dtype = grid.dtype
 
     if isinstance(threads, str):
@@ -1452,7 +1455,7 @@ def rasterise(
                 + "\nkey must be one of {}".format(valid_keys)
             )
 
-    extent = _parse_extent_origin(extent, origin)
+    extent = _parse_extent(extent, origin)
     minx, maxx, miny, maxy = extent
 
     if minx > maxx:
@@ -1719,7 +1722,7 @@ def _check_grid(data):
     return data
 
 
-def _parse_extent_origin(extent, origin):
+def _parse_extent(extent, origin) -> Tuple[float, float, float, float]:
     """Default values: extent='global', origin=None"""
     if hasattr(extent, "lower"):  # i.e. a string
         extent = extent.lower()
@@ -1728,24 +1731,39 @@ def _parse_extent_origin(extent, origin):
         extent = (-180.0, 180.0, -90.0, 90.0)
     elif len(extent) != 4:
         raise TypeError("`extent` must be a four-element tuple, 'global', or None")
-    extent = tuple(float(i) for i in extent)
 
-    if origin is not None:
-        origin = str(origin).lower()
-        if origin == "lower" and extent[2] > extent[3]:
-            extent = (
-                extent[0],
-                extent[1],
-                extent[3],
-                extent[2],
-            )
-        if origin == "upper" and extent[2] < extent[3]:
-            extent = (
-                extent[0],
-                extent[1],
-                extent[3],
-                extent[2],
-            )
+    extent = tuple(float(i) for i in extent)
+    return cast(
+        Tuple[float, float, float, float], _adjust_extent_for_origin(extent, origin)
+    )
+
+
+def _adjust_extent_for_origin(
+    extent, origin
+) -> Union[Tuple[float, float, float, float], None]:
+    """Adjust upper/lower bounds of extent according to origin."""
+    if extent is None:
+        return None
+
+    if origin is None:
+        return extent
+
+    origin = str(origin).lower()
+    if origin == "lower" and extent[2] > extent[3]:
+        extent = (
+            extent[0],
+            extent[1],
+            extent[3],
+            extent[2],
+        )
+    if origin == "upper" and extent[2] < extent[3]:
+        extent = (
+            extent[0],
+            extent[1],
+            extent[3],
+            extent[2],
+        )
+
     return extent
 
 
@@ -1910,11 +1928,11 @@ class Raster(object):
         else:
             # if the "data" parameter is a numpy array or xarray.DataArray object
             self._filename = None
-            extent = _parse_extent_origin(extent, origin)
+            extent = _parse_extent(extent, origin)
 
             # try to extract the extent from input data
             # if the extent from data is different from the extent parameter, use the extent from data
-            extent_from_data = _find_extent_from_data(data)
+            extent_from_data = _find_extent_from_data(data, origin)
             if extent_from_data is not None and extent != extent_from_data:
                 extent = extent_from_data
                 logger.info(
