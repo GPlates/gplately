@@ -138,17 +138,62 @@ def fill_raster(data, invalid=None):
 
 def _realign_grid(array, lons, lats):
     """realigns grid to -180/180 and flips the array if the latitudinal coordinates are decreasing."""
-    mask_lons = lons > 180
+    lons = np.asarray(lons)
+    lats = np.asarray(lats)
 
-    # realign to -180/180
-    if mask_lons.any():
-        dlon = np.diff(lons).mean()
-        array = np.hstack([array[:, mask_lons], array[:, ~mask_lons]])
-        lons = np.hstack([lons[mask_lons] - 360 - dlon, lons[~mask_lons]])
+    # There must not be any duplicate longitudes or duplicate latitudes.
+    lon_differences = np.diff(lons)
+    if np.any(lon_differences == 0):
+        raise ValueError("Longitudes contain duplicate values.")
+    lat_differences = np.diff(lats)
+    if np.any(lat_differences == 0):
+        raise ValueError("Latitudes contain duplicate values.")
 
-    if lats[0] > lats[-1]:
-        array = np.flipud(array)
-        lats = lats[::-1]
+    # Check if longitudes and latitudes are in increasing order. If not then sort them.
+    if not np.all(lon_differences > 0):
+        sort_indices = np.argsort(lons)
+        array = array[:, sort_indices]
+        lons = lons[sort_indices]
+    if not np.all(lat_differences > 0):
+        sort_indices = np.argsort(lats)
+        array = array[sort_indices, :]
+        lats = lats[sort_indices]
+
+    # If we need to wrap (180, 360) to (-180, 0).
+    if lons[-1] > 180:
+        mask_lon_gt_180 = lons > 180
+
+        # If we have longitudes at 0 and 360 then we don't want to wrap the 360 column to 0 since we'd end up with two 0 columns.
+        # Both columns should ideally be equal anyway (if input raster wraps 0->360 properly).
+        if np.isclose(lons[0], 0.0) and np.isclose(lons[-1], 360.0):
+            mask_lon_wrap = mask_lon_gt_180.copy()
+            mask_lon_wrap[-1] = False  # drop the 360 column altogether
+        else:
+            mask_lon_wrap = mask_lon_gt_180
+
+        # Wrap (180, 360) to (-180, 0).
+        array = np.hstack([array[:, mask_lon_wrap], array[:, ~mask_lon_gt_180]])
+        lons = np.hstack([lons[mask_lon_wrap] - 360.0, lons[~mask_lon_gt_180]])
+
+        # If the input grid crossed the dateline (180) then create a matching column at -180 so that the output wraps -180->180 properly.
+        #
+        # The dateline was crossed if there are longitudes in (0, 180), noting that we already wrapped (180, 360) to (-180, 0).
+        if lons[-1] > 0:
+            if np.isclose(lons[-1], 180.0):
+                # There's a longitude at 180, so duplicate it at -180.
+                array = np.hstack([array[:, [-1]], array])
+                lons = np.hstack([-180.0, lons])
+            else:
+                # There's no longitude at 180, so interpolate at 180 and insert at -180.
+                #
+                # The 360.0 accounts for the fact that lons[0] was wrapped above.
+                interp_180_weight = (180.0 - lons[-1]) / (360.0 - (lons[-1] - lons[0]))
+                interp_180_column = (
+                    array[:, -1] * (1.0 - interp_180_weight)
+                    + array[:, 0] * interp_180_weight
+                )
+                array = np.hstack([interp_180_column[:, np.newaxis], array])
+                lons = np.hstack([-180.0, lons])
 
     return array, lons, lats
 
