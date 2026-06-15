@@ -327,10 +327,12 @@ class PygmtPlotEngine(PlotEngine):
             nan_transparent=nan_transparent,
         )
 
+        data = to_geographic_data_array(data)
         if shading is not None:
             # check if shading is a xr.DataArray, if so, check the shape and coordinates
             # to make sure it matches the grid data, then pass it to grdimage_kwargs
             if isinstance(shading, xr.DataArray):
+                shading = to_geographic_data_array(shading)
                 if shading.shape != data.shape or not all(
                     shading.coords[dim].equals(data.coords[dim]) for dim in data.dims
                 ):
@@ -357,3 +359,66 @@ class PygmtPlotEngine(PlotEngine):
             grdimage_kwargs["shading"] = shading
 
         ax_or_fig.grdimage(**grdimage_kwargs)
+
+
+def to_geographic_data_array(data_array):
+    """Convert a DataArray to a geographic grid format that PyGMT can understand.
+
+    This function ensures that the DataArray has the correct coordinate names and attributes for PyGMT
+    to treat it as a geographic grid. Specifically, it sets the 'gmt.gtype' attribute to 1 (indicating a geographic grid)
+    and ensures that the coordinate names are 'lat' and 'lon'.
+
+    Parameters
+    ----------
+    data_array : xarray.DataArray
+        The input DataArray with lat/lon coordinates.
+
+    Returns
+    -------
+    xarray.DataArray
+        A DataArray formatted for use with PyGMT, with appropriate attributes set.
+    """
+    if data_array.ndim != 2:
+        raise ValueError("Input data array must be 2-dimensional.")
+    if "lon" in data_array.dims and "lat" in data_array.dims:
+        return data_array  # already in the correct format
+    if "lon" in data_array.coords and "lat" in data_array.coords:
+        return data_array  # already in the correct format
+    ret_da = data_array.copy()
+
+    if (
+        "x" in ret_da.dims
+        and "y" in ret_da.dims
+        or "x" in ret_da.coords
+        and "y" in ret_da.coords
+    ):
+        ret_da = ret_da.rename({"x": "lon", "y": "lat"})
+    elif (
+        "longitude" in ret_da.dims
+        and "latitude" in ret_da.dims
+        or "longitude" in ret_da.coords
+        and "latitude" in ret_da.coords
+    ):
+        ret_da = ret_da.rename({"longitude": "lon", "latitude": "lat"})
+    else:
+        pass  # assume the dims are already 'lon' and 'lat'
+
+    ret_da.coords["lon"].attrs.update(
+        {
+            "standard_name": "longitude",
+            "long_name": "longitude",
+            "units": "degrees_east",
+        }
+    )
+
+    ret_da.coords["lat"].attrs.update(
+        {
+            "standard_name": "latitude",
+            "long_name": "latitude",
+            "units": "degrees_north",
+        }
+    )
+
+    ret_da.gmt.gtype = 1  # 1 = geographic
+    # ret_da.gmt.registration = 0  # 0 = gridline node
+    return ret_da

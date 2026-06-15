@@ -3,15 +3,19 @@
 # This test script generates a sample plot using the PygmtPlotEngine.
 
 import os
+from pathlib import Path
 
-import pygmt  # pyright: ignore[reportMissingImports]
-import xarray as xr  # pyright: ignore[reportMissingImports]
+# pyright: reportMissingImports=false
+
+import pygmt
+import xarray as xr
 
 os.environ["DISABLE_GPLATELY_DEV_WARNING"] = "true"
 
 from gplately.auxiliary import get_gplot, get_pygmt_basemap_figure
 from gplately.mapping.pygmt_plot import PygmtPlotEngine
-from common import _get_topo_raster
+from gplately import Raster
+from plate_model_manager import PresentDayRasterManager
 
 if __name__ == "__main__":
     model_name = "muller2025"
@@ -25,7 +29,17 @@ if __name__ == "__main__":
     )
     fig = get_pygmt_basemap_figure(projection="N180/10c", region="d")
 
-    illumination = pygmt.grdgradient(grid=_get_topo_raster(), radiance=[315, 45])
+    # reconstruct the topography grid for the specified reconstruction time,
+    # and use it to create an illumination grid for shading
+    topo_file = PresentDayRasterManager(data_dir="./unittest-data").get_raster(
+        "topography"
+    )
+    topo_grid = Raster(
+        data=topo_file, plate_reconstruction=gplot.plate_reconstruction
+    ).reconstruct(time=reconstruction_time)
+
+    illumination = pygmt.grdgradient(grid=topo_grid.to_dataarray(), radiance=[315, 45])
+    # print(illumination)
     gplot.plot_grid(
         fig,
         "AgeGrids",
