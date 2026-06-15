@@ -123,6 +123,7 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">geopandas.geodataframe</span><span class="w"> </span><span class="kn">import</span> <span class="n">GeoDataFrame</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">.plot_engine</span><span class="w"> </span><span class="kn">import</span> <span class="n">PlotEngine</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..grids</span><span class="w"> </span><span class="kn">import</span> <span class="n">sample_grid</span>
 
 <span class="c1"># NW&#39;s example is at https://gist.github.com/nickywright/f53018a8eda29223cca6f39ab2cfa25d</span>
 
@@ -426,12 +427,104 @@
             <span class="n">region</span><span class="o">=</span><span class="n">extent</span><span class="p">,</span>
             <span class="n">nan_transparent</span><span class="o">=</span><span class="n">nan_transparent</span><span class="p">,</span>
         <span class="p">)</span>
+
+        <span class="n">data</span> <span class="o">=</span> <span class="n">to_geographic_data_array</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">shading</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># check if shading is a xr.DataArray, if so, check the shape and coordinates</span>
+            <span class="c1"># to make sure it matches the grid data, then pass it to grdimage_kwargs</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">shading</span><span class="p">,</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">):</span>
+                <span class="n">shading</span> <span class="o">=</span> <span class="n">to_geographic_data_array</span><span class="p">(</span><span class="n">shading</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">shading</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span>
+                    <span class="n">shading</span><span class="o">.</span><span class="n">coords</span><span class="p">[</span><span class="n">dim</span><span class="p">]</span><span class="o">.</span><span class="n">equals</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">coords</span><span class="p">[</span><span class="n">dim</span><span class="p">])</span> <span class="k">for</span> <span class="n">dim</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">dims</span>
+                <span class="p">):</span>
+                    <span class="c1"># try to resample the shading to match the grid data</span>
+                    <span class="n">lat_coords</span><span class="p">,</span> <span class="n">lon_coords</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">broadcast</span><span class="p">(</span>
+                        <span class="n">data</span><span class="o">.</span><span class="n">coords</span><span class="p">[</span><span class="s2">&quot;lat&quot;</span><span class="p">],</span> <span class="n">data</span><span class="o">.</span><span class="n">coords</span><span class="p">[</span><span class="s2">&quot;lon&quot;</span><span class="p">]</span>
+                    <span class="p">)</span>
+                    <span class="n">resampled</span> <span class="o">=</span> <span class="n">sample_grid</span><span class="p">(</span>
+                        <span class="n">lat</span><span class="o">=</span><span class="n">lat_coords</span><span class="o">.</span><span class="n">values</span><span class="p">,</span>
+                        <span class="n">lon</span><span class="o">=</span><span class="n">lon_coords</span><span class="o">.</span><span class="n">values</span><span class="p">,</span>
+                        <span class="n">grid</span><span class="o">=</span><span class="n">shading</span><span class="o">.</span><span class="n">data</span><span class="p">,</span>
+                        <span class="n">extent</span><span class="o">=</span><span class="n">extent</span><span class="p">,</span>
+                    <span class="p">)</span>
+                    <span class="n">shading</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">(</span>
+                        <span class="n">data</span><span class="o">=</span><span class="n">resampled</span><span class="p">,</span>
+                        <span class="n">dims</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;lat&quot;</span><span class="p">,</span> <span class="s2">&quot;lon&quot;</span><span class="p">),</span>
+                        <span class="n">coords</span><span class="o">=</span><span class="p">{</span>
+                            <span class="s2">&quot;lat&quot;</span><span class="p">:</span> <span class="n">data</span><span class="o">.</span><span class="n">coords</span><span class="p">[</span><span class="s2">&quot;lat&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span>
+                            <span class="s2">&quot;lon&quot;</span><span class="p">:</span> <span class="n">data</span><span class="o">.</span><span class="n">coords</span><span class="p">[</span><span class="s2">&quot;lon&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span>
+                        <span class="p">},</span>
+                        <span class="n">name</span><span class="o">=</span><span class="s2">&quot;z&quot;</span><span class="p">,</span>
+                    <span class="p">)</span>
+
             <span class="n">grdimage_kwargs</span><span class="p">[</span><span class="s2">&quot;shading&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">shading</span>
 
         <span class="n">ax_or_fig</span><span class="o">.</span><span class="n">grdimage</span><span class="p">(</span><span class="o">**</span><span class="n">grdimage_kwargs</span><span class="p">)</span></div>
 </div>
 
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">to_geographic_data_array</span><span class="p">(</span><span class="n">data_array</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert a DataArray to a geographic grid format that PyGMT can understand.</span>
+
+<span class="sd">    This function ensures that the DataArray has the correct coordinate names and attributes for PyGMT</span>
+<span class="sd">    to treat it as a geographic grid. Specifically, it sets the &#39;gmt.gtype&#39; attribute to 1 (indicating a geographic grid)</span>
+<span class="sd">    and ensures that the coordinate names are &#39;lat&#39; and &#39;lon&#39;.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    data_array : xarray.DataArray</span>
+<span class="sd">        The input DataArray with lat/lon coordinates.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    xarray.DataArray</span>
+<span class="sd">        A DataArray formatted for use with PyGMT, with appropriate attributes set.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">data_array</span><span class="o">.</span><span class="n">ndim</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Input data array must be 2-dimensional.&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="s2">&quot;lon&quot;</span> <span class="ow">in</span> <span class="n">data_array</span><span class="o">.</span><span class="n">dims</span> <span class="ow">and</span> <span class="s2">&quot;lat&quot;</span> <span class="ow">in</span> <span class="n">data_array</span><span class="o">.</span><span class="n">dims</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">data_array</span>  <span class="c1"># already in the correct format</span>
+    <span class="k">if</span> <span class="s2">&quot;lon&quot;</span> <span class="ow">in</span> <span class="n">data_array</span><span class="o">.</span><span class="n">coords</span> <span class="ow">and</span> <span class="s2">&quot;lat&quot;</span> <span class="ow">in</span> <span class="n">data_array</span><span class="o">.</span><span class="n">coords</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">data_array</span>  <span class="c1"># already in the correct format</span>
+    <span class="n">ret_da</span> <span class="o">=</span> <span class="n">data_array</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="p">(</span>
+        <span class="s2">&quot;x&quot;</span> <span class="ow">in</span> <span class="n">ret_da</span><span class="o">.</span><span class="n">dims</span>
+        <span class="ow">and</span> <span class="s2">&quot;y&quot;</span> <span class="ow">in</span> <span class="n">ret_da</span><span class="o">.</span><span class="n">dims</span>
+        <span class="ow">or</span> <span class="s2">&quot;x&quot;</span> <span class="ow">in</span> <span class="n">ret_da</span><span class="o">.</span><span class="n">coords</span>
+        <span class="ow">and</span> <span class="s2">&quot;y&quot;</span> <span class="ow">in</span> <span class="n">ret_da</span><span class="o">.</span><span class="n">coords</span>
+    <span class="p">):</span>
+        <span class="n">ret_da</span> <span class="o">=</span> <span class="n">ret_da</span><span class="o">.</span><span class="n">rename</span><span class="p">({</span><span class="s2">&quot;x&quot;</span><span class="p">:</span> <span class="s2">&quot;lon&quot;</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">:</span> <span class="s2">&quot;lat&quot;</span><span class="p">})</span>
+    <span class="k">elif</span> <span class="p">(</span>
+        <span class="s2">&quot;longitude&quot;</span> <span class="ow">in</span> <span class="n">ret_da</span><span class="o">.</span><span class="n">dims</span>
+        <span class="ow">and</span> <span class="s2">&quot;latitude&quot;</span> <span class="ow">in</span> <span class="n">ret_da</span><span class="o">.</span><span class="n">dims</span>
+        <span class="ow">or</span> <span class="s2">&quot;longitude&quot;</span> <span class="ow">in</span> <span class="n">ret_da</span><span class="o">.</span><span class="n">coords</span>
+        <span class="ow">and</span> <span class="s2">&quot;latitude&quot;</span> <span class="ow">in</span> <span class="n">ret_da</span><span class="o">.</span><span class="n">coords</span>
+    <span class="p">):</span>
+        <span class="n">ret_da</span> <span class="o">=</span> <span class="n">ret_da</span><span class="o">.</span><span class="n">rename</span><span class="p">({</span><span class="s2">&quot;longitude&quot;</span><span class="p">:</span> <span class="s2">&quot;lon&quot;</span><span class="p">,</span> <span class="s2">&quot;latitude&quot;</span><span class="p">:</span> <span class="s2">&quot;lat&quot;</span><span class="p">})</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">pass</span>  <span class="c1"># assume the dims are already &#39;lon&#39; and &#39;lat&#39;</span>
+
+    <span class="n">ret_da</span><span class="o">.</span><span class="n">coords</span><span class="p">[</span><span class="s2">&quot;lon&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;standard_name&quot;</span><span class="p">:</span> <span class="s2">&quot;longitude&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;long_name&quot;</span><span class="p">:</span> <span class="s2">&quot;longitude&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;units&quot;</span><span class="p">:</span> <span class="s2">&quot;degrees_east&quot;</span><span class="p">,</span>
+        <span class="p">}</span>
+    <span class="p">)</span>
+
+    <span class="n">ret_da</span><span class="o">.</span><span class="n">coords</span><span class="p">[</span><span class="s2">&quot;lat&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;standard_name&quot;</span><span class="p">:</span> <span class="s2">&quot;latitude&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;long_name&quot;</span><span class="p">:</span> <span class="s2">&quot;latitude&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;units&quot;</span><span class="p">:</span> <span class="s2">&quot;degrees_north&quot;</span><span class="p">,</span>
+        <span class="p">}</span>
+    <span class="p">)</span>
+
+    <span class="n">ret_da</span><span class="o">.</span><span class="n">gmt</span><span class="o">.</span><span class="n">gtype</span> <span class="o">=</span> <span class="mi">1</span>  <span class="c1"># 1 = geographic</span>
+    <span class="c1"># ret_da.gmt.registration = 0  # 0 = gridline node</span>
+    <span class="k">return</span> <span class="n">ret_da</span>
 </pre></div>
 
            </div>

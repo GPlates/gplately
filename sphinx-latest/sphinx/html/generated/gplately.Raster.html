@@ -85,6 +85,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#gplately.Raster.shape"><code class="docutils literal notranslate"><span class="pre">Raster.shape</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#gplately.Raster.size"><code class="docutils literal notranslate"><span class="pre">Raster.size</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#gplately.Raster.time"><code class="docutils literal notranslate"><span class="pre">Raster.time</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gplately.Raster.to_dataarray"><code class="docutils literal notranslate"><span class="pre">Raster.to_dataarray()</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -218,6 +219,9 @@ Otherwise, GPlately’s guess may/may not be correct.</p></li>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#gplately.Raster.save_to_netcdf4" title="gplately.Raster.save_to_netcdf4"><code class="xref py py-obj docutils literal notranslate"><span class="pre">save_to_netcdf4</span></code></a>(filename[, ...])</p></td>
 <td><p>Saves the grid attributed to the <a class="reference internal" href="#gplately.Raster" title="gplately.Raster"><code class="xref py py-class docutils literal notranslate"><span class="pre">Raster</span></code></a> object to the given <code class="docutils literal notranslate"><span class="pre">filename</span></code> (including the &quot;.nc&quot; extension) in netCDF4 format.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#gplately.Raster.to_dataarray" title="gplately.Raster.to_dataarray"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_dataarray</span></code></a>([name])</p></td>
+<td><p></p></td>
 </tr>
 </tbody>
 </table>
@@ -562,9 +566,15 @@ the anchor plate ID specified in the <a class="reference internal" href="gplatel
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><ul class="simple">
-<li><p><em>Raster or np.ndarray</em> – The reconstructed grid. Areas for which no plate ID could be determined will be filled with <code class="docutils literal notranslate"><span class="pre">fill_value</span></code>.</p></li>
-<li><p><em>.. note::</em> – For two-dimensional grids, <code class="docutils literal notranslate"><span class="pre">fill_value</span></code> should be a single
+<dd class="field-even"><p>The reconstructed grid. Areas for which no plate ID could be determined will be filled with <code class="docutils literal notranslate"><span class="pre">fill_value</span></code>.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#gplately.Raster" title="gplately.Raster">Raster</a> or np.ndarray</p>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>For two-dimensional grids, <code class="docutils literal notranslate"><span class="pre">fill_value</span></code> should be a single
 number. The default value will be <code class="docutils literal notranslate"><span class="pre">np.nan</span></code> for float or
 complex types, the minimum value for integer types, and the
 maximum value for unsigned types.
@@ -574,11 +584,8 @@ will be black (0.0, 0.0, 0.0) or (0, 0, 0).
 For RGBA image grids, <code class="docutils literal notranslate"><span class="pre">fill_value</span></code> should be a 4-tuple RGBA
 colour code or a matplotlib colour string. The default fill
 value will be transparent black (0.0, 0.0, 0.0, 0.0) or
-(0, 0, 0, 0).</p></li>
-</ul>
-</p>
-</dd>
-</dl>
+(0, 0, 0, 0).</p>
+</div>
 </dd></dl>
 
 <dl class="py method">
@@ -728,6 +735,11 @@ the “.nc” extension) in netCDF4 format.</p>
 </dd>
 </dl>
 </dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gplately.Raster.to_dataarray">
+<span class="sig-name descname"><span class="pre">to_dataarray</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'z'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/grids.html#Raster.to_dataarray"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.Raster.to_dataarray" title="Link to this definition"></a></dt>
+<dd></dd></dl>
 
 </dd></dl>
 
