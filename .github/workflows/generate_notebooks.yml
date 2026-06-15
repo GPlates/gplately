@@ -1,9 +1,10 @@
-name: Generate Rule-Based Pipeline Notebook
+name: Generate Notebooks
 
 on:
   push:
     paths:
       - Notebooks/14-RuleBasedGPMLProcessingPipeline.py
+      - Notebooks/Examples/plot_map_with_pygmt.py
   workflow_dispatch:
 
 permissions:
@@ -26,15 +27,22 @@ jobs:
       - name: Install jupytext
         run: python -m pip install --upgrade pip jupytext
 
-      - name: Generate notebook
+      - name: Generate notebooks
         run: |
           jupytext --to notebook \
             Notebooks/14-RuleBasedGPMLProcessingPipeline.py \
             -o Notebooks/14-RuleBasedGPMLProcessingPipeline.ipynb
+          jupytext --to notebook \
+            Notebooks/Examples/plot_map_with_pygmt.py \
+            -o Notebooks/Examples/plot_map_with_pygmt.ipynb
 
-      - name: Commit updated notebook
+      - name: Commit updated notebooks
         run: |
-          if git diff --quiet -- Notebooks/14-RuleBasedGPMLProcessingPipeline.ipynb; then
+          changed=()
+          git diff --quiet -- Notebooks/14-RuleBasedGPMLProcessingPipeline.ipynb || changed+=(Notebooks/14-RuleBasedGPMLProcessingPipeline.ipynb)
+          git diff --quiet -- Notebooks/Examples/plot_map_with_pygmt.ipynb || changed+=(Notebooks/Examples/plot_map_with_pygmt.ipynb)
+
+          if [ ${#changed[@]} -eq 0 ]; then
             echo "No notebook changes detected."
             exit 0
           fi
@@ -42,6 +50,6 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-          git add Notebooks/14-RuleBasedGPMLProcessingPipeline.ipynb
-          git commit -m "ci: regenerate RuleBasedGPMLProcessingPipeline notebook"
+          git add "${changed[@]}"
+          git commit -m "ci: regenerate notebooks"
           git push
