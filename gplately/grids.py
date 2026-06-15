@@ -48,6 +48,7 @@ import matplotlib.colors
 import matplotlib.pyplot as plt
 import netCDF4
 import numpy as np
+import xarray as xr
 import pygplates
 from cartopy.crs import PlateCarree as _PlateCarree
 from cartopy.mpl.geoaxes import GeoAxes as _GeoAxes
@@ -2253,6 +2254,7 @@ class Raster(object):
         Raster or np.ndarray
             The reconstructed grid. Areas for which no plate ID could be determined will be filled with ``fill_value``.
 
+
         .. note::
 
             For two-dimensional grids, ``fill_value`` should be a single
@@ -2826,6 +2828,34 @@ class Raster(object):
         new_data = other**self.data
         new_raster.data = new_data
         return new_raster
+
+    def to_dataarray(self, name="z"):
+        da = xr.DataArray(
+            self.data,
+            coords={
+                "lat": (
+                    "lat",
+                    self.lats,
+                    {
+                        "standard_name": "latitude",
+                        "long_name": "latitude",
+                        "units": "degrees_north",
+                    },
+                ),
+                "lon": (
+                    "lon",
+                    self.lons,
+                    {
+                        "standard_name": "longitude",
+                        "long_name": "longitude",
+                        "units": "degrees_east",
+                    },
+                ),
+            },
+            dims=["lat", "lon"],
+            name=name,
+        )
+        return da
 
 
 # class TimeRaster(Raster):

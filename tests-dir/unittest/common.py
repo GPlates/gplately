@@ -9,6 +9,7 @@ from urllib.request import urlretrieve
 
 import xarray as xr
 import matplotlib.pyplot as plt
+from plate_model_manager import PresentDayRasterManager
 
 OUTPUT_DIR = "output"
 
@@ -50,13 +51,7 @@ if get_test_local_code_flag():
 
 def _get_topo_raster():
     data_dir = Path(__file__).resolve().parent / "unittest-data"
-    data_dir.mkdir(parents=True, exist_ok=True)
-    topo_file = data_dir / "topo15-3601x1801.nc"
-    topo_url = "https://repo.gplates.org/webdav/mchin/data/topo15-3601x1801.nc"
-
-    if not topo_file.exists():
-        print(f"Downloading {topo_file.name} ...")
-        urlretrieve(topo_url, topo_file)
+    topo_file = PresentDayRasterManager(data_dir=data_dir).get_raster("topography")
 
     try:
         raster_xr = xr.open_dataarray(topo_file)

@@ -1074,6 +1074,7 @@ class PlotTopologies(object):
                 plate_reconstruction=self.plate_reconstruction,
                 extent=(-180, 180, -90, 90),
             )
+
             return self._plot_engine.plot_grid(
                 ax, grid_data, extent=extent, projection=self.base_projection, **kwargs
             )
