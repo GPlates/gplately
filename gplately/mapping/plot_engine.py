@@ -56,3 +56,16 @@ class PlotEngine(ABC):
     ):
         """Plot a grid (abstract method). See :meth:`CartopyPlotEngine.plot_grid()` and :meth:`PygmtPlotEngine.plot_grid()` for details."""
         pass  # This is an abstract method, no implementation here.
+
+    @abstractmethod
+    def plot_plate_motion_vectors(
+        self,
+        ax_or_fig,
+        gdf_motion_vectors: GeoDataFrame,
+        projection=None,
+        scale_factor=1.0,
+        color="black",
+        **kwargs,
+    ):
+        """Plot plate motion vectors (abstract method)"""
+        pass  # This is an abstract method, no implementation here.

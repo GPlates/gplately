@@ -1114,7 +1114,16 @@ class PlotTopologies(object):
         return self.plot_grid(ax, raster, extent=extent, origin=origin, **kwargs)
 
     def plot_plate_motion_vectors(
-        self, ax, spacingX=10, spacingY=10, normalise=False, **kwargs
+        self,
+        ax_or_fig,
+        color="black",
+        lons=[],
+        lats=[],
+        spacingX=10,
+        spacingY=10,
+        normalise=False,
+        delta_time=5.0,
+        **kwargs,
     ):
         """Calculate plate motion velocity vector fields at a particular geological time and plot them on a map.
 
@@ -1133,36 +1142,37 @@ class PlotTopologies(object):
 
         Parameters
         ----------
-        ax :
-            Cartopy ax.
-
+        ax_or_fig :
+            Cartopy ax or PyGMT figure.
+        color : str, default='black'
+            The colour of the velocity vectors. By default, it is set to black.
+        lons : list of float, default=[]
+            A list of longitudes for the velocity domain point features. If not provided, a global mesh grid of points will be generated with the given spacings in the X and Y directions (``spacingX`` and ``spacingY``).
+        lats : list of float, default=[]
+            A list of latitudes for the velocity domain point features. If not provided, a global mesh grid of points will be generated with the given spacings in the X and Y directions (``spacingX`` and ``spacingY``).
         spacingX : int, default=10
             The spacing in the X direction used to make the velocity domain point feature mesh.
-
         spacingY : int, default=10
             The spacing in the Y direction used to make the velocity domain point feature mesh.
-
         normalise : bool, default=False
             Choose whether to normalise the velocity magnitudes so that vector lengths are all equal.
-
+        delta_time : float, default=5.0
+            The time interval (in Ma) used to calculate the velocity vectors. The stage rotation between the current time and the time interval is used to calculate the velocity vectors. By default, it is set to 5 Ma.
         **kwargs :
-            Keyword arguments for plotting the velocity vector field. See Matplotlib quiver keyword arguments
-            `here <https://matplotlib.org/3.5.1/api/_as_gen/matplotlib.axes.Axes.quiver.html>`__.
-
+            Keyword arguments for Matplotlib quiver() or PyGMT velo().
         """
-        if not isinstance(self._plot_engine, CartopyPlotEngine):
-            raise NotImplementedError(
-                f"Plotting velocities has not been implemented for {self._plot_engine.__class__} yet."
-            )
 
-        lonq, latq = np.meshgrid(
-            np.arange(-180, 180 + spacingX, spacingX),
-            np.arange(-90, 90 + spacingY, spacingY),
-        )
-        lons = lonq.ravel()
-        lats = latq.ravel()
+        if len(lons) != 0 or len(lats) != 0:
+            assert len(lons) == len(
+                lats
+            ), "The 'lons' and 'lats' parameters must be of the same length if they are provided."
 
-        delta_time = 5.0
+        # if no longitude and latitude arrays are provided, generate a global mesh grid of points with the given spacings in the X and Y directions (spacingX and spacingY)
+        if not lons or not lats:
+            lon_arr = np.arange(-180, 180 + spacingX, spacingX)
+            lat_arr = np.arange(-90, 90 + spacingY, spacingY)
+            lons = np.tile(lon_arr, len(lat_arr))
+            lats = np.repeat(lat_arr, len(lon_arr))
 
         velocity_lons, velocity_lats = self.plate_reconstruction.get_point_velocities(
             lons,
@@ -1180,17 +1190,21 @@ class PlotTopologies(object):
             velocity_lons /= mag
             velocity_lats /= mag
 
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore", UserWarning)
-            quiver = ax.quiver(
-                lons,
-                lats,
-                velocity_lons,
-                velocity_lats,
-                transform=self.base_projection,
-                **kwargs,
-            )
-        return quiver
+        data = gpd.GeoDataFrame(
+            {
+                "lon": lons,
+                "lat": lats,
+                "east_vel": velocity_lons,
+                "north_vel": velocity_lats,
+                "east_sigma": [0] * len(lons),
+                "north_sigma": [0] * len(lats),
+                "correlation": [0] * len(lons),
+            }
+        )
+
+        return self._plot_engine.plot_plate_motion_vectors(
+            ax_or_fig, data, projection=self.base_projection, color=color, **kwargs
+        )
 
     def plot_pole(self, ax, lon, lat, a95, **kwargs):
         """

@@ -360,6 +360,25 @@ class PygmtPlotEngine(PlotEngine):
 
         ax_or_fig.grdimage(**grdimage_kwargs)
 
+    def plot_plate_motion_vectors(
+        self,
+        ax_or_fig,
+        gdf_motion_vectors: GeoDataFrame,
+        projection=None,
+        scale_factor=1.0,
+        color="black",
+        **kwargs,
+    ):
+
+        return ax_or_fig.velo(
+            data=gdf_motion_vectors,
+            spec="e0.2/0.39/18",  # arrows + ellipses; 0.2 cm/(mm/yr); 1-sigma
+            vector="0.1c+p1p+e+gred",  # arrowhead 0.1 cm, red fill
+            pen=f"0.3p,{color}",
+            fill=color,  # arrow fill (v0.12+)
+            uncertaintyfill="lightgray@50",  # ellipse fill (v0.12+, no underscore)
+        )
+
 
 def to_geographic_data_array(data_array):
     """Convert a DataArray to a geographic grid format that PyGMT can understand.

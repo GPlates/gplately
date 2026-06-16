@@ -6,7 +6,13 @@
 import os
 import sys
 
+from gplately.auxiliary import get_gplot
+
 os.environ["DISABLE_GPLATELY_DEV_WARNING"] = "true"
+
+# pyright: reportMissingImports=false
+# pyright: reportMissingModuleSource=false
+
 import cartopy.crs as ccrs
 import matplotlib.pyplot as plt
 import numpy as np
@@ -21,32 +27,16 @@ print(gplately.__file__)
 # test the plot function with the new PlateModel class
 
 # MODEL_NAME = "Clennett2020"
-MODEL_NAME = "Muller2019"
+MODEL_NAME = "Muller2025"
 # MODEL_NAME = "merdith2021"
+age = 55
 
 
 def main(show=True):
-    try:
-        model = PlateModelManager().get_model(MODEL_NAME, data_dir=MODEL_REPO_DIR)
-    except:
-        model = PlateModel(MODEL_NAME, data_dir=MODEL_REPO_DIR, readonly=True)
 
-    if not model:
-        return
-
-    age = 55
-
-    test_model = PlateReconstruction(
-        model.get_rotation_model(),
-        topology_features=model.get_layer("Topologies"),
-        static_polygons=model.get_layer("StaticPolygons"),
-        plate_model=model,
-    )
-    gplot = PlotTopologies(
-        test_model,
-        coastlines=model.get_layer("Coastlines"),
-        COBs=model.get_layer("COBs", return_none_if_not_exist=True),
-        continents=model.get_layer("ContinentalPolygons"),
+    gplot = get_gplot(
+        MODEL_NAME,
+        "plate-model-repo",
         time=age,
     )
 
@@ -56,6 +46,7 @@ def main(show=True):
     fig = plt.figure(figsize=(10, 5), dpi=96)
     ax = fig.add_subplot(111, projection=ccrs.Robinson(central_longitude=180))
 
+    plot_velocity_vectors = True
     all_flag = 1
     plot_flag = {
         "continent_ocean_boundaries": 0,
@@ -114,6 +105,8 @@ def main(show=True):
                     facecolor=color + [0.5],
                     edgecolor=color,
                 )
+    if plot_velocity_vectors:
+        gplot.plot_plate_motion_vectors(ax, normalise=True, color="red")
 
     plt.title(f"{age} Ma")
 

@@ -27,7 +27,9 @@ if __name__ == "__main__":
         time=reconstruction_time,
         plot_engine=PygmtPlotEngine(),
     )
-    fig = get_pygmt_basemap_figure(projection="N180/10c", region="d")
+    fig = get_pygmt_basemap_figure(
+        projection="N180/10c", region="d", frame=["xafg30", "yafg30"]
+    )
 
     # reconstruct the topography grid for the specified reconstruction time,
     # and use it to create an illumination grid for shading
@@ -38,7 +40,7 @@ if __name__ == "__main__":
         data=topo_file, plate_reconstruction=gplot.plate_reconstruction
     ).reconstruct(time=reconstruction_time)
 
-    illumination = pygmt.grdgradient(grid=topo_grid.to_dataarray(), radiance=[315, 45])
+    illumination = pygmt.grdgradient(grid=topo_grid.to_data_array(), radiance=[315, 45])
     # print(illumination)
     gplot.plot_grid(
         fig,
@@ -71,10 +73,7 @@ if __name__ == "__main__":
     gplot.plot_transforms(fig, pen="0.5p,green", gmtlabel="Transforms")
     gplot.plot_subduction_teeth(fig, color="blue", gmtlabel="Subduction Zones")
 
-    try:
-        gplot.plot_plate_motion_vectors(fig)
-    except NotImplementedError as e:
-        print(e)
+    gplot.plot_plate_motion_vectors(fig, normalise=True, color="red")
 
     fig.text(
         text=f"{reconstruction_time} Ma",

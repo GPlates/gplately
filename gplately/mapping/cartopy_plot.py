@@ -16,6 +16,7 @@
 #
 import logging
 import math
+import warnings
 
 # pyright: reportMissingImports=false
 # pyright: reportMissingModuleSource=false
@@ -344,6 +345,28 @@ class CartopyPlotEngine(PlotEngine):
             origin=origin,
             **kwargs,
         )
+
+    def plot_plate_motion_vectors(
+        self,
+        ax_or_fig,
+        gdf_motion_vectors: GeoDataFrame,
+        projection=None,
+        scale_factor=1.0,
+        color="black",
+        **kwargs,
+    ):
+        """Plot plate motion vectors onto a map using Cartopy"""
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", UserWarning)
+            return ax_or_fig.quiver(
+                gdf_motion_vectors["lon"],
+                gdf_motion_vectors["lat"],
+                gdf_motion_vectors["east_vel"],
+                gdf_motion_vectors["north_vel"],
+                transform=projection,
+                color=color,
+                **kwargs,
+            )
 
 
 def _create_a_basic_cartopy_ax(
