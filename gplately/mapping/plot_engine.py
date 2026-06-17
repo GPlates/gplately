@@ -69,3 +69,8 @@ class PlotEngine(ABC):
     ):
         """Plot plate motion vectors (abstract method)"""
         pass  # This is an abstract method, no implementation here.
+
+    @abstractmethod
+    def plot_pole(self, ax_or_fig, lon, lat, a95, color="green"):
+        """Plot a pole with given longitude, latitude and a95 (abstract method)"""
+        pass  # This is an abstract method, no implementation here.

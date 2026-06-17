@@ -108,6 +108,10 @@ def main(show=True):
     if plot_velocity_vectors:
         gplot.plot_plate_motion_vectors(ax, normalise=True, color="red")
 
+    plot_pole_flag = True
+    if plot_pole_flag:
+        gplot.plot_pole(ax, lon=180, lat=0, a95=10, color="blue")
+
     plt.title(f"{age} Ma")
 
     if show:

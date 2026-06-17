@@ -32,6 +32,7 @@ from ..tools import EARTH_RADIUS
 from ..utils.plot_utils import plot_subduction_teeth
 from .plot_engine import PlotEngine
 from .hillshade import set_shade
+from ..geometry import geographic_circle
 
 logger = logging.getLogger("gplately")
 
@@ -367,6 +368,38 @@ class CartopyPlotEngine(PlotEngine):
                 color=color,
                 **kwargs,
             )
+
+    def plot_pole(self, ax_or_fig, lon, lat, a95, color="green"):
+        """Plot a paleomagnetic pole onto a map using Cartopy"""
+        lons, lats = geographic_circle(lon, lat, a95)
+        # Filled polygon — transform=geo tells Cartopy the data is in lon/lat
+        ax_or_fig.fill(
+            lons, lats, transform=ccrs.PlateCarree(), color=color, alpha=0.4, zorder=3
+        )
+
+        # Outline
+        ax_or_fig.plot(
+            lons,
+            lats,
+            transform=ccrs.PlateCarree(),
+            color="black",
+            linewidth=1.5,
+            zorder=4,
+        )
+
+        # Centre marker
+        ax_or_fig.plot(
+            lon,
+            lat,
+            transform=ccrs.PlateCarree(),
+            marker="o",
+            markersize=6,
+            color="white",
+            markeredgecolor="black",
+            markeredgewidth=1,
+            zorder=5,
+        )
+        return ax_or_fig
 
 
 def _create_a_basic_cartopy_ax(

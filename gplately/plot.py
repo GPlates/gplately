@@ -42,7 +42,7 @@ from .decorators import (
     validate_topology_availability,
 )
 from .gpml import _load_FeatureCollection
-from .grids import Raster
+from .grids import Raster, read_netcdf_grid
 from .mapping.cartopy_plot import DEFAULT_CARTOPY_PROJECTION, CartopyPlotEngine
 from .mapping.plot_engine import PlotEngine
 from .tools import EARTH_RADIUS
@@ -1000,13 +1000,13 @@ class PlotTopologies(object):
             ax, gdf_subduction_left, gdf_subduction_right, color=color, **kwargs
         )
 
-    def plot_plate_polygon_by_id(self, ax, plate_id, color="black", **kwargs):
+    def plot_plate_polygon_by_id(self, ax_or_fig, plate_id, color="black", **kwargs):
         """Plot a plate polygon with the given ``plate_id`` on a map.
 
         Parameters
         ----------
-        ax :
-            Cartopy ax or pygmt figure object.
+        ax_or_fig :
+            Cartopy ax or PyGMT figure object.
 
         plate_id : int
             A plate ID that identifies the continental polygon to plot. See the
@@ -1026,20 +1026,19 @@ class PlotTopologies(object):
                 ],
             )
         self.plot_feature(
-            ax,
+            ax_or_fig,
             features,
             color=color,
             **kwargs,
         )
 
-    def plot_grid(self, ax, grid, extent=(-180, 180, -90, 90), **kwargs):
-        """Plot a grid onto a map. The grid can be a NumPy `MaskedArray`_ object, a GPlately `Raster` object
-        or a time-dependent raster name.
+    def plot_grid(self, ax_or_fig, grid, extent=(-180, 180, -90, 90), **kwargs):
+        """Plot a grid onto a map.
 
         Parameters
         ----------
-        ax :
-            Cartopy ax or pygmt figure object.
+        ax_or_fig :
+            Cartopy ax or PyGMT figure object.
 
         grid : NumPy `MaskedArray`_, GPlately `Raster` or a time-dependent raster name.
             A `MaskedArray`_ with elements that define a grid. The number of rows in the raster
@@ -1076,42 +1075,47 @@ class PlotTopologies(object):
             )
 
             return self._plot_engine.plot_grid(
-                ax, grid_data, extent=extent, projection=self.base_projection, **kwargs
+                ax_or_fig,
+                grid_data,
+                extent=extent,
+                projection=self.base_projection,
+                **kwargs,
             )
         else:  # grid is a MaskedArray or Raster object
             return self._plot_engine.plot_grid(
-                ax, grid, extent=extent, projection=self.base_projection, **kwargs
+                ax_or_fig,
+                grid,
+                extent=extent,
+                projection=self.base_projection,
+                **kwargs,
             )
 
-    def plot_grid_from_netCDF(self, ax, filename, **kwargs):
-        """Read raster data from a netCDF file, convert the data into a `MaskedArray`_ object and plot it on a map.
+    def plot_grid_from_netCDF(self, ax_or_fig, filename, **kwargs):
+        """Read raster data from a netCDF file and plot it on a map.
 
         Parameters
         ----------
-        ax :
-            Cartopy ax.
+        ax_or_fig :
+            Cartopy ax or PyGMT figure.
 
         filename : str
             Full path to a netCDF file.
 
         **kwargs :
-            Keyword arguments for plotting the grid. See Matplotlib's ``imshow()`` keyword arguments
-            `here <https://matplotlib.org/3.5.1/api/_as_gen/matplotlib.axes.Axes.imshow.html>`__.
+            Keyword arguments for Matplotlib's ``imshow()`` or PyGMT's ``grdimage()``.
         """
-        # Override matplotlib default origin ('upper')
-        origin = kwargs.pop("origin", "lower")
-
-        from .grids import read_netcdf_grid
 
         raster, lon_coords, lat_coords = read_netcdf_grid(filename, return_grids=True)
         extent = [lon_coords[0], lon_coords[-1], lat_coords[0], lat_coords[-1]]
 
+        # Override matplotlib default origin ('upper')
+        origin = kwargs.pop("origin", "lower")
         if lon_coords[0] < lat_coords[-1]:
             origin = "lower"
         else:
             origin = "upper"
 
-        return self.plot_grid(ax, raster, extent=extent, origin=origin, **kwargs)
+        return self.plot_grid(ax_or_fig, raster, extent=extent, origin=origin, **kwargs)
 
     def plot_plate_motion_vectors(
         self,
@@ -1206,43 +1210,26 @@ class PlotTopologies(object):
             ax_or_fig, data, projection=self.base_projection, color=color, **kwargs
         )
 
-    def plot_pole(self, ax, lon, lat, a95, **kwargs):
+    def plot_pole(self, ax_or_fig, lon, lat, a95, color="green", **kwargs):
         """
-        Plot pole onto a matplotlib axes.
+        Plot a paleomagnetic pole onto a map.
 
         Parameters
         ----------
-        ax :
-            Cartopy ax.
-
+        ax_or_fig :
+            Matplotlib axes or PyGMT figure.
         lon : float
-            Longitudinal coordinate to place pole.
+            Longitudinal coordinate of the pole.
         lat : float
-            Latitudinal coordinate to place pole.
+            Latitudinal coordinate of the pole.
         a95 : float
-            The size of the pole (in degrees).
+            The radius(in degrees) of the cone of 95% confidence around a paleomagnetic pole.
 
         Returns
         -------
-        matplotlib.patches.Circle handle.
+        Matplotlib axes or PyGMT figure.
         """
-        from matplotlib import patches as mpatches
-
-        # Define the projection used to display the circle:
-        proj1 = ccrs.Orthographic(central_longitude=lon, central_latitude=lat)
-
-        def compute_radius(ortho, radius_degrees):
-            phi1 = lat + radius_degrees if lat <= 0 else lat - radius_degrees
-            _, y1 = ortho.transform_point(lon, phi1, ccrs.PlateCarree())
-            return abs(y1)
-
-        r_ortho = compute_radius(proj1, a95)
-
-        # adding a patch
-        patch = ax.add_patch(
-            mpatches.Circle(xy=(lon, lat), radius=r_ortho, transform=proj1, **kwargs)
-        )
-        return patch
+        return self._plot_engine.plot_pole(ax_or_fig, lon, lat, a95, color=color)
 
     @validate_reconstruction_time
     @append_docstring(GET_DATE_DOCSTRING.format("continental rifts"))

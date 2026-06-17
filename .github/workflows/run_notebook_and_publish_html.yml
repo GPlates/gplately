@@ -2,6 +2,19 @@ name: Run notebook and publish HTML
 
 on:
   workflow_dispatch:
+    inputs:
+      notebook_14:
+        description: "14-RuleBasedGPMLProcessingPipeline"
+        type: boolean
+        default: true
+      notebook_15:
+        description: "15-ConvertGridReferenceFrame"
+        type: boolean
+        default: true
+      notebook_plot_map_with_pygmt:
+        description: "Examples/plot_map_with_pygmt"
+        type: boolean
+        default: true
 
 permissions:
   contents: write
@@ -32,11 +45,15 @@ jobs:
 
       - name: Execute notebooks
         run: |
-          notebooks=(
-            14-RuleBasedGPMLProcessingPipeline
-            15-ConvertGridReferenceFrame
-            Examples/plot_map_with_pygmt
-          )
+          notebooks=()
+          ${{ inputs.notebook_14 }} && notebooks+=(14-RuleBasedGPMLProcessingPipeline)
+          ${{ inputs.notebook_15 }} && notebooks+=(15-ConvertGridReferenceFrame)
+          ${{ inputs.notebook_plot_map_with_pygmt }} && notebooks+=(Examples/plot_map_with_pygmt)
+
+          if [ ${#notebooks[@]} -eq 0 ]; then
+            echo "No notebooks selected. Skipping execution."
+            exit 0
+          fi
 
           for notebook in "${notebooks[@]}"; do
             mkdir -p "/tmp/notebook-run/${notebook}"

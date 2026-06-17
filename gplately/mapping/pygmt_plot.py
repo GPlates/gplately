@@ -21,6 +21,8 @@ from pathlib import Path
 # pyright: reportMissingModuleSource=false
 import pygplates
 
+from gplately.geometry import geographic_circle
+
 logger = logging.getLogger("gplately")
 try:
     import pygmt
@@ -378,6 +380,29 @@ class PygmtPlotEngine(PlotEngine):
             fill=color,  # arrow fill (v0.12+)
             uncertaintyfill="lightgray@50",  # ellipse fill (v0.12+, no underscore)
         )
+
+    def plot_pole(self, ax_or_fig, lon, lat, a95, color="green"):
+        """Plot a paleomagnetic pole onto a map using PyGMT."""
+        lons, lats = geographic_circle(lon, lat, a95)
+        # Filled polygon
+        ax_or_fig.plot(
+            x=lons,
+            y=lats,
+            fill=f"{color}@60",
+            pen="1.5p,black",
+            straight_line=False,  # use great-circle segments between vertices
+            close=True,
+        )
+
+        # Centre marker
+        ax_or_fig.plot(
+            x=[lon],
+            y=[lat],
+            style="c0.25c",  # circle symbol, 0.25 cm diameter
+            fill="white",
+            pen="1p,black",
+        )
+        return ax_or_fig
 
 
 def to_geographic_data_array(data_array):
