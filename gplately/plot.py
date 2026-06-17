@@ -28,12 +28,13 @@ from typing import Union
 # pyright: reportMissingImports=false
 # pyright: reportMissingModuleSource=false
 
-import cartopy.crs as ccrs
 import geopandas as gpd
+from gplately.mapping.pygmt_plot import to_geographic_data_array
 import numpy as np
 import pygplates
 from shapely.geometry.base import BaseGeometry, BaseMultipartGeometry
 from shapely.ops import linemerge
+import xarray as xr
 
 from . import ptt
 from .decorators import (
@@ -1090,32 +1091,53 @@ class PlotTopologies(object):
                 **kwargs,
             )
 
-    def plot_grid_from_netCDF(self, ax_or_fig, filename, **kwargs):
+    def plot_grid_from_netCDF(self, ax_or_fig, filename, var_name="", **kwargs):
         """Read raster data from a netCDF file and plot it on a map.
 
         Parameters
         ----------
         ax_or_fig :
             Cartopy ax or PyGMT figure.
-
         filename : str
             Full path to a netCDF file.
-
+        var_name : str, default=""
+            The variable name of the raster data in the netCDF file. If not provided, the first variable in the netCDF file will be used.
         **kwargs :
             Keyword arguments for Matplotlib's ``imshow()`` or PyGMT's ``grdimage()``.
         """
 
-        raster, lon_coords, lat_coords = read_netcdf_grid(filename, return_grids=True)
-        extent = [lon_coords[0], lon_coords[-1], lat_coords[0], lat_coords[-1]]
+        try:
+            raster_xr = xr.open_dataarray(filename)
+        except ValueError:
+            # Fallback for NetCDF files with multiple variables.
+            dataset = xr.open_dataset(filename, decode_times=False)
+            if var_name and var_name in dataset.data_vars:
+                raster_xr = dataset[var_name]
+            else:
+                first_var = next(iter(dataset.data_vars))
+                raster_xr = dataset[first_var]
+
+        raster_xr = to_geographic_data_array(raster_xr)
+
+        lon_coords = raster_xr.coords["lon"].values
+        lat_coords = raster_xr.coords["lat"].values
+        extent = [
+            float(np.nanmin(lon_coords)),
+            float(np.nanmax(lon_coords)),
+            float(np.nanmin(lat_coords)),
+            float(np.nanmax(lat_coords)),
+        ]
 
         # Override matplotlib default origin ('upper')
         origin = kwargs.pop("origin", "lower")
-        if lon_coords[0] < lat_coords[-1]:
+        if lat_coords[0] < lat_coords[-1]:
             origin = "lower"
         else:
             origin = "upper"
 
-        return self.plot_grid(ax_or_fig, raster, extent=extent, origin=origin, **kwargs)
+        return self.plot_grid(
+            ax_or_fig, raster_xr, extent=extent, origin=origin, **kwargs
+        )
 
     def plot_plate_motion_vectors(
         self,
