@@ -21,6 +21,7 @@ This sub-module contains tools for reconstructing and plotting geological featur
 
 import logging
 import math
+import os
 import warnings
 from functools import partial
 from typing import Union
@@ -29,12 +30,10 @@ from typing import Union
 # pyright: reportMissingModuleSource=false
 
 import geopandas as gpd
-from gplately.mapping.pygmt_plot import to_geographic_data_array
 import numpy as np
 import pygplates
 from shapely.geometry.base import BaseGeometry, BaseMultipartGeometry
 from shapely.ops import linemerge
-import xarray as xr
 
 from . import ptt
 from .decorators import (
@@ -51,6 +50,7 @@ from .utils.feature_utils import shapelify_features as _shapelify_features
 from .utils.plot_utils import _meridian_from_ax, PLOT_DOCSTRING, GET_DATE_DOCSTRING
 from .utils.plot_utils import plot_subduction_teeth as _plot_subduction_teeth
 from .utils import deprecated
+from .utils.io_utils import to_geographic_data_array, load_data_array_from_netcdf
 
 logger = logging.getLogger("gplately")
 
@@ -1033,7 +1033,9 @@ class PlotTopologies(object):
             **kwargs,
         )
 
-    def plot_grid(self, ax_or_fig, grid, extent=(-180, 180, -90, 90), **kwargs):
+    def plot_grid(
+        self, ax_or_fig, grid, extent=(-180, 180, -90, 90), shading=None, **kwargs
+    ):
         """Plot a grid onto a map.
 
         Parameters
@@ -1069,29 +1071,30 @@ class PlotTopologies(object):
                     "Cannot look up the raster by name. Make sure to create the 'plate_reconstruction' with a valid 'plate_model' object."
                 )
 
-            grid_data = Raster(
+            grid = Raster(
                 data=self.plate_reconstruction.plate_model.get_raster(grid, self.time),
                 plate_reconstruction=self.plate_reconstruction,
                 extent=(-180, 180, -90, 90),
             )
 
-            return self._plot_engine.plot_grid(
-                ax_or_fig,
-                grid_data,
-                extent=extent,
-                projection=self.base_projection,
-                **kwargs,
-            )
-        else:  # grid is a MaskedArray or Raster object
-            return self._plot_engine.plot_grid(
-                ax_or_fig,
-                grid,
-                extent=extent,
-                projection=self.base_projection,
-                **kwargs,
-            )
+        return self._plot_engine.plot_grid(
+            ax_or_fig,
+            grid,
+            extent=extent,
+            shading=shading,
+            projection=self.base_projection,
+            **kwargs,
+        )
 
-    def plot_grid_from_netCDF(self, ax_or_fig, filename, var_name="", **kwargs):
+    def plot_grid_from_netCDF(
+        self,
+        ax_or_fig,
+        filename,
+        var_name="",
+        shading=None,
+        shading_var_name="",
+        **kwargs,
+    ):
         """Read raster data from a netCDF file and plot it on a map.
 
         Parameters
@@ -1102,22 +1105,24 @@ class PlotTopologies(object):
             Full path to a netCDF file.
         var_name : str, default=""
             The variable name of the raster data in the netCDF file. If not provided, the first variable in the netCDF file will be used.
+        shading : str, default=None
+            Full path to a netCDF file containing illumination data, such as topography grid. If not provided, no shading will be applied.
+            If you are using PyGMT plot engine, the valid shading parameters for PyGMT can also be used here, such as ``-I+d`` or ``"+a315+ne0.6"``.
+        shading_var_name : str, default=""
+            The variable name of the shading data in the shading netCDF file. If not provided, the first variable in the netCDF file will be used.
         **kwargs :
             Keyword arguments for Matplotlib's ``imshow()`` or PyGMT's ``grdimage()``.
         """
 
-        try:
-            raster_xr = xr.open_dataarray(filename)
-        except ValueError:
-            # Fallback for NetCDF files with multiple variables.
-            dataset = xr.open_dataset(filename, decode_times=False)
-            if var_name and var_name in dataset.data_vars:
-                raster_xr = dataset[var_name]
-            else:
-                first_var = next(iter(dataset.data_vars))
-                raster_xr = dataset[first_var]
-
+        raster_xr = load_data_array_from_netcdf(filename, var_name=var_name)
         raster_xr = to_geographic_data_array(raster_xr)
+
+        if (
+            shading
+            and isinstance(shading, (str, bytes, os.PathLike))
+            and os.path.isfile(shading)
+        ):
+            shading = load_data_array_from_netcdf(shading, var_name=shading_var_name)
 
         lon_coords = raster_xr.coords["lon"].values
         lat_coords = raster_xr.coords["lat"].values
@@ -1136,7 +1141,12 @@ class PlotTopologies(object):
             origin = "upper"
 
         return self.plot_grid(
-            ax_or_fig, raster_xr, extent=extent, origin=origin, **kwargs
+            ax_or_fig,
+            raster_xr,
+            shading=shading,
+            extent=extent,
+            origin=origin,
+            **kwargs,
         )
 
     def plot_plate_motion_vectors(

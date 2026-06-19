@@ -43,7 +43,7 @@ class CartopyPlotEngine(PlotEngine):
     """Use Cartopy for map plotting."""
 
     def __init__(self):
-        pass
+        super().__init__()
 
     def plot_geo_data_frame(self, ax_or_fig, gdf: GeoDataFrame, **kwargs):
         """Use Cartopy to plot geometries in a GeoDataFrame object onto a map

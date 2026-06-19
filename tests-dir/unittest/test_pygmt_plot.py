@@ -40,8 +40,6 @@ if __name__ == "__main__":
         data=topo_file, plate_reconstruction=gplot.plate_reconstruction
     ).reconstruct(time=reconstruction_time)
 
-    illumination = pygmt.grdgradient(grid=topo_grid.to_data_array(), radiance=[315, 45])
-    # print(illumination)
     gplot.plot_grid(
         fig,
         "AgeGrids",
@@ -49,7 +47,7 @@ if __name__ == "__main__":
         nan_transparent=True,
         # shading=True,
         # shading="+a315+ne0.6",
-        shading=illumination,
+        shading=topo_grid.to_data_array(),
     )
 
     # fig.coast(shorelines=True)

@@ -41,9 +41,6 @@ if __name__ == "__main__":
         data=topo_file, plate_reconstruction=gplot.plate_reconstruction
     ).reconstruct(time=reconstruction_time)
 
-    illumination = pygmt.grdgradient(grid=topo_grid.to_data_array(), radiance=[315, 45])
-    # print(illumination)
-
     # download age grid CPT file from https://raw.githubusercontent.com/GPlates/gplately/refs/heads/master/tests-dir/unittest/create-age-grids-video/agegrid.cpt
     cpt_file = f"{data_dir}/agegrid.cpt"
     if not os.path.isfile(cpt_file):
@@ -61,7 +58,7 @@ if __name__ == "__main__":
         nan_transparent=True,
         # shading=True,
         # shading="+a315+ne0.6",
-        shading=illumination,
+        shading=topo_grid.to_data_array(),
     )
 
     # now you can plot some features with the PlotTopologies object
