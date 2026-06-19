@@ -185,8 +185,8 @@ Currently, only colour names are tested and officially supported, for example, â
 <li><p><code class="docutils literal notranslate"><span class="pre">True</span></code>: use default shading parameters (equivalent to GMT <code class="docutils literal notranslate"><span class="pre">-I+d</span></code>).</p></li>
 <li><p>A string such as <code class="docutils literal notranslate"><span class="pre">&quot;+a315+ne0.6&quot;</span></code> to pass directly as the GMT <code class="docutils literal notranslate"><span class="pre">-I</span></code>
 option (azimuth and intensity specification).</p></li>
-<li><p>An <code class="docutils literal notranslate"><span class="pre">xarray.DataArray</span></code> or file path pointing to an illumination grid
-computed externally (e.g. via <code class="xref py py-func docutils literal notranslate"><span class="pre">pygmt.grdgradient()</span></code>).</p></li>
+<li><p>An <code class="docutils literal notranslate"><span class="pre">xarray.DataArray</span></code>, the <code class="xref py py-func docutils literal notranslate"><span class="pre">pygmt.grdgradient()</span></code> will be called upon this DataArray inside this function to compute the illumination grid from the provided data array.</p></li>
+<li><p>Full file path pointing to a grid which will be used for illumination. The <code class="xref py py-func docutils literal notranslate"><span class="pre">pygmt.grdgradient()</span></code> will be called upon the grid inside this function.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">None</span></code> (default): no shading is applied.</p></li>
 </ul>
 </p></li>

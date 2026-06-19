@@ -106,6 +106,7 @@
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">math</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">partial</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Union</span>
@@ -114,12 +115,10 @@
 <span class="c1"># pyright: reportMissingModuleSource=false</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">geopandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">gpd</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">gplately.mapping.pygmt_plot</span><span class="w"> </span><span class="kn">import</span> <span class="n">to_geographic_data_array</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pygplates</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">shapely.geometry.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseGeometry</span><span class="p">,</span> <span class="n">BaseMultipartGeometry</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">shapely.ops</span><span class="w"> </span><span class="kn">import</span> <span class="n">linemerge</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">xarray</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">xr</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">ptt</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.decorators</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
@@ -136,6 +135,7 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">.utils.plot_utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">_meridian_from_ax</span><span class="p">,</span> <span class="n">PLOT_DOCSTRING</span><span class="p">,</span> <span class="n">GET_DATE_DOCSTRING</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.utils.plot_utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">plot_subduction_teeth</span> <span class="k">as</span> <span class="n">_plot_subduction_teeth</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">deprecated</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.utils.io_utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">to_geographic_data_array</span><span class="p">,</span> <span class="n">load_data_array_from_netcdf</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">&quot;gplately&quot;</span><span class="p">)</span>
 
@@ -1176,7 +1176,9 @@
 
 <div class="viewcode-block" id="PlotTopologies.plot_grid">
 <a class="viewcode-back" href="../../generated/gplately.PlotTopologies.html#gplately.PlotTopologies.plot_grid">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">plot_grid</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ax_or_fig</span><span class="p">,</span> <span class="n">grid</span><span class="p">,</span> <span class="n">extent</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">180</span><span class="p">,</span> <span class="mi">180</span><span class="p">,</span> <span class="o">-</span><span class="mi">90</span><span class="p">,</span> <span class="mi">90</span><span class="p">),</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">plot_grid</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">ax_or_fig</span><span class="p">,</span> <span class="n">grid</span><span class="p">,</span> <span class="n">extent</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">180</span><span class="p">,</span> <span class="mi">180</span><span class="p">,</span> <span class="o">-</span><span class="mi">90</span><span class="p">,</span> <span class="mi">90</span><span class="p">),</span> <span class="n">shading</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+    <span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Plot a grid onto a map.</span>
 
 <span class="sd">        Parameters</span>
@@ -1212,32 +1214,33 @@
                     <span class="s2">&quot;Cannot look up the raster by name. Make sure to create the &#39;plate_reconstruction&#39; with a valid &#39;plate_model&#39; object.&quot;</span>
                 <span class="p">)</span>
 
-            <span class="n">grid_data</span> <span class="o">=</span> <span class="n">Raster</span><span class="p">(</span>
+            <span class="n">grid</span> <span class="o">=</span> <span class="n">Raster</span><span class="p">(</span>
                 <span class="n">data</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">plate_reconstruction</span><span class="o">.</span><span class="n">plate_model</span><span class="o">.</span><span class="n">get_raster</span><span class="p">(</span><span class="n">grid</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">time</span><span class="p">),</span>
                 <span class="n">plate_reconstruction</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">plate_reconstruction</span><span class="p">,</span>
                 <span class="n">extent</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">180</span><span class="p">,</span> <span class="mi">180</span><span class="p">,</span> <span class="o">-</span><span class="mi">90</span><span class="p">,</span> <span class="mi">90</span><span class="p">),</span>
             <span class="p">)</span>
 
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_plot_engine</span><span class="o">.</span><span class="n">plot_grid</span><span class="p">(</span>
-                <span class="n">ax_or_fig</span><span class="p">,</span>
-                <span class="n">grid_data</span><span class="p">,</span>
-                <span class="n">extent</span><span class="o">=</span><span class="n">extent</span><span class="p">,</span>
-                <span class="n">projection</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">base_projection</span><span class="p">,</span>
-                <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
-            <span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>  <span class="c1"># grid is a MaskedArray or Raster object</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_plot_engine</span><span class="o">.</span><span class="n">plot_grid</span><span class="p">(</span>
-                <span class="n">ax_or_fig</span><span class="p">,</span>
-                <span class="n">grid</span><span class="p">,</span>
-                <span class="n">extent</span><span class="o">=</span><span class="n">extent</span><span class="p">,</span>
-                <span class="n">projection</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">base_projection</span><span class="p">,</span>
-                <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
-            <span class="p">)</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_plot_engine</span><span class="o">.</span><span class="n">plot_grid</span><span class="p">(</span>
+            <span class="n">ax_or_fig</span><span class="p">,</span>
+            <span class="n">grid</span><span class="p">,</span>
+            <span class="n">extent</span><span class="o">=</span><span class="n">extent</span><span class="p">,</span>
+            <span class="n">shading</span><span class="o">=</span><span class="n">shading</span><span class="p">,</span>
+            <span class="n">projection</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">base_projection</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+        <span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="PlotTopologies.plot_grid_from_netCDF">
 <a class="viewcode-back" href="../../generated/gplately.PlotTopologies.html#gplately.PlotTopologies.plot_grid_from_netCDF">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">plot_grid_from_netCDF</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ax_or_fig</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">var_name</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">plot_grid_from_netCDF</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">ax_or_fig</span><span class="p">,</span>
+        <span class="n">filename</span><span class="p">,</span>
+        <span class="n">var_name</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="n">shading</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">shading_var_name</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Read raster data from a netCDF file and plot it on a map.</span>
 
 <span class="sd">        Parameters</span>
@@ -1248,22 +1251,24 @@
 <span class="sd">            Full path to a netCDF file.</span>
 <span class="sd">        var_name : str, default=&quot;&quot;</span>
 <span class="sd">            The variable name of the raster data in the netCDF file. If not provided, the first variable in the netCDF file will be used.</span>
+<span class="sd">        shading : str, default=None</span>
+<span class="sd">            Full path to a netCDF file containing illumination data, such as topography grid. If not provided, no shading will be applied.</span>
+<span class="sd">            If you are using PyGMT plot engine, the valid shading parameters for PyGMT can also be used here, such as ``-I+d`` or ``&quot;+a315+ne0.6&quot;``.</span>
+<span class="sd">        shading_var_name : str, default=&quot;&quot;</span>
+<span class="sd">            The variable name of the shading data in the shading netCDF file. If not provided, the first variable in the netCDF file will be used.</span>
 <span class="sd">        **kwargs :</span>
 <span class="sd">            Keyword arguments for Matplotlib&#39;s ``imshow()`` or PyGMT&#39;s ``grdimage()``.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="k">try</span><span class="p">:</span>
-            <span class="n">raster_xr</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">open_dataarray</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
-        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
-            <span class="c1"># Fallback for NetCDF files with multiple variables.</span>
-            <span class="n">dataset</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">open_dataset</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">decode_times</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">var_name</span> <span class="ow">and</span> <span class="n">var_name</span> <span class="ow">in</span> <span class="n">dataset</span><span class="o">.</span><span class="n">data_vars</span><span class="p">:</span>
-                <span class="n">raster_xr</span> <span class="o">=</span> <span class="n">dataset</span><span class="p">[</span><span class="n">var_name</span><span class="p">]</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">first_var</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="nb">iter</span><span class="p">(</span><span class="n">dataset</span><span class="o">.</span><span class="n">data_vars</span><span class="p">))</span>
-                <span class="n">raster_xr</span> <span class="o">=</span> <span class="n">dataset</span><span class="p">[</span><span class="n">first_var</span><span class="p">]</span>
-
+        <span class="n">raster_xr</span> <span class="o">=</span> <span class="n">load_data_array_from_netcdf</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">var_name</span><span class="o">=</span><span class="n">var_name</span><span class="p">)</span>
         <span class="n">raster_xr</span> <span class="o">=</span> <span class="n">to_geographic_data_array</span><span class="p">(</span><span class="n">raster_xr</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="p">(</span>
+            <span class="n">shading</span>
+            <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">shading</span><span class="p">,</span> <span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">PathLike</span><span class="p">))</span>
+            <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">shading</span><span class="p">)</span>
+        <span class="p">):</span>
+            <span class="n">shading</span> <span class="o">=</span> <span class="n">load_data_array_from_netcdf</span><span class="p">(</span><span class="n">shading</span><span class="p">,</span> <span class="n">var_name</span><span class="o">=</span><span class="n">shading_var_name</span><span class="p">)</span>
 
         <span class="n">lon_coords</span> <span class="o">=</span> <span class="n">raster_xr</span><span class="o">.</span><span class="n">coords</span><span class="p">[</span><span class="s2">&quot;lon&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
         <span class="n">lat_coords</span> <span class="o">=</span> <span class="n">raster_xr</span><span class="o">.</span><span class="n">coords</span><span class="p">[</span><span class="s2">&quot;lat&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
@@ -1282,7 +1287,12 @@
             <span class="n">origin</span> <span class="o">=</span> <span class="s2">&quot;upper&quot;</span>
 
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">plot_grid</span><span class="p">(</span>
-            <span class="n">ax_or_fig</span><span class="p">,</span> <span class="n">raster_xr</span><span class="p">,</span> <span class="n">extent</span><span class="o">=</span><span class="n">extent</span><span class="p">,</span> <span class="n">origin</span><span class="o">=</span><span class="n">origin</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+            <span class="n">ax_or_fig</span><span class="p">,</span>
+            <span class="n">raster_xr</span><span class="p">,</span>
+            <span class="n">shading</span><span class="o">=</span><span class="n">shading</span><span class="p">,</span>
+            <span class="n">extent</span><span class="o">=</span><span class="n">extent</span><span class="p">,</span>
+            <span class="n">origin</span><span class="o">=</span><span class="n">origin</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
         <span class="p">)</span></div>
 
 
