@@ -73,6 +73,8 @@ Input Shapely geometries are converted to the following PyGPlates geometries:
 
 """
 
+# pyright: reportMissingImports=false
+# pyright: reportMissingModuleSource=false
 import numpy as np
 import pygplates
 from shapely.geometry import LinearRing as _LinearRing
@@ -332,7 +334,7 @@ def pygplates_to_shapely(
         return output_geoms[0]
     if explode:
         return output_geoms
-    return output_type(output_geoms)
+    return output_type(output_geoms)  # pyright: ignore[reportArgumentType]
 
 
 def _ensure_ccw(geometry):
@@ -387,7 +389,7 @@ def shapely_to_pygplates(geometry):
     if _contains_shapely_geometries(geometry):
         # Recursively convert all elements in iterable of geometries
         out = []
-        for i in geometry:
+        for i in geometry:  # pyright: ignore[reportGeneralTypeIssues]
             tmp = shapely_to_pygplates(i)
             if isinstance(tmp, pygplates.GeometryOnSphere):
                 # Output is a single geometry
@@ -485,7 +487,7 @@ def wrap_geometries(
             if isinstance(tmp, _BaseGeometry):
                 out.append(tmp)
             else:
-                out.extend(tmp)
+                out.extend(tmp)  # pyright: ignore[reportArgumentType]
         return out
 
 
@@ -543,11 +545,11 @@ def _wrap_geometry(
     if explode:
         return out
     if isinstance(geometry, (_Point, _MultiPoint)):
-        return _MultiPoint(out)
+        return _MultiPoint(out)  # pyright: ignore[reportArgumentType]
     if isinstance(geometry, (_LineString, _MultiLineString)):
-        return _MultiLineString(out)
+        return _MultiLineString(out)  # pyright: ignore[reportArgumentType]
     if isinstance(geometry, (_LinearRing, _Polygon, _MultiPolygon)):
-        return _MultiPolygon(out)
+        return _MultiPolygon(out)  # pyright: ignore[reportArgumentType]
 
 
 def _contains_shapely_geometries(i):
@@ -603,3 +605,46 @@ __pdoc__ = {
     "MultiPointOnSphere": MultiPointOnSphere.__doc__,
     "PolylineOnSphere": PolylineOnSphere.__doc__,
 }
+
+
+def geographic_circle(lon, lat, radius_deg, n_points=360):
+    """
+    Return (lons, lats) tracing a great-circle buffer.
+
+    A great-circle buffer around a point is the set of all points that are exactly
+    the same great-circle distance away from it — which traces out a circle on the sphere's surface.
+
+    Parameters
+    ----------
+    lon, lat    : centre coordinates in degrees
+    radius_deg  : radius in great-circle degrees (1° ≈ 111 km)
+    n_points    : number of vertices
+
+    Returns
+    -------
+    lons, lats : arrays of longitudes and latitudes of the circle vertices, in degrees
+    """
+    azimuths = np.linspace(0, 360, n_points, endpoint=False)
+    lons, lats = [], []
+    lat_r = np.radians(lat)
+    d_r = np.radians(radius_deg)
+
+    for az in azimuths:
+        az_r = np.radians(az)
+        out_lat = np.degrees(
+            np.arcsin(
+                np.sin(lat_r) * np.cos(d_r) + np.cos(lat_r) * np.sin(d_r) * np.cos(az_r)
+            )
+        )
+        out_lon = lon + np.degrees(
+            np.arctan2(
+                np.sin(az_r) * np.sin(d_r) * np.cos(lat_r),
+                np.cos(d_r) - np.sin(lat_r) * np.sin(np.radians(out_lat)),
+            )
+        )
+        lons.append(out_lon)
+        lats.append(out_lat)
+
+    lons.append(lons[0])
+    lats.append(lats[0])
+    return np.array(lons), np.array(lats)

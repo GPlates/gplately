@@ -2829,7 +2829,7 @@ class Raster(object):
         new_raster.data = new_data
         return new_raster
 
-    def to_dataarray(self, name="z"):
+    def to_data_array(self, name="z"):
         da = xr.DataArray(
             self.data,
             coords={

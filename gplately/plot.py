@@ -28,12 +28,13 @@ from typing import Union
 # pyright: reportMissingImports=false
 # pyright: reportMissingModuleSource=false
 
-import cartopy.crs as ccrs
 import geopandas as gpd
+from gplately.mapping.pygmt_plot import to_geographic_data_array
 import numpy as np
 import pygplates
 from shapely.geometry.base import BaseGeometry, BaseMultipartGeometry
 from shapely.ops import linemerge
+import xarray as xr
 
 from . import ptt
 from .decorators import (
@@ -42,7 +43,7 @@ from .decorators import (
     validate_topology_availability,
 )
 from .gpml import _load_FeatureCollection
-from .grids import Raster
+from .grids import Raster, read_netcdf_grid
 from .mapping.cartopy_plot import DEFAULT_CARTOPY_PROJECTION, CartopyPlotEngine
 from .mapping.plot_engine import PlotEngine
 from .tools import EARTH_RADIUS
@@ -1000,13 +1001,13 @@ class PlotTopologies(object):
             ax, gdf_subduction_left, gdf_subduction_right, color=color, **kwargs
         )
 
-    def plot_plate_polygon_by_id(self, ax, plate_id, color="black", **kwargs):
+    def plot_plate_polygon_by_id(self, ax_or_fig, plate_id, color="black", **kwargs):
         """Plot a plate polygon with the given ``plate_id`` on a map.
 
         Parameters
         ----------
-        ax :
-            Cartopy ax or pygmt figure object.
+        ax_or_fig :
+            Cartopy ax or PyGMT figure object.
 
         plate_id : int
             A plate ID that identifies the continental polygon to plot. See the
@@ -1026,20 +1027,19 @@ class PlotTopologies(object):
                 ],
             )
         self.plot_feature(
-            ax,
+            ax_or_fig,
             features,
             color=color,
             **kwargs,
         )
 
-    def plot_grid(self, ax, grid, extent=(-180, 180, -90, 90), **kwargs):
-        """Plot a grid onto a map. The grid can be a NumPy `MaskedArray`_ object, a GPlately `Raster` object
-        or a time-dependent raster name.
+    def plot_grid(self, ax_or_fig, grid, extent=(-180, 180, -90, 90), **kwargs):
+        """Plot a grid onto a map.
 
         Parameters
         ----------
-        ax :
-            Cartopy ax or pygmt figure object.
+        ax_or_fig :
+            Cartopy ax or PyGMT figure object.
 
         grid : NumPy `MaskedArray`_, GPlately `Raster` or a time-dependent raster name.
             A `MaskedArray`_ with elements that define a grid. The number of rows in the raster
@@ -1076,45 +1076,80 @@ class PlotTopologies(object):
             )
 
             return self._plot_engine.plot_grid(
-                ax, grid_data, extent=extent, projection=self.base_projection, **kwargs
+                ax_or_fig,
+                grid_data,
+                extent=extent,
+                projection=self.base_projection,
+                **kwargs,
             )
         else:  # grid is a MaskedArray or Raster object
             return self._plot_engine.plot_grid(
-                ax, grid, extent=extent, projection=self.base_projection, **kwargs
+                ax_or_fig,
+                grid,
+                extent=extent,
+                projection=self.base_projection,
+                **kwargs,
             )
 
-    def plot_grid_from_netCDF(self, ax, filename, **kwargs):
-        """Read raster data from a netCDF file, convert the data into a `MaskedArray`_ object and plot it on a map.
+    def plot_grid_from_netCDF(self, ax_or_fig, filename, var_name="", **kwargs):
+        """Read raster data from a netCDF file and plot it on a map.
 
         Parameters
         ----------
-        ax :
-            Cartopy ax.
-
+        ax_or_fig :
+            Cartopy ax or PyGMT figure.
         filename : str
             Full path to a netCDF file.
-
+        var_name : str, default=""
+            The variable name of the raster data in the netCDF file. If not provided, the first variable in the netCDF file will be used.
         **kwargs :
-            Keyword arguments for plotting the grid. See Matplotlib's ``imshow()`` keyword arguments
-            `here <https://matplotlib.org/3.5.1/api/_as_gen/matplotlib.axes.Axes.imshow.html>`__.
+            Keyword arguments for Matplotlib's ``imshow()`` or PyGMT's ``grdimage()``.
         """
+
+        try:
+            raster_xr = xr.open_dataarray(filename)
+        except ValueError:
+            # Fallback for NetCDF files with multiple variables.
+            dataset = xr.open_dataset(filename, decode_times=False)
+            if var_name and var_name in dataset.data_vars:
+                raster_xr = dataset[var_name]
+            else:
+                first_var = next(iter(dataset.data_vars))
+                raster_xr = dataset[first_var]
+
+        raster_xr = to_geographic_data_array(raster_xr)
+
+        lon_coords = raster_xr.coords["lon"].values
+        lat_coords = raster_xr.coords["lat"].values
+        extent = [
+            float(np.nanmin(lon_coords)),
+            float(np.nanmax(lon_coords)),
+            float(np.nanmin(lat_coords)),
+            float(np.nanmax(lat_coords)),
+        ]
+
         # Override matplotlib default origin ('upper')
         origin = kwargs.pop("origin", "lower")
-
-        from .grids import read_netcdf_grid
-
-        raster, lon_coords, lat_coords = read_netcdf_grid(filename, return_grids=True)
-        extent = [lon_coords[0], lon_coords[-1], lat_coords[0], lat_coords[-1]]
-
-        if lon_coords[0] < lat_coords[-1]:
+        if lat_coords[0] < lat_coords[-1]:
             origin = "lower"
         else:
             origin = "upper"
 
-        return self.plot_grid(ax, raster, extent=extent, origin=origin, **kwargs)
+        return self.plot_grid(
+            ax_or_fig, raster_xr, extent=extent, origin=origin, **kwargs
+        )
 
     def plot_plate_motion_vectors(
-        self, ax, spacingX=10, spacingY=10, normalise=False, **kwargs
+        self,
+        ax_or_fig,
+        color="black",
+        lons=[],
+        lats=[],
+        spacingX=10,
+        spacingY=10,
+        normalise=False,
+        delta_time=5.0,
+        **kwargs,
     ):
         """Calculate plate motion velocity vector fields at a particular geological time and plot them on a map.
 
@@ -1133,36 +1168,37 @@ class PlotTopologies(object):
 
         Parameters
         ----------
-        ax :
-            Cartopy ax.
-
+        ax_or_fig :
+            Cartopy ax or PyGMT figure.
+        color : str, default='black'
+            The colour of the velocity vectors. By default, it is set to black.
+        lons : list of float, default=[]
+            A list of longitudes for the velocity domain point features. If not provided, a global mesh grid of points will be generated with the given spacings in the X and Y directions (``spacingX`` and ``spacingY``).
+        lats : list of float, default=[]
+            A list of latitudes for the velocity domain point features. If not provided, a global mesh grid of points will be generated with the given spacings in the X and Y directions (``spacingX`` and ``spacingY``).
         spacingX : int, default=10
             The spacing in the X direction used to make the velocity domain point feature mesh.
-
         spacingY : int, default=10
             The spacing in the Y direction used to make the velocity domain point feature mesh.
-
         normalise : bool, default=False
             Choose whether to normalise the velocity magnitudes so that vector lengths are all equal.
-
+        delta_time : float, default=5.0
+            The time interval (in Ma) used to calculate the velocity vectors. The stage rotation between the current time and the time interval is used to calculate the velocity vectors. By default, it is set to 5 Ma.
         **kwargs :
-            Keyword arguments for plotting the velocity vector field. See Matplotlib quiver keyword arguments
-            `here <https://matplotlib.org/3.5.1/api/_as_gen/matplotlib.axes.Axes.quiver.html>`__.
-
+            Keyword arguments for Matplotlib quiver() or PyGMT velo().
         """
-        if not isinstance(self._plot_engine, CartopyPlotEngine):
-            raise NotImplementedError(
-                f"Plotting velocities has not been implemented for {self._plot_engine.__class__} yet."
-            )
 
-        lonq, latq = np.meshgrid(
-            np.arange(-180, 180 + spacingX, spacingX),
-            np.arange(-90, 90 + spacingY, spacingY),
-        )
-        lons = lonq.ravel()
-        lats = latq.ravel()
+        if len(lons) != 0 or len(lats) != 0:
+            assert len(lons) == len(
+                lats
+            ), "The 'lons' and 'lats' parameters must be of the same length if they are provided."
 
-        delta_time = 5.0
+        # if no longitude and latitude arrays are provided, generate a global mesh grid of points with the given spacings in the X and Y directions (spacingX and spacingY)
+        if not lons or not lats:
+            lon_arr = np.arange(-180, 180 + spacingX, spacingX)
+            lat_arr = np.arange(-90, 90 + spacingY, spacingY)
+            lons = np.tile(lon_arr, len(lat_arr))
+            lats = np.repeat(lat_arr, len(lon_arr))
 
         velocity_lons, velocity_lats = self.plate_reconstruction.get_point_velocities(
             lons,
@@ -1180,55 +1216,42 @@ class PlotTopologies(object):
             velocity_lons /= mag
             velocity_lats /= mag
 
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore", UserWarning)
-            quiver = ax.quiver(
-                lons,
-                lats,
-                velocity_lons,
-                velocity_lats,
-                transform=self.base_projection,
-                **kwargs,
-            )
-        return quiver
+        data = gpd.GeoDataFrame(
+            {
+                "lon": lons,
+                "lat": lats,
+                "east_vel": velocity_lons,
+                "north_vel": velocity_lats,
+                "east_sigma": [0] * len(lons),
+                "north_sigma": [0] * len(lats),
+                "correlation": [0] * len(lons),
+            }
+        )
 
-    def plot_pole(self, ax, lon, lat, a95, **kwargs):
+        return self._plot_engine.plot_plate_motion_vectors(
+            ax_or_fig, data, projection=self.base_projection, color=color, **kwargs
+        )
+
+    def plot_pole(self, ax_or_fig, lon, lat, a95, color="green", **kwargs):
         """
-        Plot pole onto a matplotlib axes.
+        Plot a paleomagnetic pole onto a map.
 
         Parameters
         ----------
-        ax :
-            Cartopy ax.
-
+        ax_or_fig :
+            Matplotlib axes or PyGMT figure.
         lon : float
-            Longitudinal coordinate to place pole.
+            Longitudinal coordinate of the pole.
         lat : float
-            Latitudinal coordinate to place pole.
+            Latitudinal coordinate of the pole.
         a95 : float
-            The size of the pole (in degrees).
+            The radius(in degrees) of the cone of 95% confidence around a paleomagnetic pole.
 
         Returns
         -------
-        matplotlib.patches.Circle handle.
+        Matplotlib axes or PyGMT figure.
         """
-        from matplotlib import patches as mpatches
-
-        # Define the projection used to display the circle:
-        proj1 = ccrs.Orthographic(central_longitude=lon, central_latitude=lat)
-
-        def compute_radius(ortho, radius_degrees):
-            phi1 = lat + radius_degrees if lat <= 0 else lat - radius_degrees
-            _, y1 = ortho.transform_point(lon, phi1, ccrs.PlateCarree())
-            return abs(y1)
-
-        r_ortho = compute_radius(proj1, a95)
-
-        # adding a patch
-        patch = ax.add_patch(
-            mpatches.Circle(xy=(lon, lat), radius=r_ortho, transform=proj1, **kwargs)
-        )
-        return patch
+        return self._plot_engine.plot_pole(ax_or_fig, lon, lat, a95, color=color)
 
     @validate_reconstruction_time
     @append_docstring(GET_DATE_DOCSTRING.format("continental rifts"))

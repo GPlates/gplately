@@ -16,10 +16,15 @@
 #
 import logging
 from pathlib import Path
+import xarray as xr
 
 # pyright: reportMissingImports=false
 # pyright: reportMissingModuleSource=false
+from geopandas.geodataframe import GeoDataFrame
 import pygplates
+from ..grids import Raster, sample_grid
+from ..geometry import geographic_circle
+from .plot_engine import PlotEngine
 
 logger = logging.getLogger("gplately")
 try:
@@ -35,16 +40,12 @@ try:
     )
 except:
     logger.error("Failed to import PyGMT. PyGMT requires Python>=3.11.")
-from geopandas.geodataframe import GeoDataFrame
-
-from .plot_engine import PlotEngine
-from ..grids import sample_grid
-
-# NW's example is at https://gist.github.com/nickywright/f53018a8eda29223cca6f39ab2cfa25d
 
 
 class PygmtPlotEngine(PlotEngine):
     """Use PyGMT for map plotting."""
+
+    # NW's example is at https://gist.github.com/nickywright/f53018a8eda29223cca6f39ab2cfa25d
 
     def __init__(self):
         pass
@@ -299,8 +300,6 @@ class PygmtPlotEngine(PlotEngine):
         **kwargs :
             Additional keyword arguments.
         """
-        from ..grids import Raster
-        import xarray as xr
 
         # we need to convert the grid data to xarray.DataArray for pygmt.grdimage().
         if isinstance(grid, Raster):
@@ -320,14 +319,13 @@ class PygmtPlotEngine(PlotEngine):
             if not Path(cmap).exists():
                 raise FileNotFoundError(f"The CPT file '{cmap}' does not exist.")
 
+        data = to_geographic_data_array(data)
         grdimage_kwargs = dict(
             grid=data,
             cmap=cmap,
-            region=extent,
             nan_transparent=nan_transparent,
         )
 
-        data = to_geographic_data_array(data)
         if shading is not None:
             # check if shading is a xr.DataArray, if so, check the shape and coordinates
             # to make sure it matches the grid data, then pass it to grdimage_kwargs
@@ -360,6 +358,48 @@ class PygmtPlotEngine(PlotEngine):
 
         ax_or_fig.grdimage(**grdimage_kwargs)
 
+    def plot_plate_motion_vectors(
+        self,
+        ax_or_fig,
+        gdf_motion_vectors: GeoDataFrame,
+        projection=None,
+        scale_factor=1.0,
+        color="black",
+        **kwargs,
+    ):
+
+        return ax_or_fig.velo(
+            data=gdf_motion_vectors,
+            spec="e0.2/0.39/18",  # arrows + ellipses; 0.2 cm/(mm/yr); 1-sigma
+            vector="0.1c+p1p+e+gred",  # arrowhead 0.1 cm, red fill
+            pen=f"0.3p,{color}",
+            fill=color,  # arrow fill (v0.12+)
+            uncertaintyfill="lightgray@50",  # ellipse fill (v0.12+, no underscore)
+        )
+
+    def plot_pole(self, ax_or_fig, lon, lat, a95, color="green"):
+        """Plot a paleomagnetic pole onto a map using PyGMT."""
+        lons, lats = geographic_circle(lon, lat, a95)
+        # Filled polygon
+        ax_or_fig.plot(
+            x=lons,
+            y=lats,
+            fill=f"{color}@60",
+            pen="1.5p,black",
+            straight_line=False,  # use great-circle segments between vertices
+            close=True,
+        )
+
+        # Centre marker
+        ax_or_fig.plot(
+            x=[lon],
+            y=[lat],
+            style="c0.25c",  # circle symbol, 0.25 cm diameter
+            fill="white",
+            pen="1p,black",
+        )
+        return ax_or_fig
+
 
 def to_geographic_data_array(data_array):
     """Convert a DataArray to a geographic grid format that PyGMT can understand.
@@ -380,10 +420,6 @@ def to_geographic_data_array(data_array):
     """
     if data_array.ndim != 2:
         raise ValueError("Input data array must be 2-dimensional.")
-    if "lon" in data_array.dims and "lat" in data_array.dims:
-        return data_array  # already in the correct format
-    if "lon" in data_array.coords and "lat" in data_array.coords:
-        return data_array  # already in the correct format
     ret_da = data_array.copy()
 
     if (
@@ -402,6 +438,14 @@ def to_geographic_data_array(data_array):
         ret_da = ret_da.rename({"longitude": "lon", "latitude": "lat"})
     else:
         pass  # assume the dims are already 'lon' and 'lat'
+
+    if "lon" not in ret_da.coords or "lat" not in ret_da.coords:
+        raise ValueError("Input data array must contain 'lon' and 'lat' coordinates.")
+
+    # Normalize longitudes to [-180, 180) and sort so GMT receives a valid region.
+    wrapped_lon = ((ret_da.coords["lon"] + 180.0) % 360.0) - 180.0
+    if not wrapped_lon.equals(ret_da.coords["lon"]):
+        ret_da = ret_da.assign_coords(lon=wrapped_lon).sortby("lon")
 
     ret_da.coords["lon"].attrs.update(
         {
