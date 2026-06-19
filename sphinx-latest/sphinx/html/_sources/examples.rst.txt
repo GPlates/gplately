@@ -97,7 +97,7 @@ Basics
    Use plate-model-manager to download plate reconstruction models.
 - `Plot with Cartopy <../../notebook-html/plot_map_with_cartopy.html>`__
    Plot a paleo-map using Cartopy.
-- `Plot with PyGMT <../../notebook-html/plot_map_with_pygmt.html>`__
+- `Plot with PyGMT <../../notebook-html/Examples/plot_map_with_pygmt.html>`__
    Plot a paleo-map using PyGMT.
 - `Reconstruct Files <../../notebook-html/reconstruct_files.html>`__
    Reconstruct and plot shapefiles and `other supported files <https://www.gplates.org/docs/pygplates/generated/pygplates.featurecollection>`__.

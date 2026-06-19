@@ -16,6 +16,8 @@
       ~PygmtPlotEngine.__init__
       ~PygmtPlotEngine.plot_geo_data_frame
       ~PygmtPlotEngine.plot_grid
+      ~PygmtPlotEngine.plot_plate_motion_vectors
+      ~PygmtPlotEngine.plot_pole
       ~PygmtPlotEngine.plot_pygplates_features
       ~PygmtPlotEngine.plot_subduction_zones
    

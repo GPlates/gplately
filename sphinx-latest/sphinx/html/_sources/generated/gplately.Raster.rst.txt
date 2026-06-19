@@ -26,7 +26,7 @@
       ~Raster.resize
       ~Raster.rotate_reference_frames
       ~Raster.save_to_netcdf4
-      ~Raster.to_dataarray
+      ~Raster.to_data_array
    
    
 

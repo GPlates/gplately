@@ -101,6 +101,7 @@
 <span class="c1">#</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">math</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
 
 <span class="c1"># pyright: reportMissingImports=false</span>
 <span class="c1"># pyright: reportMissingModuleSource=false</span>
@@ -116,6 +117,7 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">..utils.plot_utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">plot_subduction_teeth</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.plot_engine</span><span class="w"> </span><span class="kn">import</span> <span class="n">PlotEngine</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.hillshade</span><span class="w"> </span><span class="kn">import</span> <span class="n">set_shade</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..geometry</span><span class="w"> </span><span class="kn">import</span> <span class="n">geographic_circle</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">&quot;gplately&quot;</span><span class="p">)</span>
 
@@ -445,6 +447,66 @@
             <span class="n">origin</span><span class="o">=</span><span class="n">origin</span><span class="p">,</span>
             <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
         <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="CartopyPlotEngine.plot_plate_motion_vectors">
+<a class="viewcode-back" href="../../../generated/gplately.CartopyPlotEngine.html#gplately.CartopyPlotEngine.plot_plate_motion_vectors">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">plot_plate_motion_vectors</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">ax_or_fig</span><span class="p">,</span>
+        <span class="n">gdf_motion_vectors</span><span class="p">:</span> <span class="n">GeoDataFrame</span><span class="p">,</span>
+        <span class="n">projection</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">scale_factor</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+        <span class="n">color</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Plot plate motion vectors onto a map using Cartopy&quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="n">warnings</span><span class="o">.</span><span class="n">catch_warnings</span><span class="p">():</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="s2">&quot;ignore&quot;</span><span class="p">,</span> <span class="ne">UserWarning</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">ax_or_fig</span><span class="o">.</span><span class="n">quiver</span><span class="p">(</span>
+                <span class="n">gdf_motion_vectors</span><span class="p">[</span><span class="s2">&quot;lon&quot;</span><span class="p">],</span>
+                <span class="n">gdf_motion_vectors</span><span class="p">[</span><span class="s2">&quot;lat&quot;</span><span class="p">],</span>
+                <span class="n">gdf_motion_vectors</span><span class="p">[</span><span class="s2">&quot;east_vel&quot;</span><span class="p">],</span>
+                <span class="n">gdf_motion_vectors</span><span class="p">[</span><span class="s2">&quot;north_vel&quot;</span><span class="p">],</span>
+                <span class="n">transform</span><span class="o">=</span><span class="n">projection</span><span class="p">,</span>
+                <span class="n">color</span><span class="o">=</span><span class="n">color</span><span class="p">,</span>
+                <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+            <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="CartopyPlotEngine.plot_pole">
+<a class="viewcode-back" href="../../../generated/gplately.CartopyPlotEngine.html#gplately.CartopyPlotEngine.plot_pole">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">plot_pole</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ax_or_fig</span><span class="p">,</span> <span class="n">lon</span><span class="p">,</span> <span class="n">lat</span><span class="p">,</span> <span class="n">a95</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;green&quot;</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Plot a paleomagnetic pole onto a map using Cartopy&quot;&quot;&quot;</span>
+        <span class="n">lons</span><span class="p">,</span> <span class="n">lats</span> <span class="o">=</span> <span class="n">geographic_circle</span><span class="p">(</span><span class="n">lon</span><span class="p">,</span> <span class="n">lat</span><span class="p">,</span> <span class="n">a95</span><span class="p">)</span>
+        <span class="c1"># Filled polygon — transform=geo tells Cartopy the data is in lon/lat</span>
+        <span class="n">ax_or_fig</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span>
+            <span class="n">lons</span><span class="p">,</span> <span class="n">lats</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="n">ccrs</span><span class="o">.</span><span class="n">PlateCarree</span><span class="p">(),</span> <span class="n">color</span><span class="o">=</span><span class="n">color</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.4</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">3</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Outline</span>
+        <span class="n">ax_or_fig</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+            <span class="n">lons</span><span class="p">,</span>
+            <span class="n">lats</span><span class="p">,</span>
+            <span class="n">transform</span><span class="o">=</span><span class="n">ccrs</span><span class="o">.</span><span class="n">PlateCarree</span><span class="p">(),</span>
+            <span class="n">color</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">,</span>
+            <span class="n">linewidth</span><span class="o">=</span><span class="mf">1.5</span><span class="p">,</span>
+            <span class="n">zorder</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Centre marker</span>
+        <span class="n">ax_or_fig</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+            <span class="n">lon</span><span class="p">,</span>
+            <span class="n">lat</span><span class="p">,</span>
+            <span class="n">transform</span><span class="o">=</span><span class="n">ccrs</span><span class="o">.</span><span class="n">PlateCarree</span><span class="p">(),</span>
+            <span class="n">marker</span><span class="o">=</span><span class="s2">&quot;o&quot;</span><span class="p">,</span>
+            <span class="n">markersize</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span>
+            <span class="n">color</span><span class="o">=</span><span class="s2">&quot;white&quot;</span><span class="p">,</span>
+            <span class="n">markeredgecolor</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">,</span>
+            <span class="n">markeredgewidth</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+            <span class="n">zorder</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">ax_or_fig</span></div>
 </div>
 
 

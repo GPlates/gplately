@@ -68,6 +68,8 @@
 <li class="toctree-l4"><a class="reference internal" href="#gplately.PygmtPlotEngine.__init__"><code class="docutils literal notranslate"><span class="pre">PygmtPlotEngine.__init__()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#gplately.PygmtPlotEngine.plot_geo_data_frame"><code class="docutils literal notranslate"><span class="pre">PygmtPlotEngine.plot_geo_data_frame()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#gplately.PygmtPlotEngine.plot_grid"><code class="docutils literal notranslate"><span class="pre">PygmtPlotEngine.plot_grid()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gplately.PygmtPlotEngine.plot_plate_motion_vectors"><code class="docutils literal notranslate"><span class="pre">PygmtPlotEngine.plot_plate_motion_vectors()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gplately.PygmtPlotEngine.plot_pole"><code class="docutils literal notranslate"><span class="pre">PygmtPlotEngine.plot_pole()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#gplately.PygmtPlotEngine.plot_pygplates_features"><code class="docutils literal notranslate"><span class="pre">PygmtPlotEngine.plot_pygplates_features()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#gplately.PygmtPlotEngine.plot_subduction_zones"><code class="docutils literal notranslate"><span class="pre">PygmtPlotEngine.plot_subduction_zones()</span></code></a></li>
 </ul>
@@ -128,6 +130,12 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="#gplately.PygmtPlotEngine.plot_grid" title="gplately.PygmtPlotEngine.plot_grid"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_grid</span></code></a>(ax_or_fig, grid[, projection, ...])</p></td>
 <td><p>Use PyGMT to plot a grid onto a map.</p></td>
 </tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#gplately.PygmtPlotEngine.plot_plate_motion_vectors" title="gplately.PygmtPlotEngine.plot_plate_motion_vectors"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_plate_motion_vectors</span></code></a>(ax_or_fig, ...[, ...])</p></td>
+<td><p>Plot plate motion vectors (abstract method)</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#gplately.PygmtPlotEngine.plot_pole" title="gplately.PygmtPlotEngine.plot_pole"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_pole</span></code></a>(ax_or_fig, lon, lat, a95[, color])</p></td>
+<td><p>Plot a paleomagnetic pole onto a map using PyGMT.</p></td>
+</tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#gplately.PygmtPlotEngine.plot_pygplates_features" title="gplately.PygmtPlotEngine.plot_pygplates_features"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_pygplates_features</span></code></a>(ax_or_fig, features, ...)</p></td>
 <td><p>Use PyGMT to plot one or more pygplates features onto a map.</p></td>
 </tr>
@@ -186,6 +194,18 @@ computed externally (e.g. via <code class="xref py py-func docutils literal notr
 </ul>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gplately.PygmtPlotEngine.plot_plate_motion_vectors">
+<span class="sig-name descname"><span class="pre">plot_plate_motion_vectors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ax_or_fig</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gdf_motion_vectors</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">GeoDataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">projection</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale_factor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">color</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'black'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/mapping/pygmt_plot.html#PygmtPlotEngine.plot_plate_motion_vectors"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PygmtPlotEngine.plot_plate_motion_vectors" title="Link to this definition"></a></dt>
+<dd><p>Plot plate motion vectors (abstract method)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gplately.PygmtPlotEngine.plot_pole">
+<span class="sig-name descname"><span class="pre">plot_pole</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ax_or_fig</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lon</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">a95</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">color</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'green'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/mapping/pygmt_plot.html#PygmtPlotEngine.plot_pole"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PygmtPlotEngine.plot_pole" title="Link to this definition"></a></dt>
+<dd><p>Plot a paleomagnetic pole onto a map using PyGMT.</p>
 </dd></dl>
 
 <dl class="py method">
