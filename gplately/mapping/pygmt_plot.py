@@ -14,8 +14,9 @@
 #    with this program; if not, write to Free Software Foundation, Inc.,
 #    51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
-import logging
+import logging, os
 from pathlib import Path
+from typing import Any
 import xarray as xr
 
 # pyright: reportMissingImports=false
@@ -25,8 +26,10 @@ import pygplates
 from ..grids import Raster, sample_grid
 from ..geometry import geographic_circle
 from .plot_engine import PlotEngine
+from ..utils.io_utils import to_geographic_data_array, load_data_array_from_netcdf
 
 logger = logging.getLogger("gplately")
+pygmt = None
 try:
     import pygmt
 
@@ -48,7 +51,8 @@ class PygmtPlotEngine(PlotEngine):
     # NW's example is at https://gist.github.com/nickywright/f53018a8eda29223cca6f39ab2cfa25d
 
     def __init__(self):
-        pass
+        assert pygmt is not None, "PyGMT must be available to use PygmtPlotEngine."
+        super().__init__()
 
     def plot_geo_data_frame(self, ax_or_fig, gdf: GeoDataFrame, **kwargs):
         """Use PyGMT to plot geometries in a GeoDataFrame object onto a map.
@@ -294,8 +298,8 @@ class PygmtPlotEngine(PlotEngine):
             - ``True``: use default shading parameters (equivalent to GMT ``-I+d``).
             - A string such as ``"+a315+ne0.6"`` to pass directly as the GMT ``-I``
               option (azimuth and intensity specification).
-            - An ``xarray.DataArray`` or file path pointing to an illumination grid
-              computed externally (e.g. via :func:`pygmt.grdgradient`).
+            - An ``xarray.DataArray``, the :func:`pygmt.grdgradient` will be called upon this DataArray inside this function to compute the illumination grid from the provided data array.
+            - Full file path pointing to a grid which will be used for illumination. The :func:`pygmt.grdgradient` will be called upon the grid inside this function.
             - ``None`` (default): no shading is applied.
         **kwargs :
             Additional keyword arguments.
@@ -320,16 +324,24 @@ class PygmtPlotEngine(PlotEngine):
                 raise FileNotFoundError(f"The CPT file '{cmap}' does not exist.")
 
         data = to_geographic_data_array(data)
-        grdimage_kwargs = dict(
+        grdimage_kwargs: dict[str, Any] = dict(
             grid=data,
             cmap=cmap,
             nan_transparent=nan_transparent,
         )
 
         if shading is not None:
+            if isinstance(shading, (str, bytes, os.PathLike)) and os.path.isfile(
+                shading
+            ):
+                shading = load_data_array_from_netcdf(shading)
             # check if shading is a xr.DataArray, if so, check the shape and coordinates
             # to make sure it matches the grid data, then pass it to grdimage_kwargs
             if isinstance(shading, xr.DataArray):
+                assert (
+                    pygmt is not None
+                ), "PyGMT must be available to use PygmtPlotEngine."
+                shading = pygmt.grdgradient(grid=shading, radiance=[315, 45])
                 shading = to_geographic_data_array(shading)
                 if shading.shape != data.shape or not all(
                     shading.coords[dim].equals(data.coords[dim]) for dim in data.dims
@@ -353,7 +365,6 @@ class PygmtPlotEngine(PlotEngine):
                         },
                         name="z",
                     )
-
             grdimage_kwargs["shading"] = shading
 
         ax_or_fig.grdimage(**grdimage_kwargs)
@@ -399,70 +410,3 @@ class PygmtPlotEngine(PlotEngine):
             pen="1p,black",
         )
         return ax_or_fig
-
-
-def to_geographic_data_array(data_array):
-    """Convert a DataArray to a geographic grid format that PyGMT can understand.
-
-    This function ensures that the DataArray has the correct coordinate names and attributes for PyGMT
-    to treat it as a geographic grid. Specifically, it sets the 'gmt.gtype' attribute to 1 (indicating a geographic grid)
-    and ensures that the coordinate names are 'lat' and 'lon'.
-
-    Parameters
-    ----------
-    data_array : xarray.DataArray
-        The input DataArray with lat/lon coordinates.
-
-    Returns
-    -------
-    xarray.DataArray
-        A DataArray formatted for use with PyGMT, with appropriate attributes set.
-    """
-    if data_array.ndim != 2:
-        raise ValueError("Input data array must be 2-dimensional.")
-    ret_da = data_array.copy()
-
-    if (
-        "x" in ret_da.dims
-        and "y" in ret_da.dims
-        or "x" in ret_da.coords
-        and "y" in ret_da.coords
-    ):
-        ret_da = ret_da.rename({"x": "lon", "y": "lat"})
-    elif (
-        "longitude" in ret_da.dims
-        and "latitude" in ret_da.dims
-        or "longitude" in ret_da.coords
-        and "latitude" in ret_da.coords
-    ):
-        ret_da = ret_da.rename({"longitude": "lon", "latitude": "lat"})
-    else:
-        pass  # assume the dims are already 'lon' and 'lat'
-
-    if "lon" not in ret_da.coords or "lat" not in ret_da.coords:
-        raise ValueError("Input data array must contain 'lon' and 'lat' coordinates.")
-
-    # Normalize longitudes to [-180, 180) and sort so GMT receives a valid region.
-    wrapped_lon = ((ret_da.coords["lon"] + 180.0) % 360.0) - 180.0
-    if not wrapped_lon.equals(ret_da.coords["lon"]):
-        ret_da = ret_da.assign_coords(lon=wrapped_lon).sortby("lon")
-
-    ret_da.coords["lon"].attrs.update(
-        {
-            "standard_name": "longitude",
-            "long_name": "longitude",
-            "units": "degrees_east",
-        }
-    )
-
-    ret_da.coords["lat"].attrs.update(
-        {
-            "standard_name": "latitude",
-            "long_name": "latitude",
-            "units": "degrees_north",
-        }
-    )
-
-    ret_da.gmt.gtype = 1  # 1 = geographic
-    # ret_da.gmt.registration = 0  # 0 = gridline node
-    return ret_da

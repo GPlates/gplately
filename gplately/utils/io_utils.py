@@ -33,6 +33,7 @@ If `GeoPandas` is not found on the system, input files are read with
 
 from shapely.geometry import shape
 from shapely.geometry.base import BaseGeometry
+import xarray as xr
 
 gpd = None
 shpreader = None
@@ -159,3 +160,99 @@ def _get_geometries_cartopy(filename, buffer=None):
         shapes = [i.shape for i in shape_records]
         geoms = [shape(i.__geo_interface__) for i in shapes]
     return buffer_func(geoms, buffer)
+
+
+def load_data_array_from_netcdf(filename, var_name=None):
+    """Load a data array from a netCDF file.
+
+    Parameters
+    ----------
+    filename : str
+        Path to the netCDF file to be read.
+    var_name : str, optional
+        The variable name of the raster data in the netCDF file. If not provided, the first variable in the netCDF file will be used.
+
+    Returns
+    -------
+    data_array : xarray.DataArray
+        The data array loaded from the netCDF file.
+    """
+
+    try:
+        raster_xr = xr.open_dataarray(filename)
+    except ValueError:
+        # Fallback for NetCDF files with multiple variables.
+        dataset = xr.open_dataset(filename, decode_times=False)
+        if var_name and var_name in dataset.data_vars:
+            raster_xr = dataset[var_name]
+        else:
+            first_var = next(iter(dataset.data_vars))
+            raster_xr = dataset[first_var]
+    return raster_xr
+
+
+def to_geographic_data_array(data_array):
+    """Convert a DataArray to a geographic grid format that PyGMT can understand.
+
+    This function ensures that the DataArray has the correct coordinate names and attributes for PyGMT
+    to treat it as a geographic grid. Specifically, it sets the 'gmt.gtype' attribute to 1 (indicating a geographic grid)
+    and ensures that the coordinate names are 'lat' and 'lon'.
+
+    Parameters
+    ----------
+    data_array : xarray.DataArray
+        The input DataArray with lat/lon coordinates.
+
+    Returns
+    -------
+    xarray.DataArray
+        A DataArray formatted for use with PyGMT, with appropriate attributes set.
+    """
+    if data_array.ndim != 2:
+        raise ValueError("Input data array must be 2-dimensional.")
+    ret_da = data_array.copy()
+
+    if (
+        "x" in ret_da.dims
+        and "y" in ret_da.dims
+        or "x" in ret_da.coords
+        and "y" in ret_da.coords
+    ):
+        ret_da = ret_da.rename({"x": "lon", "y": "lat"})
+    elif (
+        "longitude" in ret_da.dims
+        and "latitude" in ret_da.dims
+        or "longitude" in ret_da.coords
+        and "latitude" in ret_da.coords
+    ):
+        ret_da = ret_da.rename({"longitude": "lon", "latitude": "lat"})
+    else:
+        pass  # assume the dims are already 'lon' and 'lat'
+
+    if "lon" not in ret_da.coords or "lat" not in ret_da.coords:
+        raise ValueError("Input data array must contain 'lon' and 'lat' coordinates.")
+
+    # Normalize longitudes to [-180, 180) and sort so GMT receives a valid region.
+    wrapped_lon = ((ret_da.coords["lon"] + 180.0) % 360.0) - 180.0
+    if not wrapped_lon.equals(ret_da.coords["lon"]):
+        ret_da = ret_da.assign_coords(lon=wrapped_lon).sortby("lon")
+
+    ret_da.coords["lon"].attrs.update(
+        {
+            "standard_name": "longitude",
+            "long_name": "longitude",
+            "units": "degrees_east",
+        }
+    )
+
+    ret_da.coords["lat"].attrs.update(
+        {
+            "standard_name": "latitude",
+            "long_name": "latitude",
+            "units": "degrees_north",
+        }
+    )
+
+    ret_da.gmt.gtype = 1  # 1 = geographic
+    # ret_da.gmt.registration = 0  # 0 = gridline node
+    return ret_da

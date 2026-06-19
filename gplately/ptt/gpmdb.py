@@ -1,5 +1,5 @@
 #
-#    Copyright (C) 2024-2025 The University of Sydney, Australia
+#    Copyright (C) 2024-2026 The University of Sydney, Australia
 #
 #    This program is free software; you can redistribute it and/or modify it under
 #    the terms of the GNU General Public License, version 2, as published by
@@ -22,10 +22,12 @@ then create and save GPlates VGP features in a .gpmlz file.
 
 import argparse
 import json
+import logging
 import math
 import os
 import sys
 from pathlib import Path
+from typing import cast
 
 # pyright: reportMissingImports=false
 # pyright: reportMissingModuleSource=false
@@ -40,12 +42,12 @@ from plate_model_manager import PlateModelManager
 # using gplately env is recommended
 # `micromamba activate gplately`
 
-DEFAULT_GPMDB_SERVER_URL = "http://www.gpmdb.net"
+DEFAULT_GPMDB_SERVER_URL = "https://www.gpmdb.net/api/search/"
 DATA_CACHE_DIR = "data-cache"
-QUERY_DATA_URL = "get_query_data/"
-QUERY_DATA_FILENAME = "query-data.json"
-PMAG_RESULT_URL = "get_PMAGRESULT_data/?fmt=json"
-PMAG_RESULT_FILENAME = "pmag-result.json"
+QUERY_DATA_FILENAME = "gpmdb.json"
+
+
+logger = logging.getLogger("gplately")
 
 
 def create_vgp_feature(
@@ -109,8 +111,7 @@ def assign_plate_id(df, static_polygon_file, rotation_file):
         static_polygon_file,
         rotation_file,
     )
-    for index, row in df.iterrows():
-        # print(index)
+    for _, row in df.iterrows():
         sample_site_position = pygplates.PointOnSphere(row["SLAT"], row["SLONG"])
         reconstructed_static_polygon = plate_partitioner.partition_point(
             sample_site_position
@@ -141,43 +142,48 @@ def add_arguments(parser: argparse.ArgumentParser):
     parser.set_defaults(func=main)
 
     parser.add_argument(
-        "-m", "--model", type=str, dest="model_name", default="Muller2022"
+        "-m",
+        "--model",
+        type=str,
+        dest="model_name",
+        default="Zahirovic2022",
+        help="the plate reconstruction model name to assign plate IDs for the VGP features. Default is 'Zahirovic2022'. The available model names can be found with command `pmm ls` (plate-model-manager https://pypi.org/project/plate-model-manager/).",
     )
     parser.add_argument("-o", "--outfile", type=str, dest="outfile")
     parser.add_argument(
         "--use-cached-data",
         action="store_true",
-        help="use cached data for debugging purpose",
+        help="use cached data to create VGP features. By default, the script will retrieve fresh data from the server. If you want to use cached data, add this command line argument. The cached data is stored in the 'data-cache' directory and the file name is 'gpmdb.json'.",
     )
     parser.add_argument(
         "--gpmdb-server-url",
         type=str,
         dest="gpmdb_server_url",
         default=DEFAULT_GPMDB_SERVER_URL,
-        help="the GPMDB server URL ",
+        help="the GPMDB server URL to retrieve data from. Default is https://www.gpmdb.net/api/search/.",
     )
 
 
 __description__ = """Retrieve paleomagnetic data from https://www.gpmdb.net, create GPlates-compatible VGP features and save the VGP features in a .gpmlz file.
 
-    The two URLs being used are 
-        - https://www.gpmdb.net/get_query_data/
-        - https://www.gpmdb.net/get_PMAGRESULT_data/?fmt=json
+    The URL being used are 
+        - https://www.gpmdb.net/api/search/
+       
 
     This command will create two files.
         - the .gpmlz file -- contains the GPlates-compatible VGP features
-        - the pmag-result.csv -- contains the raw paleomagnetic data
+        - the gpmdb.json -- contains the raw paleomagnetic data
 
     Usage example: gplately gpmdb -m zahirovic2022 -o test.gpmlz
 
-    The default reconstruction model being used to assign plate IDs is "Muller2022". User can choose to specify the model with "-m/--model". 
+    The default reconstruction model being used to assign plate IDs is "zahirovic2022". User can choose to specify the model with "-m/--model". 
     The avaliable model names can be found with command `pmm ls` (plate-model-manager https://pypi.org/project/plate-model-manager/; use gplately conda env).
 
     User can specify the output .gpmlz file name with "-o/--outfile". By default, the output file name will be "vgp_features_{model name}.gmplz".
 
-    The `gplately gpmdb` will use model "Muller2022" and create the output file "vgp_features_Muller2022.gmplz". 
+    The `gplately gpmdb` will use model "zahirovic2022" and create the output file "vgp_features_zahirovic2022.gmplz". 
 
-    The file name for the raw paleomagnetic data is always "pmag-result.csv".
+    The file name for the raw paleomagnetic data is always "gpmdb.json".
 
     """
 
@@ -188,92 +194,73 @@ def main(args):
         f"{DATA_CACHE_DIR}/{QUERY_DATA_FILENAME}"
     ):
         try:
-            response = requests.get(
-                f"{args.gpmdb_server_url}/{QUERY_DATA_URL}", verify=False
-            )
+            response = requests.get(f"{args.gpmdb_server_url}", timeout=30)
             query_data = response.json()
         except (
             requests.exceptions.JSONDecodeError,
             requests.exceptions.ConnectionError,
         ):
-            print(
-                f"FATAL: The {args.gpmdb_server_url}/{QUERY_DATA_URL} did not return valid data. Check and make sure the website is up and running!"
+            logger.error(
+                f"FATAL: The {args.gpmdb_server_url} did not return valid data. Check and make sure the website is up and running!"
             )
             sys.exit(1)
         Path(DATA_CACHE_DIR).mkdir(parents=True, exist_ok=True)
         with open(f"{DATA_CACHE_DIR}/{QUERY_DATA_FILENAME}", "w+") as outfile:
+            logger.info(
+                f"Saving retrieved data to {DATA_CACHE_DIR}/{QUERY_DATA_FILENAME}."
+            )
             outfile.write(json.dumps(query_data))
     else:
+        logger.warning(
+            "Using cached data. To retrieve fresh data from the server, remove the --use-cached-data command line argument."
+        )
         with open(f"{DATA_CACHE_DIR}/{QUERY_DATA_FILENAME}", "r") as infile:
             query_data = json.load(infile)
 
-    columns = []
-    for c in query_data["columns"]:
-        if isinstance(c, list):
-            columns += c
-        elif isinstance(c, str):
-            columns.append(c)
-        else:
-            raise Exception(f"Invalid comlumn type: {type(c)}")
+    columns = query_data["columns"]
+    data_array = []
+    for row in query_data["data"]:
+        if len(row) != len(columns):
+            logger.warning(
+                f"Invalid data row: {row}. The number of values in the row does not match the number of columns."
+            )
+            continue
+        row_array = [row[key] for key in row]
+        data_array.append(row_array)
 
-    df_query = pd.DataFrame(np.array(query_data["data"]), columns=columns)
+    df_query = pd.DataFrame(np.array(data_array), columns=columns)
     df_query = df_query.sort_values(by=["RESULTNO"], ignore_index=True)
 
-    # get pmag-result data
-    if not args.use_cached_data or not os.path.isfile(
-        f"{DATA_CACHE_DIR}/{PMAG_RESULT_FILENAME}"
-    ):
-        try:
-            response = requests.get(
-                f"{args.gpmdb_server_url}/{PMAG_RESULT_URL}", verify=False
-            )
-            pmagresult_data = response.json()
-        except (
-            requests.exceptions.JSONDecodeError,
-            requests.exceptions.ConnectionError,
-        ):
-            print(
-                f"FATAL: The {args.gpmdb_server_url}/{PMAG_RESULT_URL} did not return valid data. Check and make sure the website is up and running!"
-            )
-            sys.exit(1)
-        with open(f"{DATA_CACHE_DIR}/{PMAG_RESULT_FILENAME}", "w+") as outfile:
-            outfile.write(json.dumps(pmagresult_data))
-    else:
-        with open(f"{DATA_CACHE_DIR}/{PMAG_RESULT_FILENAME}", "r") as infile:
-            pmagresult_data = json.load(infile)
-
-    columns = []
-    for c in pmagresult_data["columns"]:
-        if isinstance(c, list):
-            columns += c
-        elif isinstance(c, str):
-            columns.append(c)
-        else:
-            raise Exception(f"Invalid comlumn type: {type(c)}")
-
-    df_pmagresult = pd.DataFrame(np.array(pmagresult_data["data"]), columns=columns)
-    df_pmagresult = df_pmagresult.sort_values(by=["RESULTNO"], ignore_index=True)
-
-    df_pmagresult["LOWAGE"] = df_query["LOWAGE"]
-    df_pmagresult["HIGHAGE"] = df_query["HIGHAGE"]
-
-    df = df_pmagresult[
-        [
-            "RESULTNO",
-            "SLAT",
-            "SLONG",
-            "PLAT",
-            "PLONG",
-            "INC",
-            "DEC",
-            "DP",
-            "DM",
-            "LOMAGAGE",
-            "HIMAGAGE",
-            "LOWAGE",
-            "HIGHAGE",
-        ]
+    # Get a new DataFrame with only the critical columns for creating VGP
+    # features. Rows with missing values in any critical column are dropped.
+    critical_columns = [
+        "RESULTNO",
+        "SLAT",
+        "SLONG",
+        "PLAT",
+        "PLONG",
+        "INC",
+        "DEC",
+        "DP",
+        "DM",
+        "LOMAGAGE",
+        "HIMAGAGE",
+        "LOWAGE",
+        "HIGHAGE",
     ]
+
+    df = cast(pd.DataFrame, df_query[critical_columns]).copy()
+
+    # Ensure numeric columns are numeric so invalid/null-like values become NaN
+    # and are dropped.
+    for col in critical_columns:
+        df[col] = pd.to_numeric(df[col], errors="coerce")
+
+    df = df.dropna(subset=critical_columns).reset_index(drop=True)
+
+    logger.warning(
+        f"{len(df_query) - len(df)} rows have been dropped due to missing critical values. Only {len(df)} rows are used to create VGP features."
+    )
 
     pm_manager = PlateModelManager()
     model = pm_manager.get_model(args.model_name, data_dir=".")
@@ -286,8 +273,7 @@ def main(args):
 
     count = 0
     vgp_features = []
-    for index, row in df.iterrows():
-        # print(index)
+    for i, (_, row) in enumerate(df.iterrows()):
         if row["DP"] is not None and row["DM"] is not None and row["INC"] is not None:
             vgp_feature = create_vgp_feature(
                 RESULTNO=row["RESULTNO"],
@@ -301,8 +287,8 @@ def main(args):
                 HIMAGAGE=row["HIMAGAGE"],
                 LOWAGE=row["LOWAGE"],
                 HIGHAGE=row["HIGHAGE"],
-                sample_site_position=sites[index],
-                plate_id=pids[index],
+                sample_site_position=sites[i],
+                plate_id=pids[i],
             )
 
             # Add VGP feature to list.
@@ -310,8 +296,6 @@ def main(args):
         else:
             count += 1
             # print(f"ignore row: {row}")
-
-    print(f"{count} rows have been ignored due to None values.")
 
     # Save VGP features to file.
     if not args.outfile:
@@ -321,12 +305,7 @@ def main(args):
 
     pygplates.FeatureCollection(vgp_features).write(outfile_name)
 
-    df_pmagresult = df_pmagresult.drop(["ROCKUNITNO"], axis=1)
-    df_pmagresult.to_csv("pmag-result.csv", index=False)
-
-    print(
-        f"The files {outfile_name} and pmag-result.csv have been created successfully."
-    )
+    print(f"The file {outfile_name} has been created successfully.")
 
 
 if __name__ == "__main__":
@@ -344,6 +323,3 @@ if __name__ == "__main__":
 
     # call main function
     main(args)
-
-# https://gpmdb.net/api/search
-# https://jsoneditoronline.org/#left=local.vocere&right=local.ronomo
