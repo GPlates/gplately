@@ -325,6 +325,7 @@ class SeafloorGrid(object):
                 max_time,
                 min_time,
                 ridge_time_step,
+                save_directory=save_directory,
             )
 
         # Topological parameters

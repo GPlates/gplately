@@ -21,10 +21,12 @@ import numpy as np
 import pygplates
 from functools import partial
 from multiprocessing import Pool
+from pathlib import Path
 
 from ..gpml import _load_FeatureCollection
 from ..parallel import get_num_cpus
 from ..ptt.utils import points_in_polygons, points_spatial_tree
+from ..utils.log_utils import get_debug_level
 
 
 class ReconstructContinents(object):
@@ -35,6 +37,8 @@ class ReconstructContinents(object):
         max_time,
         min_time,
         time_step,
+        *,
+        save_directory,
     ):
         """Create a ``ReconstructContinents`` object.
 
@@ -49,6 +53,9 @@ class ReconstructContinents(object):
             The minimum time for reconstructing continent features.
         time_step : float
             The delta time for reconstructing continent features.
+        save_directory : str
+            The top-level directory to save all outputs to.
+            Currently this is only used for debug output (if the debug log level is above 100).
 
 
 
@@ -68,6 +75,13 @@ class ReconstructContinents(object):
         self._time_indices = {
             time: time_index for time_index, time in enumerate(self._times)
         }
+
+        # Currently this is only used for debug output (if the debug log level is above 100).
+        self._save_directory = Path(save_directory)
+        self._save_directory.mkdir(parents=True, exist_ok=True)
+
+        # Debug files (if debug level is high enough).
+        self._generate_debug_output_files = get_debug_level() > 100
 
         # Make sure the continent features are polygons and that they reconstruct by plate ID only.
         if not self._all_continent_features_are_polygons_that_reconstruct_by_plate_id():
@@ -150,23 +164,27 @@ class ReconstructContinents(object):
                 )
             )
 
-            all_reconstructed_continents = []
-            for time in self._times:
-                reconstructed_continents = self.get_reconstructed_continents(
-                    time, plate_reconstruction
-                )
-                reconstructed_continent_features = [
-                    reconstructed_continent.get_feature()
-                    for reconstructed_continent in reconstructed_continents
-                ]
-                for feature in reconstructed_continent_features:
-                    feature.set_valid_time(
-                        time + 0.5 * self.time_step, time - 0.5 * self.time_step
+            # Write out the reconstructed continents to GPML (if generating debug files).
+            if self._generate_debug_output_files:
+                all_reconstructed_continents = []
+                for time in self._times:
+                    reconstructed_continents = self.get_reconstructed_continents(
+                        time, plate_reconstruction
                     )
-                all_reconstructed_continents.extend(reconstructed_continent_features)
-            pygplates.FeatureCollection(all_reconstructed_continents).write(
-                "deformed_continents.gpmlz"
-            )
+                    reconstructed_continent_features = [
+                        reconstructed_continent.get_feature()
+                        for reconstructed_continent in reconstructed_continents
+                    ]
+                    for feature in reconstructed_continent_features:
+                        feature.set_valid_time(
+                            time + 0.5 * self.time_step, time - 0.5 * self.time_step
+                        )
+                    all_reconstructed_continents.extend(
+                        reconstructed_continent_features
+                    )
+                pygplates.FeatureCollection(all_reconstructed_continents).write(  # type: ignore
+                    self._save_directory / "deformed_continents.gpmlz"
+                )
         else:
             self._reconstructed_continents = None
 
@@ -249,7 +267,7 @@ class ReconstructContinents(object):
 
             # Exclude features that don't have any polygon geometries.
             if not any(
-                isinstance(geometry, pygplates.PolygonOnSphere)  # type:ignore
+                isinstance(geometry, pygplates.PolygonOnSphere)  # type: ignore
                 for geometry in feature.get_all_geometries()
             ):
                 return False
@@ -333,7 +351,7 @@ class _ContinentalPolygon(object):
         )
 
     def update_polygon(self):
-        self.reconstructed_polygon = pygplates.PolygonOnSphere(  # type:ignore
+        self.reconstructed_polygon = pygplates.PolygonOnSphere(  # type: ignore
             self.reconstructed_points
         )
 
@@ -358,12 +376,12 @@ class _ContinentAggregate(object):
         #    < math.radians(0.01)
         #    and new_stage_rotation == self.stage_rotation
         # ):
-        if pygplates.FiniteRotation.are_equal(  # type:ignore
+        if pygplates.FiniteRotation.are_equal(  # type: ignore
             new_stage_rotation, self.stage_rotation, threshold_degrees=0.01
         ):
             for continental_polygon in self.continental_polygons:
                 if (
-                    pygplates.GeometryOnSphere.distance(  # type:ignore
+                    pygplates.GeometryOnSphere.distance(  # type: ignore
                         new_continental_polygon.reconstructed_polygon,
                         continental_polygon.reconstructed_polygon,
                         distance_threshold_radians=1e-4,
@@ -419,7 +437,7 @@ class _ContinentAggregate(object):
                 resolved_network_point_velocity = all_resolved_network_point_velocities[
                     point_index
                 ]
-                aggregrate_velocity_at_point = pygplates.calculate_velocities(  # type:ignore
+                aggregrate_velocity_at_point = pygplates.calculate_velocities(  # type: ignore
                     (resolved_network_point,),
                     # Stage rotation goes backward in time but velocity needs to go forward...
                     self.stage_rotation.get_inverse(),
@@ -564,7 +582,7 @@ def _reconstruct_and_deform_continent_features_impl(
             if property_value:
                 geometry = property_value.get_geometry()
                 if geometry and isinstance(
-                    geometry, pygplates.PolygonOnSphere  # type:ignore
+                    geometry, pygplates.PolygonOnSphere  # type: ignore
                 ):
                     continental_polygon = _ContinentalPolygon(
                         feature_index,
@@ -581,13 +599,13 @@ def _reconstruct_and_deform_continent_features_impl(
     time_index = 0
     for time in reconstruction_times:
 
-        topological_snapshot = pygplates.TopologicalSnapshot(  # type:ignore
+        topological_snapshot = pygplates.TopologicalSnapshot(  # type: ignore
             plate_reconstruction.topology_features,
             plate_reconstruction.rotation_model,
             previous_time,
         )
         resolved_networks = topological_snapshot.get_resolved_topologies(
-            pygplates.ResolveTopologyType.network  # type:ignore
+            pygplates.ResolveTopologyType.network  # type: ignore
         )
 
         #
