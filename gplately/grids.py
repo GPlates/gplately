@@ -1070,7 +1070,7 @@ def sample_grid(
     point_i = (lat - extent[2]) / dy
     point_j = (lon - extent[0]) / dx
 
-    point_coords = np.row_stack(
+    point_coords = np.vstack(
         (
             np.ravel(point_i),
             np.ravel(point_j),
