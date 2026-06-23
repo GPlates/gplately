@@ -296,7 +296,9 @@ def _rotate_grid_cmd(args):
 
     if p_input.is_file():
         # --- single-file mode ---
-        if p_output.suffix:
+        if (
+            p_output.suffix == ".nc"
+        ):  # directory can have a suffix, but it must not be .nc
             output_file = p_output
         else:
             p_output.mkdir(parents=True, exist_ok=True)
@@ -305,7 +307,9 @@ def _rotate_grid_cmd(args):
 
     elif p_input.is_dir():
         # --- directory mode ---
-        if p_output.suffix:
+        if (
+            p_output.suffix == ".nc"
+        ):  # directory can have a suffix, but it must not be .nc
             raise ValueError(
                 "When INPUT is a directory, OUTPUT must also be a directory, not a file."
             )
