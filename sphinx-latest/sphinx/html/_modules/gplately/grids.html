@@ -1164,7 +1164,7 @@
     <span class="n">point_i</span> <span class="o">=</span> <span class="p">(</span><span class="n">lat</span> <span class="o">-</span> <span class="n">extent</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span> <span class="o">/</span> <span class="n">dy</span>
     <span class="n">point_j</span> <span class="o">=</span> <span class="p">(</span><span class="n">lon</span> <span class="o">-</span> <span class="n">extent</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">/</span> <span class="n">dx</span>
 
-    <span class="n">point_coords</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">row_stack</span><span class="p">(</span>
+    <span class="n">point_coords</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">(</span>
         <span class="p">(</span>
             <span class="n">np</span><span class="o">.</span><span class="n">ravel</span><span class="p">(</span><span class="n">point_i</span><span class="p">),</span>
             <span class="n">np</span><span class="o">.</span><span class="n">ravel</span><span class="p">(</span><span class="n">point_j</span><span class="p">),</span>
