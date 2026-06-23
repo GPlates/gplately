@@ -1,0 +1,6 @@
+﻿gplately.write\_netcdf\_grid
+============================
+
+.. currentmodule:: gplately
+
+.. autofunction:: write_netcdf_grid

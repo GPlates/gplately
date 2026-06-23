@@ -623,8 +623,8 @@ respectively.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>The resampled grid. If <code class="docutils literal notranslate"><span class="pre">inplace</span></code> is set to <code class="docutils literal notranslate"><span class="pre">True</span></code>, this raster overwrites the
-one attributed to <code class="docutils literal notranslate"><span class="pre">data</span></code>.</p>
+<dd class="field-even"><p>The resampled grid. If <code class="docutils literal notranslate"><span class="pre">inplace</span></code> is set to <code class="docutils literal notranslate"><span class="pre">True</span></code> the returned raster is <code class="docutils literal notranslate"><span class="pre">self</span></code>,
+otherwise a new <a class="reference internal" href="#gplately.Raster" title="gplately.Raster"><code class="xref py py-class docutils literal notranslate"><span class="pre">Raster</span></code></a> object is returned.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference internal" href="#gplately.Raster" title="gplately.Raster">Raster</a></p>
@@ -664,10 +664,12 @@ respectively.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>The resized grid. If <code class="docutils literal notranslate"><span class="pre">inplace</span></code> is set to <code class="docutils literal notranslate"><span class="pre">True</span></code>, the data in <a class="reference internal" href="#gplately.Raster.data" title="gplately.Raster.data"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Raster.data</span></code></a> will be overwritten.</p>
+<dd class="field-even"><p>The resized grid. If <code class="docutils literal notranslate"><span class="pre">inplace</span></code> is set to <code class="docutils literal notranslate"><span class="pre">True</span></code> the returned raster is <code class="docutils literal notranslate"><span class="pre">self</span></code>
+(or returned array is <code class="docutils literal notranslate"><span class="pre">self.data</span></code> if <code class="docutils literal notranslate"><span class="pre">return_array</span></code> is <code class="docutils literal notranslate"><span class="pre">True</span></code>), otherwise a new <a class="reference internal" href="#gplately.Raster" title="gplately.Raster"><code class="xref py py-class docutils literal notranslate"><span class="pre">Raster</span></code></a>
+object is returned (or a new data array if <code class="docutils literal notranslate"><span class="pre">return_array</span></code> is <code class="docutils literal notranslate"><span class="pre">True</span></code>).</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference internal" href="#gplately.Raster" title="gplately.Raster">Raster</a></p>
+<dd class="field-odd"><p><a class="reference internal" href="#gplately.Raster" title="gplately.Raster">Raster</a> or numpy.ndarray</p>
 </dd>
 </dl>
 </dd></dl>
@@ -708,7 +710,7 @@ to define the “from” and “to” reference frames.</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="gplately.Raster.save_to_netcdf4">
-<span class="sig-name descname"><span class="pre">save_to_netcdf4</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">significant_digits</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fill_value</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">nan</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/grids.html#Raster.save_to_netcdf4"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.Raster.save_to_netcdf4" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">save_to_netcdf4</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">significant_digits</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fill_value</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/grids.html#Raster.save_to_netcdf4"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.Raster.save_to_netcdf4" title="Link to this definition"></a></dt>
 <dd><p>Saves the grid attributed to the <a class="reference internal" href="#gplately.Raster" title="gplately.Raster"><code class="xref py py-class docutils literal notranslate"><span class="pre">Raster</span></code></a> object to the given <code class="docutils literal notranslate"><span class="pre">filename</span></code> (including
 the “.nc” extension) in netCDF4 format.</p>
 </dd></dl>

@@ -1,0 +1,6 @@
+﻿gplately.default\_netcdf\_fill\_value
+=====================================
+
+.. currentmodule:: gplately
+
+.. autofunction:: default_netcdf_fill_value

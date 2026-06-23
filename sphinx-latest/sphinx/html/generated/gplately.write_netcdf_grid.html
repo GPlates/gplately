@@ -1,0 +1,193 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>gplately.write_netcdf_grid &mdash; gplately 2.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+
+  
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=51b770b3"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="gplately.default_netcdf_fill_value" href="gplately.default_netcdf_fill_value.html" />
+    <link rel="prev" title="gplately.read_netcdf_grid" href="gplately.read_netcdf_grid.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            gplately
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../basic_usages.html">Minimal Working Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../use_cases.html">Common Use Cases</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../faq.html">Troubleshooting and FAQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../command_line_interface.html">Command Line Interface (CLI)</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../api.html">Main Classes</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../functions.html">Functions</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../functions.html#reconstruction">Reconstruction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../functions.html#resolve-topologies">Resolve Topologies</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../functions.html#miscellaneous">Miscellaneous</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="gplately.auxiliary.html">gplately.auxiliary</a></li>
+<li class="toctree-l3"><a class="reference internal" href="gplately.read_netcdf_grid.html">gplately.read_netcdf_grid</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">gplately.write_netcdf_grid</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#gplately.write_netcdf_grid"><code class="docutils literal notranslate"><span class="pre">write_netcdf_grid()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="gplately.default_netcdf_fill_value.html">gplately.default_netcdf_fill_value</a></li>
+<li class="toctree-l3"><a class="reference internal" href="gplately.ridge_spreading_rate.html">gplately.ridge_spreading_rate</a></li>
+<li class="toctree-l3"><a class="reference internal" href="gplately.subduction_convergence.html">gplately.subduction_convergence</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../filters_and_transformers.html">Filters And Transformers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../secondaries.html">Other Classes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../plate_models.html">Plate Models</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">gplately</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../functions.html">Functions</a></li>
+      <li class="breadcrumb-item active">gplately.write_netcdf_grid</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/generated/gplately.write_netcdf_grid.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="gplately-write-netcdf-grid">
+<h1>gplately.write_netcdf_grid<a class="headerlink" href="#gplately-write-netcdf-grid" title="Link to this heading"></a></h1>
+<dl class="py function">
+<dt class="sig sig-object py" id="gplately.write_netcdf_grid">
+<span class="sig-prename descclassname"><span class="pre">gplately.</span></span><span class="sig-name descname"><span class="pre">write_netcdf_grid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extent</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'global'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">significant_digits</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fill_value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metadata</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><span class="pre">dict</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">title</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/grids.html#write_netcdf_grid"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.write_netcdf_grid" title="Link to this definition"></a></dt>
+<dd><p>Write geological data contained in a <code class="docutils literal notranslate"><span class="pre">grid</span></code> to a netCDF4 grid with a specified <code class="docutils literal notranslate"><span class="pre">filename</span></code>.</p>
+<p class="rubric">Notes</p>
+<p>The written netCDF4 grid has the same latitudinal and longitudinal (row and column) dimensions as <code class="docutils literal notranslate"><span class="pre">grid</span></code>.
+It has three variables:</p>
+<ul class="simple">
+<li><p>Latitudes of <code class="docutils literal notranslate"><span class="pre">grid</span></code> data</p></li>
+<li><p>Longitudes of <code class="docutils literal notranslate"><span class="pre">grid</span></code> data</p></li>
+<li><p>The data stored in <code class="docutils literal notranslate"><span class="pre">grid</span></code></p></li>
+</ul>
+<p>However, the latitudes and longitudes of the grid returned to the user are constrained to those
+specified in <code class="docutils literal notranslate"><span class="pre">extent</span></code>.
+By default, <code class="docutils literal notranslate"><span class="pre">extent</span></code> assumes a global latitudinal and longitudinal span: <cite>extent=[-180,180,-90,90]</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>filename</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – The full path (including a filename and the “.nc” extension) to save the created netCDF4 <code class="docutils literal notranslate"><span class="pre">grid</span></code> to.</p></li>
+<li><p><strong>grid</strong> (<em>array-like</em>) – An ndarray grid containing data to be written into a <cite>netCDF</cite> (.nc) file. Note: Rows correspond to
+the data’s latitudes, while the columns correspond to the data’s longitudes.</p></li>
+<li><p><strong>extent</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em>, </em><em>default=</em><em>[</em><em>-180</em><em>,</em><em>180</em><em>,</em><em>-90</em><em>,</em><em>90</em><em>]</em>) – Four elements that specify the [min lon, max lon, min lat, max lat] to constrain the lat and lon
+variables of the netCDF grid to. If no extents are supplied, full global extent <cite>[-180, 180, -90, 90]</cite>
+is assumed.</p></li>
+<li><p><strong>significant_digits</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>, </em><em>optional</em>) – Optionally applies lossy data compression up to a specified number of significant digits.
+This significantly reduces file size, but make sure the required precision is preserved in the
+saved netcdf file.</p></li>
+<li><p><strong>fill_value</strong> (<em>scalar</em><em> or </em><em>False</em><em> or </em><em>None</em><em>, </em><em>default=None</em>) – <p>Value used to fill in missing data.</p>
+<p>If <code class="docutils literal notranslate"><span class="pre">False</span></code> is specified then no fill value is used, and you must ensure that data was written to <em>all</em> elements of <code class="docutils literal notranslate"><span class="pre">grid</span></code>.
+And any NaN elements will be written as the raw bit pattern for NaN (rather than automatically converted to a fill value).</p>
+<p>If <code class="docutils literal notranslate"><span class="pre">None</span></code> is specified then a default fill value is used, as follows:</p>
+<ul>
+<li><p>If <code class="docutils literal notranslate"><span class="pre">significant_digits</span></code> is NOT specified and the grid data type is floating-point then the default is <cite>np.nan</cite>.
+This essentially means that <cite>np.nan</cite> is only used (as the default) when <em>losslessly</em> compressing <em>floating-point</em> data.
+This is because <em>lossy</em> compression with a NaN fill value appears to <em>not</em> always mask out NaN regions.</p></li>
+<li><p>In all other cases the default is determined by <cite>netCDF</cite> based on the grid type.
+For example, the default for floating-point types is 9.969209968386869e+36 (see <cite>netCDF4.default_fillvals</cite>) and
+the default for <em>signed</em> integers is the largest negative value supported by the integer type (for <em>unsigned</em> its largest value).
+In this case, please ensure the default is outside the range of your valid grid data, otherwise specify a custom fill value.</p></li>
+</ul>
+<p>…and to query the default value associated with <code class="docutils literal notranslate"><span class="pre">None</span></code> you can call <a class="reference internal" href="gplately.default_netcdf_fill_value.html#gplately.default_netcdf_fill_value" title="gplately.default_netcdf_fill_value"><code class="xref py py-func docutils literal notranslate"><span class="pre">default_netcdf_fill_value()</span></code></a>.</p>
+</p></li>
+<li><p><strong>metadata</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a><em>, </em><em>default=None</em>) – Optional metadata to store as global netCDF attributes.</p></li>
+<li><p><strong>title</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>default=None</em>) – Title to store as the global <code class="docutils literal notranslate"><span class="pre">title</span></code> netCDF attribute. If <code class="docutils literal notranslate"><span class="pre">None</span></code>,
+defaults to <code class="docutils literal notranslate"><span class="pre">&quot;Grid</span> <span class="pre">produced</span> <span class="pre">by</span> <span class="pre">gplately</span> <span class="pre">&lt;version&gt;&quot;</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>A netCDF grid will be saved to the path specified in <code class="docutils literal notranslate"><span class="pre">filename</span></code>.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="gplately.read_netcdf_grid.html" class="btn btn-neutral float-left" title="gplately.read_netcdf_grid" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="gplately.default_netcdf_fill_value.html" class="btn btn-neutral float-right" title="gplately.default_netcdf_fill_value" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023-2025, The University of Sydney.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
