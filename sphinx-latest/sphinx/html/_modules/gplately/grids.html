@@ -1497,7 +1497,7 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">rasterise</span><span class="p">(</span>
     <span class="n">features</span><span class="p">,</span>
     <span class="n">rotation_model</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-    <span class="n">key</span><span class="o">=</span><span class="s2">&quot;plate_id&quot;</span><span class="p">,</span>
+    <span class="n">key</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;plate_id&quot;</span><span class="p">,</span>
     <span class="n">time</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="n">resx</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
     <span class="n">resy</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
@@ -3221,11 +3221,11 @@
 
 <span class="c1"># class TimeRaster(Raster):</span>
 <span class="c1">#     &quot;&quot;&quot;A class for the temporal manipulation of raster data. To be added soon!&quot;&quot;&quot;</span>
-<span class="c1">#     def __init__(self, PlateReconstruction_object=None, filename=None, array=None, extent=None, resample=None):</span>
+<span class="c1">#     def __init__(self, plate_reconstruction=None, filename=None, array=None, extent=None, resample=None):</span>
 <span class="c1">#         raise NotImplementedError(</span>
 <span class="c1">#             &quot;This class has not been implemented; use `Raster` instead&quot;</span>
 <span class="c1">#         )</span>
-<span class="c1">#         super(TimeRaster, self).__init__(PlateReconstruction_object)</span>
+<span class="c1">#         super(TimeRaster, self).__init__(plate_reconstruction)</span>
 </pre></div>
 
            </div>

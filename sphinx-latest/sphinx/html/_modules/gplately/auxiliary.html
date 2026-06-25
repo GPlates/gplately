@@ -126,6 +126,45 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">.reconstruction</span><span class="w"> </span><span class="kn">import</span> <span class="n">PlateReconstruction</span>
 
 
+<div class="viewcode-block" id="get_plate_model">
+<a class="viewcode-back" href="../../generated/gplately.auxiliary.html#gplately.auxiliary.get_plate_model">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_plate_model</span><span class="p">(</span>
+    <span class="n">model</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">PlateModel</span><span class="p">],</span> <span class="n">model_repo_dir</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;./&quot;</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PlateModel</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return a :py:class:`gplately.PlateModel` object for a given model name.</span>
+
+<span class="sd">    If ``model`` is a :class:`gplately.PlateModel` object then it is simply returned.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    model : str or PlateModel</span>
+<span class="sd">        model name or a :class:`gplately.PlateModel` object</span>
+<span class="sd">    model_repo_dir: str, default=&quot;./&quot;</span>
+<span class="sd">        the folder in which you would like to keep the model files</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    PlateModel</span>
+<span class="sd">        a :class:`gplately.PlateModel` object</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="n">model_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">model</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">plate_model</span> <span class="o">=</span> <span class="n">PlateModelManager</span><span class="p">()</span><span class="o">.</span><span class="n">get_model</span><span class="p">(</span>
+                <span class="n">model_name</span><span class="p">,</span> <span class="n">data_dir</span><span class="o">=</span><span class="n">model_repo_dir</span>
+            <span class="p">)</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="n">plate_model</span> <span class="o">=</span> <span class="n">PlateModel</span><span class="p">(</span><span class="n">model_name</span><span class="p">,</span> <span class="n">data_dir</span><span class="o">=</span><span class="n">model_repo_dir</span><span class="p">,</span> <span class="n">readonly</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">plate_model</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unable to get model (</span><span class="si">{</span><span class="n">model_name</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">plate_model</span> <span class="o">=</span> <span class="n">model</span>
+
+    <span class="k">return</span> <span class="n">plate_model</span></div>
+
+
+
 <div class="viewcode-block" id="get_plate_reconstruction">
 <a class="viewcode-back" href="../../generated/gplately.auxiliary.html#gplately.auxiliary.get_plate_reconstruction">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_plate_reconstruction</span><span class="p">(</span>
@@ -154,19 +193,7 @@
 
 <span class="sd">        `usage example &lt;https://github.com/GPlates/gplately/blob/master/Notebooks/Examples/use_auxiliary_functions.py&gt;`__</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-        <span class="n">model_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">model</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="n">plate_model</span> <span class="o">=</span> <span class="n">PlateModelManager</span><span class="p">()</span><span class="o">.</span><span class="n">get_model</span><span class="p">(</span>
-                <span class="n">model_name</span><span class="p">,</span> <span class="n">data_dir</span><span class="o">=</span><span class="n">model_repo_dir</span>
-            <span class="p">)</span>
-        <span class="k">except</span><span class="p">:</span>
-            <span class="n">plate_model</span> <span class="o">=</span> <span class="n">PlateModel</span><span class="p">(</span><span class="n">model_name</span><span class="p">,</span> <span class="n">data_dir</span><span class="o">=</span><span class="n">model_repo_dir</span><span class="p">,</span> <span class="n">readonly</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-
-        <span class="k">if</span> <span class="n">plate_model</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unable to get model (</span><span class="si">{</span><span class="n">model_name</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">plate_model</span> <span class="o">=</span> <span class="n">model</span>
+    <span class="n">plate_model</span> <span class="o">=</span> <span class="n">get_plate_model</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">model_repo_dir</span><span class="p">)</span>
 
     <span class="n">topology_features</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">static_polygons</span> <span class="o">=</span> <span class="kc">None</span>
@@ -224,19 +251,7 @@
 
 <span class="sd">        `usage example &lt;https://github.com/GPlates/gplately/blob/master/Notebooks/Examples/use_auxiliary_functions.py&gt;`__</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-        <span class="n">model_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">model</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="n">plate_model</span> <span class="o">=</span> <span class="n">PlateModelManager</span><span class="p">()</span><span class="o">.</span><span class="n">get_model</span><span class="p">(</span>
-                <span class="n">model_name</span><span class="p">,</span> <span class="n">data_dir</span><span class="o">=</span><span class="n">model_repo_dir</span>
-            <span class="p">)</span>
-        <span class="k">except</span><span class="p">:</span>
-            <span class="n">plate_model</span> <span class="o">=</span> <span class="n">PlateModel</span><span class="p">(</span><span class="n">model_name</span><span class="p">,</span> <span class="n">data_dir</span><span class="o">=</span><span class="n">model_repo_dir</span><span class="p">,</span> <span class="n">readonly</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-
-        <span class="k">if</span> <span class="n">plate_model</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unable to get model (</span><span class="si">{</span><span class="n">model_name</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">plate_model</span> <span class="o">=</span> <span class="n">model</span>
+    <span class="n">plate_model</span> <span class="o">=</span> <span class="n">get_plate_model</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">model_repo_dir</span><span class="p">)</span>
 
     <span class="n">m</span> <span class="o">=</span> <span class="n">get_plate_reconstruction</span><span class="p">(</span><span class="n">plate_model</span><span class="p">,</span> <span class="n">model_repo_dir</span><span class="p">,</span> <span class="n">default_anchor_plate_id</span><span class="p">)</span>
 

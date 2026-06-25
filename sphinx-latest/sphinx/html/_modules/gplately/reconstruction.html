@@ -145,21 +145,22 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        rotation_model : str/`os.PathLike`, or instance of `pygplates.FeatureCollection`_, or `pygplates.Feature`_, or sequence of `pygplates.Feature`_, or instance of `pygplates.RotationModel`_</span>
+<span class="sd">        rotation_model : str/`os.PathLike`, or a sequence (eg, `list` or `tuple`) of instances of `pygplates.Feature`_, or a single instance of `pygplates.Feature`_, or an instance of `pygplates.FeatureCollection`_, or a sequence of any combination of those four types, or an instance of `pygplates.RotationModel`_</span>
 <span class="sd">            A rotation model to query equivalent and/or relative topological plate rotations</span>
-<span class="sd">            from a time in the past relative to another time in the past or to present day. Can be</span>
-<span class="sd">            provided as a rotation filename, or rotation feature collection, or rotation feature, or</span>
-<span class="sd">            sequence of rotation features, or a sequence (eg, a list or tuple) of any combination of</span>
-<span class="sd">            those four types.</span>
-<span class="sd">        topology_features : str/`os.PathLike`, or a sequence (eg, `list` or `tuple`) of instances of `pygplates.Feature`_, or a single instance of `pygplates.Feature`_, or an instance of `pygplates.FeatureCollection`_, default None</span>
-<span class="sd">            Reconstructable topological features like trenches, ridges and transforms. Can be provided</span>
-<span class="sd">            as an optional topology-feature filename, or sequence of features, or a single feature.</span>
-<span class="sd">        static_polygons : str/`os.PathLike`, or instance of `pygplates.Feature`_, or sequence of `pygplates.Feature`_, or an instance of `pygplates.FeatureCollection`_, default None</span>
+<span class="sd">            from a time in the past relative to another time in the past or to present day.</span>
+<span class="sd">            Can be provided as a rotation filename, or a sequence of rotation features, or a single rotation feature,</span>
+<span class="sd">            or a rotation feature collection, or a sequence (eg, a list or tuple) of any combination of those four types,</span>
+<span class="sd">            or a rotation model.</span>
+<span class="sd">        topology_features : str/`os.PathLike`, or a sequence (eg, `list` or `tuple`) of instances of `pygplates.Feature`_, or a single instance of `pygplates.Feature`_, or an instance of `pygplates.FeatureCollection`_, or a sequence of any combination of those four types, default None</span>
+<span class="sd">            Reconstructable topological features like trenches, ridges and transforms.</span>
+<span class="sd">            Can be provided as a topology filename, or a sequence of topology features, or a single topology feature,</span>
+<span class="sd">            or a topology feature collection, or a sequence (eg, a list or tuple) of any combination of those four types.</span>
+<span class="sd">        static_polygons : str/`os.PathLike`, or a sequence (eg, `list` or `tuple`) of instances of `pygplates.Feature`_, or a single instance of `pygplates.Feature`_, or an instance of `pygplates.FeatureCollection`_, or a sequence of any combination of those four types, default None</span>
 <span class="sd">            Present-day polygons whose shapes do not change through geological time. They are</span>
 <span class="sd">            used to cookie-cut dynamic polygons into identifiable topological plates (assigned</span>
-<span class="sd">            an ID) according to their present-day locations. Can be provided as a static polygon feature</span>
-<span class="sd">            collection, or optional filename, or a single feature, or a sequence of</span>
-<span class="sd">            features.</span>
+<span class="sd">            an ID) according to their present-day locations.</span>
+<span class="sd">            Can be provided as a static polygon filename, or a sequence of static polygon features, or a single static polygon feature,</span>
+<span class="sd">            or a static polygon feature collection, or a sequence (eg, a list or tuple) of any combination of those four types.</span>
 <span class="sd">        anchor_plate_id : int, optional</span>
 <span class="sd">            Default anchor plate ID for reconstruction.</span>
 <span class="sd">            If not specified then uses the default anchor plate of :py:attr:`~rotation_model`.</span>
@@ -171,8 +172,8 @@
 <span class="sd">        .. _pygplates.Feature: https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature</span>
 <span class="sd">        .. _pygplates.FeatureCollection: https://www.gplates.org/docs/pygplates/generated/pygplates.featurecollection#pygplates.FeatureCollection</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1">#: A `pygplates.RotationModel &lt;https://www.gplates.org/docs/pygplates/generated/pygplates.rotationmodel&gt;`__ object</span>
-        <span class="c1">#: to query equivalent and/or relative topological plate rotations</span>
+        <span class="c1">#: A `pygplates.RotationModel &lt;https://www.gplates.org/docs/pygplates/generated/pygplates.rotationmodel&gt;`__ object,</span>
+        <span class="c1">#: with default anchor plate :py:attr:`anchor_plate_id`, used to query equivalent and/or relative topological plate rotations</span>
         <span class="c1">#: from a time in the past relative to another time in the past or to present day.</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">rotation_model</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">pygplates</span><span class="o">.</span><span class="n">RotationModel</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
 

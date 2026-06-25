@@ -62,6 +62,7 @@
 <li class="toctree-l3 current"><a class="current reference internal" href="#">gplately.auxiliary</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#gplately.auxiliary.get_data_server_cache_path"><code class="docutils literal notranslate"><span class="pre">get_data_server_cache_path()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#gplately.auxiliary.get_gplot"><code class="docutils literal notranslate"><span class="pre">get_gplot()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gplately.auxiliary.get_plate_model"><code class="docutils literal notranslate"><span class="pre">get_plate_model()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#gplately.auxiliary.get_plate_reconstruction"><code class="docutils literal notranslate"><span class="pre">get_plate_reconstruction()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#gplately.auxiliary.get_pygmt_basemap_figure"><code class="docutils literal notranslate"><span class="pre">get_pygmt_basemap_figure()</span></code></a></li>
 </ul>
@@ -118,10 +119,13 @@ minimizing the coding effort required from users.</p>
 <tr class="row-even"><td><p><a class="reference internal" href="#gplately.auxiliary.get_gplot" title="gplately.auxiliary.get_gplot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_gplot</span></code></a>(model, model_repo_dir, time, ...)</p></td>
 <td><p>Return a <a class="reference internal" href="gplately.PlotTopologies.html#gplately.PlotTopologies" title="gplately.PlotTopologies"><code class="xref py py-class docutils literal notranslate"><span class="pre">gplately.PlotTopologies</span></code></a> object for a given model name or <a class="reference internal" href="gplately.PlateModel.html#gplately.PlateModel" title="gplately.PlateModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">gplately.PlateModel</span></code></a> object.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#gplately.auxiliary.get_plate_reconstruction" title="gplately.auxiliary.get_plate_reconstruction"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_plate_reconstruction</span></code></a>(model[, ...])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#gplately.auxiliary.get_plate_model" title="gplately.auxiliary.get_plate_model"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_plate_model</span></code></a>(model[, model_repo_dir])</p></td>
+<td><p>Return a <a class="reference internal" href="gplately.PlateModel.html#gplately.PlateModel" title="gplately.PlateModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">gplately.PlateModel</span></code></a> object for a given model name.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#gplately.auxiliary.get_plate_reconstruction" title="gplately.auxiliary.get_plate_reconstruction"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_plate_reconstruction</span></code></a>(model[, ...])</p></td>
 <td><p>Return a <a class="reference internal" href="gplately.PlateReconstruction.html#gplately.PlateReconstruction" title="gplately.PlateReconstruction"><code class="xref py py-class docutils literal notranslate"><span class="pre">gplately.PlateReconstruction</span></code></a> object for a given model name or <a class="reference internal" href="gplately.PlateModel.html#gplately.PlateModel" title="gplately.PlateModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">gplately.PlateModel</span></code></a> object.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#gplately.auxiliary.get_pygmt_basemap_figure" title="gplately.auxiliary.get_pygmt_basemap_figure"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_pygmt_basemap_figure</span></code></a>([projection, ...])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#gplately.auxiliary.get_pygmt_basemap_figure" title="gplately.auxiliary.get_pygmt_basemap_figure"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_pygmt_basemap_figure</span></code></a>([projection, ...])</p></td>
 <td><p>A helper function to return a <code class="docutils literal notranslate"><span class="pre">pygmt.Figure()</span></code> object</p></td>
 </tr>
 </tbody>
@@ -161,6 +165,27 @@ minimizing the coding effort required from users.</p>
 <p class="admonition-title">See also</p>
 <p><a class="reference external" href="https://github.com/GPlates/gplately/blob/master/Notebooks/Examples/use_auxiliary_functions.py">usage example</a></p>
 </div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="gplately.auxiliary.get_plate_model">
+<span class="sig-prename descclassname"><span class="pre">gplately.auxiliary.</span></span><span class="sig-name descname"><span class="pre">get_plate_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="gplately.PlateModel.html#gplately.PlateModel" title="plate_model_manager.plate_model.PlateModel"><span class="pre">PlateModel</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_repo_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'./'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="gplately.PlateModel.html#gplately.PlateModel" title="plate_model_manager.plate_model.PlateModel"><span class="pre">PlateModel</span></a></span></span><a class="reference internal" href="../_modules/gplately/auxiliary.html#get_plate_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.auxiliary.get_plate_model" title="Link to this definition"></a></dt>
+<dd><p>Return a <a class="reference internal" href="gplately.PlateModel.html#gplately.PlateModel" title="gplately.PlateModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">gplately.PlateModel</span></code></a> object for a given model name.</p>
+<p>If <code class="docutils literal notranslate"><span class="pre">model</span></code> is a <a class="reference internal" href="gplately.PlateModel.html#gplately.PlateModel" title="gplately.PlateModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">gplately.PlateModel</span></code></a> object then it is simply returned.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em> or </em><a class="reference internal" href="gplately.PlateModel.html#gplately.PlateModel" title="gplately.PlateModel"><em>PlateModel</em></a>) – model name or a <a class="reference internal" href="gplately.PlateModel.html#gplately.PlateModel" title="gplately.PlateModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">gplately.PlateModel</span></code></a> object</p></li>
+<li><p><strong>model_repo_dir</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>default=&quot;./&quot;</em>) – the folder in which you would like to keep the model files</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>a <a class="reference internal" href="gplately.PlateModel.html#gplately.PlateModel" title="gplately.PlateModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">gplately.PlateModel</span></code></a> object</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="gplately.PlateModel.html#gplately.PlateModel" title="gplately.PlateModel">PlateModel</a></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">

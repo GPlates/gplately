@@ -103,7 +103,6 @@
  | <a href="#R"><strong>R</strong></a>
  | <a href="#S"><strong>S</strong></a>
  | <a href="#T"><strong>T</strong></a>
- | <a href="#U"><strong>U</strong></a>
  | <a href="#V"><strong>V</strong></a>
  | <a href="#W"><strong>W</strong></a>
  
@@ -165,13 +164,9 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="generated/gplately.PlotTopologies.html#gplately.PlotTopologies.base_projection">base_projection (gplately.PlotTopologies attribute)</a>
 </li>
-      <li><a href="filters_and_transformers.html#gplately.utils.feature_filter.BirthAgeFilter">BirthAgeFilter (class in gplately.utils.feature_filter)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="generated/gplately.SeafloorGrid.html#gplately.SeafloorGrid.build_all_continental_masks">build_all_continental_masks() (gplately.SeafloorGrid method)</a>
-</li>
-      <li><a href="generated/gplately.SeafloorGrid.html#gplately.SeafloorGrid.build_all_MOR_seedpoints">build_all_MOR_seedpoints() (gplately.SeafloorGrid method)</a>
+      <li><a href="filters_and_transformers.html#gplately.utils.feature_filter.BirthAgeFilter">BirthAgeFilter (class in gplately.utils.feature_filter)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -213,13 +208,15 @@
       </ul></li>
       <li><a href="generated/gplately.PlateReconstruction.html#gplately.PlateReconstruction.create_flowline">create_flowline() (gplately.PlateReconstruction method)</a>
 </li>
-      <li><a href="generated/gplately.SeafloorGrid.html#gplately.SeafloorGrid.create_initial_ocean_seed_points">create_initial_ocean_seed_points() (gplately.SeafloorGrid method)</a>
-</li>
       <li><a href="generated/gplately.PlateModel.html#gplately.PlateModel.create_model_dir">create_model_dir() (gplately.PlateModel method)</a>
 </li>
       <li><a href="generated/gplately.PlateReconstruction.html#gplately.PlateReconstruction.create_motion_path">create_motion_path() (gplately.PlateReconstruction method)</a>
 </li>
       <li><a href="generated/gplately.PlateReconstruction.html#gplately.PlateReconstruction.crustal_production_destruction_rate">crustal_production_destruction_rate() (gplately.PlateReconstruction method)</a>
+</li>
+      <li><a href="generated/gplately.SeafloorGrid.html#gplately.SeafloorGrid.CURRENT_LATITUDES_KEY">CURRENT_LATITUDES_KEY (gplately.SeafloorGrid attribute)</a>
+</li>
+      <li><a href="generated/gplately.SeafloorGrid.html#gplately.SeafloorGrid.CURRENT_LONGITUDES_KEY">CURRENT_LONGITUDES_KEY (gplately.SeafloorGrid attribute)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -367,10 +364,10 @@
 </li>
       <li><a href="generated/gplately.PlotTopologies.html#gplately.PlotTopologies.get_misc_boundaries">get_misc_boundaries() (gplately.PlotTopologies method)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="generated/gplately.PlotTopologies.html#gplately.PlotTopologies.get_misc_transforms">get_misc_transforms() (gplately.PlotTopologies method)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="generated/gplately.PlateModelManager.html#gplately.PlateModelManager.get_model">get_model() (gplately.PlateModelManager method)</a>
 </li>
       <li><a href="generated/gplately.PlateModel.html#gplately.PlateModel.get_model_dir">get_model_dir() (gplately.PlateModel method)</a>
@@ -378,6 +375,8 @@
       <li><a href="generated/gplately.PlotTopologies.html#gplately.PlotTopologies.get_orogenic_belts">get_orogenic_belts() (gplately.PlotTopologies method)</a>
 </li>
       <li><a href="generated/gplately.PlotTopologies.html#gplately.PlotTopologies.get_passive_continental_boundaries">get_passive_continental_boundaries() (gplately.PlotTopologies method)</a>
+</li>
+      <li><a href="generated/gplately.auxiliary.html#gplately.auxiliary.get_plate_model">get_plate_model() (in module gplately.auxiliary)</a>
 </li>
       <li><a href="generated/gplately.auxiliary.html#gplately.auxiliary.get_plate_reconstruction">get_plate_reconstruction() (in module gplately.auxiliary)</a>
 </li>
@@ -617,6 +616,8 @@
 </li>
       <li><a href="generated/gplately.PlotTopologies.html#gplately.PlotTopologies.plot_plate_id">plot_plate_id() (gplately.PlotTopologies method)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="generated/gplately.CartopyPlotEngine.html#gplately.CartopyPlotEngine.plot_plate_motion_vectors">plot_plate_motion_vectors() (gplately.CartopyPlotEngine method)</a>
 
       <ul>
@@ -627,8 +628,6 @@
         <li><a href="generated/gplately.PygmtPlotEngine.html#gplately.PygmtPlotEngine.plot_plate_motion_vectors">(gplately.PygmtPlotEngine method)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="generated/gplately.PlotTopologies.html#gplately.PlotTopologies.plot_plate_polygon_by_id">plot_plate_polygon_by_id() (gplately.PlotTopologies method)</a>
 </li>
       <li><a href="generated/gplately.CartopyPlotEngine.html#gplately.CartopyPlotEngine.plot_pole">plot_pole() (gplately.CartopyPlotEngine method)</a>
@@ -683,11 +682,7 @@
 </li>
       <li><a href="generated/gplately.PlotTopologies.html#gplately.PlotTopologies">PlotTopologies (class in gplately)</a>
 </li>
-      <li><a href="generated/gplately.SeafloorGrid.html#gplately.SeafloorGrid.PlotTopologiesTime">PlotTopologiesTime (gplately.SeafloorGrid property)</a>
-</li>
       <li><a href="generated/gplately.Points.html#gplately.Points">Points (class in gplately)</a>
-</li>
-      <li><a href="generated/gplately.SeafloorGrid.html#gplately.SeafloorGrid.prepare_for_reconstruction_by_topologies">prepare_for_reconstruction_by_topologies() (gplately.SeafloorGrid method)</a>
 </li>
       <li><a href="generated/gplately.PresentDayRasterManager.html#gplately.PresentDayRasterManager">PresentDayRasterManager (class in gplately)</a>
 </li>
@@ -795,9 +790,9 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="generated/gplately.Points.html#gplately.Points.save">save() (gplately.Points method)</a>
 </li>
-      <li><a href="generated/gplately.SeafloorGrid.html#gplately.SeafloorGrid.save_netcdf_files">save_netcdf_files() (gplately.SeafloorGrid method)</a>
-</li>
       <li><a href="generated/gplately.Raster.html#gplately.Raster.save_to_netcdf4">save_to_netcdf4() (gplately.Raster method)</a>
+</li>
+      <li><a href="generated/gplately.SeafloorGrid.html#gplately.SeafloorGrid.SEAFLOOR_AGE_KEY">SEAFLOOR_AGE_KEY (gplately.SeafloorGrid attribute)</a>
 </li>
       <li><a href="generated/gplately.SeafloorGrid.html#gplately.SeafloorGrid">SeafloorGrid (class in gplately)</a>
 </li>
@@ -849,6 +844,8 @@
         <li><a href="generated/gplately.Raster.html#gplately.Raster.size">(gplately.Raster property)</a>
 </li>
       </ul></li>
+      <li><a href="generated/gplately.SeafloorGrid.html#gplately.SeafloorGrid.SPREADING_RATE_KEY">SPREADING_RATE_KEY (gplately.SeafloorGrid attribute)</a>
+</li>
       <li><a href="generated/gplately.DataServer.html#gplately.DataServer.static_polygons">static_polygons (gplately.DataServer property)</a>
 
       <ul>
@@ -924,14 +921,6 @@
       <li><a href="generated/gplately.PlotTopologies.html#gplately.PlotTopologies.trench_right">trench_right (gplately.PlotTopologies attribute)</a>
 </li>
       <li><a href="generated/gplately.PlotTopologies.html#gplately.PlotTopologies.trenches">trenches (gplately.PlotTopologies attribute)</a>
-</li>
-  </ul></td>
-</tr></table>
-
-<h2 id="U">U</h2>
-<table style="width: 100%" class="indextable genindextable"><tr>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="generated/gplately.SeafloorGrid.html#gplately.SeafloorGrid.update_time">update_time() (gplately.SeafloorGrid method)</a>
 </li>
   </ul></td>
 </tr></table>
