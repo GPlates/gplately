@@ -227,10 +227,10 @@ class ReconstructByTopologies(object):
 
         # Get the resolved networks and rigid plates.
         curr_resolved_networks = curr_topological_snapshot.get_resolved_topologies(
-            pygplates.ResolveTopologyType.network  # type:ignore
+            pygplates.ResolveTopologyType.network  # type: ignore
         )
         curr_resolved_boundaries = curr_topological_snapshot.get_resolved_topologies(
-            pygplates.ResolveTopologyType.boundary  # type:ignore
+            pygplates.ResolveTopologyType.boundary  # type: ignore
         )
 
         # Get the currently active points and their indices (into the original points).
@@ -408,6 +408,8 @@ class ReconstructByTopologies(object):
 
                 # Reconstruct the currently active point from its position at current time to its position at the next time step.
                 curr_active_point = self._all_current_points[point_index]
+                # This should not return None because the currently active point has previously been determined to be inside
+                # the current resolved topology (in the previous time step).
                 next_active_point = curr_resolved_topology.reconstruct_point(
                     curr_active_point, next_time
                 )
@@ -478,6 +480,9 @@ class ReconstructByTopologies(object):
 
         # Get the currently active points and their indices (into the original points).
         curr_active_point_indices = self.get_current_active_point_indices()
+        if len(curr_active_point_indices) == 0:
+            # There are no active points so nothing to do.
+            return
         curr_active_points = [
             self._all_current_points[point_index]
             for point_index in curr_active_point_indices
@@ -797,7 +802,7 @@ class ReconstructByTopologies(object):
                 self.next_boundary_sub_segments
             ):
                 raise RuntimeError(
-                    "Current and next topologies have a different number of boundary sub-segments."
+                    "Expected current and next topologies have the same number of boundary sub-segments."
                 )
             self.num_boundary_sub_segments = len(self.curr_boundary_sub_segments)
 
@@ -884,7 +889,7 @@ class ReconstructByTopologies(object):
                     #
                     # Note: We don't need to clone this feature before modifying it because it was already essentially cloned
                     #       when 'ResolvedTopologicalSubSegment.get_resolved_feature()' was called.
-                    pygplates.reverse_reconstruct(  # type:ignore
+                    pygplates.reverse_reconstruct(  # type: ignore
                         curr_boundary_sub_segment_feature,
                         self.rotation_model,
                         self.curr_time,
@@ -901,7 +906,7 @@ class ReconstructByTopologies(object):
 
                     # Reconstruct to 'next_time' (from present day).
                     next_boundary_sub_segment_reconstructed_geometries = (
-                        pygplates.ReconstructSnapshot(  # type:ignore
+                        pygplates.ReconstructSnapshot(  # type: ignore
                             curr_boundary_sub_segment_feature,
                             self.rotation_model,
                             self.next_time,
@@ -969,7 +974,7 @@ class ReconstructByTopologies(object):
                 #
                 # Note: We don't need to clone these features before modifying them because they were already essentially cloned
                 #       when 'ResolvedTopologicalSubSegment.get_resolved_feature()' was called.
-                pygplates.reverse_reconstruct(  # type:ignore
+                pygplates.reverse_reconstruct(  # type: ignore
                     curr_boundary_sub_sub_segment_features,
                     self.rotation_model,
                     self.curr_time,
@@ -984,7 +989,7 @@ class ReconstructByTopologies(object):
                         )
 
                 # Reconstruct to 'next_time' (from present day).
-                next_boundary_sub_sub_segment_reconstructed_geometries = pygplates.ReconstructSnapshot(  # type:ignore
+                next_boundary_sub_sub_segment_reconstructed_geometries = pygplates.ReconstructSnapshot(  # type: ignore
                     curr_boundary_sub_sub_segment_features,
                     self.rotation_model,
                     self.next_time,
@@ -1016,7 +1021,7 @@ class ReconstructByTopologies(object):
 
             # Join the (potentially reversed) points of the boundary sub-segments and join them together into a polygon boundary.
             # Each sub-segment is either from the *current* or *next* resolved topology.
-            return pygplates.PolygonOnSphere(  # type:ignore
+            return pygplates.PolygonOnSphere(  # type: ignore
                 next_boundary_polygon_points
             )
 
