@@ -652,6 +652,8 @@ def find_distance_to_nearest_ridge(
                     point, ridge_sub_segment, min_distance_to_ridge_sub_segment
                 )
                 if distance_to_ridge_sub_segment is not None:
+                    # We always get here on the first call,
+                    # so 'min_distance_to_ridge_sub_segment' should never be None.
                     min_distance_to_ridge_sub_segment = distance_to_ridge_sub_segment
 
             all_point_distances_to_ridge.append(

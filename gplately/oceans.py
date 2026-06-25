@@ -689,9 +689,12 @@ class SeafloorGrid(object):
         .. _pygplates.PointOnSphere: https://www.gplates.org/docs/pygplates/generated/pygplates.pointonsphere#pygplates.PointOnSphere
         """
 
-        if self.continent_mask_is_provided and os.path.isfile(
-            self.continent_mask_filepath.format(self._max_time)
-        ):
+        if self.continent_mask_is_provided:
+            if not os.path.isfile(self.continent_mask_filepath.format(self._max_time)):
+                raise FileNotFoundError(
+                    f"Provided continent mask template '{self.continent_mask_filepath}' does not map to an existing file at time {self._max_time}."
+                )
+
             # If a set of continent masks was passed, we can use max_time's continental
             # mask to build the initial profile of seafloor age.
             ocean_points_feature = (

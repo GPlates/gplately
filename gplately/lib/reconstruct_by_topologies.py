@@ -975,7 +975,7 @@ class _ReconstructByTopologicalModelImpl(_ReconstructByTopologies):
         current_active_point_indices = []
         for point_index in range(self.num_points):
             current_point = self.curr_points[point_index]
-            if not current_point:
+            if current_point is None:
                 # Current point is not currently active.
                 # So we cannot reconstruct to next time.
                 self.next_points[point_index] = None
