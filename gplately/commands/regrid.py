@@ -126,7 +126,9 @@ def _regrid_netcdf4(args):
 
     if p_input.is_file():
         input_filename = p_input
-        if p_output.suffix:
+        if (
+            p_output.suffix == ".nc"
+        ):  # directory can have a suffix, but it must not be .nc
             output_filename = p_output
         else:
             p_output.mkdir(parents=False, exist_ok=True)
@@ -140,7 +142,9 @@ def _regrid_netcdf4(args):
         )
 
     elif p_input.is_dir():
-        if p_output.suffix:
+        if (
+            p_output.suffix == ".nc"
+        ):  # directory can have a suffix, but it must not be .nc
             raise ValueError("Specify output directory, not a single output file")
 
         # find all .nc files in this directory

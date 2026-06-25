@@ -40,7 +40,7 @@ import math
 from pathlib import Path
 import warnings
 from multiprocessing import cpu_count
-from typing import Tuple, Union
+from typing import Tuple, Union, cast
 
 # pyright: reportMissingImports=false
 # pyright: reportMissingModuleSource=false
@@ -72,6 +72,7 @@ __all__ = [
     "fill_raster",
     "read_netcdf_grid",
     "write_netcdf_grid",
+    "default_netcdf_fill_value",
     "RegularGridInterpolator",
     "sample_grid",
     "reconstruct_grid",
@@ -138,17 +139,62 @@ def fill_raster(data, invalid=None):
 
 def _realign_grid(array, lons, lats):
     """realigns grid to -180/180 and flips the array if the latitudinal coordinates are decreasing."""
-    mask_lons = lons > 180
+    lons = np.asarray(lons)
+    lats = np.asarray(lats)
 
-    # realign to -180/180
-    if mask_lons.any():
-        dlon = np.diff(lons).mean()
-        array = np.hstack([array[:, mask_lons], array[:, ~mask_lons]])
-        lons = np.hstack([lons[mask_lons] - 360 - dlon, lons[~mask_lons]])
+    # There must not be any duplicate longitudes or duplicate latitudes.
+    lon_differences = np.diff(lons)
+    if np.any(lon_differences == 0):
+        raise ValueError("Longitudes contain duplicate values.")
+    lat_differences = np.diff(lats)
+    if np.any(lat_differences == 0):
+        raise ValueError("Latitudes contain duplicate values.")
 
-    if lats[0] > lats[-1]:
-        array = np.flipud(array)
-        lats = lats[::-1]
+    # Check if longitudes and latitudes are in increasing order. If not then sort them.
+    if not np.all(lon_differences > 0):
+        sort_indices = np.argsort(lons)
+        array = array[:, sort_indices]
+        lons = lons[sort_indices]
+    if not np.all(lat_differences > 0):
+        sort_indices = np.argsort(lats)
+        array = array[sort_indices, :]
+        lats = lats[sort_indices]
+
+    # If we need to wrap (180, 360) to (-180, 0).
+    if lons[-1] > 180:
+        mask_lon_gt_180 = lons > 180
+
+        # If we have longitudes at 0 and 360 then we don't want to wrap the 360 column to 0 since we'd end up with two 0 columns.
+        # Both columns should ideally be equal anyway (if input raster wraps 0->360 properly).
+        if np.isclose(lons[0], 0.0) and np.isclose(lons[-1], 360.0):
+            mask_lon_wrap = mask_lon_gt_180.copy()
+            mask_lon_wrap[-1] = False  # drop the 360 column altogether
+        else:
+            mask_lon_wrap = mask_lon_gt_180
+
+        # Wrap (180, 360) to (-180, 0).
+        array = np.hstack([array[:, mask_lon_wrap], array[:, ~mask_lon_gt_180]])
+        lons = np.hstack([lons[mask_lon_wrap] - 360.0, lons[~mask_lon_gt_180]])
+
+        # If the input grid crossed the dateline (180) then create a matching column at -180 so that the output wraps -180->180 properly.
+        #
+        # The dateline was crossed if there are longitudes in (0, 180), noting that we already wrapped (180, 360) to (-180, 0).
+        if lons[-1] > 0:
+            if np.isclose(lons[-1], 180.0):
+                # There's a longitude at 180, so duplicate it at -180.
+                array = np.hstack([array[:, [-1]], array])
+                lons = np.hstack([-180.0, lons])
+            else:
+                # There's no longitude at 180, so interpolate at 180 and insert at -180.
+                #
+                # The 360.0 accounts for the fact that lons[0] was wrapped above.
+                interp_180_weight = (180.0 - lons[-1]) / (360.0 - (lons[-1] - lons[0]))
+                interp_180_column = (
+                    array[:, -1] * (1.0 - interp_180_weight)
+                    + array[:, 0] * interp_180_weight
+                )
+                array = np.hstack([interp_180_column[:, np.newaxis], array])
+                lons = np.hstack([-180.0, lons])
 
     return array, lons, lats
 
@@ -176,7 +222,9 @@ def _is_a_common_name_for_latitude(name: str) -> bool:
     return name in ["lat", "lats", "latitude", "y", "north", "northing", "northings"]
 
 
-def _find_extent_from_data(data) -> Union[Tuple[float, float, float, float], None]:
+def _find_extent_from_data(
+    data, origin
+) -> Union[Tuple[float, float, float, float], None]:
     """Try to find the extent from data. Return None if data doesn't contain coordinates.
     As of 2025-12-10, only support xarray.DataArray."""
     extent = None
@@ -198,7 +246,8 @@ def _find_extent_from_data(data) -> Union[Tuple[float, float, float, float], Non
     except Exception as ex:
         logger.debug(ex)
         return None
-    return extent
+
+    return _adjust_extent_for_origin(extent, origin)
 
 
 def read_netcdf_grid(
@@ -321,11 +370,13 @@ def read_netcdf_grid(
         cdf_lat = cdf[key_lat][:]
 
         # fill missing values
-        if hasattr(cdf[key_z], "missing_value") and np.issubdtype(
-            cdf_grid.dtype, np.floating
-        ):
-            fill_value = cdf[key_z].missing_value
-            cdf_grid[np.isclose(cdf_grid, fill_value, rtol=0.1)] = np.nan
+        if np.issubdtype(cdf_grid.dtype, np.floating):
+            if hasattr(cdf[key_z], "missing_value"):
+                fill_value = cdf[key_z].missing_value
+                cdf_grid[np.isclose(cdf_grid, fill_value, rtol=0.1)] = np.nan
+            elif hasattr(cdf[key_z], "_FillValue"):
+                fill_value = cdf[key_z]._FillValue
+                cdf_grid[np.isclose(cdf_grid, fill_value, rtol=0.1)] = np.nan
 
         # convert to boolean array
         if np.issubdtype(cdf_grid.dtype, np.integer):
@@ -350,7 +401,7 @@ def read_netcdf_grid(
         dX = np.diff(cdf_lon).mean()
         dY = np.diff(cdf_lat).mean()
 
-        if spacingX != dX or spacingY != dY:
+        if not np.isclose(dX, spacingX) or not np.isclose(dY, spacingY):
             lon_grid = np.arange(cdf_lon.min(), cdf_lon.max() + spacingX, spacingX)
             lat_grid = np.arange(cdf_lat.min(), cdf_lat.max() + spacingY, spacingY)
             lonq, latq = np.meshgrid(lon_grid, lat_grid)
@@ -413,29 +464,29 @@ def write_netcdf_grid(
     grid,
     extent: Union[tuple, str] = "global",
     significant_digits=None,
-    fill_value: Union[float, None] = np.nan,
+    fill_value: Union[float, bool, None] = None,
     metadata: Union[dict, None] = None,
     title: Union[str, None] = None,
 ):
-    """Write geological data contained in a `grid` to a netCDF4 grid with a specified `filename`.
+    """Write geological data contained in a ``grid`` to a netCDF4 grid with a specified ``filename``.
 
     Notes
     -----
-    The written netCDF4 grid has the same latitudinal and longitudinal (row and column) dimensions as `grid`.
+    The written netCDF4 grid has the same latitudinal and longitudinal (row and column) dimensions as ``grid``.
     It has three variables:
 
-    * Latitudes of `grid` data
-    * Longitudes of `grid` data
-    * The data stored in `grid`
+    * Latitudes of ``grid`` data
+    * Longitudes of ``grid`` data
+    * The data stored in ``grid``
 
     However, the latitudes and longitudes of the grid returned to the user are constrained to those
-    specified in `extent`.
-    By default, `extent` assumes a global latitudinal and longitudinal span: `extent=[-180,180,-90,90]`.
+    specified in ``extent``.
+    By default, ``extent`` assumes a global latitudinal and longitudinal span: `extent=[-180,180,-90,90]`.
 
     Parameters
     ----------
     filename : str
-        The full path (including a filename and the ".nc" extension) to save the created netCDF4 `grid` to.
+        The full path (including a filename and the ".nc" extension) to save the created netCDF4 ``grid`` to.
 
     grid : array-like
         An ndarray grid containing data to be written into a `netCDF` (.nc) file. Note: Rows correspond to
@@ -446,13 +497,28 @@ def write_netcdf_grid(
         variables of the netCDF grid to. If no extents are supplied, full global extent `[-180, 180, -90, 90]`
         is assumed.
 
-    significant_digits : int
-        Applies lossy data compression up to a specified number of significant digits.
+    significant_digits : int, optional
+        Optionally applies lossy data compression up to a specified number of significant digits.
         This significantly reduces file size, but make sure the required precision is preserved in the
         saved netcdf file.
 
-    fill_value : scalar, NoneType, default: np.nan
-        Value used to fill in missing data. By default this is np.nan.
+    fill_value : scalar or False or None, default=None
+        Value used to fill in missing data.
+
+        If ``False`` is specified then no fill value is used, and you must ensure that data was written to *all* elements of ``grid``.
+        And any NaN elements will be written as the raw bit pattern for NaN (rather than automatically converted to a fill value).
+
+        If ``None`` is specified then a default fill value is used, as follows:
+
+        * If ``significant_digits`` is NOT specified and the grid data type is floating-point then the default is `np.nan`.
+          This essentially means that `np.nan` is only used (as the default) when *losslessly* compressing *floating-point* data.
+          This is because *lossy* compression with a NaN fill value appears to *not* always mask out NaN regions.
+        * In all other cases the default is determined by `netCDF` based on the grid type.
+          For example, the default for floating-point types is 9.969209968386869e+36 (see `netCDF4.default_fillvals`) and
+          the default for *signed* integers is the largest negative value supported by the integer type (for *unsigned* its largest value).
+          In this case, please ensure the default is outside the range of your valid grid data, otherwise specify a custom fill value.
+
+        ...and to query the default value associated with ``None`` you can call :func:`default_netcdf_fill_value`.
 
     metadata : dict, default=None
         Optional metadata to store as global netCDF attributes.
@@ -463,10 +529,8 @@ def write_netcdf_grid(
 
     Returns
     -------
-    A netCDF grid will be saved to the path specified in `filename`.
+    A netCDF grid will be saved to the path specified in ``filename``.
     """
-    import netCDF4
-
     from gplately import __version__ as _version
 
     if extent == "global":
@@ -536,18 +600,14 @@ def write_netcdf_grid(
         cdf.createDimension("bnds", 2)
         cdf_lon = cdf.createVariable("lon", lon_grid.dtype, ("lon",), **data_kwds)
         cdf_lat = cdf.createVariable("lat", lat_grid.dtype, ("lat",), **data_kwds)
-        cdf_lon_bnds = cdf.createVariable("lon_bnds", "f8", ("lon", "bnds"))
-        cdf_lat_bnds = cdf.createVariable("lat_bnds", "f8", ("lat", "bnds"))
         cdf_lon[:] = lon_grid
         cdf_lat[:] = lat_grid
-        cdf_lon_bnds[:, :] = _compute_coordinate_bounds(lon_grid)
-        cdf_lat_bnds[:, :] = _compute_coordinate_bounds(lat_grid)
 
-        # Units for Geographic Grid type
         cdf_lon.units = "degrees_east"
         cdf_lon.standard_name = "lon"
         cdf_lon.bounds = "lon_bnds"
         cdf_lon.actual_range = [lon_grid[0], lon_grid[-1]]
+
         cdf_lat.units = "degrees_north"
         cdf_lat.standard_name = "lat"
         cdf_lat.bounds = "lat_bnds"
@@ -564,32 +624,60 @@ def write_netcdf_grid(
 
         # add more keyword arguments for quantizing data
         if significant_digits:
-            # significant_digits needs to be >= 2 so that NaNs are preserved
-            data_kwds["significant_digits"] = max(2, int(significant_digits))
+            data_kwds["significant_digits"] = int(significant_digits)
             data_kwds["quantize_mode"] = "GranularBitRound"
 
-        # boolean arrays need to be converted to integers
-        # no such thing as a mask on a boolean array
+        # The fill value can be False, but not True.
+        if isinstance(fill_value, bool):
+            if fill_value:
+                raise ValueError(
+                    "'fill_value' cannot be True; it should be False, None or a number"
+                )
+
         if grid.dtype is np.dtype(bool):
+            # Boolean arrays need to be converted to integers since
+            # there's no such thing as a mask on a boolean array.
             grid = grid.astype("i1")
-            fill_value = None
+            fill_value = False  # no pre-filling
+
+        if fill_value is None:
+            # The fill value was not specified, so we'll set it to the default.
+            fill_value = default_netcdf_fill_value(grid, significant_digits)
+            if fill_value is None:
+                raise ValueError(
+                    "Grid type does not have a default fill value (according to netCDF4)"
+                )
+
+        # Set the fill value keyword argument.
+        #
+        # If this is None then netCDF4 will pre-fill using its default fill value (for the grid type).
+        # If this is False then netCDF4 will not pre-fill. Note that True is not really a valid value (it behaves as the value 1).
+        # Otherwise netCDF4 will pre-fill using the specified value.
+        #
+        # Note: It seems better to set the 'fill_value' keyword argument (when creating z variable)
+        #       rather than set the 'missing_value' attribute (on the z variable after creating it).
+        #       This translates to setting the '_FillValue' attribute instead of the 'missing_value' attribute.
+        #       And this appears to work better when compressing/quantizing (eg, with 'significant_digits').
+        data_kwds["fill_value"] = fill_value
 
         cdf_data = cdf.createVariable("z", grid.dtype, ("lat", "lon"), **data_kwds)
 
-        # netCDF4 uses the missing_value attribute as the default _FillValue
-        # without this, _FillValue defaults to 9.969209968386869e+36
-        if fill_value is not None:
-            cdf_data.missing_value = fill_value
+        # Ensure min and max z values are properly registered.
+        if isinstance(fill_value, bool):
+            # Fill value is False (note that True is not a valid value/type).
+            # So all values are expected to be valid (note that NaN is a valid floating-point type)
+            cdf_data.actual_range = [np.nanmin(grid), np.nanmax(grid)]
+        elif np.isnan(fill_value):
+            # Fill value is NaN.
+            cdf_data.actual_range = [np.nanmin(grid), np.nanmax(grid)]
+        else:
+            # Fill value is a non-NaN number, so create a grid mask using it.
             grid_mask = grid != fill_value
-
             cdf_data.actual_range = [
+                # Note: grid elements could still contain NaN values (though unlikely)...
                 np.nanmin(grid[grid_mask]),
                 np.nanmax(grid[grid_mask]),
             ]
-
-        else:
-            # ensure min and max z values are properly registered
-            cdf_data.actual_range = [np.nanmin(grid), np.nanmax(grid)]
 
         cdf_data.standard_name = "z"
 
@@ -597,8 +685,75 @@ def write_netcdf_grid(
         cdf_data.grid_mapping = "crs"
         # cdf_data.set_auto_maskandscale(False)
 
+        #
+        # NOTE: Create the lon/lat bounds variables AFTER creating the z variable so that 'gmt grdinfo' reports correctly.
+        #
+        #       Otherwise it reports, for example, (x_min, x_max) = (0, 1) and (y_min, y_max) = (179.9, -179.9) instead of
+        #       (x_min, x_max) = (-180, 180) and (y_min, y_max) = (-90, 90) for a grid with 0.2 degree resolution.
+        #       Apparently GMT scans variables based on the order they were written to the binary file structure, so if
+        #       'z' is created before 'lon_bnds' then GMT processes 'z' first. And since 'lon_bnds' is a 2D variable
+        #       with a column dimension of 2, we don't want GMT to get confused and try to read it as a grid plane.
+        #
+        cdf_lon_bnds = cdf.createVariable("lon_bnds", "f8", ("lon", "bnds"))
+        cdf_lon_bnds[:, :] = _compute_coordinate_bounds(lon_grid)
+        #
+        cdf_lat_bnds = cdf.createVariable("lat_bnds", "f8", ("lat", "bnds"))
+        cdf_lat_bnds[:, :] = _compute_coordinate_bounds(lat_grid)
+
         # write data
         cdf_data[:, :] = grid
+
+
+def default_netcdf_fill_value(grid, significant_digits=None):
+    """Return the default fill value that would be used when calling ``write_netcdf_grid`` with ``fill_value=None``.
+
+    Notes
+    -----
+    This is useful when you need to set some values in ``grid`` to a fill value (eg, masking out continents from a seafloor age grid)
+    before writing out the grid with ``write_netcdf_grid``.
+
+    If ``significant_digits`` is NOT specified (ie, None) and the grid data type is floating-point then the default is `np.nan`.
+    This essentially means that `np.nan` is only used (as the default) when *losslessly* compressing *floating-point* data.
+    This is because *lossy* compression with a NaN fill value appears to *not* always mask out NaN regions.
+
+    In all other cases the default is determined by `netCDF` based on the grid type.
+    For example, the default for floating-point types is 9.969209968386869e+36 (see `netCDF4.default_fillvals`).
+    In this case, please ensure the default is outside the range of your valid grid data, otherwise you should specify
+    a custom fill value when calling ``write_netcdf_grid``.
+
+    Parameters
+    ----------
+    grid : ndarray
+        The grid that the default fill value will be used for (when writing the grid data to a `netCDF` file).
+
+    significant_digits : int, optional
+        Whether lossy data compression will be applied when writing the grid data to a `netCDF` file.
+        This should be the same value that you will pass to ``write_netcdf_grid``.
+
+    Returns
+    -------
+    The default fill value, or None if the grid type does not have a default value (according to netCDF4).
+    """
+    # If we're NOT using *lossy* compression and the grid type is floating-point
+    # then set the fill value to np.nan.
+    if significant_digits is None and np.issubdtype(grid.dtype, np.floating):
+        return np.nan
+
+    # When using *lossy* compression, we can't seem to use NaN as a fill value
+    # because reading the resultant grid does not seem to mask out the NaN regions.
+    # It was reported in https://github.com/GPlates/gplately/pull/125
+    # that 2 significant digits was enough to preserve NaN masks, but
+    # it doesn't seem to work for me (using netCDF4 1.7.2 on Windows).
+    # Even 7 significant digits doesn't work.
+    #
+    # Instead we just use the default '_FillValue' provided by netCDF4.
+    # These default values differ depending on the grid type, and can be accessed with 'netCDF4.default_fillvals'.
+    # For example, the default for floating-point types is 9.969209968386869e+36.
+    #
+    # Note: This will return None if netCDF4 does not have a default fill value for the grid type.
+    return netCDF4.default_fillvals.get(
+        grid.dtype.str.lstrip("<>=|")  # Remove endianness/alignment prefixes
+    )
 
 
 class RegularGridInterpolator(_RGI):
@@ -898,7 +1053,7 @@ def sample_grid(
         else:
             grid = np.array(grid.data)
     else:
-        extent = _parse_extent_origin(extent, origin)
+        extent = _parse_extent(extent, origin)
         if np.ma.isMaskedArray(grid):
             grid = grid.astype(float).filled(np.nan)
         grid = _check_grid(grid)
@@ -916,7 +1071,7 @@ def sample_grid(
     point_i = (lat - extent[2]) / dy
     point_j = (lon - extent[0]) / dx
 
-    point_coords = np.row_stack(
+    point_coords = np.vstack(
         (
             np.ravel(point_i),
             np.ravel(point_j),
@@ -1060,7 +1215,7 @@ def reconstruct_grid(
     elif rotation_model is None:
         raise TypeError("`rotation_model` must be provided if `to_time` != `from_time`")
 
-    extent = _parse_extent_origin(extent, origin)
+    extent = _parse_extent(extent, origin)
     dtype = grid.dtype
 
     if isinstance(threads, str):
@@ -1346,7 +1501,7 @@ def rasterise(
                 + "\nkey must be one of {}".format(valid_keys)
             )
 
-    extent = _parse_extent_origin(extent, origin)
+    extent = _parse_extent(extent, origin)
     minx, maxx, miny, maxy = extent
 
     if minx > maxx:
@@ -1613,7 +1768,7 @@ def _check_grid(data):
     return data
 
 
-def _parse_extent_origin(extent, origin):
+def _parse_extent(extent, origin) -> Tuple[float, float, float, float]:
     """Default values: extent='global', origin=None"""
     if hasattr(extent, "lower"):  # i.e. a string
         extent = extent.lower()
@@ -1622,24 +1777,39 @@ def _parse_extent_origin(extent, origin):
         extent = (-180.0, 180.0, -90.0, 90.0)
     elif len(extent) != 4:
         raise TypeError("`extent` must be a four-element tuple, 'global', or None")
-    extent = tuple(float(i) for i in extent)
 
-    if origin is not None:
-        origin = str(origin).lower()
-        if origin == "lower" and extent[2] > extent[3]:
-            extent = (
-                extent[0],
-                extent[1],
-                extent[3],
-                extent[2],
-            )
-        if origin == "upper" and extent[2] < extent[3]:
-            extent = (
-                extent[0],
-                extent[1],
-                extent[3],
-                extent[2],
-            )
+    extent = tuple(float(i) for i in extent)
+    return cast(
+        Tuple[float, float, float, float], _adjust_extent_for_origin(extent, origin)
+    )
+
+
+def _adjust_extent_for_origin(
+    extent, origin
+) -> Union[Tuple[float, float, float, float], None]:
+    """Adjust upper/lower bounds of extent according to origin."""
+    if extent is None:
+        return None
+
+    if origin is None:
+        return extent
+
+    origin = str(origin).lower()
+    if origin == "lower" and extent[2] > extent[3]:
+        extent = (
+            extent[0],
+            extent[1],
+            extent[3],
+            extent[2],
+        )
+    if origin == "upper" and extent[2] < extent[3]:
+        extent = (
+            extent[0],
+            extent[1],
+            extent[3],
+            extent[2],
+        )
+
     return extent
 
 
@@ -1768,11 +1938,11 @@ class Raster(object):
         else:
             # if the "data" parameter is a numpy array or xarray.DataArray object
             self._filename = None
-            extent = _parse_extent_origin(extent, origin)
+            extent = _parse_extent(extent, origin)
 
             # try to extract the extent from input data
             # if the extent from data is different from the extent parameter, use the extent from data
-            extent_from_data = _find_extent_from_data(data)
+            extent_from_data = _find_extent_from_data(data, origin)
             if extent_from_data is not None and extent != extent_from_data:
                 extent = extent_from_data
                 logger.info(
@@ -1782,7 +1952,7 @@ class Raster(object):
             if np.ma.isMaskedArray(data):
                 data = data.astype(float).filled(np.nan)
             data = _check_grid(data)
-            self._data = np.array(data)
+            self._data = np.array(data)  # copy to avoid modifying original data
             self._lons = np.linspace(extent[0], extent[1], self.data.shape[1])
             self._lats = np.linspace(extent[2], extent[3], self.data.shape[0])
 
@@ -2104,13 +2274,29 @@ class Raster(object):
         Returns
         -------
         Raster
-            The resampled grid. If ``inplace`` is set to ``True``, this raster overwrites the
-            one attributed to ``data``.
+            The resampled grid. If ``inplace`` is set to ``True`` the returned raster is ``self``,
+            otherwise a new :class:`Raster` object is returned.
         """
         spacingX = np.abs(spacingX)
         spacingY = np.abs(spacingY)
         if self.origin == "upper":
             spacingY *= -1.0
+
+        # Don't need to resample if the spacings are the same.
+        dX = np.diff(self.lons).mean()
+        dY = np.diff(self.lats).mean()
+        if np.isclose(dX, spacingX) and np.isclose(dY, spacingY):
+            if inplace:
+                # Return current Raster.
+                return self
+            else:
+                # Return a COPY of the current Raster.
+                return Raster(
+                    self.data,  # note: this gets copied in Raster constructor
+                    self.plate_reconstruction,
+                    self.extent,
+                    time=self.time,
+                )
 
         lons = np.arange(self.extent[0], self.extent[1] + spacingX, spacingX)
         lats = np.arange(self.extent[2], self.extent[3] + spacingY, spacingY)
@@ -2121,7 +2307,10 @@ class Raster(object):
             self._data = data
             self._lons = lons
             self._lats = lats
+            # Return current Raster.
+            return self
         else:
+            # Return a new Raster.
             return Raster(data, self.plate_reconstruction, self.extent, time=self.time)
 
     def resize(
@@ -2161,23 +2350,56 @@ class Raster(object):
 
         Returns
         -------
-        Raster
-            The resized grid. If ``inplace`` is set to ``True``, the data in :attr:`Raster.data` will be overwritten.
+        Raster or numpy.ndarray
+            The resized grid. If ``inplace`` is set to ``True`` the returned raster is ``self``
+            (or returned array is ``self.data`` if ``return_array`` is ``True``), otherwise a new :class:`Raster`
+            object is returned (or a new data array if ``return_array`` is ``True``).
         """
+        # Don't need to resize if the shape is the same.
+        if resX == len(self.lons) and resY == len(self.lats):
+            if inplace:
+                # Return the current data or Raster.
+                return self.data if return_array else self
+            else:
+                # Return a COPY of the current data or Raster.
+                return (
+                    self.data.copy()
+                    if return_array
+                    else Raster(
+                        self.data,  # note: this gets copied in Raster constructor
+                        self.plate_reconstruction,
+                        self.extent,
+                        time=self.time,
+                    )
+                )
+
         # construct grid
         lons = np.linspace(self.extent[0], self.extent[1], resX)
         lats = np.linspace(self.extent[2], self.extent[3], resY)
         lonq, latq = np.meshgrid(lons, lats)
 
         data = self.interpolate(lonq, latq, method=method)
+
         if inplace:
             self._data = data
             self._lons = lons
             self._lats = lats
-        if return_array:
-            return data
+
+            # Return the current data or Raster.
+            return self.data if return_array else self
+
         else:
-            return Raster(data, self.plate_reconstruction, self.extent, time=self.time)
+            # Return the new data or Raster.
+            return (
+                data
+                if return_array
+                else Raster(
+                    data,
+                    self.plate_reconstruction,
+                    self.extent,
+                    time=self.time,
+                )
+            )
 
     def fill_NaNs(self, inplace=False, return_array=False):
         """Search for the invalid ``data`` cells containing NaN-type entries and
@@ -2204,7 +2426,7 @@ class Raster(object):
         else:
             return Raster(data, self.plate_reconstruction, self.extent, time=self.time)
 
-    def save_to_netcdf4(self, filename, significant_digits=None, fill_value=np.nan):
+    def save_to_netcdf4(self, filename, significant_digits=None, fill_value=None):
         """Saves the grid attributed to the :class:`Raster` object to the given ``filename`` (including
         the ".nc" extension) in netCDF4 format."""
         write_netcdf_grid(
