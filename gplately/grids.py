@@ -37,6 +37,7 @@ Classes
 import copy
 import logging
 import math
+from pathlib import Path
 import warnings
 from multiprocessing import cpu_count
 from typing import Tuple, Union
@@ -375,7 +376,7 @@ def read_netcdf_grid(
         resX, resY = resize
 
         # don't resize if already the same shape
-        if resX != cdf_grid_z.shape[1] or resY != cdf_grid_z.shape[0]:
+        if resX != cdf_grid_z.shape[1] or resY != cdf_grid_z.shape[0]:  # type: ignore
             original_extent = (
                 cdf_lon[0],
                 cdf_lon[-1],
@@ -684,9 +685,9 @@ class RegularGridInterpolator(_RGI):
         elif method == "nearest":
             result = self._evaluate_nearest(indices, norm_distances)
         if not self.bounds_error and self.fill_value is not None:
-            result[out_of_bounds] = self.fill_value
+            result[out_of_bounds] = self.fill_value  # type: ignore
 
-        interp_output = result.reshape(xi_shape[:-1] + self.values.shape[ndim:])
+        interp_output = result.reshape(xi_shape[:-1] + self.values.shape[ndim:])  # type: ignore
         output_tuple = [interp_output]
 
         if return_indices:
@@ -803,7 +804,7 @@ class RegularGridInterpolator(_RGI):
             weight = 1.0
             for w in weights:
                 weight *= w
-            values += np.asarray(self.values[edge_indices]) * weight[vslice]
+            values += np.asarray(self.values[edge_indices]) * weight[vslice]  # type: ignore
         return values
 
     def _evaluate_nearest(self, indices, norm_distances):
@@ -1498,7 +1499,7 @@ def _rasterise_geometries(
     return np.flipud(out)
 
 
-rasterize = rasterise
+rasterize = rasterise  # alias for American English spelling
 
 
 def _lat_lon_to_vector(lat, lon, degrees=False):
@@ -1673,6 +1674,7 @@ class Raster(object):
             If a ``Raster`` object is specified then all other arguments are ignored except ``plate_reconstruction``
             which, if it is not ``None``, will override the plate reconstruction of the ``Raster`` object.
             The data parameter accepts `numpy.ndarray`, `xarray.DataArray` or or any object that can be converted to a `numpy.ndarray`.
+            The default value is ``None``, which is for backwards compatibility only. In the future, this parameter will be required and the default value will be removed.
 
         plate_reconstruction : PlateReconstruction
             A :class:`PlateReconstruction` object to provide the following essential components for reconstructing points.
@@ -1719,72 +1721,35 @@ class Raster(object):
         **kwargs
             Handle deprecated arguments such as ``PlateReconstruction_object``, ``filename``, and ``array``.
         """
+        # initialise the attribute to None to avoid potential issues with the setter method
+        self._plate_reconstruction = None
+        # initialise to an invalid value so that the setter method below works
+        self._time = -1.0
 
-        if "PlateReconstruction_object" in kwargs.keys():
-            warnings.warn(
-                "`PlateReconstruction_object` keyword argument has been "
-                + "deprecated, use `plate_reconstruction` instead",
-                DeprecationWarning,
-            )
-            if plate_reconstruction is None:
-                plate_reconstruction = kwargs.pop("PlateReconstruction_object")
-        if "filename" in kwargs.keys() and "array" in kwargs.keys():
-            raise TypeError(
-                "Both `filename` and `array` were provided; use "
-                + "one or the other, or use the `data` argument"
-            )
-        if "filename" in kwargs.keys():
-            warnings.warn(
-                "`filename` keyword argument has been deprecated, "
-                + "use `data` instead",
-                DeprecationWarning,
-            )
-            if data is None:
-                data = kwargs.pop("filename")
-        if "array" in kwargs.keys():
-            warnings.warn(
-                "`array` keyword argument has been deprecated, " + "use `data` instead",
-                DeprecationWarning,
-            )
-            if data is None:
-                data = kwargs.pop("array")
-        for key in kwargs.keys():
-            raise TypeError(
-                "Raster.__init__() got an unexpected keyword argument "
-                + "'{}'".format(key)
-            )
+        # deal with deprecated arguments, such as ``PlateReconstruction_object``, ``filename``, and ``array``
+        # if, in some exceptional cases, the user has to use the deprecated arguments,
+        # we will still allow them to do so only when the new `data` and `plate_reconstruction` parameters are not provided,
+        # but we will raise warnings and errors as needed.
+        # and this function will check for unexpected keyword arguments
+        data, plate_reconstruction = self._handle_deprecated_args(
+            data, plate_reconstruction, kwargs
+        )
 
-        # if the "data" parameter is a "Raster" object
+        # if the "data" parameter is a "Raster" object, we do a copy from the other Raster object
+        # we also allow the user to override the plate reconstruction of the other Raster object by
+        # providing a new plate reconstruction object
         if isinstance(data, self.__class__):
-            self._data = data._data.copy()
-            # Use specified plate reconstruction (if specified),
-            # otherwise use the plate reconstruction from 'data'.
-            if plate_reconstruction is not None:
-                self.plate_reconstruction = plate_reconstruction
-            else:
-                self.plate_reconstruction = data.plate_reconstruction
-            self._lons = data._lons
-            self._lats = data._lats
-            self._time = data._time
-            self._filename = data._filename
+            self._copy_constructor(data, plate_reconstruction)
             return
 
         self.plate_reconstruction = plate_reconstruction
-
-        # get the geological time parameter for the time-dependant raster data
-        try:
-            time = float(time)
-            if time < 0.0:
-                raise ValueError()
-            self._time = time
-        except ValueError:
-            raise ValueError(f"Invalid time parameter: {time}")
-
-        if data is None:
-            raise TypeError("`data` argument (or `filename` or `array`) is required")
+        self.time = time
+        assert data, "`data` argument (or `filename` or `array`) is required."
 
         # if the user has passed a NetCDF file path
         if isinstance(data, str):
+            if not Path(data).is_file():
+                raise FileNotFoundError(f"File not found: {data}")
             self._filename = data
             self._data, lons, lats = read_netcdf_grid(
                 data,
@@ -1835,6 +1800,35 @@ class Raster(object):
 
         if (not isinstance(data, str)) and (resize is not None):
             self.resize(*resize, inplace=True)
+
+    def to_data_array(self, name="z"):
+        """Convert the raster to an xarray DataArray with latitude and longitude coordinates."""
+        da = xr.DataArray(
+            self.data,
+            coords={
+                "lat": (
+                    "lat",
+                    self.lats,
+                    {
+                        "standard_name": "latitude",
+                        "long_name": "latitude",
+                        "units": "degrees_north",
+                    },
+                ),
+                "lon": (
+                    "lon",
+                    self.lons,
+                    {
+                        "standard_name": "longitude",
+                        "long_name": "longitude",
+                        "units": "degrees_east",
+                    },
+                ),
+            },
+            dims=["lat", "lon"],
+            name=name,
+        )
+        return da
 
     @property
     def time(self):
@@ -2008,7 +2002,10 @@ class Raster(object):
             A copy of the current :class:`Raster` object.
         """
         return Raster(
-            self.data.copy(), self.plate_reconstruction, self.extent, time=self.time
+            self.data.copy(),
+            copy.deepcopy(self.plate_reconstruction),
+            self.extent,
+            time=self.time,
         )
 
     def interpolate(
@@ -2331,6 +2328,7 @@ class Raster(object):
                 and raster_rotation_model.get_default_anchor_plate_id()
                 != anchor_plate_id
             ):
+                assert result.plate_reconstruction is not None
                 result.plate_reconstruction.rotation_model = pygplates.RotationModel(
                     raster_rotation_model, default_anchor_plate_id=anchor_plate_id
                 )
@@ -2829,33 +2827,55 @@ class Raster(object):
         new_raster.data = new_data
         return new_raster
 
-    def to_data_array(self, name="z"):
-        da = xr.DataArray(
-            self.data,
-            coords={
-                "lat": (
-                    "lat",
-                    self.lats,
-                    {
-                        "standard_name": "latitude",
-                        "long_name": "latitude",
-                        "units": "degrees_north",
-                    },
-                ),
-                "lon": (
-                    "lon",
-                    self.lons,
-                    {
-                        "standard_name": "longitude",
-                        "long_name": "longitude",
-                        "units": "degrees_east",
-                    },
-                ),
-            },
-            dims=["lat", "lon"],
-            name=name,
-        )
-        return da
+    def _copy_constructor(self, other, plate_reconstruction):
+        self._data = other._data.copy()  # type: ignore
+        # Use specified plate reconstruction (if specified),
+        # otherwise use the plate reconstruction from 'data'.
+        if plate_reconstruction is not None:
+            self.plate_reconstruction = plate_reconstruction
+        else:
+            self.plate_reconstruction = copy.deepcopy(other.plate_reconstruction)
+        self._lons = other._lons.copy()
+        self._lats = other._lats.copy()
+        self._time = other._time
+        self._filename = other._filename
+
+    def _handle_deprecated_args(self, data, plate_reconstruction, kwargs):
+        _data = data
+        _plate_reconstruction = plate_reconstruction
+
+        if not plate_reconstruction and "PlateReconstruction_object" in kwargs.keys():
+            warnings.warn(
+                "`PlateReconstruction_object` keyword argument is deprecated, use `plate_reconstruction` instead",
+                DeprecationWarning,
+            )
+            _plate_reconstruction = kwargs.pop("PlateReconstruction_object")
+
+        if "filename" in kwargs.keys() and "array" in kwargs.keys():
+            raise TypeError(
+                "The `filename` and `array` arguments are mutually exclusive and both are deprecated. Use `data` instead."
+            )
+
+        if not data and "filename" in kwargs.keys():
+            warnings.warn(
+                "The `filename` keyword argument is deprecated, use `data` instead",
+                DeprecationWarning,
+            )
+            _data = kwargs.pop("filename")
+
+        if not data and "array" in kwargs.keys():
+            warnings.warn(
+                "The `array` keyword argument is deprecated, use `data` instead",
+                DeprecationWarning,
+            )
+            _data = kwargs.pop("array")
+
+        for key in kwargs.keys():
+            raise TypeError(
+                f"Raster.__init__() got an unexpected keyword argument '{key}'."
+            )
+
+        return _data, _plate_reconstruction
 
 
 # class TimeRaster(Raster):
