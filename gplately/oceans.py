@@ -37,7 +37,7 @@ from .lib.reconstruct_by_topologies import (
 )
 from .lib.reconstruct_continents import ReconstructContinents
 from .parallel import get_num_cpus
-from .ptt import continent_contours, separate_ridge_transform_segments
+from .ptt import continent_contours
 from .ptt.utils import points_in_polygons, points_spatial_tree
 from .tools import _deg2pixels
 from .utils import seafloor_grid_utils
@@ -955,114 +955,191 @@ class SeafloorGrid(object):
         self,
         time: float,
     ):
-        """Resolve mid-ocean ridges at ``time`` and divide them into points that make up their shared sub-segments.
-        Rotate these points to the left and right of the ridge using their stage rotation so that they spread from the ridge.
+        """Resolve mid-ocean ridges at ``time`` and divide them into uniformly spaced points.
+        Rotate these points to the left and right of the ridge using the left and right plate velocities so that they spread from the ridge.
 
         .. note::
 
-            This assumes that points spread from ridges symmetrically, with the exception of
-            large ridge jumps at successive timesteps. Therefore, spreading rates of ridge-emerging
-            points will appear symmetrical until changes in spreading ridge geometries create asymmetries.
-
-        .. seealso::
-
-            `Get tessellated points along a mid ocean ridge <https://github.com/siwill22/agegrid-0.1/blob/master/automatic_age_grid_seeding.py#L117>`__.
+            This supports spreading asymmetry across the ridge. Each point is shifted by a small angle (0.01 degrees) to the left and right of the ridge.
+            The left and right spreading rates are calculated as the difference between the left and right plate velocities and the ridge velocity at the point.
         """
+
+        velocity_delta_time = 1.0  # Myr - the time interval over which to calculate velocity changes for the spreading rate calculation.
+
+        # Generate statistics at uniformly spaced points along mid-ocean ridges.
+        mor_boundary_statistics_dict = self.plate_reconstruction.topological_snapshot(
+            time,
+            # Ignore topological slab boundaries since they are not *plate* boundaries...
+            include_topological_slab_boundaries=False,
+        ).calculate_plate_boundary_statistics(
+            uniform_point_spacing_radians=np.radians(self.ridge_sampling),
+            velocity_delta_time=velocity_delta_time,
+            velocity_delta_time_type=pygplates.VelocityDeltaTimeType.t_plus_delta_t_to_t,  # [t+1, t] # type: ignore
+            velocity_units=pygplates.VelocityUnits.kms_per_my,  # km/Myr is the same as mm/yr # type: ignore
+            boundary_section_filter=pygplates.FeatureType.gpml_mid_ocean_ridge,  # type: ignore
+            return_shared_sub_segment_dict=True,
+        )
+
+        def _could_mor_have_anomalous_velocity(mor_feature):
+            """Returns True if the MOR feature could have an anomalous velocity.
+
+            The MOR velocity is calculated from [time + velocity_delta_time, time] because we specified
+            'pygplates.VelocityDeltaTimeType.t_plus_delta_t_to_t' above.
+            The current 'time' should have valid rotations, but 'time + velocity_delta_time' might not.
+            If it doesn't then the MOR velocity can be all wrong (eg, an anomalously high value) and we return True.
+            """
+
+            # The MOR is reconstructing either by plate ID or by half stage rotation.
+            mor_reconstruction_method = mor_feature.get_reconstruction_method(None)
+            if (
+                mor_reconstruction_method is not None
+                and mor_reconstruction_method.startswith("HalfStageRotation")
+            ):  # reconstruction is by half stage rotation...
+
+                # See if MOR feature has left and right plate ids.
+                left_plate_id = mor_feature.get_left_plate(None)
+                right_plate_id = mor_feature.get_right_plate(None)
+                if left_plate_id is not None and right_plate_id is not None:
+                    # Check that valid rotations exist for the left and right plate IDs at 'time' and 'time + velocity_delta_time'.
+                    # We can do this in one call to 'get_rotation' by using 'use_identity_for_missing_plate_ids=False' and checking if the result is None.
+                    if (
+                        self.plate_reconstruction.rotation_model.get_rotation(
+                            time,
+                            right_plate_id,
+                            time + velocity_delta_time,
+                            left_plate_id,
+                            use_identity_for_missing_plate_ids=False,
+                        )
+                        is None
+                    ):
+                        return True
+                # else the MOR feature doesn't have left and right plate IDs so it'll end up using zero plate IDs
+                # which, while inaccurate, are not anomalous.
+
+            else:  # reconstruction is by plate ID...
+
+                # See if MOR feature has a reconstruction plate ID.
+                reconstruction_plate_id = mor_feature.get_reconstruction_plate_id(None)
+                if reconstruction_plate_id is not None:
+                    # Check that valid rotations exist for the reconstruction plate ID at 'time' and 'time + velocity_delta_time'.
+                    # We can do this in one call to 'get_rotation' by using 'use_identity_for_missing_plate_ids=False' and checking if the result is None.
+                    if (
+                        self.plate_reconstruction.rotation_model.get_rotation(
+                            time,
+                            reconstruction_plate_id,
+                            time + velocity_delta_time,
+                            use_identity_for_missing_plate_ids=False,
+                        )
+                        is None
+                    ):
+                        return True
+                # else the MOR feature doesn't have a reconstruction plate ID so it'll end up using a zero plate ID
+                # which, while inaccurate, is not anomalous.
+
+            return False
+
+        # How much to rotate each ridge point off the ridge to get a point definitely inside the plate for later topological reconstruction.
+        boundary_rotation_angle_radians = np.radians(0.01)
+
+        def _calc_shifted_mor_point_and_spreading_rate(
+            stat, is_left_plate, mor_has_anomalous_velocity
+        ):
+            """Shift the mid-ocean ridge point at 'stat' to the left (or right) of the ridge and calculate the spreading rate for the left (or right) plate.
+
+            If there's no left (or right) plate then return NaN for the spreading rate.
+            Also if 'mor_has_anomalous_velocity' is True then return NaN for the spreading rate.
+            """
+
+            # Get the pole of rotation to shift the point to the left (or right) of the ridge.
+            # The pole is perpendicular to both the boundary point (vector from Earth centre) and
+            # the boundary normal to the left (or right) plate.
+            #
+            # Note: The boundary normal should always be perpendicular to the boundary point.
+            #       So the cross product should be a non-zero vector and hence can be normalised.
+            boundary_rotation_pole = pygplates.Vector3D.cross(  # type: ignore
+                stat.boundary_point.to_xyz(), stat.boundary_normal
+            ).to_normalised()
+            # The boundary normal 'stat.boundary_normal' is defined to point to the left, so reverse it if the plate is to the right.
+            if not is_left_plate:
+                boundary_rotation_pole = -boundary_rotation_pole
+
+            # Shift the boundary point into the left (or right) plate.
+            # This should shift it off the ridge and thus definitely inside the plate for later topological reconstruction.
+            boundary_rotation = pygplates.FiniteRotation(  # type: ignore
+                boundary_rotation_pole.to_xyz(),
+                boundary_rotation_angle_radians,
+            )
+            shifted_boundary_point = boundary_rotation * stat.boundary_point
+
+            # If the MOR has an anomalous velocity then use NaN for the spreading rate.
+            # This is because 'stat.boundary_velocity' could return an anomalously high velocity.
+            if mor_has_anomalous_velocity:
+                spreading_rate = np.nan
+                return shifted_boundary_point, spreading_rate
+
+            # Get the left (or right) plate velocity.
+            if is_left_plate:
+                plate_velocity = stat.left_plate_velocity
+            else:
+                plate_velocity = stat.right_plate_velocity
+
+            if plate_velocity:
+                # The spreading rate is the left (or right) plate velocity relative to the ridge velocity.
+                spreading_rate = (
+                    plate_velocity - stat.boundary_velocity
+                ).get_magnitude()
+            else:
+                # There's no left (or right) plate so the spreading rate is NaN.
+                # This can happen if there are gaps in plate/network coverage in a global topological model.
+                spreading_rate = np.nan
+
+            return shifted_boundary_point, spreading_rate
 
         # Points and their spreading rates that emerge from MORs at this time.
         shifted_mor_points = []
         point_spreading_rates = []
 
-        # Resolve topologies to the current time.
-        topological_snapshot = self.plate_reconstruction.topological_snapshot(time)
-        shared_boundary_sections = (
-            topological_snapshot.get_resolved_topological_sections()
-        )
+        # Iterate over the MOR shared sub-segments.
+        for (
+            mor_shared_sub_segment,
+            mor_boundary_statistics,
+        ) in mor_boundary_statistics_dict.items():
 
-        # pygplates.ResolvedTopologicalSection objects.
-        for shared_boundary_section in shared_boundary_sections:
-            if (
-                shared_boundary_section.get_feature().get_feature_type()
-                == pygplates.FeatureType.gpml_mid_ocean_ridge
-            ):
-                spreading_feature = shared_boundary_section.get_feature()
+            # If the MOR feature could have an anomalously high velocity then we should use NaN for its spreading rate.
+            #
+            # The MOR velocity is calculated as a stage rotation from [time + velocity_delta_time, time].
+            # The current 'time' should have valid rotations, but 'time + velocity_delta_time' might not because
+            # it might be prior to the time of appearance of the MOR feature (and hence might have no rotations in rotation file).
+            # That can cause the MOR velocity to be all wrong (eg, an anomalously high value).
+            mor_has_anomalous_velocity = _could_mor_have_anomalous_velocity(
+                mor_shared_sub_segment.get_feature()
+            )
 
-                # Find the stage rotation of the spreading feature in the
-                # frame of reference of its geometry at the current
-                # reconstruction time (the MOR is currently actively spreading).
-                # The stage pole can then be directly geometrically compared
-                # to the *reconstructed* spreading geometry.
-                stage_rotation = separate_ridge_transform_segments.get_stage_rotation_for_reconstructed_geometry(
-                    spreading_feature, self.plate_reconstruction.rotation_model, time
-                )
-                if not stage_rotation:
-                    # Skip current feature - it's not a spreading feature.
-                    continue
+            # Iterate over the MOR boundary points in the current MOR shared sub-segment
+            # and shift each point to the left and right plates.
+            for stat in mor_boundary_statistics:
 
-                # Get the stage pole of the stage rotation.
-                # Note that the stage rotation is already in frame of
-                # reference of the *reconstructed* geometry at the spreading time.
-                stage_pole, _ = stage_rotation.get_euler_pole_and_angle()
-
-                # One way rotates left and the other right, but don't know
-                # which - doesn't matter in our example though.
-                rotate_slightly_off_mor_one_way = pygplates.FiniteRotation(
-                    stage_pole, np.radians(0.01)
-                )
-                rotate_slightly_off_mor_opposite_way = (
-                    rotate_slightly_off_mor_one_way.get_inverse()
-                )
-
-                # Iterate over the shared sub-segments.
-                for (
-                    shared_sub_segment
-                ) in shared_boundary_section.get_shared_sub_segments():
-                    # Tessellate MOR section.
-                    mor_points = pygplates.MultiPointOnSphere(
-                        shared_sub_segment.get_resolved_geometry().to_tessellated(
-                            np.radians(self.ridge_sampling)
-                        )
+                # Shift boundary point to the left and caculate spreading rate for the left plate.
+                left_shifted_mor_point, left_spreading_rate = (
+                    _calc_shifted_mor_point_and_spreading_rate(
+                        stat,
+                        True,  # is_left_plate
+                        mor_has_anomalous_velocity,
                     )
+                )
+                shifted_mor_points.append(left_shifted_mor_point)
+                point_spreading_rates.append(left_spreading_rate)
 
-                    coords = mor_points.to_lat_lon_list()
-                    lats = [i[0] for i in coords]
-                    lons = [i[1] for i in coords]
-                    boundary_feature = shared_boundary_section.get_feature()
-                    left_plate = boundary_feature.get_left_plate(None)
-                    right_plate = boundary_feature.get_right_plate(None)
-                    if left_plate is not None and right_plate is not None:
-                        # Get the spreading rates for all points in this sub segment
-                        (
-                            spreading_rates,
-                            _,
-                        ) = tools.calculate_spreading_rates(
-                            time=time,
-                            lons=lons,
-                            lats=lats,
-                            left_plates=[left_plate] * len(lons),
-                            right_plates=[right_plate] * len(lons),
-                            rotation_model=self.plate_reconstruction.rotation_model,
-                            delta_time=self._ridge_time_step,
-                        )
-
-                    else:
-                        spreading_rates = [np.nan] * len(lons)
-
-                    # Loop through all but the 1st and last points in the current sub segment
-                    for point, rate in zip(
-                        mor_points.get_points()[1:-1],
-                        spreading_rates[1:-1],
-                    ):
-                        # Add the point "twice" to the main shifted_mor_points list; once for a L-side
-                        # spread, another for a R-side spread. Then add the same spreading rate twice
-                        # to the list - this therefore assumes spreading rate is symmetric.
-                        shifted_mor_points.append(
-                            rotate_slightly_off_mor_one_way * point
-                        )
-                        shifted_mor_points.append(
-                            rotate_slightly_off_mor_opposite_way * point
-                        )
-                        point_spreading_rates.extend([rate] * 2)
+                # Shift boundary point to the right and caculate spreading rate for the right plate.
+                right_shifted_mor_point, right_spreading_rate = (
+                    _calc_shifted_mor_point_and_spreading_rate(
+                        stat,
+                        False,  # is_left_plate
+                        mor_has_anomalous_velocity,
+                    )
+                )
+                shifted_mor_points.append(right_shifted_mor_point)
+                point_spreading_rates.append(right_spreading_rate)
 
         logger.info(f"Finished building MOR seedpoints at {time} Ma!")
 
