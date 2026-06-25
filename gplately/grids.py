@@ -16,8 +16,7 @@
 #
 
 """
-This sub-module contains tools for working with MaskedArray, ndarray and netCDF4 rasters, as well as
-gridded-data.
+This sub-module contains tools for working with MaskedArray, ndarray and netCDF4 rasters, as well as gridded-data.
 
 Some methods available in `grids`:
 
@@ -28,9 +27,8 @@ using given X and Y resolutions.
 * Grids with invalid (NaN-type) data cells can have their NaN entries replaced
 with the values of their nearest valid neighbours.
 
-Classes
+Class
 -------
-* RegularGridInterpolator
 * Raster
 """
 
@@ -40,7 +38,7 @@ import math
 from pathlib import Path
 import warnings
 from multiprocessing import cpu_count
-from typing import Tuple, Union, cast
+from typing import Tuple, Union, cast, overload, Literal
 
 # pyright: reportMissingImports=false
 # pyright: reportMissingModuleSource=false
@@ -57,8 +55,12 @@ from rasterio.enums import MergeAlg
 from rasterio.features import rasterize as _rasterize
 from rasterio.transform import from_bounds as _from_bounds
 from scipy.ndimage import distance_transform_edt, map_coordinates
-from scipy.spatial import cKDTree as _cKDTree
+from scipy.spatial import (
+    cKDTree as _cKDTree,  # pyright: ignore[reportAttributeAccessIssue]
+)
 from scipy.spatial.transform import Rotation as _Rotation
+
+from build.lib.gplately.grids import sample_grid
 
 from .geometry import pygplates_to_shapely
 from .reconstruction import PlateReconstruction as _PlateReconstruction
@@ -135,6 +137,7 @@ def fill_raster(data, invalid=None):
         if masked_array:
             invalid += mask_fill_value
     ind = distance_transform_edt(invalid, return_distances=False, return_indices=True)
+    assert ind
     return data[tuple(ind)]
 
 
@@ -260,9 +263,7 @@ def read_netcdf_grid(
     x_dimension_name: str = "",
     y_dimension_name: str = "",
     data_variable_name: str = "",
-) -> Union[
-    Tuple[np.ma.MaskedArray, np.ma.MaskedArray, np.ma.MaskedArray], np.ma.MaskedArray
-]:
+) -> Union[Tuple[np.ndarray, np.ndarray, np.ndarray], np.ndarray]:
     """Read grid data from a NetCDF (.nc) file.
 
     Parameters
@@ -465,7 +466,7 @@ def write_netcdf_grid(
     grid,
     extent: Union[tuple, str] = "global",
     significant_digits=None,
-    fill_value: Union[float, bool, None] = None,
+    fill_value: Union[str, float, bool, None] = None,
     metadata: Union[dict, None] = None,
     title: Union[str, None] = None,
 ):
@@ -757,6 +758,28 @@ def default_netcdf_fill_value(grid, significant_digits=None):
     )
 
 
+@overload
+def sample_grid(
+    lon,
+    lat,
+    grid,
+    method: str = "linear",
+    extent: Union[tuple, str] = "global",
+    origin=None,
+    *,
+    return_indices: Literal[False] = False,
+) -> np.ndarray: ...
+@overload
+def sample_grid(
+    lon,
+    lat,
+    grid,
+    method: str = "linear",
+    extent: Union[tuple, str] = "global",
+    origin=None,
+    *,
+    return_indices: Literal[True],
+) -> Tuple[np.ndarray, Tuple[np.ndarray, np.ndarray]]: ...
 def sample_grid(
     lon,
     lat,
@@ -764,6 +787,7 @@ def sample_grid(
     method="linear",
     extent: Union[tuple, str] = "global",
     origin=None,
+    *,
     return_indices=False,
 ):
     """Sample point data with given `lon` and `lat` coordinates onto a `grid`
@@ -833,13 +857,13 @@ def sample_grid(
     if isinstance(grid, Raster):
         extent = grid.extent
         if np.ma.isMaskedArray(grid.data):
-            grid = grid.data.astype(float).filled(np.nan)
+            grid = grid.data.astype(float).filled(np.nan)  # type: ignore
         else:
             grid = np.array(grid.data)
     else:
         extent = _parse_extent(extent, origin)
         if np.ma.isMaskedArray(grid):
-            grid = grid.astype(float).filled(np.nan)
+            grid = grid.astype(float).filled(np.nan)  # type: ignore
         grid = _check_grid(grid)
 
     # Do not wrap from North to South Pole (or vice versa)
@@ -1040,10 +1064,10 @@ def reconstruct_grid(
         grid.ndim == 3
         and grid.shape[2] == 4
         and hasattr(fill_value, "__len__")
-        and len(fill_value) == 3
+        and len(fill_value) == 3  # type: ignore
     ):  # give fill colour maximum alpha value if not specified
         fill_alpha = 255 if dtype.kind in ("i", "u") else 1.0
-        fill_value = (*fill_value, fill_alpha)
+        fill_value = (*fill_value, fill_alpha)  # type: ignore
     if np.size(fill_value) != np.atleast_3d(grid).shape[-1]:
         raise ValueError(
             "Shape mismatch: "
@@ -1102,6 +1126,7 @@ def reconstruct_grid(
     valid_mask = plate_ids != -1
     valid_m_lons = m_lons[valid_mask]
     valid_m_lats = m_lats[valid_mask]
+    assert plate_ids is not None
     valid_plate_ids = plate_ids[valid_mask]
     if grid.ndim == 2:
         valid_data = grid[valid_mask]
@@ -1118,7 +1143,7 @@ def reconstruct_grid(
     else:
         output_grid = np.empty(grid.shape, dtype=dtype)
         for k in range(grid.shape[2]):
-            output_grid[..., k] = fill_value[k]
+            output_grid[..., k] = fill_value[k]  # type: ignore
     output_lons = m_lons[valid_output_mask]
     output_lats = m_lats[valid_output_mask]
 
@@ -1628,6 +1653,7 @@ class Raster(object):
             If a ``Raster`` object is specified then all other arguments are ignored except ``plate_reconstruction``
             which, if it is not ``None``, will override the plate reconstruction of the ``Raster`` object.
             The data parameter accepts `numpy.ndarray`, `xarray.DataArray` or or any object that can be converted to a `numpy.ndarray`.
+            Use `xarray.DataArray` if you want to specify the longitudes and latitudes of the raster data. If you use `numpy.ndarray`, then you must specify the `extent` parameter to tell us the longitudes and latitudes of the raster data.
             The default value is ``None``, which is for backwards compatibility only. In the future, this parameter will be required and the default value will be removed.
 
         plate_reconstruction : PlateReconstruction
@@ -1700,7 +1726,7 @@ class Raster(object):
         self.time = time
         assert data, "`data` argument (or `filename` or `array`) is required."
 
-        # if the user has passed a NetCDF file path
+        # handle NetCDF file path
         if isinstance(data, str):
             if not Path(data).is_file():
                 raise FileNotFoundError(f"File not found: {data}")
@@ -1716,7 +1742,7 @@ class Raster(object):
                 data_variable_name=data_variable_name,
             )
             if np.ma.isMaskedArray(self._data):
-                self._data = self._data.astype(float).filled(np.nan)
+                self._data = np.ma.asarray(self._data, dtype=float).filled(np.nan)
             self._lons = lons
             self._lats = lats
         else:
@@ -1724,21 +1750,37 @@ class Raster(object):
             self._filename = None
             extent = _parse_extent(extent, origin)
 
-            # try to extract the extent from input data
-            # if the extent from data is different from the extent parameter, use the extent from data
-            extent_from_data = _find_extent_from_data(data, origin)
-            if extent_from_data is not None and extent != extent_from_data:
-                extent = extent_from_data
-                logger.info(
-                    f"Raster.__init__(): Use the extent extracted from data: {extent}."
-                )
+            # try to extract the extent from input data if it is an xarray.DataArray object
+            if isinstance(data, xr.DataArray):
+                extent_from_data = _find_extent_from_data(data, origin)
+                if extent_from_data is not None and extent != extent_from_data:
+                    extent = extent_from_data
+                    logger.info(
+                        f"Raster.__init__(): Use the extent extracted from xarray.DataArray: {extent}."
+                    )
 
             if np.ma.isMaskedArray(data):
-                data = data.astype(float).filled(np.nan)
+                data = np.ma.asarray(data, dtype=float).filled(np.nan)
             data = _check_grid(data)
             self._data = np.array(data)  # copy to avoid modifying original data
-            self._lons = np.linspace(extent[0], extent[1], self.data.shape[1])
-            self._lats = np.linspace(extent[2], extent[3], self.data.shape[0])
+
+            # get lons and lats from the input data if it is an xarray.DataArray object
+            if isinstance(data, xr.DataArray):
+                for name in data.coords:
+                    if name == x_dimension_name or _is_a_common_name_for_latitude(
+                        str(name)
+                    ):
+                        self._lats = data.coords[name]
+                    if name == y_dimension_name or _is_a_common_name_for_longitude(
+                        str(name)
+                    ):
+                        self._lons = data.coords[name]
+
+            # if we cannot find reliable lons and lats from the input data, we will generate them based on the extent and the shape of the data
+            if not self._lons:
+                self._lons = np.linspace(extent[0], extent[1], self.data.shape[1])
+            if not self._lats:
+                self._lats = np.linspace(extent[2], extent[3], self.data.shape[0])
 
             # we realign the grid to -180/180 when the longitudes are from 0 to 360
             # this is a temporary fix. we need a more sophisticated solution.
@@ -1790,6 +1832,9 @@ class Raster(object):
 
         :type: float
         """
+        assert (
+            self._time >= 0.0
+        ), "Reconstruction time must be greater than or equal to 0."
         return self._time
 
     @time.setter
@@ -1962,11 +2007,32 @@ class Raster(object):
             time=self.time,
         )
 
+    @overload
     def interpolate(
         self,
         lons,
         lats,
         method="linear",
+        *,
+        return_indices: Literal[False] = False,
+    ) -> np.ndarray: ...
+
+    @overload
+    def interpolate(
+        self,
+        lons,
+        lats,
+        method="linear",
+        *,
+        return_indices: Literal[True],
+    ) -> tuple[np.ndarray, tuple[np.ndarray, np.ndarray]]: ...
+
+    def interpolate(
+        self,
+        lons,
+        lats,
+        method="linear",
+        *,
         return_indices=False,
     ):
         """Sample grid data at a set of points using spline interpolation.
@@ -2097,8 +2163,22 @@ class Raster(object):
             # Return a new Raster.
             return Raster(data, self.plate_reconstruction, self.extent, time=self.time)
 
+    @overload
     def resize(
-        self, resX, resY, inplace=False, method="linear", return_array=False
+        self, resX, resY, inplace=False, method="linear", *, return_array: Literal[True]
+    ) -> np.ndarray: ...
+    @overload
+    def resize(
+        self,
+        resX,
+        resY,
+        inplace=False,
+        method="linear",
+        *,
+        return_array: Literal[False] = False,
+    ) -> "Raster": ...
+    def resize(
+        self, resX, resY, inplace=False, method="linear", *, return_array=False
     ) -> Union[np.ndarray, "Raster"]:
         """Resize the grid with a new resolution (``resX`` and ``resY``) using linear interpolation.
 
@@ -2162,7 +2242,7 @@ class Raster(object):
         lats = np.linspace(self.extent[2], self.extent[3], resY)
         lonq, latq = np.meshgrid(lons, lats)
 
-        data = self.interpolate(lonq, latq, method=method)
+        data: np.ndarray = self.interpolate(lonq, latq, method=method)
 
         if inplace:
             self._data = data
@@ -2170,20 +2250,22 @@ class Raster(object):
             self._lats = lats
 
             # Return the current data or Raster.
-            return self.data if return_array else self
+            if return_array:
+                return self.data
+            else:
+                return self
 
         else:
             # Return the new data or Raster.
-            return (
-                data
-                if return_array
-                else Raster(
+            if return_array:
+                return data
+            else:
+                return Raster(
                     data,
                     self.plate_reconstruction,
                     self.extent,
                     time=self.time,
                 )
-            )
 
     def fill_NaNs(self, inplace=False, return_array=False):
         """Search for the invalid ``data`` cells containing NaN-type entries and
