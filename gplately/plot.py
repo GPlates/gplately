@@ -42,39 +42,21 @@ from .decorators import (
     validate_topology_availability,
 )
 from .gpml import _load_FeatureCollection
-from .grids import Raster, read_netcdf_grid
+from .grids import Raster
 from .mapping.cartopy_plot import DEFAULT_CARTOPY_PROJECTION, CartopyPlotEngine
 from .mapping.plot_engine import PlotEngine
-from .tools import EARTH_RADIUS
-from .utils.feature_utils import shapelify_features as _shapelify_features
 from .utils.plot_utils import _meridian_from_ax, PLOT_DOCSTRING, GET_DATE_DOCSTRING
-from .utils.plot_utils import plot_subduction_teeth as _plot_subduction_teeth
+
 from .utils import deprecated
 from .utils.io_utils import to_geographic_data_array, load_data_array_from_netcdf
 
+# re-export. do not remove.
+from .utils.plot_utils import plot_subduction_teeth as plot_subduction_teeth
+from .utils.feature_utils import shapelify_features as shapelify_features
+from .utils.feature_utils import shapelify_features as shapelify_feature_lines
+from .utils.feature_utils import shapelify_features as shapelify_feature_polygons
+
 logger = logging.getLogger("gplately")
-
-
-def shapelify_features(*args, **kwargs):
-    return _shapelify_features(*args, **kwargs)
-
-
-def shapelify_feature_lines(*args, **kwargs):
-    return _shapelify_features(*args, **kwargs)
-
-
-def shapelify_feature_polygons(*args, **kwargs):
-    return _shapelify_features(*args, **kwargs)
-
-
-def plot_subduction_teeth(*args, **kwargs):
-    return _plot_subduction_teeth(*args, **kwargs)
-
-
-plot_subduction_teeth.__doc__ = _plot_subduction_teeth.__doc__
-shapelify_features.__doc__ = _shapelify_features.__doc__
-shapelify_feature_lines.__doc__ = _shapelify_features.__doc__
-shapelify_feature_polygons.__doc__ = _shapelify_features.__doc__
 
 
 class PlotTopologies(object):

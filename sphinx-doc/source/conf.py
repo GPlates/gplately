@@ -7,7 +7,7 @@
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 project = "gplately"
-copyright = "2023-2025, The University of Sydney"
+copyright = "2023-2026, The University of Sydney"
 author = "EarthByte Group"
 release = "2.0.0"
 
