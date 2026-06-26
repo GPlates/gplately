@@ -39,6 +39,7 @@ from pathlib import Path
 import warnings
 from multiprocessing import cpu_count
 from typing import Tuple, Union, cast, overload, Literal
+from enum import Enum
 
 # pyright: reportMissingImports=false
 # pyright: reportMissingModuleSource=false
@@ -63,7 +64,7 @@ from scipy.spatial.transform import Rotation as _Rotation
 from build.lib.gplately.grids import sample_grid
 
 from .geometry import pygplates_to_shapely
-from .reconstruction import PlateReconstruction as _PlateReconstruction
+from .reconstruction import PlateReconstruction
 from .tools import _deg2pixels, griddata_sphere
 
 # re-export, don't remove
@@ -852,18 +853,18 @@ def sample_grid(
         "cubic": 3,
     }.get(method, method)
     if order not in {0, 1, 2, 3, 4, 5}:
-        raise ValueError("Invalid `method` parameter: {}".format(method))
+        raise ValueError(f"Invalid `method` parameter: {method}")
 
     if isinstance(grid, Raster):
         extent = grid.extent
         if np.ma.isMaskedArray(grid.data):
-            grid = grid.data.astype(float).filled(np.nan)  # type: ignore
+            grid = np.ma.asarray(grid.data, dtype=float).filled(np.nan)
         else:
             grid = np.array(grid.data)
     else:
         extent = _parse_extent(extent, origin)
         if np.ma.isMaskedArray(grid):
-            grid = grid.astype(float).filled(np.nan)  # type: ignore
+            grid = np.ma.asarray(grid, dtype=float).filled(np.nan)
         grid = _check_grid(grid)
 
     # Do not wrap from North to South Pole (or vice versa)
@@ -1007,30 +1008,40 @@ def reconstruct_grid(
         colour code or a matplotlib colour name. The default fill
         value will be transparent black (0.0, 0.0, 0.0, 0.0).
     """
-    try:
-        grid = np.array(
-            read_netcdf_grid(
-                grid,
-                x_dimension_name=x_dimension_name,
-                y_dimension_name=y_dimension_name,
-                data_variable_name=data_variable_name,
-            )
-        )  # load grid data from file
-    except Exception:
-        grid = np.array(grid)  # copy grid data to array
-    if to_time == from_time:
+    if math.isclose(to_time, from_time):
+        warnings.warn(
+            "Reconstruction time is the same as the original time; returning input grid unchanged",
+            UserWarning,
+        )
         return grid
-    elif rotation_model is None:
-        raise TypeError("`rotation_model` must be provided if `to_time` != `from_time`")
+
+    assert rotation_model is not None, "`rotation_model` cannot be None."
+
+    try:
+        # first, try and see if the `grid` is a file path.
+        if Path(grid).is_file():
+            grid = np.array(
+                read_netcdf_grid(
+                    grid,
+                    x_dimension_name=x_dimension_name,
+                    y_dimension_name=y_dimension_name,
+                    data_variable_name=data_variable_name,
+                )
+            )
+    except Exception:
+        # If the grid is not a file, we assume it is already an array-like object and proceed without loading.
+        # convert grid data to numpy array. This will make a copy.
+        grid = np.array(grid)
 
     extent = _parse_extent(extent, origin)
     dtype = grid.dtype
 
+    # Determine number of threads to use
     if isinstance(threads, str):
         if threads.lower() in {"all", "max"}:
             threads = cpu_count()
         else:
-            raise ValueError("Invalid `threads` value: {}".format(threads))
+            raise ValueError(f"Invalid `threads` value: {threads}")
     threads = min([int(threads), cpu_count()])
     threads = max([threads, 1])
 
@@ -1622,6 +1633,14 @@ def _adjust_extent_for_origin(
     return extent
 
 
+# the numbers are the same with PyGMT's grid registration enum values
+class GridRegistration(Enum):
+    # good for geoscience data because sampled at locations(points) on the grid
+    Gridline = 0
+    # good for image data, the data represents the average value of an area
+    Pixel = 1
+
+
 class Raster(object):
     """The functionalities include sampling data at points using spline
     interpolation, resampling rasters with new X and Y-direction spacings and
@@ -1639,6 +1658,7 @@ class Raster(object):
         resize=None,
         time=0.0,
         origin=None,
+        grid_registration=GridRegistration.Gridline,
         x_dimension_name: str = "",
         y_dimension_name: str = "",
         data_variable_name: str = "",
@@ -1655,44 +1675,33 @@ class Raster(object):
             The data parameter accepts `numpy.ndarray`, `xarray.DataArray` or or any object that can be converted to a `numpy.ndarray`.
             Use `xarray.DataArray` if you want to specify the longitudes and latitudes of the raster data. If you use `numpy.ndarray`, then you must specify the `extent` parameter to tell us the longitudes and latitudes of the raster data.
             The default value is ``None``, which is for backwards compatibility only. In the future, this parameter will be required and the default value will be removed.
-
         plate_reconstruction : PlateReconstruction
-            A :class:`PlateReconstruction` object to provide the following essential components for reconstructing points.
-
-            * :py:attr:`PlateReconstruction.rotation_model`
-            * :py:attr:`PlateReconstruction.topology_featues`
-            * :py:attr:`PlateReconstruction.static_polygons`
-
+            A :class:`PlateReconstruction` object for raster reconstruction.
         extent : str or 4-tuple, default: 'global'
             4-tuple to specify (min_lon, max_lon, min_lat, max_lat) extents
             of the raster. If no extents are supplied, full global extent
             (-180, 180, -90, 90) is assumed (equivalent to ``extent='global'``).
             For array data with an upper-left origin, make sure ``min_lat`` is
             greater than ``max_lat``, or specify ``origin`` parameter.
-
         resample : 2-tuple, optional
             Optionally resample grid, pass spacing in X and Y direction as a
             2-tuple e.g. resample=(spacingX, spacingY).
-
         resize : 2-tuple, optional
             Optionally resample grid to X-columns, Y-rows as a
             2-tuple e.g. resample=(resX, resY).
-
         time : float, default: 0.0
             The geological time of the time-dependant raster data.
-
         origin : {'lower', 'upper'}, optional
             When ``data`` is an array, use this parameter to specify the origin
             (upper left or lower left) of the data (overriding ``extent``).
-
+        cell_registration : {'gridline', 'pixel'}, optional, default: 'gridline'
+            Specify whether the raster data is gridline-registered or pixel-registered.
         x_dimension_name : str, optional, default=""
             If the grid file uses the comman names, such as ``x``, ``lon``, ``lons`` or ``longitude``,
             you need not to provide this parameter. Otherwise, you need to tell us what the x dimension name is.
-
         y_dimension_name : str, optional, default=""
             If the grid file uses the comman names, such as ``y``, ``lat``, ``lats`` or ``latitude``,
             you need not to provide this parameter. Otherwise, you need to tell us what the y dimension name is.
-
         data_variable_name : str, optional, default=""
             GPlately will try its best to guess the data variable name.
             However, it would be much better if you tell us what the data variable name is.
@@ -1703,30 +1712,33 @@ class Raster(object):
         """
         # initialise the attribute to None to avoid potential issues with the setter method
         self._plate_reconstruction = None
-        # initialise to an invalid value so that the setter method below works
-        self._time = -1.0
+        # set the initial reconstruction time of the Raster. This will not reconstruct the raster data.
+        # the initial reconstruction time is used to indicate the geological time of the provided raster data.
+        # later, when the user calls the setter method of the `time` property, the raster data will be reconstructed to the new time.
+        self._time = self._validate_reconstruction_time(time)
+        self._grid_registration = grid_registration
+        self._data_var_name = data_variable_name
 
         # deal with deprecated arguments, such as ``PlateReconstruction_object``, ``filename``, and ``array``
         # if, in some exceptional cases, the user has to use the deprecated arguments,
         # we will still allow them to do so only when the new `data` and `plate_reconstruction` parameters are not provided,
         # but we will raise warnings and errors as needed.
-        # and this function will check for unexpected keyword arguments
+        # and this function will check for unexpected keyword arguments.
         data, plate_reconstruction = self._handle_deprecated_args(
             data, plate_reconstruction, kwargs
         )
 
         # if the "data" parameter is a "Raster" object, we do a copy from the other Raster object
         # we also allow the user to override the plate reconstruction of the other Raster object by
-        # providing a new plate reconstruction object
+        # providing a new plate reconstruction object.
         if isinstance(data, self.__class__):
             self._copy_constructor(data, plate_reconstruction)
             return
 
         self.plate_reconstruction = plate_reconstruction
-        self.time = time
         assert data, "`data` argument (or `filename` or `array`) is required."
 
-        # handle NetCDF file path
+        # handle the data parameter is a path to a NetCDF file
         if isinstance(data, str):
             if not Path(data).is_file():
                 raise FileNotFoundError(f"File not found: {data}")
@@ -1749,6 +1761,15 @@ class Raster(object):
             # if the "data" parameter is a numpy array or xarray.DataArray object
             self._filename = None
             extent = _parse_extent(extent, origin)
+
+            # if the "data" parameter is an xarray.Dataset object, we will try to get a DataArray by the data_variable_name
+            # or the first data variable in the Dataset will be used.
+            if isinstance(data, xr.Dataset):
+                if data_variable_name and data_variable_name in data.data_vars:
+                    data = data[data_variable_name]
+                else:
+                    first_var = next(iter(data.data_vars))
+                    data = data[first_var]
 
             # try to extract the extent from input data if it is an xarray.DataArray object
             if isinstance(data, xr.DataArray):
@@ -1797,8 +1818,10 @@ class Raster(object):
         if (not isinstance(data, str)) and (resize is not None):
             self.resize(*resize, inplace=True)
 
-    def to_data_array(self, name="z"):
+    def to_data_array(self, name=""):
         """Convert the raster to an xarray DataArray with latitude and longitude coordinates."""
+        if not name:
+            name = self._data_var_name if self._data_var_name else "z"
         da = xr.DataArray(
             self.data,
             coords={
@@ -1827,37 +1850,24 @@ class Raster(object):
         return da
 
     @property
-    def time(self):
-        """The geological time of the time-dependant raster data.
-
-        :type: float
-        """
-        assert (
-            self._time >= 0.0
-        ), "Reconstruction time must be greater than or equal to 0."
+    def time(self) -> float:
+        """The geological time of the time-dependant raster data."""
         return self._time
 
     @time.setter
     def time(self, new_time: float):
-        """Set a new reconstruction time."""
-        try:
-            new_time_f = float(new_time)
-        except ValueError:
-            raise ValueError(f"Invalid new reconstruction time: {new_time}")
-        if new_time_f < 0.0:
-            raise ValueError(
-                f"The reconstruction time ({new_time_f}) must be greater than 0."
-            )
+        """Set a new reconstruction time and reconstruct the raster if necessary."""
+        new_time_f = self._validate_reconstruction_time(new_time)
         if not math.isclose(self._time, new_time_f):
             self._time = new_time_f
+            logger.info(
+                f"Raster.time: Reconstructing raster data to new time {new_time_f} Ma."
+            )
             self.reconstruct(new_time_f, inplace=True)
 
     @property
     def data(self) -> np.ndarray:
-        """Array containing the raster data. This attribute can be modified after creating the :class:`Raster` object.
-
-        :type: ndarray, shape (ny, nx)
-        """
+        """Numpy array containing the raster data."""
         return self._data
 
     @data.setter
@@ -1865,19 +1875,13 @@ class Raster(object):
         z = np.array(z)
         if z.shape != np.shape(self.data):
             raise ValueError(
-                "Shape mismatch: old dimensions are {}, new are {}".format(
-                    np.shape(self.data),
-                    z.shape,
-                )
+                f"Shape mismatch error: old dimensions are {np.shape(self.data)}, new dimensions are {z.shape}"
             )
         self._data = z
 
     @property
-    def lons(self):
-        """The x-coordinates of the raster data. This attribute can be modified after creating the :class:`Raster` object.
-
-        :type: ndarray, shape (nx,)
-        """
+    def lons(self) -> np.ndarray:
+        """The longitude coordinates of the raster data."""
         return self._lons
 
     @lons.setter
@@ -1885,19 +1889,13 @@ class Raster(object):
         x = np.array(x).ravel()
         if x.size != np.shape(self.data)[1]:
             raise ValueError(
-                "Shape mismatch: data x-dimension is {}, new value is {}".format(
-                    np.shape(self.data)[1],
-                    x.size,
-                )
+                f"The length of the new longitude array ({x.size}) does not match the number of columns in the data array ({np.shape(self.data)[1]})"
             )
         self._lons = x
 
     @property
-    def lats(self):
-        """The y-coordinates of the raster data. This attribute can be modified after creating the :class:`Raster` object.
-
-        :type: ndarray, shape (ny,)
-        """
+    def lats(self) -> np.ndarray:
+        """The latitude coordinates of the raster data."""
         return self._lats
 
     @lats.setter
@@ -1905,15 +1903,12 @@ class Raster(object):
         y = np.array(y).ravel()
         if y.size != np.shape(self.data)[0]:
             raise ValueError(
-                "Shape mismatch: data y-dimension is {}, new value is {}".format(
-                    np.shape(self.data)[0],
-                    y.size,
-                )
+                f"The length of the new latitude array ({y.size}) does not match the number of rows in the data array ({np.shape(self.data)[0]})"
             )
         self._lats = y
 
     @property
-    def extent(self):
+    def extent(self) -> Tuple[float, float, float, float]:
         """The spatial extent ``(x0, x1, y0, y1)`` of the data. If not supplied, global extent ``(-180, 180, -90, 90)`` is assumed.
 
         If y0 < y1, the origin is the lower-left corner; else the upper-left.
@@ -1928,78 +1923,58 @@ class Raster(object):
         )
 
     @property
-    def origin(self):
-        """The origin (``lower`` or ``upper``) of the data array.
-
-        :type: str
-        """
+    def origin(self) -> Literal["lower", "upper"]:
+        """The origin (``lower`` or ``upper``) of the data array."""
         if self.lats[0] < self.lats[-1]:
             return "lower"
         else:
             return "upper"
 
     @property
-    def shape(self):
+    def shape(self) -> Tuple[int, int]:
         """The shape of the data array."""
         return np.shape(self.data)
 
     @property
-    def size(self):
+    def size(self) -> int:
         """The size of the data array."""
         return np.size(self.data)
 
     @property
-    def dtype(self):
+    def dtype(self) -> np.dtype:
         """The data type of the array."""
         return self.data.dtype
 
     @property
-    def ndim(self):
+    def ndim(self) -> int:
         """The number of dimensions in the array."""
         return np.ndim(self.data)
 
     @property
-    def filename(self):
+    def filename(self) -> Union[str, None]:
         """The filename used to create the :class:`Raster` object.
-        If the object was created directly from an array, this attribute is ``None``.
-
-        :type: str or None
-        """
+        If the object was created directly from an array, this attribute is ``None``."""
         return self._filename
 
     @property
-    def plate_reconstruction(self):
-        """A :class:`PlateReconstruction` object to provide the following essential components for reconstructing points.
-
-            * :py:attr:`PlateReconstruction.rotation_model`
-            * :py:attr:`PlateReconstruction.topology_featues`
-            * :py:attr:`PlateReconstruction.static_polygons`
-
-        :type: PlateReconstruction
-        """
+    def plate_reconstruction(self) -> Union[PlateReconstruction, None]:
+        """A :class:`PlateReconstruction` object for raster reconstruction."""
         return self._plate_reconstruction
 
     @plate_reconstruction.setter
-    def plate_reconstruction(self, reconstruction):
-        if reconstruction is None:
-            # Remove `plate_reconstruction` attribute
-            pass
-        elif not isinstance(reconstruction, _PlateReconstruction):
+    def plate_reconstruction(self, new_plate_recon_obj):
+        if new_plate_recon_obj is not None and not isinstance(
+            new_plate_recon_obj, PlateReconstruction
+        ):
             # Convert to a `PlateReconstruction` if possible
             try:
-                reconstruction = _PlateReconstruction(*reconstruction)
+                new_plate_recon_obj = PlateReconstruction(*new_plate_recon_obj)
             except Exception:
-                reconstruction = _PlateReconstruction(reconstruction)
-        self._plate_reconstruction = reconstruction
+                new_plate_recon_obj = PlateReconstruction(new_plate_recon_obj)
+        self._plate_reconstruction = new_plate_recon_obj
 
-    def copy(self):
-        """Return a copy of the :class:`Raster` object.
-
-        Returns
-        -------
-        Raster
-            A copy of the current :class:`Raster` object.
-        """
+    def copy(self) -> "Raster":
+        """Return a copy of the :class:`Raster` object."""
         return Raster(
             self.data.copy(),
             copy.deepcopy(self.plate_reconstruction),
@@ -2309,7 +2284,7 @@ class Raster(object):
         inplace=False,
         return_array=False,
     ):
-        """Reconstruct the raster from its initial time (``self.time``) to a new time.
+        """Reconstruct the raster from its current time to a new time.
 
         Parameters
         ----------
@@ -2354,17 +2329,11 @@ class Raster(object):
             value will be transparent black (0.0, 0.0, 0.0, 0.0) or
             (0, 0, 0, 0).
         """
-        try:
-            to_time_f = float(time)
-        except ValueError:
-            raise ValueError(f"Invalid reconstruction time: {time}")
-        if to_time_f < 0.0:
-            raise ValueError(
-                f"The reconstruction time ({to_time_f}) must be greater than 0."
-            )
+        to_time_f = self._validate_reconstruction_time(time)
 
-        # A valid PlateReconstruction object is required!
-        assert self.plate_reconstruction is not None
+        assert (
+            self.plate_reconstruction is not None
+        ), "A valid PlateReconstruction object is required!"
 
         if partitioning_features is None:
             partitioning_features = self.plate_reconstruction.static_polygons
@@ -2384,7 +2353,7 @@ class Raster(object):
 
         raster_rotation_model = self.plate_reconstruction.rotation_model
         # use the new reconstructed raster data to replace the current Raster obj
-        # TODO: maybe need to put anchor_plate_id into rotation_model if it is not None
+        # put anchor_plate_id into rotation_model if it is not None
         if inplace:
             self.data = result
             self._time = to_time_f
@@ -2499,8 +2468,8 @@ class Raster(object):
         self,
         grid_spacing_degrees,
         reconstruction_time,
-        from_rotation_features_or_model=None,  # filename(s), or pyGPlates feature(s)/collection(s) or a RotationModel
-        to_rotation_features_or_model=None,  # filename(s), or pyGPlates feature(s)/collection(s) or a RotationModel
+        from_rotation_features_or_model=None,
+        to_rotation_features_or_model=None,
         from_rotation_reference_plate=0,
         to_rotation_reference_plate=0,
         non_reference_plate=701,
@@ -2515,11 +2484,11 @@ class Raster(object):
             The spacing (in degrees) for the output rotated grid.
         reconstruction_time : float
             The time at which to rotate the input grid.
-        from_rotation_features_or_model : str, list of str, or instance of pygplates.RotationModel
+        from_rotation_features_or_model : str, list of str, instance of pygplates.RotationModel, filename(s), or pyGPlates feature(s)/collection(s)
             A filename, or a list of filenames, or a pyGPlates
             RotationModel object that defines the rotation model
             that the input grid is currently associated with.
-        to_rotation_features_or_model : str, list of str, or instance of pygplates.RotationModel
+        to_rotation_features_or_model : str, list of str, instance of pygplates.RotationModel, filename(s), or pyGPlates feature(s)/collection(s)
             A filename, or a list of filenames, or a pyGPlates
             RotationModel object that defines the rotation model
             that the input grid shall be rotated with.
@@ -2761,6 +2730,17 @@ class Raster(object):
     def _clip_by_polygon(self, polygon):
         """TODO:"""
         pass
+
+    def _validate_reconstruction_time(self, new_time):
+        try:
+            new_time_f = float(new_time)
+        except ValueError:
+            raise ValueError(f"Invalid new reconstruction time: {new_time}")
+        if new_time_f < 0.0:
+            raise ValueError(
+                f"The reconstruction time ({new_time_f}) must be greater than 0."
+            )
+        return new_time_f
 
     def _copy_constructor(self, other, plate_reconstruction):
         self._data = other._data.copy()  # type: ignore
