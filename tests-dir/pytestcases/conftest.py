@@ -173,19 +173,19 @@ def gplately_merdith_raster(
 
 @pytest.fixture(scope="module")
 def gplately_seafloorgrid_object(
-    gplately_plate_reconstruction_object, gplately_plot_topologies_object
+    muller_2019_model,
+    gplately_plate_reconstruction_object,
 ):
     model = gplately_plate_reconstruction_object
-    gplot = gplately_plot_topologies_object
 
     seafloorgrid = gplately.SeafloorGrid(
         model,
-        gplot,
         max_time=250,
         min_time=249,
         ridge_time_step=1.0,
         save_directory="test-seafloor-grid",
         file_collection="Muller2019",
         grid_spacing=0.25,
+        continent_polygon_features=muller_2019_model.get_continental_polygons(),
     )
     return seafloorgrid

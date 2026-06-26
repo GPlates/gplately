@@ -21,12 +21,12 @@ import logging
 import multiprocessing
 import time
 import warnings
-from typing import List
+from typing import List, Union
 
 from plate_model_manager import PlateModel, PlateModelManager
 from pygplates import FeaturesFunctionArgument  # type: ignore
 
-from gplately import PlateReconstruction, PlotTopologies, SeafloorGrid
+from gplately import PlateReconstruction, SeafloorGrid
 
 logger = logging.getLogger("gplately")
 
@@ -85,8 +85,8 @@ def add_parser(parser):
         "--refinement-levels",
         metavar="LEVELS",
         type=int,
-        help="mesh refinement levels; default: 5",
-        default=5,
+        help="mesh refinement levels; default: 6",
+        default=6,
         dest="refinement_levels",
     )
     agegrid_cmd.add_argument(
@@ -147,10 +147,27 @@ def add_parser(parser):
         dest="unmasked",
     )
     agegrid_cmd.add_argument(
+        "--resume-from-checkpoints",
+        help="flag to indicate whether to resume a previously interrupted gridding run "
+        "(all parameters and input data should remain unchanged); "
+        "default: re-run gridding from scratch",
+        action="store_true",
+        dest="resume_from_checkpoints",
+    )
+    agegrid_cmd.add_argument(
         "--use-continent-contouring",
         help="flag to indicate using ptt's 'continent contouring' to generate continent masks",
         action="store_true",
         dest="use_continent_contouring",
+    )
+    agegrid_cmd.add_argument(
+        "-a",
+        "--anchor-plate-id",
+        metavar="ANCHOR_PLATE_ID",
+        type=int,
+        help="anchor plate ID; default: 0",
+        default=None,  # if None the default anchor plate ID will effectively be 0
+        dest="anchor_plate_id",
     )
 
 
@@ -173,14 +190,16 @@ def create_agegrids(
     max_time: float,
     ridge_time_step: float = 1,
     n_jobs: int = 1,
-    refinement_levels: int = 5,
+    refinement_levels: int = 6,
     grid_spacing: float = 0.1,
     ridge_sampling: float = 0.5,
     initial_spreadrate: float = 75,
     file_collection: str = "",
     unmasked: bool = False,
     plate_model_repo: str = "plate-model-repo",
+    resume_from_checkpoints: bool = False,
     use_continent_contouring: bool = False,
+    anchor_plate_id: Union[int, None] = None,
 ) -> None:
     """Create age grids for a plate model."""
 
@@ -262,15 +281,11 @@ def create_agegrids(
         reconstruction = PlateReconstruction(
             rotation_model=rotation_files,
             topology_features=topology_files,
-        )
-        gplot = PlotTopologies(
-            reconstruction,
-            continents=continent_files,
+            anchor_plate_id=anchor_plate_id,
         )
 
         grid = SeafloorGrid(
             reconstruction,
-            gplot,
             min_time=min_time,
             max_time=max_time,
             save_directory=output_dir,
@@ -280,14 +295,18 @@ def create_agegrids(
             ridge_sampling=ridge_sampling,
             initial_ocean_mean_spreading_rate=initial_spreadrate,
             file_collection=file_collection,
-            resume_from_checkpoints=True,
+            resume_from_checkpoints=resume_from_checkpoints,
+            continent_polygon_features=continent_files,
             use_continent_contouring=use_continent_contouring,
+            nprocs=n_jobs,
         )
 
-        # grid.reconstruct_by_topologies()
-        grid.reconstruct_by_topological_model()
-        for val in ("SEAFLOOR_AGE", "SPREADING_RATE"):
-            grid.save_netcdf_files(val, unmasked=unmasked, nprocs=n_jobs)
+        grid.reconstruct_by_topologies()
+        for val in (
+            SeafloorGrid.SEAFLOOR_AGE_KEY,
+            SeafloorGrid.SPREADING_RATE_KEY,
+        ):
+            grid.lat_lon_z_to_netCDF(val, unmasked=unmasked)
 
 
 def _run_create_agegrids(args):
@@ -315,7 +334,9 @@ def _run_create_agegrids(args):
         initial_spreadrate=args.initial_spreadrate,
         file_collection=file_collection,
         unmasked=args.unmasked,
+        resume_from_checkpoints=args.resume_from_checkpoints,
         use_continent_contouring=args.use_continent_contouring,
+        anchor_plate_id=args.anchor_plate_id,
     )
 
     end = time.time()

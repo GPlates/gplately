@@ -287,8 +287,8 @@ class PlotTopologies(object):
         else:
             self._anchor_plate_id = self._check_anchor_plate_id(anchor_plate_id)
 
-        # Note: This calls 'update_time()' which reconstructs our features and topologies.
         self._time = None
+        # Note: This calls '_update_time()' which reconstructs our features and topologies.
         self.time = time
 
     def __reduce__(self):
@@ -477,12 +477,6 @@ class PlotTopologies(object):
             # If our anchor plate is None then this will use the anchor plate of 'self.plate_reconstruction'...
             anchor_plate_id=self._anchor_plate_id,
         )
-
-        #
-        # NOTE: If you add a new data member here that's a pygplates reconstructable feature geometry or resolved topological geometry,
-        #       then be sure to also include it in __getstate__/()__setstate__()
-        #       (basically anything reconstructed or resolved by pygplates since those cannot be pickled).
-        #
 
         # Extract (from the topological snapshot) resolved topologies for BOTH rigid boundaries and networks.
         self._topologies = [
@@ -1252,7 +1246,7 @@ class PlotTopologies(object):
         central_meridian=0.0,
         tessellate_degrees=None,
     ):
-        """Return the reconstructed contiental rift lines as a `geopandas.GeoDataFrame`_ object."""
+        """Return the reconstructed continental rift lines as a `geopandas.GeoDataFrame`_ object."""
         return self.get_feature(
             self.continental_rifts,
             central_meridian=central_meridian,
