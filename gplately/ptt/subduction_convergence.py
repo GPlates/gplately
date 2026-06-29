@@ -163,6 +163,7 @@ def subduction_convergence(
     anchor_plate_id=None,
     include_slab_topologies=False,
     include_network_boundaries=False,
+    include_all_subducting_boundary_types=False,
     **kwargs,
 ):
     """Find the convergence and absolute velocities sampled along trenches (subduction zones) at a particular geological time.
@@ -218,6 +219,10 @@ def subduction_convergence(
     include_network_boundaries : bool, default False
         Whether to calculate subduction convergence along network boundaries that are not also plate boundaries (defaults to False).
         If a deforming network shares a boundary with a plate then it'll get included regardless of this option.
+    include_all_subducting_boundary_types : bool, default False
+        If ``False`` (the default), only features of type ``SubductionZone`` that have a subduction polarity are sampled.
+        If ``True``, all features that have a subduction polarity are sampled regardless of feature type
+        (e.g. also includes ``OrogenicBelt`` features that have a subduction polarity).
     output_distance_to_nearest_edge_of_trench : bool, default=False
         Append the distance (in degrees) along the trench line to the nearest trench edge to each returned sample point.
         A trench edge is the farthermost location on the current trench feature that contributes to a plate boundary.
@@ -330,10 +335,13 @@ def subduction_convergence(
 
     # Iterate over the shared boundary sections of all resolved topologies.
     for shared_boundary_section in shared_boundary_sections:
-        # Skip sections that are not subduction zones (trenches).
-        if (
-            shared_boundary_section.get_feature().get_feature_type()
-            != pygplates.FeatureType.gpml_subduction_zone
+        feature = shared_boundary_section.get_feature()
+        # Skip sections that do not have a subduction polarity.
+        if feature.get_enumeration(pygplates.PropertyName.gpml_subduction_polarity) is None:
+            continue
+        # By default only include SubductionZone features (not other types such as OrogenicBelt that can also have a subduction polarity).
+        if not include_all_subducting_boundary_types and (
+            feature.get_feature_type() != pygplates.FeatureType.gpml_subduction_zone
         ):
             continue
 

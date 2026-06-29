@@ -741,6 +741,7 @@ class PlateReconstruction(object):
         anchor_plate_id,
         include_network_boundaries,
         convergence_threshold_in_cm_per_yr,
+        include_all_subducting_boundary_types=False,
         output_distance_to_nearest_edge_of_trench=False,
         output_distance_to_start_edge_of_trench=False,
         output_convergence_velocity_components=False,
@@ -761,19 +762,22 @@ class PlateReconstruction(object):
         #   which can happen if the topological model was built incorrectly (eg, mislabelled plate boundaries).
         #   As long as there's at least one plate (or network) on the subducting side then it can find it
         #   (even if the plate is not directly attached to the subduction zone, ie, doesn't specify it as part of its boundary).
-        # However, like 'ptt.subduction_convergence.subduction_convergence()', it only samples plate boundaries that have a
-        # subduction polarity (eg, subduction zones) since we still need to know which plates are subducting and overriding,
+        # However, like 'ptt.subduction_convergence.subduction_convergence()', it only samples subducting plate boundaries
+        # (eg, subduction zones) since we still need to know which plates are subducting and overriding,
         # and hence cannot calculate convergence over all plate boundaries.
 
-        # Restrict plate boundaries to those that have a subduction polarity.
+        # Restrict plate boundaries to those that are subducting boundary types.
         # This is just an optimisation to avoid unnecessarily sampling all plate boundaries.
         def _boundary_section_filter_function(resolved_topological_section):
-            return (
-                resolved_topological_section.get_feature().get_enumeration(
-                    pygplates.PropertyName.gpml_subduction_polarity
+            feature = resolved_topological_section.get_feature()
+            if feature.get_enumeration(pygplates.PropertyName.gpml_subduction_polarity) is None:
+                return False
+            if not include_all_subducting_boundary_types:
+                return (
+                    feature.get_feature_type()  # type: ignore[attr-defined]
+                    == pygplates.FeatureType.gpml_subduction_zone  # type: ignore[attr-defined]
                 )
-                is not None
-            )
+            return True
 
         # Generate statistics at uniformly spaced points along plate boundaries.
         plate_boundary_statistics_dict = self.topological_snapshot(
@@ -1087,6 +1091,7 @@ class PlateReconstruction(object):
         *,
         use_ptt=False,
         include_network_boundaries=False,
+        include_all_subducting_boundary_types=False,
         convergence_threshold_in_cm_per_yr=None,
         anchor_plate_id=None,
         velocity_delta_time=1.0,
@@ -1133,12 +1138,16 @@ class PlateReconstruction(object):
             (which uses the subducting stage rotation of the subduction/trench plate IDs calculate subducting velocities).
             If set to ``False`` then uses plate convergence to calculate subduction convergence
             (which samples velocities of the two adjacent boundary plates at each sampled point to calculate subducting velocities).
-            Both methods ignore plate boundaries that do not have a subduction polarity (feature property), which essentially means
-            they only sample subduction zones.
+            Both methods sample subduction zone features that have a subduction polarity, and can optionally include other
+            feature types with a subduction polarity (such as orogenic belts) via ``include_all_subducting_boundary_types``.
         include_network_boundaries : bool, default=False
             Whether to calculate subduction convergence along network boundaries that are not also plate boundaries (defaults to False).
             If a deforming network shares a boundary with a plate then it'll get included regardless of this option.
             Since subduction zones occur along *plate* boundaries this would only be an issue if an intra-plate network boundary was incorrectly labelled as subducting.
+        include_all_subducting_boundary_types : bool, default=False
+            If ``False`` (the default), only features of type ``SubductionZone`` that have a subduction polarity are sampled.
+            If ``True``, all features that have a subduction polarity are sampled regardless of feature type
+            (e.g. also includes ``OrogenicBelt`` features that have a subduction polarity).
         convergence_threshold_in_cm_per_yr : float, optional
             Only return sample points with an orthogonal (ie, in the subducting geometry's normal direction) converging velocity above this value (in cm/yr).
             For example, setting this to ``0.0`` would remove all diverging sample points (leaving only converging points).
@@ -1268,6 +1277,7 @@ class PlateReconstruction(object):
                     velocity_delta_time=velocity_delta_time,
                     anchor_plate_id=anchor_plate_id,  # if None then uses 'self.anchor_plate_id' (default anchor plate of 'self.rotation_model')
                     include_network_boundaries=include_network_boundaries,
+                    include_all_subducting_boundary_types=include_all_subducting_boundary_types,
                     output_distance_to_nearest_edge_of_trench=output_distance_to_nearest_edge_of_trench,
                     output_distance_to_start_edge_of_trench=output_distance_to_start_edge_of_trench,
                     output_convergence_velocity_components=output_convergence_velocity_components,
@@ -1285,6 +1295,7 @@ class PlateReconstruction(object):
                 anchor_plate_id=anchor_plate_id,  # if None then uses 'self.anchor_plate_id' (default anchor plate of 'self.rotation_model')
                 include_network_boundaries=include_network_boundaries,
                 convergence_threshold_in_cm_per_yr=convergence_threshold_in_cm_per_yr,
+                include_all_subducting_boundary_types=include_all_subducting_boundary_types,
                 output_distance_to_nearest_edge_of_trench=output_distance_to_nearest_edge_of_trench,
                 output_distance_to_start_edge_of_trench=output_distance_to_start_edge_of_trench,
                 output_convergence_velocity_components=output_convergence_velocity_components,
