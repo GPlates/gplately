@@ -250,6 +250,7 @@
     <span class="n">anchor_plate_id</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="n">include_slab_topologies</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="n">include_network_boundaries</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">include_all_subducting_boundary_types</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Find the convergence and absolute velocities sampled along trenches (subduction zones) at a particular geological time.</span>
@@ -305,6 +306,10 @@
 <span class="sd">    include_network_boundaries : bool, default False</span>
 <span class="sd">        Whether to calculate subduction convergence along network boundaries that are not also plate boundaries (defaults to False).</span>
 <span class="sd">        If a deforming network shares a boundary with a plate then it&#39;ll get included regardless of this option.</span>
+<span class="sd">    include_all_subducting_boundary_types : bool, default False</span>
+<span class="sd">        If ``False`` (the default), only features of type ``SubductionZone`` that have a subduction polarity are sampled.</span>
+<span class="sd">        If ``True``, all features that have a subduction polarity are sampled regardless of feature type</span>
+<span class="sd">        (e.g. also includes ``OrogenicBelt`` features that have a subduction polarity).</span>
 <span class="sd">    output_distance_to_nearest_edge_of_trench : bool, default=False</span>
 <span class="sd">        Append the distance (in degrees) along the trench line to the nearest trench edge to each returned sample point.</span>
 <span class="sd">        A trench edge is the farthermost location on the current trench feature that contributes to a plate boundary.</span>
@@ -417,10 +422,13 @@
 
     <span class="c1"># Iterate over the shared boundary sections of all resolved topologies.</span>
     <span class="k">for</span> <span class="n">shared_boundary_section</span> <span class="ow">in</span> <span class="n">shared_boundary_sections</span><span class="p">:</span>
-        <span class="c1"># Skip sections that are not subduction zones (trenches).</span>
-        <span class="k">if</span> <span class="p">(</span>
-            <span class="n">shared_boundary_section</span><span class="o">.</span><span class="n">get_feature</span><span class="p">()</span><span class="o">.</span><span class="n">get_feature_type</span><span class="p">()</span>
-            <span class="o">!=</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">FeatureType</span><span class="o">.</span><span class="n">gpml_subduction_zone</span>
+        <span class="n">feature</span> <span class="o">=</span> <span class="n">shared_boundary_section</span><span class="o">.</span><span class="n">get_feature</span><span class="p">()</span>
+        <span class="c1"># Skip sections that do not have a subduction polarity.</span>
+        <span class="k">if</span> <span class="n">feature</span><span class="o">.</span><span class="n">get_enumeration</span><span class="p">(</span><span class="n">pygplates</span><span class="o">.</span><span class="n">PropertyName</span><span class="o">.</span><span class="n">gpml_subduction_polarity</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="c1"># By default only include SubductionZone features (not other types such as OrogenicBelt that can also have a subduction polarity).</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">include_all_subducting_boundary_types</span> <span class="ow">and</span> <span class="p">(</span>
+            <span class="n">feature</span><span class="o">.</span><span class="n">get_feature_type</span><span class="p">()</span> <span class="o">!=</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">FeatureType</span><span class="o">.</span><span class="n">gpml_subduction_zone</span>
         <span class="p">):</span>
             <span class="k">continue</span>
 

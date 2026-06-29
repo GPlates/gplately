@@ -843,6 +843,7 @@
         <span class="n">anchor_plate_id</span><span class="p">,</span>
         <span class="n">include_network_boundaries</span><span class="p">,</span>
         <span class="n">convergence_threshold_in_cm_per_yr</span><span class="p">,</span>
+        <span class="n">include_all_subducting_boundary_types</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
         <span class="n">output_distance_to_nearest_edge_of_trench</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
         <span class="n">output_distance_to_start_edge_of_trench</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
         <span class="n">output_convergence_velocity_components</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
@@ -863,19 +864,22 @@
         <span class="c1">#   which can happen if the topological model was built incorrectly (eg, mislabelled plate boundaries).</span>
         <span class="c1">#   As long as there&#39;s at least one plate (or network) on the subducting side then it can find it</span>
         <span class="c1">#   (even if the plate is not directly attached to the subduction zone, ie, doesn&#39;t specify it as part of its boundary).</span>
-        <span class="c1"># However, like &#39;ptt.subduction_convergence.subduction_convergence()&#39;, it only samples plate boundaries that have a</span>
-        <span class="c1"># subduction polarity (eg, subduction zones) since we still need to know which plates are subducting and overriding,</span>
+        <span class="c1"># However, like &#39;ptt.subduction_convergence.subduction_convergence()&#39;, it only samples subducting plate boundaries</span>
+        <span class="c1"># (eg, subduction zones) since we still need to know which plates are subducting and overriding,</span>
         <span class="c1"># and hence cannot calculate convergence over all plate boundaries.</span>
 
-        <span class="c1"># Restrict plate boundaries to those that have a subduction polarity.</span>
+        <span class="c1"># Restrict plate boundaries to those that are subducting boundary types.</span>
         <span class="c1"># This is just an optimisation to avoid unnecessarily sampling all plate boundaries.</span>
         <span class="k">def</span><span class="w"> </span><span class="nf">_boundary_section_filter_function</span><span class="p">(</span><span class="n">resolved_topological_section</span><span class="p">):</span>
-            <span class="k">return</span> <span class="p">(</span>
-                <span class="n">resolved_topological_section</span><span class="o">.</span><span class="n">get_feature</span><span class="p">()</span><span class="o">.</span><span class="n">get_enumeration</span><span class="p">(</span>
-                    <span class="n">pygplates</span><span class="o">.</span><span class="n">PropertyName</span><span class="o">.</span><span class="n">gpml_subduction_polarity</span>
+            <span class="n">feature</span> <span class="o">=</span> <span class="n">resolved_topological_section</span><span class="o">.</span><span class="n">get_feature</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">feature</span><span class="o">.</span><span class="n">get_enumeration</span><span class="p">(</span><span class="n">pygplates</span><span class="o">.</span><span class="n">PropertyName</span><span class="o">.</span><span class="n">gpml_subduction_polarity</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">return</span> <span class="kc">False</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">include_all_subducting_boundary_types</span><span class="p">:</span>
+                <span class="k">return</span> <span class="p">(</span>
+                    <span class="n">feature</span><span class="o">.</span><span class="n">get_feature_type</span><span class="p">()</span>  <span class="c1"># type: ignore[attr-defined]</span>
+                    <span class="o">==</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">FeatureType</span><span class="o">.</span><span class="n">gpml_subduction_zone</span>  <span class="c1"># type: ignore[attr-defined]</span>
                 <span class="p">)</span>
-                <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
-            <span class="p">)</span>
+            <span class="k">return</span> <span class="kc">True</span>
 
         <span class="c1"># Generate statistics at uniformly spaced points along plate boundaries.</span>
         <span class="n">plate_boundary_statistics_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">topological_snapshot</span><span class="p">(</span>
@@ -1191,6 +1195,7 @@
         <span class="o">*</span><span class="p">,</span>
         <span class="n">use_ptt</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
         <span class="n">include_network_boundaries</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">include_all_subducting_boundary_types</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
         <span class="n">convergence_threshold_in_cm_per_yr</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">anchor_plate_id</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">velocity_delta_time</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
@@ -1237,12 +1242,16 @@
 <span class="sd">            (which uses the subducting stage rotation of the subduction/trench plate IDs calculate subducting velocities).</span>
 <span class="sd">            If set to ``False`` then uses plate convergence to calculate subduction convergence</span>
 <span class="sd">            (which samples velocities of the two adjacent boundary plates at each sampled point to calculate subducting velocities).</span>
-<span class="sd">            Both methods ignore plate boundaries that do not have a subduction polarity (feature property), which essentially means</span>
-<span class="sd">            they only sample subduction zones.</span>
+<span class="sd">            Both methods sample subduction zone features that have a subduction polarity, and can optionally include other</span>
+<span class="sd">            feature types with a subduction polarity (such as orogenic belts) via ``include_all_subducting_boundary_types``.</span>
 <span class="sd">        include_network_boundaries : bool, default=False</span>
 <span class="sd">            Whether to calculate subduction convergence along network boundaries that are not also plate boundaries (defaults to False).</span>
 <span class="sd">            If a deforming network shares a boundary with a plate then it&#39;ll get included regardless of this option.</span>
 <span class="sd">            Since subduction zones occur along *plate* boundaries this would only be an issue if an intra-plate network boundary was incorrectly labelled as subducting.</span>
+<span class="sd">        include_all_subducting_boundary_types : bool, default=False</span>
+<span class="sd">            If ``False`` (the default), only features of type ``SubductionZone`` that have a subduction polarity are sampled.</span>
+<span class="sd">            If ``True``, all features that have a subduction polarity are sampled regardless of feature type</span>
+<span class="sd">            (e.g. also includes ``OrogenicBelt`` features that have a subduction polarity).</span>
 <span class="sd">        convergence_threshold_in_cm_per_yr : float, optional</span>
 <span class="sd">            Only return sample points with an orthogonal (ie, in the subducting geometry&#39;s normal direction) converging velocity above this value (in cm/yr).</span>
 <span class="sd">            For example, setting this to ``0.0`` would remove all diverging sample points (leaving only converging points).</span>
@@ -1372,6 +1381,7 @@
                     <span class="n">velocity_delta_time</span><span class="o">=</span><span class="n">velocity_delta_time</span><span class="p">,</span>
                     <span class="n">anchor_plate_id</span><span class="o">=</span><span class="n">anchor_plate_id</span><span class="p">,</span>  <span class="c1"># if None then uses &#39;self.anchor_plate_id&#39; (default anchor plate of &#39;self.rotation_model&#39;)</span>
                     <span class="n">include_network_boundaries</span><span class="o">=</span><span class="n">include_network_boundaries</span><span class="p">,</span>
+                    <span class="n">include_all_subducting_boundary_types</span><span class="o">=</span><span class="n">include_all_subducting_boundary_types</span><span class="p">,</span>
                     <span class="n">output_distance_to_nearest_edge_of_trench</span><span class="o">=</span><span class="n">output_distance_to_nearest_edge_of_trench</span><span class="p">,</span>
                     <span class="n">output_distance_to_start_edge_of_trench</span><span class="o">=</span><span class="n">output_distance_to_start_edge_of_trench</span><span class="p">,</span>
                     <span class="n">output_convergence_velocity_components</span><span class="o">=</span><span class="n">output_convergence_velocity_components</span><span class="p">,</span>
@@ -1389,6 +1399,7 @@
                 <span class="n">anchor_plate_id</span><span class="o">=</span><span class="n">anchor_plate_id</span><span class="p">,</span>  <span class="c1"># if None then uses &#39;self.anchor_plate_id&#39; (default anchor plate of &#39;self.rotation_model&#39;)</span>
                 <span class="n">include_network_boundaries</span><span class="o">=</span><span class="n">include_network_boundaries</span><span class="p">,</span>
                 <span class="n">convergence_threshold_in_cm_per_yr</span><span class="o">=</span><span class="n">convergence_threshold_in_cm_per_yr</span><span class="p">,</span>
+                <span class="n">include_all_subducting_boundary_types</span><span class="o">=</span><span class="n">include_all_subducting_boundary_types</span><span class="p">,</span>
                 <span class="n">output_distance_to_nearest_edge_of_trench</span><span class="o">=</span><span class="n">output_distance_to_nearest_edge_of_trench</span><span class="p">,</span>
                 <span class="n">output_distance_to_start_edge_of_trench</span><span class="o">=</span><span class="n">output_distance_to_start_edge_of_trench</span><span class="p">,</span>
                 <span class="n">output_convergence_velocity_components</span><span class="o">=</span><span class="n">output_convergence_velocity_components</span><span class="p">,</span>
