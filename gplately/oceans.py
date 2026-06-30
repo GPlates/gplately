@@ -30,10 +30,7 @@ import pygplates
 
 from . import grids, tools
 from .lib.reconstruct_by_topologies import (
-    _ContinentCollision,
-    _DefaultCollision,
-    _ReconstructByTopologiesImpl,
-    _ReconstructByTopologicalModelImpl,
+    ReconstructByTopologies,
 )
 from .lib.reconstruct_continents import ReconstructContinents
 from .parallel import get_num_cpus
@@ -106,13 +103,6 @@ class SeafloorGrid(object):
 
     Reconstruction by topologies involves determining which points are active and inactive (collided with a continent or subducted at a trench)
     for each reconstruction time step. This is done using a hidden object in :class:`PlateReconstruction` called ``ReconstructByTopologies``.
-
-    If an ocean point with a certain velocity on one plate ID transitions into another rigid plate ID at another timestep (with another velocity),
-    the velocity difference between both plates is calculated. The point may have subducted/collided with a continent if this velocity difference
-    is higher than a specified velocity threshold (which can be controlled with ``subduction_collision_parameters``). To ascertain whether the point
-    should be deactivated, a displacement test is conducted. If the proximity of the point's previous time position to the polygon boundary it is
-    approaching is higher than a set distance threshold, then the point is far enough away from the boundary that it cannot be subducted or consumed by it,
-    and hence the point is still active. Otherwise, it is deemed inactive and deleted from the ocean basin mesh.
 
     With each reconstruction time step, points from mid-ocean ridges (which have more accurate spreading rates and attributed valid times) will spread across
     the ocean floor. Eventually, points will be pushed into continental boundaries or subduction zones, where they are deleted. Ideally, all initial ocean points
@@ -197,6 +187,15 @@ class SeafloorGrid(object):
                 kwargs["continent_polygon_features"] = continent_polygon_features
 
             #
+            # Handle the deprecated 'subduction_collision_parameters' argument.
+            #
+            if kwargs.pop("subduction_collision_parameters", None):
+                warnings.warn(
+                    "`subduction_collision_parameters` keyword argument has been deprecated, it is no longer used",
+                    DeprecationWarning,
+                )
+
+            #
             # Handle the deprecated 'zval_names' argument.
             #
             if kwargs.pop("zval_names", None):
@@ -223,7 +222,6 @@ class SeafloorGrid(object):
         ridge_sampling: float = 0.5,
         extent: Tuple = (-180, 180, -90, 90),
         grid_spacing: float = 0.1,
-        subduction_collision_parameters=(5.0, 10.0),
         initial_ocean_mean_spreading_rate: float = 75.0,
         resume_from_checkpoints=False,
         continent_polygon_features=None,
@@ -261,8 +259,6 @@ class SeafloorGrid(object):
         grid_spacing : float, default=0.1
             The degree spacing/interval with which to space grid points across all masking and
             final grids. If ``grid_spacing`` is provided, all grids will use it. If not, ``grid_spacing`` defaults to 0.1.
-        subduction_collision_parameters : len-2 tuple of float, default=(5.0, 10.0)
-            A 2-tuple of (threshold velocity delta in kms/my, threshold distance to boundary per My in kms/my)
         initial_ocean_mean_spreading_rate : float, default=75.
             A spreading rate to uniformly allocate to points that define the initial ocean
             basin. These points will have inaccurate ages, but most of them will be phased
@@ -334,7 +330,6 @@ class SeafloorGrid(object):
         # Topological parameters
         self.refinement_levels = refinement_levels
         self.ridge_sampling = ridge_sampling
-        self.subduction_collision_parameters = subduction_collision_parameters
         self.initial_ocean_mean_spreading_rate = initial_ocean_mean_spreading_rate
 
         # Gridding parameters
@@ -1145,22 +1140,23 @@ class SeafloorGrid(object):
 
         return shifted_mor_points, np.array(point_spreading_rates)
 
+    def reconstruct_by_topological_model(self):
+        """Alias for :meth:`reconstruct_by_topologies`.
+
+        Introduced in version ``2.0``, this method used to use `pygplates.TopologicalModel`_ class to reconstruct seed points.
+        Now it's just an alias for :meth:`reconstruct_by_topologies` and is deprecated.
+
+        .. deprecated:: 2.1
+
+            Use :meth:`reconstruct_by_topologies` instead.
+        """
+        self.reconstruct_by_topologies()
+
     def reconstruct_by_topologies(self):
         """Obtain all active ocean seed points which are points that have not been consumed at subduction zones
         or have not collided with continental polygons. Active points' latitudes, longitues, seafloor ages, spreading rates and all
         other general z-values are saved to a gridding input file (.npz).
         """
-        self._reconstruct_by_topologies_impl(use_topological_model=False)
-
-    def reconstruct_by_topological_model(self):
-        """Use `pygplates.TopologicalModel`_ class to reconstruct seed points.
-        This method is an alternative to :meth:`reconstruct_by_topologies()` which uses Python code to do the reconstruction.
-
-        .. _pygplates.TopologicalModel: https://www.gplates.org/docs/pygplates/generated/pygplates.topologicalmodel
-        """
-        self._reconstruct_by_topologies_impl(use_topological_model=True)
-
-    def _reconstruct_by_topologies_impl(self, use_topological_model):
 
         logger.info("Preparing to reconstruct ocean seed points using topologies...")
 
@@ -1211,15 +1207,12 @@ class SeafloorGrid(object):
                     partial(
                         _build_and_reconstruct_ocean_seed_points_parallel,
                         seafloor_grid=self,
-                        use_topological_model=use_topological_model,
                     ),
                     self._times,
                 )
         else:
             for time in self._times:
-                self._build_and_reconstruct_ocean_seed_points(
-                    time, use_topological_model=use_topological_model
-                )
+                self._build_and_reconstruct_ocean_seed_points(time)
 
         logger.info(
             "Aggregating reconstructed ocean seed point data for gridding input..."
@@ -1305,9 +1298,7 @@ class SeafloorGrid(object):
                     all_reconstructed_seed_point_data
                 )
 
-    def _build_and_reconstruct_ocean_seed_points(
-        self, from_time, use_topological_model
-    ):
+    def _build_and_reconstruct_ocean_seed_points(self, from_time):
         """Creates ocean seed points at `from_time` and reconstructs them to `min_time`.
 
         Ocean seed points can be either the *initial* ocean seed points at `from_time=max_time` or
@@ -1377,47 +1368,17 @@ class SeafloorGrid(object):
         # Begin the reconstruction by topology process.
         #
 
-        # Specify the default collision detection region as subduction zones
-        default_collision = _DefaultCollision(
-            feature_specific_collision_parameters=[
-                (
-                    pygplates.FeatureType.gpml_subduction_zone,
-                    self.subduction_collision_parameters,
-                )
-            ]
+        # Call the reconstruct-by-topologies object.
+        topology_reconstruction = ReconstructByTopologies(
+            self.plate_reconstruction,
+            from_time,
+            self._min_time,
+            self._ridge_time_step,
+            points,
+            point_begin_times=appearance_times,
+            # This filename string should not have a time formatted into it - this is taken care of later...
+            continent_mask_filepath_format=self.continent_mask_filepath,
         )
-        # In addition to the default subduction detection, also detect continental collisions
-        collision_spec = _ContinentCollision(
-            # This filename string should not have a time formatted into it - this is
-            # taken care of later.
-            self.continent_mask_filepath,
-            default_collision,
-            verbose=False,
-        )
-
-        # Call the reconstruct by topologies object
-        if use_topological_model:
-            topology_reconstruction = _ReconstructByTopologicalModelImpl(
-                self.plate_reconstruction.rotation_model,
-                self.plate_reconstruction.topology_features,
-                from_time,
-                self._min_time,
-                self._ridge_time_step,
-                points,
-                point_begin_times=appearance_times,
-                detect_collisions=collision_spec,
-            )
-        else:
-            topology_reconstruction = _ReconstructByTopologiesImpl(
-                self.plate_reconstruction.rotation_model,
-                self.plate_reconstruction.topology_features,
-                from_time,
-                self._min_time,
-                self._ridge_time_step,
-                points,
-                point_begin_times=appearance_times,
-                detect_collisions=collision_spec,
-            )
 
         # Initialise the reconstruction.
         topology_reconstruction.begin_reconstruction()
@@ -1432,48 +1393,41 @@ class SeafloorGrid(object):
             # This is the same size as 'points', which is either the initial ocean points at `time=max_time` or the MOR seed points at `time`.
             # Here 'current_points', despite being the same size, differs in that any *inactive* points at the current time
             # are None and the *active* points are at their reconstructed position at the current time.
-            current_points = topology_reconstruction.get_all_current_points()
-
-            # Get the indices of the currently *active* points into all the points.
-            #
-            # Note: Points that are None represent currently *inactive* points.
-            #       These are points that have either:
-            #         1) not been activated yet because the current time is older than their appearance time, or
-            #         2) have been deactivated because the current time is younger than their dissappearance time, or
-            #         3) have been deactivated through collision detection (ie, collided with a continent or trench).
-            #       However, note that (2) does not apply here because the points currently don't have a hardwired disappearance time
-            #       (it's implicitly '-inf'). Instead we rely on collision detection to deactivate points.
-            #       And note that (1) does not apply here either, because the initial ocean seed points all exist at 'time=max_time' and
-            #       all MOR seed points created at 'time' also exist at 'time'.
-            #
-            active_point_indices = np.fromiter(
-                (
-                    point_index
-                    for point_index, point in enumerate(current_points)
-                    if point is not None
-                ),
-                dtype=np.int32,
-            )
+            active_points = topology_reconstruction.get_current_active_points()
 
             # logger.debug(
-            #    f"At {time:.2f} Ma, {len(active_point_indices)} of the {len(points)} points created at {from_time:.2f} Ma are still active."
+            #    f"At {time:.2f} Ma, {len(active_points)} of the {len(points)} points created at {from_time:.2f} Ma are still active."
             # )
 
             # Store the reconstructed seed point data if any seed points are currently active.
-            if len(active_point_indices) > 0:
+            if active_points:
 
                 # Latitudes and longitudes of the active points.
                 # Store as 32-bit floating-point to save memory/disk-space.
-                active_latitudes = np.empty(len(active_point_indices), dtype=np.float32)
-                active_longitudes = np.empty(
-                    len(active_point_indices), dtype=np.float32
-                )
-                for index, point_index in enumerate(active_point_indices):
-                    active_latitudes[index], active_longitudes[index] = current_points[
-                        point_index
-                    ].to_lat_lon()
+                active_latitudes = np.empty(len(active_points), dtype=np.float32)
+                active_longitudes = np.empty(len(active_points), dtype=np.float32)
+                for index, active_point in enumerate(active_points):
+                    active_latitudes[index], active_longitudes[index] = (
+                        active_point.to_lat_lon()
+                    )
 
-                # Store the active reconstructed seed point locations their active point indices for the current time.
+                # Get the indices of the currently *active* points into all the points (active and inactive).
+                #
+                # Note: Points that are None represent currently *inactive* points.
+                #       These are points that have either:
+                #         1) not been activated yet because the current time is older than their appearance time, or
+                #         2) have been deactivated because the current time is younger than their dissappearance time, or
+                #         3) have been deactivated through collision detection (ie, collided with a continent or trench).
+                #       However, note that (2) does not apply here because the points currently don't have a hardwired disappearance time
+                #       (it's implicitly '-inf'). Instead we rely on collision detection to deactivate points.
+                #       And note that (1) does not really apply here either, because the initial ocean seed points all exist at the
+                #       start time 'from_time=max_time' and all MOR seed points created at 'from_time' also exist at 'from_time'.
+                #
+                active_point_indices = (
+                    topology_reconstruction.get_current_active_point_indices()
+                )
+
+                # Store the active reconstructed seed point locations and their active point indices for the current time.
                 #
                 # Use a time "index" (associated with the current time - in the range `min_time <= time <= from_time`).
                 time_index = topology_reconstruction.get_current_time_index()
@@ -2012,9 +1966,6 @@ def _generate_debug_files_containing_reconstructed_ocean_seed_point_data_paralle
 def _build_and_reconstruct_ocean_seed_points_parallel(
     time,
     seafloor_grid,
-    use_topological_model,
 ):
     # Dispatch from parallel helper function to SeafloorGrid class method.
-    seafloor_grid._build_and_reconstruct_ocean_seed_points(
-        time, use_topological_model=use_topological_model
-    )
+    seafloor_grid._build_and_reconstruct_ocean_seed_points(time)
