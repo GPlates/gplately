@@ -19,7 +19,12 @@ logger.setLevel(logging.INFO)
 # Test GPlately functionalities on the Müller et al. (2019) plate model at 0 and 100 Ma.
 reconstruction_times = [0, 100]
 anchor_plate_ids = [0, 701]
-gridding_times = [249.0, 250.0]
+# Time range for seafloor gridding.
+#
+# Note: Previously was [249, 250] but with the introduction of DEFORMING continents the
+#       continents are reconstructed FROM present day. So keeping these values near
+#       present day speeds up testing a lot.
+gridding_times = [9.0, 10.0]
 # Longitude and latitude of the Hawaiian-Emperor Seamount chain seed points.
 pt_lon = np.array([-155.4696, 164.3])
 pt_lat = np.array([19.8202, 53.5])
@@ -180,8 +185,8 @@ def gplately_seafloorgrid_object(
 
     seafloorgrid = gplately.SeafloorGrid(
         model,
-        max_time=250,
-        min_time=249,
+        max_time=gridding_times[1],
+        min_time=gridding_times[0],
         ridge_time_step=1.0,
         save_directory="test-seafloor-grid",
         file_collection="Muller2019",
