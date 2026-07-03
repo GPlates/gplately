@@ -35,10 +35,11 @@ Class
 import copy
 import logging
 import math
+import os
 from pathlib import Path
 import warnings
 from multiprocessing import cpu_count
-from typing import Tuple, Union, cast, overload, Literal
+from typing import List, Tuple, Union, cast, overload, Literal
 from enum import Enum
 
 # pyright: reportMissingImports=false
@@ -48,6 +49,7 @@ import matplotlib.colors
 import matplotlib.pyplot as plt
 import netCDF4
 import numpy as np
+from shapely.lib import reverse
 import xarray as xr
 import pygplates
 from cartopy.crs import PlateCarree as _PlateCarree
@@ -59,13 +61,15 @@ from scipy.ndimage import distance_transform_edt, map_coordinates
 from scipy.spatial import (
     cKDTree as _cKDTree,  # pyright: ignore[reportAttributeAccessIssue]
 )
+from scipy.spatial import KDTree
 from scipy.spatial.transform import Rotation as _Rotation
 
-from build.lib.gplately.grids import sample_grid
+from gplately.exceptions import NegativeReconstructionTime
 
 from .geometry import pygplates_to_shapely
 from .reconstruction import PlateReconstruction
 from .tools import _deg2pixels, griddata_sphere
+from .utils.io_utils import load_feature_collection
 
 # re-export, don't remove
 from .lib.regular_grid_interpolator import RegularGridInterpolator
@@ -1017,20 +1021,19 @@ def reconstruct_grid(
 
     assert rotation_model is not None, "`rotation_model` cannot be None."
 
-    try:
-        # first, try and see if the `grid` is a file path.
-        if Path(grid).is_file():
-            grid = np.array(
-                read_netcdf_grid(
-                    grid,
-                    x_dimension_name=x_dimension_name,
-                    y_dimension_name=y_dimension_name,
-                    data_variable_name=data_variable_name,
-                )
+    # first, try and see if the `grid` is a file path.
+    if isinstance(grid, (str, bytes, os.PathLike)) and os.path.isfile(grid):
+        grid = np.array(
+            read_netcdf_grid(
+                grid,
+                x_dimension_name=x_dimension_name,
+                y_dimension_name=y_dimension_name,
+                data_variable_name=data_variable_name,
             )
-    except Exception:
+        )
+    else:
         # If the grid is not a file, we assume it is already an array-like object and proceed without loading.
-        # convert grid data to numpy array. This will make a copy.
+        # convert grid data to numpy array. This will make a copy of the input grid.
         grid = np.array(grid)
 
     extent = _parse_extent(extent, origin)
@@ -1064,7 +1067,7 @@ def reconstruct_grid(
                 fill_value = tuple([0.0] * grid.shape[2])
     if isinstance(fill_value, str):
         if grid.ndim == 2:
-            raise TypeError("Invalid fill_value for 2D grid: {}".format(fill_value))
+            raise TypeError(f"Invalid fill_value for 2D grid: {fill_value}")
         fill_value = np.array(matplotlib.colors.to_rgba(fill_value))
         if dtype.kind == "u":
             fill_value = (fill_value * 255.0).astype("u1")
@@ -1081,9 +1084,7 @@ def reconstruct_grid(
         fill_value = (*fill_value, fill_alpha)  # type: ignore
     if np.size(fill_value) != np.atleast_3d(grid).shape[-1]:
         raise ValueError(
-            "Shape mismatch: "
-            + "fill_value size: {}".format(np.size(fill_value))
-            + ", grid shape: {}".format(np.shape(grid))
+            f"Shape mismatch: fill_value size: {np.size(fill_value)}, grid shape: {np.shape(grid)}"
         )
 
     xmin, xmax, ymin, ymax = extent
@@ -1168,7 +1169,7 @@ def reconstruct_grid(
             anchor_plate_id=anchor_plate_id,  # if None then uses default anchor plate of 'rotation_model'
         )
         if not isinstance(rot, pygplates.FiniteRotation):
-            raise ValueError("No rotation found for plate ID: {}".format(plate))
+            raise ValueError(f"No rotation found for plate ID: {plate}")
         lat, lon, angle = rot.get_lat_lon_euler_pole_and_angle_degrees()
         angle = np.deg2rad(angle)
         vec = _lat_lon_to_vector(lat, lon, degrees=True)
@@ -1192,20 +1193,9 @@ def reconstruct_grid(
     # Compatibility with older versions of SciPy:
     # 'n_jobs' argument was replaced with 'workers'
     try:
-        _, indices = tree.query(
-            output_vecs,
-            k=1,
-            workers=threads,
-        )
-    except TypeError as err:
-        if "Unexpected keyword argument" in err.args[0] and "workers" in err.args[0]:
-            _, indices = tree.query(
-                output_vecs,
-                k=1,
-                n_jobs=threads,
-            )
-        else:
-            raise err
+        _, indices = tree.query(output_vecs, k=1, workers=threads)
+    except TypeError:
+        _, indices = tree.query(output_vecs, k=1, n_jobs=threads)
 
     if grid.ndim == 2:
         output_data = valid_data[indices]
@@ -1221,7 +1211,7 @@ def reconstruct_grid(
 def rasterise(
     features,
     rotation_model=None,
-    key: Union[str, float, int] = "plate_id",
+    key: Union[str, float, int, list] = "plate_id",
     time=None,
     resx=1.0,
     resy=1.0,
@@ -1381,12 +1371,11 @@ def rasterise(
     if isinstance(key, str):
         values, fill_value, dtype = _get_rasterise_values(key, reconstructed)
     else:
-        if not hasattr(key, "__len__"):
+        if isinstance(key, (int, float)):
             key = [key] * len(geometries)
         if len(key) != len(geometries):
             raise ValueError(
-                "Shape mismatch: len(key) = {}, ".format(len(key))
-                + "len(geometries) = {}".format(len(geometries))
+                f"Shape mismatch: len(key) = {len(key)}, len(geometries) = {len(geometries)}"
             )
         values = np.array(key)
         dtype = values.dtype
@@ -1715,9 +1704,11 @@ class Raster(object):
         # set the initial reconstruction time of the Raster. This will not reconstruct the raster data.
         # the initial reconstruction time is used to indicate the geological time of the provided raster data.
         # later, when the user calls the setter method of the `time` property, the raster data will be reconstructed to the new time.
-        self._time = self._validate_reconstruction_time(time)
+        self._time = self._get_valid_reconstruction_time(time)
         self._grid_registration = grid_registration
         self._data_var_name = data_variable_name
+        self._lons = None
+        self._lats = None
 
         # deal with deprecated arguments, such as ``PlateReconstruction_object``, ``filename``, and ``array``
         # if, in some exceptional cases, the user has to use the deprecated arguments,
@@ -1736,7 +1727,9 @@ class Raster(object):
             return
 
         self.plate_reconstruction = plate_reconstruction
-        assert data, "`data` argument (or `filename` or `array`) is required."
+        assert (
+            data is not None
+        ), "`data` argument (or `filename` or `array`) is required."
 
         # handle the data parameter is a path to a NetCDF file
         if isinstance(data, str):
@@ -1857,7 +1850,7 @@ class Raster(object):
     @time.setter
     def time(self, new_time: float):
         """Set a new reconstruction time and reconstruct the raster if necessary."""
-        new_time_f = self._validate_reconstruction_time(new_time)
+        new_time_f = self._get_valid_reconstruction_time(new_time)
         if not math.isclose(self._time, new_time_f):
             self._time = new_time_f
             logger.info(
@@ -1882,6 +1875,7 @@ class Raster(object):
     @property
     def lons(self) -> np.ndarray:
         """The longitude coordinates of the raster data."""
+        assert self._lons is not None, "Longitude coordinates are not set."
         return self._lons
 
     @lons.setter
@@ -1896,6 +1890,7 @@ class Raster(object):
     @property
     def lats(self) -> np.ndarray:
         """The latitude coordinates of the raster data."""
+        assert self._lats is not None, "Latitude coordinates are not set."
         return self._lats
 
     @lats.setter
@@ -2274,16 +2269,43 @@ class Raster(object):
             str(filename), self.data, self.extent, significant_digits, fill_value
         )
 
+    @overload
     def reconstruct(
         self,
         time,
+        *,
+        fill_value=None,
+        partitioning_features=None,
+        threads=1,
+        anchor_plate_id=None,
+        inplace=False,
+        return_array: Literal[False] = False,
+    ) -> "Raster": ...
+
+    @overload
+    def reconstruct(
+        self,
+        time,
+        *,
+        fill_value=None,
+        partitioning_features=None,
+        threads=1,
+        anchor_plate_id=None,
+        inplace=False,
+        return_array: Literal[True],
+    ) -> np.ndarray: ...
+
+    def reconstruct(
+        self,
+        time,
+        *,
         fill_value=None,
         partitioning_features=None,
         threads=1,
         anchor_plate_id=None,
         inplace=False,
         return_array=False,
-    ):
+    ) -> Union["Raster", np.ndarray]:
         """Reconstruct the raster from its current time to a new time.
 
         Parameters
@@ -2329,29 +2351,57 @@ class Raster(object):
             value will be transparent black (0.0, 0.0, 0.0, 0.0) or
             (0, 0, 0, 0).
         """
-        to_time_f = self._validate_reconstruction_time(time)
+        to_time_f = self._get_valid_reconstruction_time(time)
 
         assert (
             self.plate_reconstruction is not None
         ), "A valid PlateReconstruction object is required!"
 
+        assert (
+            self.plate_reconstruction.rotation_model is not None
+        ), "A valid RotationModel object is required!"
+
         if partitioning_features is None:
             partitioning_features = self.plate_reconstruction.static_polygons
 
-        result = reconstruct_grid(
-            grid=self.data,
-            partitioning_features=partitioning_features,
-            rotation_model=self.plate_reconstruction.rotation_model,
-            from_time=self.time,
-            to_time=to_time_f,
-            extent=self.extent,
-            origin=self.origin,
-            fill_value=fill_value,
-            threads=threads,
-            anchor_plate_id=anchor_plate_id,
-        )
+        assert (
+            partitioning_features is not None
+        ), "No partitioning features, such as static polygons, provided!"
 
-        raster_rotation_model = self.plate_reconstruction.rotation_model
+        use_old_implementation = False
+        if use_old_implementation:
+            result = reconstruct_grid(
+                grid=self.data,
+                partitioning_features=partitioning_features,
+                rotation_model=self.plate_reconstruction.rotation_model,
+                from_time=self.time,
+                to_time=to_time_f,
+                extent=self.extent,
+                origin=self.origin,
+                fill_value=fill_value,
+                threads=threads,
+                anchor_plate_id=anchor_plate_id,
+            )
+        else:
+            # prepare rotation model for reconstruction
+            rotation_model = None
+            if anchor_plate_id is not None:
+                # the self._get_rotation_model_with_a_different_default_anchor_plate_id() return None
+                # if the anchor_plate_id is the same as the default anchor plate ID in the current rotation model
+                # but it doesn't matter for the function call self._recconstruct_raster() because it will use the default rotation model in self.plate_reconstruction.rotation_model if rotation_model is None
+                rotation_model = (
+                    self._get_rotation_model_with_a_different_default_anchor_plate_id(
+                        anchor_plate_id
+                    )
+                )
+
+            result = self._recconstruct_raster(
+                to_time=to_time_f,
+                rotation_model=rotation_model,
+                partitioning_features=partitioning_features,
+                threads=threads,
+            )
+
         # use the new reconstructed raster data to replace the current Raster obj
         # put anchor_plate_id into rotation_model if it is not None
         if inplace:
@@ -2359,13 +2409,14 @@ class Raster(object):
             self._time = to_time_f
             if (
                 anchor_plate_id is not None
-                and raster_rotation_model
-                and raster_rotation_model.get_default_anchor_plate_id()
-                != anchor_plate_id
-            ):
-                self.plate_reconstruction.rotation_model = pygplates.RotationModel(
-                    raster_rotation_model, default_anchor_plate_id=anchor_plate_id
+                and (
+                    rot_model := self._get_rotation_model_with_a_different_default_anchor_plate_id(
+                        anchor_plate_id
+                    )
                 )
+                is not None
+            ):
+                self.plate_reconstruction.rotation_model = rot_model
             if return_array:
                 return result
             return self
@@ -2380,16 +2431,530 @@ class Raster(object):
                 origin=self.origin,
             )
             if (
-                anchor_plate_id is not None
-                and raster_rotation_model
-                and raster_rotation_model.get_default_anchor_plate_id()
-                != anchor_plate_id
-            ):
-                assert result.plate_reconstruction is not None
-                result.plate_reconstruction.rotation_model = pygplates.RotationModel(
-                    raster_rotation_model, default_anchor_plate_id=anchor_plate_id
+                result.plate_reconstruction is not None
+                and anchor_plate_id is not None
+                and (
+                    rot_model := self._get_rotation_model_with_a_different_default_anchor_plate_id(
+                        anchor_plate_id
+                    )
                 )
+                is not None
+            ):
+                result.plate_reconstruction.rotation_model = rot_model
         return result
+
+    def _recconstruct_raster(
+        self,
+        to_time: float,
+        rotation_model: Union[pygplates.RotationModel, None] = None,
+        partitioning_features: Union[pygplates.FeatureCollection, None] = None,
+        threads: int = 1,
+    ) -> np.ndarray:
+        """Reconstruct the raster from its current time to a new time.
+
+        .. note::
+            The `RotationModel` object associated with the orginal raster data in this object is self.plate_reconstruction.rotation_model.
+            User may provide a different `RotationModel` object to reconstruct the raster data to a new time, such as useing a different anchor plate ID.
+
+        This is a private method and not intended to be called directly by users.
+        Instead, users should call the public method :meth:`reconstruct` to reconstruct the raster data.
+        The doc is provided here for developers/AI assistants who want to understand the implementation of the raster reconstruction.
+
+        Parameters
+        ----------
+        to_time : float
+            Time to which the data will be reconstructed.
+        rotation_model : Union[pygplates.RotationModel, None], default None
+            The rotation model used to reconstruct the raster data to the `to_time`.
+            If None is provided, the default rotation model in self.plate_reconstruction.rotation_model will be used.
+        partitioning_features : Union[pygplates.FeatureCollection, None], default None
+            The features used to partition the raster grid and assign plate IDs, such as static polygons.
+            If None is provided, the `self.plate_reconstruction.static_polygons` will be used.
+        threads : int, default 1
+            Number of threads to use for certain computationally heavy routines.
+
+        Returns
+        -------
+        np.ndarray
+            The reconstructed raster data. Areas outside of the partitioning polygons will be filled with invalid/default values.
+        """
+        # The original time of the raster data, which is the time when the raster data was created or last reconstructed.
+        from_time = self.time
+
+        # If the intended reconstruction time is the same as the original time,
+        # and no different rotation model is provided, we will not perform any reconstruction and return the raster data unchanged.
+        # When user provides a different rotation model, but the same `to_time` and `from_time`,
+        # it means user wants to reconstruct the raster data using a different anchor plate ID or
+        # even a different compatible rotation model, we go ahead and reconstruct it.
+        if rotation_model is None and math.isclose(to_time, from_time):
+            warnings.warn(
+                "Reconstruction time is the same as the original time and no other rotation model is provided; returning input grid unchanged",
+                UserWarning,
+            )
+            return self.data
+
+        # Get the partitioning polygons at the `from_time` and their corresponding features(we need the features to query plate IDs, or other attributes).
+        # Only get those polygons that are valid at both the `from_time` and `to_time`,
+        # and if they intersect with the raster data extent(not global raster), they will be cut to fit into the extent.
+        # This will make sure the reconstructed raster doesn't contain interpolated data which shouldn't be there.
+        # For example, if the orignal raster covers only half of Australia, you may not want the interpolated data to show up in the other half of Australia after reconstruction.
+        if partitioning_features is None:
+            assert (
+                self.plate_reconstruction is not None
+            ), "A valid PlateReconstruction object is required here!"
+            partitioning_features = load_feature_collection(
+                self.plate_reconstruction.static_polygons
+            )
+        (
+            partitioning_polygons_at_from_time,
+            features_of_partitioning_polygons_at_from_time,
+        ) = self._get_partitioning_polygons_at_from_time(
+            partitioning_features=partitioning_features,
+            from_time=from_time,
+            to_time=to_time,
+        )
+        assert len(partitioning_polygons_at_from_time) == len(
+            features_of_partitioning_polygons_at_from_time
+        ), "The number of partitioning polygons and their corresponding features must be the same."
+
+        # Partition the original raster data points using the partitioning polygons
+        # and get the plate IDs from the associated features for each data point.
+        m_lons, m_lats = np.meshgrid(self.lons, self.lats)
+        plate_id_grid = self._get_plate_id_grid(
+            m_lons,
+            m_lats,
+            partitioning_polygons_at_from_time,
+            features_of_partitioning_polygons_at_from_time,
+        )
+        assert (
+            plate_id_grid.shape == m_lons.shape
+        ), "The shape of the plate ID grid should match the shape of the raster data grid."
+
+        # Reconstruct the raster data points to the `to_time` using the given rotation model and plate IDs.
+        # The returned `reconstructed_original_sample_point_lat_lon_array` and `original_sample_point_row_col_index_array` are 1D numpy arrays of the same length,
+        # containing the reconstructed latitudes and longitudes of the raster data points and
+        # the corresponding row and column indices of the raster data points in the original raster.
+        # Note: only the raster data points that are inside the partitioning polygons at `from_time` will be reconstructed.
+        (
+            reconstructed_original_sample_point_lat_lon_array,
+            original_sample_point_row_col_index_array,
+        ) = self._reconstruct_raster_data_points(
+            from_time=from_time,
+            to_time=to_time,
+            m_lons=m_lons,
+            m_lats=m_lats,
+            plate_id_grid=plate_id_grid,
+            rotation_model=rotation_model,
+        )
+
+        # We also need to reconstruct the partitioning polygons to the `to_time`.
+        partitioning_polygons_at_to_time: List[pygplates.PolygonOnSphere] = (
+            self._get_partitioning_polygons_at_to_time(
+                partitioning_polygons_at_from_time,
+                features_of_partitioning_polygons_at_from_time,
+                from_time,
+                to_time,
+                rotation_model,
+            )
+        )
+
+        # Initialize the output raster and get the sample points that are inside the partitioning polygons at `to_time`.
+        (
+            output_raster,
+            output_sample_points_lons,
+            output_sample_points_lats,
+            output_sample_points_row_col_indices,
+        ) = self._get_output_raster_and_sample_points(partitioning_polygons_at_to_time)
+
+        # build a KDTree from the reconstructed original raster data points
+        # and query the nearest neighbor for the sample points of output raster
+        reconstructed_original_sample_points_lats = (
+            reconstructed_original_sample_point_lat_lon_array[:, 0]
+        )
+        reconstructed_original_sample_points_lons = (
+            reconstructed_original_sample_point_lat_lon_array[:, 1]
+        )
+
+        reconstructed_original_sample_points_vecs = _lat_lon_to_vector(
+            reconstructed_original_sample_points_lats,
+            reconstructed_original_sample_points_lons,
+            degrees=True,
+        )
+        # Build a KDTree from the reconstructed original raster data points
+        tree = KDTree(reconstructed_original_sample_points_vecs)
+
+        output_vecs = _lat_lon_to_vector(
+            output_sample_points_lats,
+            output_sample_points_lons,
+            degrees=True,
+        )
+        assert (
+            len(output_vecs) > 1
+        ), "No enough output sample points to proceed. Please check your partitioning features to make sure there are valid polygons at `to_time`."
+
+        # Compatibility with older versions of SciPy:
+        # 'n_jobs' argument was replaced with 'workers'
+        try:
+            _, indices = tree.query(output_vecs, k=1, workers=threads)
+        except TypeError:
+            _, indices = tree.query(output_vecs, k=1, n_jobs=threads)  # type: ignore
+
+        assert isinstance(indices, np.ndarray)
+
+        # Fill the output grid with the values from the original raster data.
+        for out_idx, src_idx in enumerate(indices):
+            row, col = output_sample_points_row_col_indices[out_idx]
+            output_raster[row, col] = self.data[
+                original_sample_point_row_col_index_array[src_idx][0],
+                original_sample_point_row_col_index_array[src_idx][1],
+            ]
+
+        return output_raster
+
+    def _get_output_raster_and_sample_points(
+        self, partitioning_polygons_at_to_time
+    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+        """Get the output raster and the sample points that are inside the partitioning polygons at `to_time`.
+
+        Parameters
+        ----------
+        partitioning_polygons_at_to_time : list[pygplates.PolygonOnSphere]
+            A list of partitioning polygons at the `to_time`.
+
+        Returns
+        -------
+        output_raster : np.ndarray
+            A 2D array of the output raster, initialized with None values.
+        output_sample_points_lons : np.ndarray
+            A 1D array of longitudes of the sample points that are inside the partitioning polygons at `to_time`.
+        output_sample_points_lats : np.ndarray
+            A 1D array of latitudes of the sample points that are inside the partitioning polygons at `to_time`.
+        output_sample_points_row_col_indices : np.ndarray
+            A 1D array of tuples, where each tuple contains the row and column indices of the sample points in the output raster that are inside the partitioning polygons at `to_time`.
+        """
+        # If the original raster extent is global, the output raster extent will also be global.
+        left, right, bottom, top = self.extent
+        if math.isclose(abs(left - right), 360) or math.isclose(abs(bottom - top), 180):
+            output_raster_extent = self.extent
+        else:
+            # Get output raster extent from the partitioning polygons at the `to_time`.
+            rpp_lons = []
+            rpp_lats = []
+            for polygon in partitioning_polygons_at_to_time:
+                for p in polygon.to_lat_lon_array():  # type: ignore
+                    rpp_lons.append(p[1])
+                    rpp_lats.append(p[0])
+            output_raster_extent = (
+                min(rpp_lons),
+                max(rpp_lons),
+                min(rpp_lats),
+                max(rpp_lats),
+            )
+
+        # Build the initial output mesh grid from the output raster extent
+        output_lon_mesh, output_lat_mesh = np.meshgrid(
+            np.linspace(
+                output_raster_extent[0], output_raster_extent[1], len(self.lons)
+            ),
+            np.linspace(
+                output_raster_extent[2], output_raster_extent[3], len(self.lats)
+            ),
+        )
+        output_raster = np.full(output_lon_mesh.shape, None, dtype=object)
+        # Check the points in the mesh grid against the reconstructed partitioning polygons to see if they are inside any of them
+        r_polygon_index_grid = self._partition_raster_data_points(
+            output_lon_mesh, output_lat_mesh, partitioning_polygons_at_to_time
+        )
+        # Get a list of lons and lats of the points that are inside the reconstructed partitioning polygons.
+        # Only query data for the points that are inside the reconstructed partitioning polygons.
+        output_sample_points_lons = []
+        output_sample_points_lats = []
+        output_sample_points_row_col_indices = []
+        rows, cols = np.where(r_polygon_index_grid != -1)
+        for row, col in zip(rows, cols):
+            output_sample_points_lons.append(output_lon_mesh[row, col])
+            output_sample_points_lats.append(output_lat_mesh[row, col])
+            output_sample_points_row_col_indices.append((row, col))
+
+        return (
+            output_raster,
+            np.array(output_sample_points_lons),
+            np.array(output_sample_points_lats),
+            np.array(output_sample_points_row_col_indices),
+        )
+
+    def _get_partitioning_polygons_at_to_time(
+        self,
+        partitioning_polygons_at_from_time: list[pygplates.PolygonOnSphere],
+        features_of_partitioning_polygons_at_from_time: list[pygplates.Feature],
+        from_time: float,
+        to_time: float,
+        rotation_model: pygplates.RotationModel,
+    ) -> List[pygplates.PolygonOnSphere]:
+        """Get the partitioning polygons at the `to_time` by reconstructing the partitioning polygons at the `from_time`."""
+        polygon_feature_collection = pygplates.FeatureCollection()
+        for p, f in zip(
+            partitioning_polygons_at_from_time,
+            features_of_partitioning_polygons_at_from_time,
+        ):
+            feature = pygplates.Feature()  # type: ignore
+            feature.set_reconstruction_plate_id(f.get_reconstruction_plate_id())  # type: ignore
+            feature.set_geometry(p)
+            polygon_feature_collection.add(feature)
+
+        # If the from_time is not 0, we need to reverse reconstruct the partitioning polygons
+        # to the present-day coordinates before reconstructing them to the to_time.
+        # Note: this is done by using the original rotation model in self.plate_reconstruction.rotation_model.
+        assert self.plate_reconstruction is not None
+        if not math.isclose(from_time, 0.0):
+            pygplates.reverse_reconstruct(  # type: ignore
+                polygon_feature_collection,
+                self.plate_reconstruction.rotation_model,
+                from_time,
+            )
+        rfgs = []
+        pygplates.reconstruct(polygon_feature_collection, rotation_model, rfgs, to_time)  # type: ignore
+        polygons_at_to_time = []
+        for rfg in rfgs:
+            geom = rfg.get_reconstructed_geometry()
+            if geom is not None and isinstance(geom, pygplates.PolygonOnSphere):
+                polygons_at_to_time.append(geom)
+        return polygons_at_to_time
+
+    def _get_plate_id_grid(
+        self,
+        lon_mesh: np.ndarray,
+        lat_mesh: np.ndarray,
+        partitioning_polygons: list[pygplates.PolygonOnSphere],
+        features_of_partitioning_polygons: list[pygplates.Feature],
+    ) -> np.ndarray:
+        """Get the plate ID grid for the raster data points based on the partitioning polygons and their corresponding features.
+
+        Parameters
+        ----------
+        lon_mesh : np.ndarray
+            A 2D array of longitudes of the raster data points.
+        lat_mesh : np.ndarray
+            A 2D array of latitudes of the raster data points.
+        partitioning_polygons : list[pygplates.PolygonOnSphere]
+            A list of partitioning polygons.
+        features_of_partitioning_polygons : list[pygplates.Feature]
+            A list of features corresponding to the partitioning polygons.
+
+        Returns
+        -------
+        np.ndarray
+            A 2D array of plate IDs corresponding to the raster data points. Each number in the returned 2D array is the plate ID of the polygon that contains that lat_lon point,
+            or -1 if no polygon contains the point.
+        """
+        polygon_index_grid = self._partition_raster_data_points(
+            lon_mesh, lat_mesh, partitioning_polygons
+        )
+        plate_id_grid = np.full(lon_mesh.shape, -1, dtype=int)
+        for (row, col), polygon_idx in np.ndenumerate(polygon_index_grid):
+            if polygon_idx != -1:
+                feature: pygplates.Feature = features_of_partitioning_polygons[
+                    int(polygon_idx)
+                ]
+                plate_id: int = feature.get_reconstruction_plate_id()  # type: ignore
+                plate_id_grid[row, col] = plate_id
+        return plate_id_grid
+
+    def _reconstruct_raster_data_points(
+        self,
+        from_time: float,
+        to_time: float,
+        m_lons: np.ndarray,
+        m_lats: np.ndarray,
+        plate_id_grid: np.ndarray,
+        rotation_model: pygplates.RotationModel,
+    ) -> Tuple[np.ndarray, np.ndarray]:
+        """Reconstruct the raster data points from `from_time` to `to_time` using the given rotation model and plate IDs.
+
+        .. note::
+            Only the raster data points have valid plate IDs will be reconstructed.
+            The raster data points with invalid plate IDs (i.e., -1) will be ignored.
+
+        Parameters
+        ----------
+        from_time : float
+            The time from which to reconstruct the raster data points.
+        to_time : float
+            The time to which to reconstruct the raster data points.
+        m_lons : np.ndarray
+            A 2D array of longitudes of the raster data points.
+        m_lats : np.ndarray
+            A 2D array of latitudes of the raster data points.
+        plate_id_grid : np.ndarray
+            A 2D array of plate IDs corresponding to the raster data points.
+        rotation_model : pygplates.RotationModel
+            The rotation model to use for the reconstruction.
+
+        Returns
+        -------
+        Tuple[np.ndarray, np.ndarray]
+            A tuple containing two 2D arrays:
+            - The first array contains the reconstructed latitudes and longitudes of the raster data points.
+            - The second array contains the row and column indices of the raster data points in the original raster.
+        """
+        # m_lons, m_lats and plate_id_grid are 2D arrays of the same shape,
+        # representing the longitudes, latitudes and plate IDs of the raster data points.
+        assert (
+            m_lons.shape == m_lats.shape == plate_id_grid.shape
+        ), "Input arrays must have the same shape."
+
+        reconstructed_lat_lon_array = []
+        row_col_index_array = []
+        # Group the raster data points by their plate IDs and reconstruct them to the new time
+        unique_plate_ids = np.unique(plate_id_grid)
+        for plate_id in unique_plate_ids:
+            if plate_id == -1:
+                # Ignore the raster data points that are outside of the partitioning polygons at `from_time`
+                continue
+            rows, cols = np.where(plate_id_grid == plate_id)
+            for i, j in zip(rows, cols):
+                if (
+                    not math.isclose(from_time, 0.0)
+                    and self.plate_reconstruction is not None
+                    and self.plate_reconstruction.rotation_model is not None
+                    and rotation_model is not self.plate_reconstruction.rotation_model
+                ):
+                    # If the from_time is not 0, and the rotation model used for reconstruction is different from the original rotation model in self.plate_reconstruction.rotation_model,
+                    # we need to first reconstruct the raster data points to the present-day coordinates using the original rotation model in self.plate_reconstruction.rotation_model, and then reconstruct them to the `to_time` using the given rotation model.
+                    assert self.plate_reconstruction.rotation_model is not None
+                    rotation_to_present_day = (
+                        self.plate_reconstruction.rotation_model.get_rotation(
+                            to_time=float(0),
+                            from_time=float(from_time),
+                            moving_plate_id=int(plate_id),
+                        )
+                    )
+                    rotation_to_time = rotation_model.get_rotation(
+                        to_time=float(to_time),
+                        from_time=0.0,
+                        moving_plate_id=int(plate_id),
+                    )
+                    rotation = rotation_to_time * rotation_to_present_day
+                else:
+                    rotation = rotation_model.get_rotation(
+                        to_time=float(to_time),
+                        from_time=float(from_time),
+                        moving_plate_id=int(plate_id),
+                    )
+                if not isinstance(rotation, pygplates.FiniteRotation):
+                    raise ValueError(f"No rotation found for plate ID: {plate_id}")
+
+                rotated_point = rotation * pygplates.PointOnSphere(
+                    m_lats[i, j], m_lons[i, j]
+                )
+                reconstructed_lat_lon_array.append(rotated_point.to_lat_lon())
+                row_col_index_array.append((i, j))
+        assert len(reconstructed_lat_lon_array) == len(row_col_index_array)
+        return np.array(reconstructed_lat_lon_array), np.array(row_col_index_array)
+
+    def _partition_raster_data_points(
+        self,
+        lon_mesh: np.ndarray,
+        lat_mesh: np.ndarray,
+        polygons: list[pygplates.PolygonOnSphere],
+    ) -> np.ndarray:
+        """Find which partitioning polygon each point in the lat_lon mesh belongs to.
+        Return a 2D array of the same shape as the input lat_lon mesh.
+        Each number in the returned 2D array is the index of the polygon that contains that lat_lon point,
+        or -1 if no polygon contains the point.
+        """
+        polygon_idx_grid = np.full(lon_mesh.shape, -1, dtype=int)
+        # Check each grid point to see if it is inside the polygon.
+        for (row, col), _ in np.ndenumerate(polygon_idx_grid):
+            lat = lat_mesh[row, col]
+            lon = lon_mesh[row, col]
+            for idx, polygon in enumerate(polygons):
+                # If a point is found inside a polygon, assign the polygon index to that grid point
+                # and break the loop for that point.
+                if polygon.is_point_in_polygon(lat, lon):
+                    polygon_idx_grid[row, col] = idx
+                    break  # No need to check other polygons for this point.
+        return polygon_idx_grid
+
+    def _get_partitioning_polygons_at_from_time(
+        self,
+        partitioning_features: Union[
+            pygplates.FeatureCollection, List[pygplates.Feature]
+        ],
+        *,
+        from_time: float,
+        to_time: float,
+    ) -> Tuple[List[pygplates.PolygonOnSphere], List[pygplates.Feature]]:
+        """Return the partitioning polygons at `from_time` and their corresponding features.
+
+        - The polygons must be valid at both `from_time` and `to_time`.
+        - The polygons will be reconstructed to the `from_time` if `from_time` is greater than 0(not present-day).
+        - The polygons will be cut to fit into the extent of the raster. If the raster is global, the cutting step is unnecessary.
+        """
+        # The polygons must be valid at both from_time and to_time.
+        valid_partitioning_features: list[pygplates.Feature] = [
+            f
+            for f in partitioning_features
+            if f.is_valid_at_time(from_time) and f.is_valid_at_time(to_time)
+        ]
+
+        partitioning_polygons: list[pygplates.PolygonOnSphere] = []
+        associated_features: list[pygplates.Feature] = []
+        if from_time > 0.0:
+            # Reconstruct the valid partitioning polygons to the `from_time` using the rotation model in this object.
+            rfgs = []
+            assert self.plate_reconstruction is not None
+            pygplates.reconstruct(  # type: ignore
+                valid_partitioning_features,
+                self.plate_reconstruction.rotation_model,
+                rfgs,
+                from_time,
+            )
+            for rfg in rfgs:
+                geom = rfg.get_reconstructed_geometry()
+                if geom is not None and isinstance(geom, pygplates.PolygonOnSphere):
+                    partitioning_polygons.append(geom)
+                    associated_features.append(rfg.get_feature())
+        else:
+            # If from_time is 0, we don't need to reconstruct the partitioning polygons, just use the polygons from the valid partitioning features directly.
+            for f in valid_partitioning_features:
+                for geom in f.get_all_geometries():
+                    if geom is not None and isinstance(geom, pygplates.PolygonOnSphere):
+                        partitioning_polygons.append(geom)
+                        associated_features.append(f)
+
+        left, right, bottom, top = self.extent
+        # If the extent is global, no need to cut the partitioning polygons.
+        if math.isclose(abs(left - right), 360) or math.isclose(abs(bottom - top), 180):
+            return partitioning_polygons, associated_features
+
+        # Otherwise, define the rectangular extent polygon to cut the partitioning polygons
+        extent_polygon = pygplates.PolygonOnSphere((lat, lon) for lon, lat in [(left, bottom), (left, top), (right, top), (right, bottom)])  # type: ignore
+        extent_feature = pygplates.Feature()  # type: ignore
+        extent_feature.set_geometry(extent_polygon)  # type: ignore
+        partitioner = pygplates.PlatePartitioner(  # type: ignore
+            pygplates.FeatureCollection([extent_feature]),
+            pygplates.RotationModel([]),
+        )
+
+        # cut the partitioning polygons with the extent polygon and return the new polygons and their corresponding features
+        inside_geometries = []
+        outside_geometries = []
+        polygons_within_extent: list[pygplates.PolygonOnSphere] = []
+        polygons_within_extent_features: list[pygplates.Feature] = []
+        for polygon, feature in zip(partitioning_polygons, associated_features):
+            partitioner.partition_geometry(polygon, inside_geometries, outside_geometries)  # type: ignore
+            for inside_geom in inside_geometries:
+                if isinstance(inside_geom, pygplates.PolygonOnSphere):
+                    polygons_within_extent.append(inside_geom)
+                else:
+                    # The PlatePartitioner may cut a polygon into polylines. Convert the polylines into polygons by connecting the endpoints of the polylines to form a closed polygon.
+                    polygons_within_extent.append(
+                        pygplates.PolygonOnSphere(inside_geom)
+                    )
+                polygons_within_extent_features.append(feature)
+        assert len(polygons_within_extent) == len(polygons_within_extent_features)
+        return polygons_within_extent, polygons_within_extent_features
 
     def imshow(self, ax=None, projection=None, **kwargs):
         """Display raster data.
@@ -2731,16 +3296,38 @@ class Raster(object):
         """TODO:"""
         pass
 
-    def _validate_reconstruction_time(self, new_time):
+    def _get_rotation_model_with_a_different_default_anchor_plate_id(
+        self, anchor_plate_id: int
+    ) -> Union[pygplates.RotationModel, None]:
+        """Check if the specified anchor plate id is different from the default anchor plate id in the current rotation model.
+        If they are different, create and return a new rotation model with the specified default anchor plate id.
+        Otherwise, return None."""
+        assert (
+            self.plate_reconstruction and self.plate_reconstruction.rotation_model
+        ), "The self.plate_reconstruction.rotation_model must be valid here!"
+        if (
+            anchor_plate_id
+            != self.plate_reconstruction.rotation_model.get_default_anchor_plate_id()
+        ):
+            return pygplates.RotationModel(
+                self.plate_reconstruction.rotation_model,
+                default_anchor_plate_id=anchor_plate_id,
+            )
+        return None
+
+    def _get_valid_reconstruction_time(self, new_time) -> float:
+        """Validate the new reconstruction time and return it as a float.
+        Raise a ValueError if the new reconstruction time is invalid (e.g., negative or not a number).
+        """
         try:
             new_time_f = float(new_time)
+            if new_time_f < 0.0:
+                raise NegativeReconstructionTime(new_time_f)
+            return new_time_f
         except ValueError:
-            raise ValueError(f"Invalid new reconstruction time: {new_time}")
-        if new_time_f < 0.0:
             raise ValueError(
-                f"The reconstruction time ({new_time_f}) must be greater than 0."
+                f"Invalid reconstruction time: {new_time}. Must be a float number greater than 0."
             )
-        return new_time_f
 
     def _copy_constructor(self, other, plate_reconstruction):
         self._data = other._data.copy()  # type: ignore
@@ -2771,14 +3358,14 @@ class Raster(object):
                 "The `filename` and `array` arguments are mutually exclusive and both are deprecated. Use `data` instead."
             )
 
-        if not data and "filename" in kwargs.keys():
+        if data is None and "filename" in kwargs.keys():
             warnings.warn(
                 "The `filename` keyword argument is deprecated, use `data` instead",
                 DeprecationWarning,
             )
             _data = kwargs.pop("filename")
 
-        if not data and "array" in kwargs.keys():
+        if data is None and "array" in kwargs.keys():
             warnings.warn(
                 "The `array` keyword argument is deprecated, use `data` instead",
                 DeprecationWarning,

@@ -31,6 +31,7 @@ If `GeoPandas` is not found on the system, input files are read with
 # pyright: reportMissingModuleSource=false
 
 
+import pygplates
 from shapely.geometry import shape
 from shapely.geometry.base import BaseGeometry
 import xarray as xr
@@ -256,3 +257,32 @@ def to_geographic_data_array(data_array):
     ret_da.gmt.gtype = 1  # 1 = geographic
     # ret_da.gmt.registration = 0  # 0 = gridline node
     return ret_da
+
+
+def load_feature_collection(source) -> pygplates.FeatureCollection:
+    """Load and return a `pygplates.FeatureCollection`_ from a source.
+
+    Parameters
+    ----------
+    source : str/`os.PathLike`, or a sequence (eg, `list` or `tuple`) of instances of `pygplates.Feature`_, or a single instance of `pygplates.Feature`_, or an instance of `pygplates.FeatureCollection`_, or a sequence of any combination of those four types
+        Can be a filename, a sequence of features, a single feature,
+        a feature collection, or a sequence (eg, a list or tuple) of any combination of those four types.
+
+    Returns
+    -------
+    `pygplates.FeatureCollection`_
+        A feature collection containing all features.
+
+
+    .. _pygplates.Feature: https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature
+    .. _pygplates.FeatureCollection: https://www.gplates.org/docs/pygplates/generated/pygplates.featurecollection#pygplates.FeatureCollection
+    """
+    try:
+        return pygplates.FeatureCollection(
+            pygplates.FeaturesFunctionArgument(source).get_features()
+        )
+    except Exception:
+        raise Exception(
+            "Failed to load feature collection. Expected a feature collection, a filename, a feature, a sequence of features, or a sequence (eg, list or tuple) of any combination of aforementioned four types."
+            + f"The source provided is of {source}. Please check the input and try again."
+        )

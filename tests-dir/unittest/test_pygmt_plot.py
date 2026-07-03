@@ -3,12 +3,10 @@
 # This test script generates a sample plot using the PygmtPlotEngine.
 
 import os
-from pathlib import Path
 
 # pyright: reportMissingImports=false
 
 import pygmt
-import xarray as xr
 
 os.environ["DISABLE_GPLATELY_DEV_WARNING"] = "true"
 
@@ -84,6 +82,7 @@ if __name__ == "__main__":
         fig.legend(position="jBL+o-1.0/0", box="+gwhite+p0.25p")
 
     fig.show(width=1200, crop="+m0.4c")
-    output_file = "./output/test-pygmt-plot.pdf"
-    fig.savefig(output_file, crop="+m0.4c")
-    print(f"The figure has been saved to: {output_file}.")
+    # uncomment the following lines to save the figure to a file
+    # output_file = "./output/test-pygmt-plot.pdf"
+    # fig.savefig(output_file, crop="+m0.4c")
+    # print(f"The figure has been saved to: {output_file}.")

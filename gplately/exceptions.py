@@ -32,3 +32,10 @@ class UnableToGetModelList(Exception):
         super().__init__(
             "Unable to get a list of model names over Internet. Your network may be down or the servers may be offline."
         )
+
+
+class NegativeReconstructionTime(Exception):
+    """raise this exception when the reconstruction time is negative."""
+
+    def __init__(self, time):
+        super().__init__(f"The reconstruction time ({time}) must be a positive number.")
