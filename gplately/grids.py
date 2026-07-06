@@ -1709,6 +1709,7 @@ class Raster(object):
         self._data_var_name = data_variable_name
         self._lons = None
         self._lats = None
+        self._fill_value = None
 
         # deal with deprecated arguments, such as ``PlateReconstruction_object``, ``filename``, and ``array``
         # if, in some exceptional cases, the user has to use the deprecated arguments,
@@ -1846,6 +1847,21 @@ class Raster(object):
     def time(self) -> float:
         """The geological time of the time-dependant raster data."""
         return self._time
+
+    @property
+    def fill_value(self):
+        """The fill value used for the raster data."""
+        if self._fill_value is None:
+            dtype = self.data.dtype
+            if np.issubdtype(dtype, np.floating):
+                self._fill_value = np.nan
+            elif np.issubdtype(dtype, np.signedinteger):
+                self._fill_value = np.iinfo(dtype).min
+            elif np.issubdtype(dtype, np.unsignedinteger):
+                self._fill_value = np.iinfo(dtype).max
+            else:
+                self._fill_value = 0
+        return self._fill_value
 
     @time.setter
     def time(self, new_time: float):
@@ -2513,6 +2529,9 @@ class Raster(object):
             from_time=from_time,
             to_time=to_time,
         )
+        logger.debug(
+            f"Number of partitioning polygons at from_time {from_time}: {len(partitioning_polygons_at_from_time)}"
+        )
         assert len(partitioning_polygons_at_from_time) == len(
             features_of_partitioning_polygons_at_from_time
         ), "The number of partitioning polygons and their corresponding features must be the same."
@@ -2529,6 +2548,10 @@ class Raster(object):
         assert (
             plate_id_grid.shape == m_lons.shape
         ), "The shape of the plate ID grid should match the shape of the raster data grid."
+
+        logger.debug(
+            f"Number of valid raster data points inside partitioning polygons at from_time {from_time}: {np.count_nonzero(~np.isnan(plate_id_grid))}"
+        )
 
         # Reconstruct the raster data points to the `to_time` using the given rotation model and plate IDs.
         # The returned `reconstructed_original_sample_point_lat_lon_array` and `original_sample_point_row_col_index_array` are 1D numpy arrays of the same length,
@@ -2638,17 +2661,17 @@ class Raster(object):
             output_raster_extent = self.extent
         else:
             # Get output raster extent from the partitioning polygons at the `to_time`.
-            rpp_lons = []
-            rpp_lats = []
-            for polygon in partitioning_polygons_at_to_time:
-                for p in polygon.to_lat_lon_array():  # type: ignore
-                    rpp_lons.append(p[1])
-                    rpp_lats.append(p[0])
+            coords = np.vstack(
+                [
+                    polygon.to_lat_lon_array()
+                    for polygon in partitioning_polygons_at_to_time
+                ]
+            )
             output_raster_extent = (
-                min(rpp_lons),
-                max(rpp_lons),
-                min(rpp_lats),
-                max(rpp_lats),
+                coords[:, 1].min(),  # min lon
+                coords[:, 1].max(),  # max lon
+                coords[:, 0].min(),  # min lat
+                coords[:, 0].max(),  # max lat
             )
 
         # Build the initial output mesh grid from the output raster extent
@@ -2660,17 +2683,45 @@ class Raster(object):
                 output_raster_extent[2], output_raster_extent[3], len(self.lats)
             ),
         )
-        output_raster = np.full(output_lon_mesh.shape, None, dtype=object)
-        # Check the points in the mesh grid against the reconstructed partitioning polygons to see if they are inside any of them
-        r_polygon_index_grid = self._partition_raster_data_points(
-            output_lon_mesh, output_lat_mesh, partitioning_polygons_at_to_time
+
+        # Preserve trailing dimensions (eg RGB/RGBA channels) so per-cell assignment
+        # accepts vector pixel values from multiband source rasters.
+        output_shape = output_lon_mesh.shape
+        if self.data.ndim > 2:
+            output_shape = output_shape + self.data.shape[2:]
+        output_raster = np.full(output_shape, self.fill_value, dtype=self.data.dtype)
+
+        # Rasterise to get a boolean mask of which output grid cells fall inside any partitioning polygon.
+        assert (
+            len(partitioning_polygons_at_to_time) > 0
+        ), "No partitioning polygons at `to_time` to rasterize."
+        shapely_geoms = pygplates_to_shapely(
+            partitioning_polygons_at_to_time,
+            tessellate_degrees=0.1,
         )
+        if not isinstance(shapely_geoms, list):
+            shapely_geoms = [shapely_geoms]
+        ny, nx = output_lon_mesh.shape
+        minx, maxx, miny, maxy = output_raster_extent
+        polygon_mask = _rasterize(
+            shapes=zip(shapely_geoms, [1] * len(shapely_geoms)),
+            out_shape=(ny, nx),
+            fill=0,
+            dtype=np.uint8,
+            merge_alg=MergeAlg.replace,
+            transform=_from_bounds(minx, miny, maxx, maxy, nx, ny),
+        )
+        assert (
+            polygon_mask is not None
+        ), "Rasterization of partitioning polygons failed. This should never happen."
+        polygon_mask = np.flipud(polygon_mask).astype(bool)
+
         # Get a list of lons and lats of the points that are inside the reconstructed partitioning polygons.
         # Only query data for the points that are inside the reconstructed partitioning polygons.
         output_sample_points_lons = []
         output_sample_points_lats = []
         output_sample_points_row_col_indices = []
-        rows, cols = np.where(r_polygon_index_grid != -1)
+        rows, cols = np.where(polygon_mask)
         for row, col in zip(rows, cols):
             output_sample_points_lons.append(output_lon_mesh[row, col])
             output_sample_points_lats.append(output_lat_mesh[row, col])
@@ -2712,6 +2763,9 @@ class Raster(object):
                 self.plate_reconstruction.rotation_model,
                 from_time,
             )
+        if rotation_model is None:
+            rotation_model = self.plate_reconstruction.rotation_model
+        assert rotation_model is not None, "A valid RotationModel object is required!"
         rfgs = []
         pygplates.reconstruct(polygon_feature_collection, rotation_model, rfgs, to_time)  # type: ignore
         polygons_at_to_time = []
@@ -2747,18 +2801,39 @@ class Raster(object):
             A 2D array of plate IDs corresponding to the raster data points. Each number in the returned 2D array is the plate ID of the polygon that contains that lat_lon point,
             or -1 if no polygon contains the point.
         """
-        polygon_index_grid = self._partition_raster_data_points(
-            lon_mesh, lat_mesh, partitioning_polygons
+        assert (
+            len(partitioning_polygons) > 0
+        ), "At least one partitioning polygon is required! Do not call this function if there are no partitioning polygons at all."
+        plate_ids = [
+            f.get_reconstruction_plate_id()  # type: ignore
+            for f in features_of_partitioning_polygons
+        ]
+
+        # Convert pygplates PolygonOnSphere objects to shapely geometries for rasterio
+        shapely_geoms = pygplates_to_shapely(
+            partitioning_polygons,
+            tessellate_degrees=0.1,
         )
-        plate_id_grid = np.full(lon_mesh.shape, -1, dtype=int)
-        for (row, col), polygon_idx in np.ndenumerate(polygon_index_grid):
-            if polygon_idx != -1:
-                feature: pygplates.Feature = features_of_partitioning_polygons[
-                    int(polygon_idx)
-                ]
-                plate_id: int = feature.get_reconstruction_plate_id()  # type: ignore
-                plate_id_grid[row, col] = plate_id
-        return plate_id_grid
+
+        ny, nx = lon_mesh.shape
+        minx = float(lon_mesh[0, 0])
+        maxx = float(lon_mesh[0, -1])
+        miny = float(lat_mesh[0, 0])
+        maxy = float(lat_mesh[-1, 0])
+
+        if not isinstance(shapely_geoms, list):
+            shapely_geoms = [shapely_geoms]
+
+        return np.flipud(
+            _rasterize(
+                shapes=zip(shapely_geoms, plate_ids),
+                out_shape=(ny, nx),
+                fill=-1,
+                dtype=np.int32,
+                merge_alg=MergeAlg.replace,
+                transform=_from_bounds(minx, miny, maxx, maxy, nx, ny),
+            )
+        )
 
     def _reconstruct_raster_data_points(
         self,
@@ -2802,6 +2877,10 @@ class Raster(object):
         assert (
             m_lons.shape == m_lats.shape == plate_id_grid.shape
         ), "Input arrays must have the same shape."
+
+        if rotation_model is None:
+            rotation_model = self.plate_reconstruction.rotation_model
+        assert rotation_model is not None, "A valid RotationModel object is required!"
 
         reconstructed_lat_lon_array = []
         row_col_index_array = []
@@ -2871,7 +2950,7 @@ class Raster(object):
             for idx, polygon in enumerate(polygons):
                 # If a point is found inside a polygon, assign the polygon index to that grid point
                 # and break the loop for that point.
-                if polygon.is_point_in_polygon(lat, lon):
+                if polygon.is_point_in_polygon((lat, lon)):
                     polygon_idx_grid[row, col] = idx
                     break  # No need to check other polygons for this point.
         return polygon_idx_grid
@@ -3024,6 +3103,7 @@ class Raster(object):
                 extent[3],
                 extent[2],
             )
+        self.data[self.data is None] = 0
         im = ax.imshow(self.data, origin=self.origin, extent=extent, **kwargs)
         return im
 

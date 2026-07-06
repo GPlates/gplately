@@ -13,10 +13,12 @@ import gplately
 
 print(gplately.__file__)
 
-# gplately.turn_on_debug_logging()
+from gplately.utils import log_utils
 
 
 def main(show=True, anchor_pid=0):
+    log_utils.turn_on_debug_logging()
+
     model = gplately.auxiliary.get_plate_reconstruction(
         "Muller2019", model_repo_dir="plate-model-repo"
     )
