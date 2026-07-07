@@ -22,7 +22,7 @@ from os import name
 from pathlib import Path
 import warnings
 from multiprocessing import cpu_count
-from typing import List, Tuple, Union, overload, Literal
+from typing import List, Tuple, Union, cast, overload, Literal
 from enum import Enum
 
 # pyright: reportMissingImports=false
@@ -47,7 +47,7 @@ from .lib.exceptions import NegativeReconstructionTime
 from .geometry import pygplates_to_shapely
 from .reconstruction import PlateReconstruction
 from .tools import _deg2pixels, griddata_sphere
-from .utils.io_utils import load_feature_collection
+from .utils.io_utils import load_feature_collection, load_data_array_from_netcdf
 
 logger = logging.getLogger("gplately")
 
@@ -113,8 +113,8 @@ class Raster(object):
         time : float, default: 0.0
             The geological time of the time-dependant raster data.
         origin : {'lower', 'upper'}, optional
-            When ``data`` is an array, use this parameter to specify the origin
-            (upper left or lower left) of the data (overriding ``extent``).
+            When ``data`` is a plain numpy array, use this parameter to specify the origin
+            (upper left or lower left) of the data.
         cell_registration : {'gridline', 'pixel'}, optional, default: 'gridline'
             Specify whether the raster data is gridline-registered or pixel-registered.
         x_dimension_name : str, optional, default=""
@@ -138,10 +138,16 @@ class Raster(object):
         # later, when the user calls the setter method of the `time` property, the raster data will be reconstructed to the new time.
         self._time = self._get_valid_reconstruction_time(time)
         self._grid_registration = grid_registration
+        self._lon_name = x_dimension_name
+        self._lat_name = y_dimension_name
         self._data_var_name = data_variable_name
         self._lons = None
         self._lats = None
         self._default_value = None
+        self._filename = None
+        self._extent = None
+        self._origin = "lower"
+        # self.origin = origin  # use the setter method to validate the origin value
 
         # deal with deprecated arguments, such as ``PlateReconstruction_object``, ``filename``, and ``array``
         # if, in some exceptional cases, the user has to use the deprecated arguments,
@@ -152,8 +158,8 @@ class Raster(object):
             data, plate_reconstruction, kwargs
         )
 
-        # if the "data" parameter is a "Raster" object, we do a copy from the other Raster object
-        # we also allow the user to override the plate reconstruction of the other Raster object by
+        # If the "data" parameter is a "Raster" object, we do a copy from the other Raster object.
+        # We also allow the user to override the plate reconstruction of the other Raster object by
         # providing a new plate reconstruction object.
         if isinstance(data, self.__class__):
             self._copy_constructor(data, plate_reconstruction)
@@ -164,30 +170,23 @@ class Raster(object):
             data is not None
         ), "`data` argument (or `filename` or `array`) is required."
 
-        # handle the data parameter is a path to a NetCDF file
-        if isinstance(data, str):
-            if not Path(data).is_file():
-                raise FileNotFoundError(f"File not found: {data}")
-            self._filename = data
-            self._data, lons, lats = self.read_netcdf_grid(
-                data,
-                return_grids=True,
-                realign=realign,
-                resample=resample,
-                resize=resize,
-                x_dimension_name=x_dimension_name,
-                y_dimension_name=y_dimension_name,
-                data_variable_name=data_variable_name,
+        # Now we load the data. The data can be from the several sources:
+        # - a path to a NetCDF file
+        # - a numpy array object
+        # - an xarray.DataArray object
+        # - an xarray.Dataset object
+        load_data_success = False
+        try:
+            # first, try and see if we can load the data from a file, such as a NetCDF file or a GeoTIFF file.
+            self._load_data_from_file(filename=data)
+            load_data_success = True
+        except Exception as e:
+            logger.debug(
+                f"Raster.__init__(): Failed to load data from file. Error: {e}. Will try to load data from array."
             )
-            if np.ma.isMaskedArray(self._data):
-                self._data = np.ma.asarray(self._data, dtype=float).filled(np.nan)
-            self._lons = lons
-            self._lats = lats
-        else:
-            # if the "data" parameter is a numpy array or xarray.DataArray object
-            self._filename = None
-            extent = self._parse_extent(extent, origin)
+            # if we cannot load the data from a file, we will try to load the data in other ways, such as from a numpy array or an xarray.DataArray object.
 
+        if not load_data_success and isinstance(data, xr.Dataset):
             # if the "data" parameter is an xarray.Dataset object, we will try to get a DataArray by the data_variable_name
             # or the first data variable in the Dataset will be used.
             if isinstance(data, xr.Dataset):
@@ -196,48 +195,57 @@ class Raster(object):
                 else:
                     first_var = next(iter(data.data_vars))
                     data = data[first_var]
-
-            # try to extract the extent from input data if it is an xarray.DataArray object
-            if isinstance(data, xr.DataArray):
-                extent_from_data = self._find_extent_from_data(data, origin)
-                if extent_from_data is not None and extent != extent_from_data:
-                    extent = extent_from_data
-                    logger.info(
-                        f"Raster.__init__(): Use the extent extracted from xarray.DataArray: {extent}."
+                    logger.debug(
+                        f"Raster.__init__(): Using the first data variable({first_var}) in the xarray.Dataset object as the raster data."
                     )
+                # at this point, the data variable is now an xarray.DataArray object, and we will continue to load the data from the DataArray object.
 
-            if np.ma.isMaskedArray(data):
-                data = np.ma.asarray(data, dtype=float).filled(np.nan)
-            data = self._check_grid(data)
+        if not load_data_success and isinstance(data, xr.DataArray):
+            logger.debug(
+                "Raster.__init__(): Loading data from xarray.DataArray object."
+            )
+            # load self._data, self._lons, self._lats, self._extent from the input data if it is an xarray.DataArray object
+            self._load_data_from_data_array(data)
+            load_data_success = True
+
+        if np.ma.isMaskedArray(data):
+            logger.debug("Raster.__init__(): Loading data from masked array.")
+            # If the input data is a masked array, we will convert it to a regular numpy array and fill the masked values with np.nan
+            # TODO: Check the input data type and fill the masked array properly
+            self._data_masked = data
+            self._data = np.ma.asarray(data, dtype=float).filled(np.nan)
+            load_data_success = True
+
+        if not load_data_success:
+            logger.debug(
+                "Raster.__init__(): Loading data from numpy array or other array-like object."
+            )
             self._data = np.array(data)  # copy to avoid modifying original data
 
-            # get lons and lats from the input data if it is an xarray.DataArray object
-            if isinstance(data, xr.DataArray):
-                for name in data.coords:
-                    if name == x_dimension_name or self._is_a_common_name_for_latitude(
-                        str(name)
-                    ):
-                        self._lats = data.coords[name]
-                    if (
-                        name == y_dimension_name
-                        or self._is_a_common_name_for_longitude(str(name))
-                    ):
-                        self._lons = data.coords[name]
+        self._check_grid(self._data)
 
-            # if we cannot find reliable lons and lats from the input data, we will generate them based on the extent and the shape of the data
-            if not self._lons:
-                self._lons = np.linspace(extent[0], extent[1], self.data.shape[1])
-            if not self._lats:
-                self._lats = np.linspace(extent[2], extent[3], self.data.shape[0])
+        if self._extent is None:
+            # Only when we cannot deduce the extent from the input data, we will use the extent parameter to set the extent.
+            self._extent = self._parse_extent(extent, origin)
 
-            # we realign the grid to -180/180 when the longitudes are from 0 to 360
-            # this is a temporary fix. we need a more sophisticated solution.
-            # for example, some people may use (-360-0) or some other ranges for longitudes. It is unlikely, but possible.
-            if np.max(self._lons) > 180:
-                # realign to -180,180 and flip grid if needed
-                self._data, self._lons, self._lats = self._realign_grid(
-                    self._data, self._lons, self._lats
-                )
+        # if we cannot find reliable lons and lats from the input data, we will generate them based on the extent and the shape of the data
+        if not self._lons:
+            self._lons = np.linspace(
+                self._extent[0], self._extent[1], self.data.shape[1]
+            )
+        if not self._lats:
+            self._lats = np.linspace(
+                self._extent[2], self._extent[3], self.data.shape[0]
+            )
+
+        # we realign the grid to -180/180 when the longitudes are from 0 to 360
+        # this is a temporary fix. we need a more sophisticated solution.
+        # for example, some people may use (-360-0) or some other ranges for longitudes. It is unlikely, but possible.
+        if False and np.max(self._lons) > 180:  # disable "realign grid" for now
+            # realign to -180,180 and flip grid if needed
+            self._data, self._lons, self._lats = self._realign_grid(
+                self._data, self._lons, self._lats
+            )
 
         if (not isinstance(data, str)) and (resample is not None):
             self.resample(*resample, inplace=True)
@@ -249,7 +257,7 @@ class Raster(object):
         """Convert the raster to an xarray DataArray with latitude and longitude coordinates."""
         if not name:
             name = self._data_var_name if self._data_var_name else "z"
-        da = xr.DataArray(
+        return xr.DataArray(
             self.data,
             coords={
                 "lat": (
@@ -274,7 +282,6 @@ class Raster(object):
             dims=["lat", "lon"],
             name=name,
         )
-        return da
 
     @property
     def time(self) -> float:
@@ -298,14 +305,18 @@ class Raster(object):
 
     @time.setter
     def time(self, new_time: float):
-        """Set a new reconstruction time and reconstruct the raster if necessary."""
+        """Set a new reconstruction time and reconstruct the raster data."""
         new_time_f = self._get_valid_reconstruction_time(new_time)
         if not math.isclose(self._time, new_time_f):
             self._time = new_time_f
             logger.info(
-                f"Raster.time: Reconstructing raster data to new time {new_time_f} Ma."
+                f"Reconstructing raster data from current time {self._time} to a new time {new_time_f} Ma."
             )
             self.reconstruct(new_time_f, inplace=True)
+        else:
+            logger.warning(
+                f"The given reconstruction time {new_time_f} Ma is the same as the current time {self._time} Ma. Nothing will be done."
+            )
 
     @property
     def data(self) -> np.ndarray:
@@ -366,13 +377,27 @@ class Raster(object):
             float(self.lats[-1]),
         )
 
+    # @property
+    # def origin(self) -> Literal["lower", "upper"]:
+    #    """The origin (``lower`` or ``upper``) of the data array."""
+    #    return cast(Literal["lower", "upper"], self._origin)
+
     @property
-    def origin(self) -> Literal["lower", "upper"]:
-        """The origin (``lower`` or ``upper``) of the data array."""
+    def origin(self):
+        """The origin (``lower`` or ``upper``) of the data array.
+
+        :type: str
+        """
         if self.lats[0] < self.lats[-1]:
             return "lower"
         else:
             return "upper"
+
+    @origin.setter
+    def origin(self, value: str):
+        if value not in ("lower", "upper"):
+            raise ValueError("The origin must be 'lower' or 'upper'!")
+        self._origin = value
 
     @property
     def shape(self) -> Tuple[int, int]:
@@ -1906,6 +1931,63 @@ class Raster(object):
         self._time = other._time
         self._filename = other._filename
 
+    def _load_data_from_file(self, filename):
+        """Load raster data from a file, such as a NetCDF file or an image file.
+
+        Parameters
+        ----------
+        filename : str
+            The path to the file containing the raster data.
+
+        Raises
+        ------
+        FileNotFoundError
+            If the specified file does not exist.
+        ValueError
+            If the file format is not supported or if there is an error reading the file.
+        """
+        if not Path(filename).is_file():
+            raise FileNotFoundError(
+                f"Raster._load_data_from_file(): File not found: {filename}."
+            )
+
+        x_data_array = load_data_array_from_netcdf(filename, self._data_var_name)
+        self._load_data_from_data_array(x_data_array)
+        self._filename = filename
+
+        if self._lons is None or self._lats is None:
+            logger.warning(
+                f"Raster._load_data_from_file(): Could not find longitude and latitude coordinates in the file: {filename}."
+                + f"The coordinate names in the file are {list(x_data_array.coords.keys())}."
+            )
+
+    def _load_data_from_data_array(self, x_data_array: xr.DataArray):
+        """Load raster data from an xarray DataArray."""
+        # get the data
+        self._data = x_data_array.to_numpy()
+        # get the lons and lats
+        if self._lon_name in x_data_array.coords:
+            self._lons = x_data_array.coords[self._lon_name].to_numpy()
+        else:
+            for name in x_data_array.coords:
+                if self._is_a_common_name_for_longitude(str(name)):
+                    self._lons = x_data_array.coords[name].to_numpy()
+                    break
+        if self._lat_name in x_data_array.coords:
+            self._lats = x_data_array.coords[self._lat_name].to_numpy()
+        else:
+            for name in x_data_array.coords:
+                if self._is_a_common_name_for_latitude(str(name)):
+                    self._lats = x_data_array.coords[name].to_numpy()
+                    break
+        if self._lons and self._lats:
+            self._extent = (
+                float(np.min(self._lons)),
+                float(np.max(self._lons)),
+                float(np.min(self._lats)),
+                float(np.max(self._lats)),
+            )
+
     def _handle_deprecated_args(self, data, plate_reconstruction, kwargs):
         _data = data
         _plate_reconstruction = plate_reconstruction
@@ -1950,11 +2032,19 @@ class Raster(object):
 
     def _is_a_common_name_for_longitude(self, name: str) -> bool:
         """Return True if the `name` parameter is a possible common name for longitude."""
-        return name in ["lon", "lons", "longitude", "x", "east", "easting", "eastings"]
+        return name.lower() in [
+            "lon",
+            "lons",
+            "longitude",
+            "x",
+            "east",
+            "easting",
+            "eastings",
+        ]
 
     def _is_a_common_name_for_latitude(self, name: str) -> bool:
         """Return True if the `name` parameter is a possible common name for latitude."""
-        return name in [
+        return name.lower() in [
             "lat",
             "lats",
             "latitude",

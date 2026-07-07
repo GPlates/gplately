@@ -1558,14 +1558,11 @@ def _check_grid(data):
     """Check grid shape and values make sense."""
     if not isinstance(data, np.ndarray):
         data = np.array(data)
-    ndim = data.ndim
-    dtype = data.dtype
-    _check_grid_shape(data)
 
-    if ndim == 3:
+    _check_grid_shape(data)
+    if data.ndim == 3:
         # data is an RGB(A) image
         data = _check_image_values(data)
-
     return data
 
 
