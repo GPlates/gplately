@@ -18,10 +18,11 @@
 import copy
 import logging
 import math
+from os import name
 from pathlib import Path
 import warnings
 from multiprocessing import cpu_count
-from typing import Any, List, Tuple, Union, cast, overload, Literal
+from typing import List, Tuple, Union, overload, Literal
 from enum import Enum
 
 # pyright: reportMissingImports=false
@@ -41,7 +42,7 @@ from scipy.spatial import (
 )
 from scipy.spatial import KDTree
 
-from gplately.exceptions import NegativeReconstructionTime
+from .lib.exceptions import NegativeReconstructionTime
 
 from .geometry import pygplates_to_shapely
 from .reconstruction import PlateReconstruction
@@ -51,83 +52,13 @@ from .utils.io_utils import load_feature_collection
 logger = logging.getLogger("gplately")
 
 
-# NOTE: Raster/GridRegistration were moved from grids.py into this module.
-# A number of low-level helper functions are still implemented in grids.py.
-# We provide lazy wrappers here to avoid import-time circular dependencies.
-# TODO: sort out this issue later
-def fill_raster(data, invalid=None):
-    from .grids import fill_raster as _impl
-
-    return _impl(data, invalid=invalid)
-
-
-def _realign_grid(array, lons, lats):
-    from .grids import _realign_grid as _impl
-
-    return _impl(array, lons, lats)
-
-
-def _find_extent_from_data(data, origin):
-    from .grids import _find_extent_from_data as _impl
-
-    return _impl(data, origin)
-
-
-def read_netcdf_grid(*args, **kwargs):
-    from .grids import read_netcdf_grid as _impl
-
-    return _impl(*args, **kwargs)
-
-
-def write_netcdf_grid(*args, **kwargs):
-    from .grids import write_netcdf_grid as _impl
-
-    return _impl(*args, **kwargs)
-
-
-def sample_grid(*args, **kwargs):
-    from .grids import sample_grid as _impl
-
-    return _impl(*args, **kwargs)
-
-
-def reconstruct_grid(*args, **kwargs):
-    from .grids import reconstruct_grid as _impl
-
-    return _impl(*args, **kwargs)
-
-
-def _check_grid(data) -> np.ndarray:
-    from .grids import _check_grid as _impl
-
-    return _impl(data)
-
-
-def _parse_extent(extent, origin) -> Tuple[float, float, float, float]:
-    from .grids import _parse_extent as _impl
-
-    return _impl(extent, origin)
-
-
-def _is_a_common_name_for_longitude(name: str) -> bool:
-    from .grids import _is_a_common_name_for_longitude as _impl
-
-    return _impl(name)
-
-
-def _is_a_common_name_for_latitude(name: str) -> bool:
-    from .grids import _is_a_common_name_for_latitude as _impl
-
-    return _impl(name)
-
-
 __all__ = [
     "GridRegistration",
     "Raster",
 ]
 
 
-# the numbers are the same with PyGMT's grid registration enum values
+# The numbers representing the registration types are the same with PyGMT's grid registration enum values
 class GridRegistration(Enum):
     # good for geoscience data because sampled at locations(points) on the grid
     Gridline = 0
@@ -136,11 +67,7 @@ class GridRegistration(Enum):
 
 
 class Raster(object):
-    """The functionalities include sampling data at points using spline
-    interpolation, resampling rasters with new X and Y-direction spacings and
-    resizing rasters using new X and Y grid pixel resolutions. NaN-type data
-    in rasters can be replaced with the values of their nearest valid neighbours.
-    """
+    """A class to represent a raster grid with time-dependent reconstruction capabilities."""
 
     def __init__(
         self,
@@ -214,7 +141,7 @@ class Raster(object):
         self._data_var_name = data_variable_name
         self._lons = None
         self._lats = None
-        self._fill_value = None
+        self._default_value = None
 
         # deal with deprecated arguments, such as ``PlateReconstruction_object``, ``filename``, and ``array``
         # if, in some exceptional cases, the user has to use the deprecated arguments,
@@ -242,7 +169,7 @@ class Raster(object):
             if not Path(data).is_file():
                 raise FileNotFoundError(f"File not found: {data}")
             self._filename = data
-            self._data, lons, lats = read_netcdf_grid(
+            self._data, lons, lats = self.read_netcdf_grid(
                 data,
                 return_grids=True,
                 realign=realign,
@@ -259,7 +186,7 @@ class Raster(object):
         else:
             # if the "data" parameter is a numpy array or xarray.DataArray object
             self._filename = None
-            extent = _parse_extent(extent, origin)
+            extent = self._parse_extent(extent, origin)
 
             # if the "data" parameter is an xarray.Dataset object, we will try to get a DataArray by the data_variable_name
             # or the first data variable in the Dataset will be used.
@@ -272,7 +199,7 @@ class Raster(object):
 
             # try to extract the extent from input data if it is an xarray.DataArray object
             if isinstance(data, xr.DataArray):
-                extent_from_data = _find_extent_from_data(data, origin)
+                extent_from_data = self._find_extent_from_data(data, origin)
                 if extent_from_data is not None and extent != extent_from_data:
                     extent = extent_from_data
                     logger.info(
@@ -281,18 +208,19 @@ class Raster(object):
 
             if np.ma.isMaskedArray(data):
                 data = np.ma.asarray(data, dtype=float).filled(np.nan)
-            data = _check_grid(data)
+            data = self._check_grid(data)
             self._data = np.array(data)  # copy to avoid modifying original data
 
             # get lons and lats from the input data if it is an xarray.DataArray object
             if isinstance(data, xr.DataArray):
                 for name in data.coords:
-                    if name == x_dimension_name or _is_a_common_name_for_latitude(
+                    if name == x_dimension_name or self._is_a_common_name_for_latitude(
                         str(name)
                     ):
                         self._lats = data.coords[name]
-                    if name == y_dimension_name or _is_a_common_name_for_longitude(
-                        str(name)
+                    if (
+                        name == y_dimension_name
+                        or self._is_a_common_name_for_longitude(str(name))
                     ):
                         self._lons = data.coords[name]
 
@@ -307,7 +235,7 @@ class Raster(object):
             # for example, some people may use (-360-0) or some other ranges for longitudes. It is unlikely, but possible.
             if np.max(self._lons) > 180:
                 # realign to -180,180 and flip grid if needed
-                self._data, self._lons, self._lats = _realign_grid(
+                self._data, self._lons, self._lats = self._realign_grid(
                     self._data, self._lons, self._lats
                 )
 
@@ -354,19 +282,19 @@ class Raster(object):
         return self._time
 
     @property
-    def fill_value(self):
-        """The fill value used for the raster data."""
-        if self._fill_value is None:
+    def default_value(self):
+        """The default value used for the raster data."""
+        if self._default_value is None:
             dtype = self.data.dtype
             if np.issubdtype(dtype, np.floating):
-                self._fill_value = np.nan
+                self._default_value = np.nan
             elif np.issubdtype(dtype, np.signedinteger):
-                self._fill_value = np.iinfo(dtype).min
+                self._default_value = np.iinfo(dtype).min
             elif np.issubdtype(dtype, np.unsignedinteger):
-                self._fill_value = np.iinfo(dtype).max
+                self._default_value = np.iinfo(dtype).max
             else:
-                self._fill_value = 0
-        return self._fill_value
+                self._default_value = 0
+        return self._default_value
 
     @time.setter
     def time(self, new_time: float):
@@ -498,6 +426,51 @@ class Raster(object):
             time=self.time,
         )
 
+    def gap_filling(self, method="nearest", inplace=False) -> "Raster":
+        """Fill gaps in the raster data using the specified method.
+
+        Parameters
+        ----------
+        method : str, default: 'nearest'
+            The method to use for gap filling. Options include 'nearest', 'linear', and 'cubic'.
+        inplace : bool, default: False
+            If True, modify the current Raster object. If False, return a new Raster object.
+
+        Returns
+        -------
+        Raster
+            A new Raster object with gaps filled, or the current object if inplace is True.
+        """
+        # TODO: generated code, not tested yet, do not use
+        # Create a mask of the valid (non-NaN) data points
+        valid_mask = ~np.isnan(self.data)
+        valid_points = np.column_stack(
+            (self.lons[valid_mask.any(axis=0)], self.lats[valid_mask.any(axis=1)])
+        )
+        valid_values = self.data[valid_mask]
+
+        # Create a grid of points for interpolation
+        lon_grid, lat_grid = np.meshgrid(self.lons, self.lats)
+        grid_points = np.column_stack((lon_grid.ravel(), lat_grid.ravel()))
+
+        # Perform interpolation to fill gaps
+        from scipy.interpolate import griddata
+
+        filled_data = griddata(
+            valid_points, valid_values, grid_points, method=method
+        ).reshape(self.data.shape)
+
+        if inplace:
+            self.data = filled_data
+            return self
+        else:
+            return Raster(
+                filled_data,
+                copy.deepcopy(self.plate_reconstruction),
+                self.extent,
+                time=self.time,
+            )
+
     @overload
     def interpolate(
         self,
@@ -572,7 +545,7 @@ class Raster(object):
             # The second array holds the columns of the raster where point data spatially falls near.
             sampled_indices = (array([1019, 1019, 1019, ..., 1086, 1086, 1087]), array([2237, 2237, 2237, ...,  983,  983,  983]))
         """
-        return sample_grid(
+        return self.sample_grid(
             lon=lons,
             lat=lats,
             grid=self,
@@ -775,7 +748,7 @@ class Raster(object):
         Raster
             The resized grid. If ``inplace`` is set to ``True``, the data in :attr:`Raster.data` will be overwritten.
         """
-        data = fill_raster(self.data)
+        data = self.fill_raster(self.data)
         if inplace:
             self._data = data
         if return_array:
@@ -786,7 +759,7 @@ class Raster(object):
     def save_to_netcdf4(self, filename, significant_digits=None, fill_value=None):
         """Saves the grid attributed to the :class:`Raster` object to the given ``filename`` (including
         the ".nc" extension) in netCDF4 format."""
-        write_netcdf_grid(
+        self.write_netcdf_grid(
             str(filename), self.data, self.extent, significant_digits, fill_value
         )
 
@@ -891,7 +864,7 @@ class Raster(object):
 
         use_old_implementation = False
         if use_old_implementation:
-            result = reconstruct_grid(
+            result = self.reconstruct_grid(
                 grid=self.data,
                 partitioning_features=partitioning_features,
                 rotation_model=self.plate_reconstruction.rotation_model,
@@ -1200,7 +1173,7 @@ class Raster(object):
         output_shape = output_lon_mesh.shape
         if self.data.ndim > 2:
             output_shape = output_shape + self.data.shape[2:]
-        output_raster = np.full(output_shape, self.fill_value, dtype=self.data.dtype)
+        output_raster = np.full(output_shape, self.default_value, dtype=self.data.dtype)
 
         # Rasterise to get a boolean mask of which output grid cells fall inside any partitioning polygon.
         assert (
@@ -1743,7 +1716,7 @@ class Raster(object):
 
         # Write output grid to netCDF if requested.
         if output_name:
-            write_netcdf_grid(output_name, Z, extent=extent_globe)
+            self.write_netcdf_grid(output_name, Z, extent=extent_globe)
 
         return Raster(data=Z)
 
@@ -1975,13 +1948,28 @@ class Raster(object):
 
         return _impl(lat, lon, degrees=degrees)
 
+    def _is_a_common_name_for_longitude(self, name: str) -> bool:
+        """Return True if the `name` parameter is a possible common name for longitude."""
+        return name in ["lon", "lons", "longitude", "x", "east", "easting", "eastings"]
+
+    def _is_a_common_name_for_latitude(self, name: str) -> bool:
+        """Return True if the `name` parameter is a possible common name for latitude."""
+        return name in [
+            "lat",
+            "lats",
+            "latitude",
+            "y",
+            "north",
+            "northing",
+            "northings",
+        ]
+
     def __array__(self):
         return np.array(self.data)
 
     def __add__(self, other):
         if isinstance(other, Raster):
-            # Return array, since we don't know which Raster
-            # to take properties from
+            # Return array, since we don't know which Raster to take properties from
             return self.data + other.data
 
         # Return Raster with new data
@@ -2127,3 +2115,52 @@ class Raster(object):
         new_data = other**self.data
         new_raster.data = new_data
         return new_raster
+
+    # NOTE: Raster/GridRegistration were moved from grids.py into this module.
+    # A number of low-level helper functions are still implemented in grids.py.
+    # We provide lazy wrappers here to avoid import-time circular dependencies.
+    # TODO: sort out this issue later
+    def fill_raster(self, data, invalid=None):
+        from .grids import fill_raster as _impl
+
+        return _impl(data, invalid=invalid)
+
+    def _realign_grid(self, array, lons, lats):
+        from .grids import _realign_grid as _impl
+
+        return _impl(array, lons, lats)
+
+    def _find_extent_from_data(self, data, origin):
+        from .grids import _find_extent_from_data as _impl
+
+        return _impl(data, origin)
+
+    def read_netcdf_grid(self, *args, **kwargs):
+        from .grids import read_netcdf_grid as _impl
+
+        return _impl(*args, **kwargs)
+
+    def write_netcdf_grid(self, *args, **kwargs):
+        from .grids import write_netcdf_grid as _impl
+
+        return _impl(*args, **kwargs)
+
+    def sample_grid(self, *args, **kwargs):
+        from .grids import sample_grid as _impl
+
+        return _impl(*args, **kwargs)
+
+    def reconstruct_grid(self, *args, **kwargs):
+        from .grids import reconstruct_grid as _impl
+
+        return _impl(*args, **kwargs)
+
+    def _check_grid(self, data) -> np.ndarray:
+        from .grids import _check_grid as _impl
+
+        return _impl(data)
+
+    def _parse_extent(self, extent, origin) -> Tuple[float, float, float, float]:
+        from .grids import _parse_extent as _impl
+
+        return _impl(extent, origin)

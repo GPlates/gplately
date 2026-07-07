@@ -40,7 +40,7 @@ from plate_model_manager import PlateModel, PlateModelManager, PresentDayRasterM
 
 from . import auxiliary, ptt
 from .download import DataServer
-from .raster import Raster
+from .raster import Raster, GridRegistration
 from .grids import (
     read_netcdf_grid,
     write_netcdf_grid,
