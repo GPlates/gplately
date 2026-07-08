@@ -145,9 +145,6 @@ class Raster(object):
         self._lats = None
         self._default_value = None
         self._filename = None
-        self._extent = None
-        self._origin = "lower"
-        # self.origin = origin  # use the setter method to validate the origin value
 
         # deal with deprecated arguments, such as ``PlateReconstruction_object``, ``filename``, and ``array``
         # if, in some exceptional cases, the user has to use the deprecated arguments,
@@ -224,19 +221,8 @@ class Raster(object):
 
         self._check_grid(self._data)
 
-        if self._extent is None:
-            # Only when we cannot deduce the extent from the input data, we will use the extent parameter to set the extent.
-            self._extent = self._parse_extent(extent, origin)
-
         # if we cannot find reliable lons and lats from the input data, we will generate them based on the extent and the shape of the data
-        if not self._lons:
-            self._lons = np.linspace(
-                self._extent[0], self._extent[1], self.data.shape[1]
-            )
-        if not self._lats:
-            self._lats = np.linspace(
-                self._extent[2], self._extent[3], self.data.shape[0]
-            )
+        self._lats, self._lons = self._get_lats_lons_from_extent_origin(extent, origin)
 
         # we realign the grid to -180/180 when the longitudes are from 0 to 360
         # this is a temporary fix. we need a more sophisticated solution.
@@ -377,27 +363,36 @@ class Raster(object):
             float(self.lats[-1]),
         )
 
-    # @property
-    # def origin(self) -> Literal["lower", "upper"]:
-    #    """The origin (``lower`` or ``upper``) of the data array."""
-    #    return cast(Literal["lower", "upper"], self._origin)
+    @property
+    def conventional_extent(self) -> Tuple[float, float, float, float]:
+        """The conventional spatial extent of the data.
+        The "extent" property above may not be in the conventional order,
+        especially when the origin is the upper-left corner.
+        The "conventional_extent" property always returns the extent in the conventional order.
+
+        Regardless of origin, extent is always:
+            extent = [left, right, bottom, top]
+            or
+            extent = [xmin, xmax, ymin, ymax]
+
+        The format never changes — bottom always means the smaller y value, top always means the larger y value.
+
+        :type:  tuple of 4 floats
+        """
+        return (
+            np.min(self.lons),
+            np.max(self.lons),
+            np.min(self.lats),
+            np.max(self.lats),
+        )
 
     @property
-    def origin(self):
-        """The origin (``lower`` or ``upper``) of the data array.
-
-        :type: str
-        """
+    def origin(self) -> Literal["lower", "upper"]:
+        """The origin (``lower`` or ``upper``) of the data array."""
         if self.lats[0] < self.lats[-1]:
             return "lower"
         else:
             return "upper"
-
-    @origin.setter
-    def origin(self, value: str):
-        if value not in ("lower", "upper"):
-            raise ValueError("The origin must be 'lower' or 'upper'!")
-        self._origin = value
 
     @property
     def shape(self) -> Tuple[int, int]:
@@ -1980,13 +1975,6 @@ class Raster(object):
                 if self._is_a_common_name_for_latitude(str(name)):
                     self._lats = x_data_array.coords[name].to_numpy()
                     break
-        if self._lons and self._lats:
-            self._extent = (
-                float(np.min(self._lons)),
-                float(np.max(self._lons)),
-                float(np.min(self._lats)),
-                float(np.max(self._lats)),
-            )
 
     def _handle_deprecated_args(self, data, plate_reconstruction, kwargs):
         _data = data
@@ -2250,7 +2238,76 @@ class Raster(object):
 
         return _impl(data)
 
-    def _parse_extent(self, extent, origin) -> Tuple[float, float, float, float]:
-        from .grids import _parse_extent as _impl
+    def _get_lats_lons_from_extent_origin(
+        self,
+        extent: Union[str, Tuple[float, float, float, float], None],
+        origin: Union[Literal["lower", "upper"], str, None],
+    ) -> Tuple[np.ndarray, np.ndarray]:
+        """Build latitude and longitude coordinate vectors from raster extent.
 
-        return _impl(extent, origin)
+        Parameters
+        ----------
+        extent : {'global', None} or 4-tuple
+            Spatial bounds as ``(min_lon, max_lon, min_lat, max_lat)``.
+            ``None`` or ``'global'`` maps to ``(-180, 180, -90, 90)``.
+        origin : {'lower', 'upper'} or None
+            Desired vertical axis direction for latitude values.
+            If provided, latitude bounds are reordered to match:
+            - ``'lower'`` -> ascending latitudes
+            - ``'upper'`` -> descending latitudes
+
+        Returns
+        -------
+        tuple[numpy.ndarray, numpy.ndarray]
+            ``(lats, lons)`` matching ``self.data.shape`` as
+            ``(n_rows, n_cols)``.
+
+        Raises
+        ------
+        TypeError
+            If ``extent`` is not ``None``, ``'global'``, or a 4-element sequence.
+        ValueError
+            If ``origin`` is not one of ``'lower'`` or ``'upper'``.
+        """
+        # Normalise extent input.
+        if extent is None:
+            min_lon, max_lon, min_lat, max_lat = (
+                -180.0,
+                180.0,
+                -90.0,
+                90.0,
+            )
+        elif isinstance(extent, str):
+            if extent.lower() != "global":
+                raise ValueError(
+                    "`extent` string must be 'global' (or use a 4-element tuple)."
+                )
+            min_lon, max_lon, min_lat, max_lat = (-180.0, 180.0, -90.0, 90.0)
+        else:
+            if len(extent) != 4:
+                raise TypeError(
+                    "`extent` must be a four-element tuple, 'global', or None"
+                )
+            min_lon, max_lon, min_lat, max_lat = (
+                float(extent[0]),
+                float(extent[1]),
+                float(extent[2]),
+                float(extent[3]),
+            )
+
+        if origin is not None:
+            origin_str = str(origin).lower()
+            if origin_str not in ("lower", "upper"):
+                raise ValueError("`origin` must be one of: 'lower', 'upper', or None")
+
+            if origin_str == "lower" and min_lat > max_lat:
+                # increasing latitudes for 'lower' origin
+                min_lat, max_lat = max_lat, min_lat
+            elif origin_str == "upper" and min_lat < max_lat:
+                # decreasing latitudes for 'upper' origin
+                min_lat, max_lat = max_lat, min_lat
+
+        lons = np.linspace(min_lon, max_lon, self.data.shape[1])
+        lats = np.linspace(min_lat, max_lat, self.data.shape[0])
+
+        return lats, lons
