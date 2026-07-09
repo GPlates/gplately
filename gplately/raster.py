@@ -18,7 +18,6 @@
 import copy
 import logging
 import math
-from os import name
 from pathlib import Path
 import warnings
 from multiprocessing import cpu_count
@@ -611,20 +610,15 @@ class Raster(object):
             The resampled grid. If ``inplace`` is set to ``True`` the returned raster is ``self``,
             otherwise a new :class:`Raster` object is returned.
         """
-        spacingX = np.abs(spacingX)
-        spacingY = np.abs(spacingY)
-        if self.origin == "upper":
-            spacingY *= -1.0
+        assert spacingX > 0.0 and spacingY > 0.0, "Spacing must be positive."
 
         # Don't need to resample if the spacings are the same.
         dX = np.diff(self.lons).mean()
         dY = np.diff(self.lats).mean()
         if np.isclose(dX, spacingX) and np.isclose(dY, spacingY):
             if inplace:
-                # Return current Raster.
                 return self
             else:
-                # Return a COPY of the current Raster.
                 return Raster(
                     self.data,  # note: this gets copied in Raster constructor
                     self.plate_reconstruction,
@@ -632,8 +626,18 @@ class Raster(object):
                     time=self.time,
                 )
 
-        lons = np.arange(self.extent[0], self.extent[1] + spacingX, spacingX)
-        lats = np.arange(self.extent[2], self.extent[3] + spacingY, spacingY)
+        nx = round((self.extent[1] - self.extent[0]) / spacingX) + 1
+        ny = round(np.abs((self.extent[3] - self.extent[2])) / spacingY) + 1
+        if nx < 2 or ny < 2:
+            raise ValueError(
+                f"Resampling spacings are too large for the given extent. Resulting grid would have shape ({ny}, {nx})."
+            )
+        if nx > 3601 or ny > 1801:
+            logger.warning(
+                f"The resulting grid after resampling would have shape ({ny}, {nx}). It may be too large to reconstruct. Consider using smaller spacings."
+            )
+        lons = np.linspace(self.extent[0], self.extent[1], nx)
+        lats = np.linspace(self.extent[2], self.extent[3], ny)
         lonq, latq = np.meshgrid(lons, lats)
 
         data = self.interpolate(lonq, latq, method=method)
@@ -641,10 +645,8 @@ class Raster(object):
             self._data = data
             self._lons = lons
             self._lats = lats
-            # Return current Raster.
             return self
         else:
-            # Return a new Raster.
             return Raster(data, self.plate_reconstruction, self.extent, time=self.time)
 
     @overload
@@ -1016,9 +1018,11 @@ class Raster(object):
             assert (
                 self.plate_reconstruction is not None
             ), "A valid PlateReconstruction object is required here!"
-            partitioning_features = load_feature_collection(
-                self.plate_reconstruction.static_polygons
-            )
+            partitioning_features = self.plate_reconstruction.static_polygons
+
+        # Accept all supported forms (filenames, FeatureCollection, Feature, lists)
+        # and normalize them before feature-level operations.
+        partitioning_features = load_feature_collection(partitioning_features)
         (
             partitioning_polygons_at_from_time,
             features_of_partitioning_polygons_at_from_time,
@@ -1475,7 +1479,7 @@ class Raster(object):
         - The polygons will be cut to fit into the extent of the raster. If the raster is global, the cutting step is unnecessary.
         """
         # The polygons must be valid at both from_time and to_time.
-        valid_partitioning_features: list[pygplates.Feature] = [
+        valid_partitioning_features = [
             f
             for f in partitioning_features
             if f.is_valid_at_time(from_time) and f.is_valid_at_time(to_time)
@@ -1611,7 +1615,37 @@ class Raster(object):
         im = ax.imshow(self.data, origin=self.origin, extent=extent, **kwargs)
         return im
 
-    plot = imshow
+    def plot(self, ax_or_fig=None, projection=None, use_gmt=False, **kwargs):
+        """Plot the raster data using either matplotlib or pygmt.
+
+        Parameters
+        ----------
+        ax_or_fig : matplotlib.axes.Axes or matplotlib.figure.Figure, optional
+            If specified, the image will be drawn within these axes or figure.
+        projection : cartopy.crs.Projection, optional
+            The map projection to be used. If both ``ax_or_fig`` and ``projection`
+            are specified, this will be checked against the ``projection``
+            attribute of ``ax_or_fig``, if it exists.
+        use_gmt : bool, default False
+            If True, use pygmt to plot the raster data. If False, use matplotlib.
+        **kwargs : dict, optional
+            Any further keyword arguments are passed to the plotting function.
+        """
+        if not use_gmt:
+            ax = kwargs.pop("ax", None)
+            if not ax_or_fig and not ax:
+                raise ValueError("Either `ax_or_fig` or `ax` must be specified.")
+            if ax_or_fig and ax:
+                raise ValueError("Only one of `ax_or_fig` or `ax` can be specified.")
+            if ax and ax_or_fig is None:
+                ax_or_fig = ax
+            return self.imshow(ax=ax_or_fig, projection=projection, **kwargs)
+        else:
+            from .mapping.pygmt_plot import PygmtPlotEngine
+
+            return PygmtPlotEngine().plot_grid(
+                ax_or_fig=ax_or_fig, grid=self, projection=projection, **kwargs
+            )
 
     def rotate_reference_frames(
         self,

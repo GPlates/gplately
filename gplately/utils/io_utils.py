@@ -27,6 +27,8 @@ If `GeoPandas` is not found on the system, input files are read with
 
 """
 
+import logging
+
 # pyright: reportMissingImports=false
 # pyright: reportMissingModuleSource=false
 
@@ -35,6 +37,8 @@ import pygplates
 from shapely.geometry import shape
 from shapely.geometry.base import BaseGeometry
 import xarray as xr
+
+logger = logging.getLogger("gplately")
 
 gpd = None
 shpreader = None
@@ -271,7 +275,7 @@ def load_feature_collection(source) -> pygplates.FeatureCollection:
     Returns
     -------
     `pygplates.FeatureCollection`_
-        A feature collection containing all features.
+        A feature collection containing all features. If failed to load, an empty feature collection will be returned.
 
 
     .. _pygplates.Feature: https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature
@@ -282,7 +286,8 @@ def load_feature_collection(source) -> pygplates.FeatureCollection:
             pygplates.FeaturesFunctionArgument(source).get_features()
         )
     except Exception:
-        raise Exception(
+        logger.error(
             "Failed to load feature collection. Expected a feature collection, a filename, a feature, a sequence of features, or a sequence (eg, list or tuple) of any combination of aforementioned four types."
-            + f"The source provided is of {source}. Please check the input and try again."
+            + f"The source provided is of {source}. An empty feature collection will be returned."
         )
+        return pygplates.FeatureCollection()
