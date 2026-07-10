@@ -273,21 +273,6 @@ class Raster(object):
         """The geological time of the time-dependant raster data."""
         return self._time
 
-    @property
-    def default_value(self):
-        """The default value used for the raster data."""
-        if self._default_value is None:
-            dtype = self.data.dtype
-            if np.issubdtype(dtype, np.floating):
-                self._default_value = np.nan
-            elif np.issubdtype(dtype, np.signedinteger):
-                self._default_value = np.iinfo(dtype).min
-            elif np.issubdtype(dtype, np.unsignedinteger):
-                self._default_value = np.iinfo(dtype).max
-            else:
-                self._default_value = 0
-        return self._default_value
-
     @time.setter
     def time(self, new_time: float):
         """Set a new reconstruction time and reconstruct the raster data."""
@@ -302,6 +287,21 @@ class Raster(object):
             logger.warning(
                 f"The given reconstruction time {new_time_f} Ma is the same as the current time {self._time} Ma. Nothing will be done."
             )
+
+    @property
+    def default_value(self):
+        """The default value used for the raster data."""
+        if self._default_value is None:
+            dtype = self.data.dtype
+            if np.issubdtype(dtype, np.floating):
+                self._default_value = np.nan
+            elif np.issubdtype(dtype, np.signedinteger):
+                self._default_value = np.iinfo(dtype).min
+            elif np.issubdtype(dtype, np.unsignedinteger):
+                self._default_value = np.iinfo(dtype).max
+            else:
+                self._default_value = 0
+        return self._default_value
 
     @property
     def data(self) -> np.ndarray:
@@ -572,27 +572,30 @@ class Raster(object):
             return_indices=return_indices,
         )
 
-    def resample(self, spacingX, spacingY, method="linear", inplace=False):
-        """Resamples the grid with a new ``spacingX`` and ``spacingY``, meshed with linear interpolation.
+    def resample(
+        self,
+        spacingX: float,
+        spacingY: float,
+        method="linear",
+        inplace=False,
+        strict_spacing: bool = True,
+    ):
+        """Resample raster data onto a new lon-lat grid.
 
         .. note::
 
-            Ultimately, the :meth:`resample` changes the lat-lon resolution of the gridded data. The
-            larger the x and y spacings given are, the larger the pixellation of raster data.
+            This method changes the lat-lon resolution of the gridded data. Larger
+            spacing values produce a coarser grid.
 
-            The :meth:`resample` creates new latitude and longitude arrays with specified spacings in the
-            X and Y directions (``spacingX`` and ``spacingY``). These arrays are linearly interpolated
-            into a new raster. If ``inplace`` is set to ``True``, the respaced latitude array, longitude
-            array and raster will inplace the ones currently attributed to the :class:`Raster` object.
+            New latitude and longitude arrays are created from ``spacingX`` and
+            ``spacingY``, and data values are interpolated onto that target grid.
+            If ``inplace`` is ``True``, the current :class:`Raster` object is updated.
 
         Parameters
         ----------
-        spacingX, spacingY : ndarray
-            Specify the spacing in the X and Y directions with which to resample. The larger
-            ``spacingX`` and ``spacingY`` are, the larger the raster pixels become (less resolved).
-            Note: to keep the size of the raster consistent, set ``spacingX = spacingY``;
-            otherwise, if for example ``spacingX > spacingY``, the raster will appear stretched
-            longitudinally.
+        spacingX, spacingY : float
+            Target spacing in degrees in the X (longitude) and Y (latitude)
+            directions. Both must be positive.
 
         method : str or int; default: 'linear'
             The order of spline interpolation. Must be an integer in the range
@@ -604,17 +607,29 @@ class Raster(object):
             (``self.lats``) and longitude array (``self.lons``) currently attributed to the
             :class:`Raster` object.
 
+        strict_spacing : bool, default=True
+            Controls whether spacing or extent is preserved exactly.
+
+            - If ``True``, output spacing is exactly ``spacingX``/``spacingY`` and
+                the output extent may differ slightly from the input extent.
+            - If ``False``, output extent is preserved exactly and the effective
+                spacing may differ slightly from ``spacingX``/``spacingY``.
+
+
         Returns
         -------
         Raster
             The resampled grid. If ``inplace`` is set to ``True`` the returned raster is ``self``,
             otherwise a new :class:`Raster` object is returned.
         """
-        assert spacingX > 0.0 and spacingY > 0.0, "Spacing must be positive."
+        if not (np.isfinite(spacingX) and np.isfinite(spacingY)):
+            raise ValueError("Spacing values must be finite numbers.")
+        if spacingX <= 0.0 or spacingY <= 0.0:
+            raise ValueError("Spacing must be positive.")
 
         # Don't need to resample if the spacings are the same.
-        dX = np.diff(self.lons).mean()
-        dY = np.diff(self.lats).mean()
+        dX = np.abs(np.diff(self.lons)).mean()
+        dY = np.abs(np.diff(self.lats)).mean()
         if np.isclose(dX, spacingX) and np.isclose(dY, spacingY):
             if inplace:
                 return self
@@ -626,45 +641,76 @@ class Raster(object):
                     time=self.time,
                 )
 
-        nx = round((self.extent[1] - self.extent[0]) / spacingX) + 1
-        ny = round(np.abs((self.extent[3] - self.extent[2])) / spacingY) + 1
+        x0, x1, y0, y1 = self.extent
+        nx = round(np.abs(x1 - x0) / spacingX) + 1
+        ny = round(np.abs(y1 - y0) / spacingY) + 1
         if nx < 2 or ny < 2:
             raise ValueError(
                 f"Resampling spacings are too large for the given extent. Resulting grid would have shape ({ny}, {nx})."
             )
         if nx > 3601 or ny > 1801:
             logger.warning(
-                f"The resulting grid after resampling would have shape ({ny}, {nx}). It may be too large to reconstruct. Consider using smaller spacings."
+                f"The resulting grid after resampling would have shape ({ny}, {nx}). It may take too long to reconstruct. Consider using smaller spacings."
             )
-        lons = np.linspace(self.extent[0], self.extent[1], nx)
-        lats = np.linspace(self.extent[2], self.extent[3], ny)
+        if strict_spacing:
+            x_direction = 1.0 if x1 >= x0 else -1.0
+            y_direction = 1.0 if y1 >= y0 else -1.0
+            lons = x0 + x_direction * spacingX * np.arange(nx, dtype=float)
+            lats = y0 + y_direction * spacingY * np.arange(ny, dtype=float)
+        else:
+            lons = np.linspace(x0, x1, nx)
+            lats = np.linspace(y0, y1, ny)
         lonq, latq = np.meshgrid(lons, lats)
 
         data = self.interpolate(lonq, latq, method=method)
+        resampled_extent = (
+            float(lons[0]),
+            float(lons[-1]),
+            float(lats[0]),
+            float(lats[-1]),
+        )
         if inplace:
             self._data = data
             self._lons = lons
             self._lats = lats
             return self
         else:
-            return Raster(data, self.plate_reconstruction, self.extent, time=self.time)
+            return Raster(
+                data,
+                self.plate_reconstruction,
+                resampled_extent,
+                time=self.time,
+                origin=self.origin,
+            )
 
     @overload
     def resize(
-        self, resX, resY, inplace=False, method="linear", *, return_array: Literal[True]
+        self,
+        resX: int,
+        resY: int,
+        inplace=False,
+        method="linear",
+        *,
+        return_array: Literal[True],
     ) -> np.ndarray: ...
     @overload
     def resize(
         self,
-        resX,
-        resY,
+        resX: int,
+        resY: int,
         inplace=False,
         method="linear",
         *,
         return_array: Literal[False] = False,
     ) -> "Raster": ...
     def resize(
-        self, resX, resY, inplace=False, method="linear", *, return_array=False
+        self,
+        resX: int,
+        resY: int,
+        inplace=False,
+        method="linear",
+        *,
+        return_array=False,
     ) -> Union[np.ndarray, "Raster"]:
         """Resize the grid with a new resolution (``resX`` and ``resY``) using linear interpolation.
 
@@ -680,7 +726,7 @@ class Raster(object):
 
         Parameters
         ----------
-        resX, resY : ndarray
+        resX, resY : int
             Specify the resolutions with which to resize the raster. The larger ``resX`` is,
             the more longitudinally-stretched the raster becomes. The larger ``resY`` is, the
             more latitudinally-stretched the raster becomes.
