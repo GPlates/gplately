@@ -962,6 +962,7 @@ class Raster(object):
                 rotation_model=rotation_model,
                 partitioning_features=partitioning_features,
                 threads=threads,
+                fill_value=fill_value,
             )
 
         # use the new reconstructed raster data to replace the current Raster obj
@@ -1010,6 +1011,7 @@ class Raster(object):
         to_time: float,
         rotation_model: Union[pygplates.RotationModel, None] = None,
         partitioning_features: Union[pygplates.FeatureCollection, None] = None,
+        fill_value: Union[float, int, str, tuple, None] = None,
         threads: Union[int, None] = None,
     ) -> np.ndarray:
         """Reconstruct the raster from its current time to a new time.
@@ -1032,6 +1034,9 @@ class Raster(object):
         partitioning_features : Union[pygplates.FeatureCollection, None], default None
             The features used to partition the raster grid and assign plate IDs, such as static polygons.
             If None is provided, the `self.plate_reconstruction.static_polygons` will be used.
+        fill_value : Union[float, int, str, tuple, None], default None
+            The value to be used for regions outside of the static polygons at ``to_time``.
+            By default (``fill_value=None``), this value will be determined based on the input.
         threads : int, default 1
             Number of threads to use for certain computationally heavy routines.
 
@@ -1135,7 +1140,9 @@ class Raster(object):
             output_sample_points_lons,
             output_sample_points_lats,
             output_sample_points_row_col_indices,
-        ) = self._get_output_raster_and_sample_points(partitioning_polygons_at_to_time)
+        ) = self._get_output_raster_and_sample_points(
+            partitioning_polygons_at_to_time, fill_value=fill_value
+        )
 
         # build a KDTree from the reconstructed original raster data points
         # and query the nearest neighbor for the sample points of output raster
@@ -1189,7 +1196,7 @@ class Raster(object):
         return output_raster
 
     def _get_output_raster_and_sample_points(
-        self, partitioning_polygons_at_to_time
+        self, partitioning_polygons_at_to_time, fill_value=None
     ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
         """Get the output raster and the sample points that are inside the partitioning polygons at `to_time`.
 
@@ -1197,11 +1204,14 @@ class Raster(object):
         ----------
         partitioning_polygons_at_to_time : list[pygplates.PolygonOnSphere]
             A list of partitioning polygons at the `to_time`.
+        fill_value : float, int, str, or tuple, optional
+            The value to be used for regions outside of the partitioning polygons at ``to_time``.
+            If None, the default value will be determined based on the input raster data type.
 
         Returns
         -------
         output_raster : np.ndarray
-            A 2D array of the output raster, initialized with None values.
+            A 2D array of the output raster, initialized with the specified fill value.
         output_sample_points_lons : np.ndarray
             A 1D array of longitudes of the sample points that are inside the partitioning polygons at `to_time`.
         output_sample_points_lats : np.ndarray
@@ -1243,7 +1253,11 @@ class Raster(object):
         output_shape = output_lon_mesh.shape
         if self.data.ndim > 2:
             output_shape = output_shape + self.data.shape[2:]
-        output_raster = np.full(output_shape, self.default_value, dtype=self.data.dtype)
+        output_raster = np.full(
+            output_shape,
+            self._parse_fill_value(fill_value),
+            dtype=self.data.dtype,
+        )
 
         # Rasterise to get a boolean mask of which output grid cells fall inside any partitioning polygon.
         assert (
@@ -1679,8 +1693,6 @@ class Raster(object):
         """
         if not use_gmt:
             ax = kwargs.pop("ax", None)
-            if not ax_or_fig and not ax:
-                raise ValueError("Either `ax_or_fig` or `ax` must be specified.")
             if ax_or_fig and ax:
                 raise ValueError("Only one of `ax_or_fig` or `ax` can be specified.")
             if ax and ax_or_fig is None:
@@ -1689,6 +1701,15 @@ class Raster(object):
         else:
             from .mapping.pygmt_plot import PygmtPlotEngine
 
+            fig = kwargs.pop("fig", None)
+            if ax_or_fig and fig:
+                raise ValueError("Only one of `ax_or_fig` or `fig` can be specified.")
+            if fig and ax_or_fig is None:
+                ax_or_fig = fig
+            if not ax_or_fig:
+                raise ValueError(
+                    "When `use_gmt` is True, either `ax_or_fig` or `fig` must be specified."
+                )
             return PygmtPlotEngine().plot_grid(
                 ax_or_fig=ax_or_fig, grid=self, projection=projection, **kwargs
             )
@@ -2121,6 +2142,94 @@ class Raster(object):
             "northing",
             "northings",
         ]
+
+    def _parse_fill_value(self, fill_value):
+        """Normalize ``fill_value`` to match this raster's data layout.
+
+        Parameters
+        ----------
+        fill_value : float, int, str, sequence, or None
+            Fill value provided by caller.
+            - ``None`` chooses a dtype-aware default.
+            - Color strings (for example ``"black"`` or ``"#ff0000"``) are
+              accepted for multiband rasters only.
+
+        Returns
+        -------
+        float, int, or tuple
+            A scalar value for 2D rasters, or a tuple with one value per band
+            for 3D rasters.
+
+        Raises
+        ------
+        ValueError
+            If the raster dimensionality or ``fill_value`` shape is invalid.
+        TypeError
+            If a color string is supplied for a 2D raster.
+        """
+        grid = self.data
+        dtype = grid.dtype
+
+        if grid.ndim not in (2, 3):
+            raise ValueError(
+                f"Unsupported raster dimensionality {grid.ndim}; expected 2D or 3D data."
+            )
+
+        expected_size = 1 if grid.ndim == 2 else int(grid.shape[2])
+
+        if fill_value is None:
+            if grid.ndim == 2:
+                if dtype.kind == "i":
+                    fill_value = np.iinfo(dtype).min
+                elif dtype.kind == "u":
+                    fill_value = np.iinfo(dtype).max
+                else:
+                    fill_value = np.nan
+            else:
+                if dtype.kind in ("i", "u"):
+                    fill_value = tuple([0] * expected_size)
+                else:
+                    fill_value = tuple([0.0] * expected_size)
+
+        if isinstance(fill_value, str):
+            if grid.ndim == 2:
+                raise TypeError(f"Invalid fill_value for 2D grid: {fill_value}")
+            import matplotlib.colors
+
+            try:
+                rgba = np.asarray(matplotlib.colors.to_rgba(fill_value), dtype=float)
+            except ValueError as exc:
+                raise ValueError(f"Invalid color specification: {fill_value}") from exc
+
+            if dtype.kind in ("i", "u"):
+                max_value = np.iinfo(dtype).max
+                rgba = np.rint(rgba * max_value)
+                rgba = np.clip(rgba, 0, max_value).astype(dtype)
+
+            fill_value = tuple(rgba[:expected_size])
+
+        # For RGBA rasters, allow RGB input and append full alpha.
+        if (
+            grid.ndim == 3
+            and expected_size == 4
+            and hasattr(fill_value, "__len__")
+            and len(fill_value) == 3  # type: ignore[arg-type]
+        ):
+            fill_alpha = np.iinfo(dtype).max if dtype.kind in ("i", "u") else 1.0
+            fill_value = (*fill_value, fill_alpha)  # type: ignore[misc]
+
+        if np.size(fill_value) != expected_size:
+            raise ValueError(
+                f"Shape mismatch: fill_value size: {np.size(fill_value)}, expected: {expected_size}, grid shape: {np.shape(grid)}"
+            )
+
+        # Keep scalar for 2D and tuple for 3D for downstream compatibility.
+        if grid.ndim == 2 and hasattr(fill_value, "__len__"):
+            fill_array = np.asarray(fill_value)
+            if fill_array.size == 1:
+                return fill_array.item()
+
+        return fill_value
 
     def __array__(self):
         return np.array(self.data)

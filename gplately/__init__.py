@@ -56,6 +56,7 @@ from .lib.reconstruct import (
 from .mapping.cartopy_plot import CartopyPlotEngine
 from .mapping.plot_engine import PlotEngine
 from .mapping.pygmt_plot import PygmtPlotEngine
+from .mapping.hillshade import get_topo_cmap
 from .oceans import SeafloorGrid
 from .plot import PlotTopologies
 from .points import Points
