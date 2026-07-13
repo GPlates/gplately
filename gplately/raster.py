@@ -22,7 +22,6 @@ from pathlib import Path
 import warnings
 from multiprocessing import cpu_count
 from typing import List, Tuple, Union, cast, overload, Literal
-from enum import Enum
 
 # pyright: reportMissingImports=false
 # pyright: reportMissingModuleSource=false
@@ -41,7 +40,10 @@ from scipy.spatial import (
 )
 from scipy.spatial import KDTree
 from scipy.ndimage import map_coordinates
+
+from gplately.utils.longitude_convert import _convert_longitude
 from .lib.exceptions import NegativeReconstructionTime
+from .lib.enums import GridRegistration, LongitudeConvention
 
 from .geometry import pygplates_to_shapely
 from .reconstruction import PlateReconstruction
@@ -57,14 +59,6 @@ __all__ = [
 ]
 
 
-# The numbers representing the registration types are the same with PyGMT's grid registration enum values
-class GridRegistration(Enum):
-    # good for geoscience data because sampled at locations(points) on the grid
-    Gridline = 0
-    # good for image data, the data represents the average value of an area
-    Pixel = 1
-
-
 class Raster(object):
     """A class to represent a raster grid with time-dependent reconstruction capabilities."""
 
@@ -73,11 +67,13 @@ class Raster(object):
         data=None,
         plate_reconstruction=None,
         extent: Union[str, tuple] = "global",
-        realign=False,
         resample=None,
         resize=None,
         time=0.0,
         origin=None,
+        *,
+        lons=None,
+        lats=None,
         grid_registration=GridRegistration.Gridline,
         x_dimension_name: str = "",
         y_dimension_name: str = "",
@@ -103,6 +99,7 @@ class Raster(object):
             (-180, 180, -90, 90) is assumed (equivalent to ``extent='global'``).
             For array data with an upper-left origin, make sure ``min_lat`` is
             greater than ``max_lat``, or specify ``origin`` parameter.
+            Warning: The coordinates embeded in the data or the ``lons`` and ``lats`` parameters will override ``extent``.
         resample : 2-tuple, optional
             Optionally resample grid, pass spacing in X and Y direction as a
             2-tuple e.g. resample=(spacingX, spacingY).
@@ -114,6 +111,11 @@ class Raster(object):
         origin : {'lower', 'upper'}, optional
             When ``data`` is a plain numpy array, use this parameter to specify the origin
             (upper left or lower left) of the data.
+            Warning: The coordinates embeded in the data or the ``lons`` and ``lats`` parameters will override ``origin``.
+        lons : array-like, optional
+            1D array of longitude values. If not provided, will be inferred from the extent, origin and the shape of the data.
+        lats : array-like, optional
+            1D array of latitude values. If not provided, will be inferred from the extent, origin and the shape of the data.
         cell_registration : {'gridline', 'pixel'}, optional, default: 'gridline'
             Specify whether the raster data is gridline-registered or pixel-registered.
         x_dimension_name : str, optional, default=""
@@ -220,8 +222,25 @@ class Raster(object):
 
         self._check_grid(self._data)
 
-        # if we cannot find reliable lons and lats from the input data, we will generate them based on the extent and the shape of the data
-        self._lats, self._lons = self._get_lats_lons_from_extent_origin(extent, origin)
+        # if we cannot find reliable lons and lats from the input data, try the user provided `lons` and `lats`.
+        if self._lons is None or self._lats is None:
+            self._lons = lons
+            self._lats = lats
+        # if user did not provide lons and lats, we will generate them based on the extent and the shape of the data
+        if self._lons is None or self._lats is None:
+            self._lats, self._lons = self._get_lats_lons_from_extent_origin(
+                extent, origin
+            )
+
+        assert (
+            self._lons is not None and self._lats is not None
+        ), "Failed to determine the longitudes and latitudes of the raster data."
+        assert (
+            len(self._lons) == self._data.shape[1]
+        ), "The length of the longitude array does not match the number of columns in the data array."
+        assert (
+            len(self._lats) == self._data.shape[0]
+        ), "The length of the latitude array does not match the number of rows in the data array."
 
         # we realign the grid to -180/180 when the longitudes are from 0 to 360
         # this is a temporary fix. we need a more sophisticated solution.
@@ -361,6 +380,25 @@ class Raster(object):
             float(self.lats[0]),
             float(self.lats[-1]),
         )
+
+    @property
+    def longitude_convention(self) -> LongitudeConvention:
+        """The longitude convention of the raster data.
+
+        :type:  LongitudeConvention
+        """
+        if np.all((self.lons >= 0) & (self.lons <= 180)):
+            return LongitudeConvention.POSITIVE_180
+        elif np.all((self.lons >= 0) & (self.lons <= 360)) and np.any(
+            (self.lons > 180)
+        ):
+            return LongitudeConvention.POSITIVE_360
+        elif np.all((self.lons >= -180) & (self.lons <= 180)) and np.any(
+            (self.lons < 0)
+        ):
+            return LongitudeConvention.SIGNED_180
+        else:
+            return LongitudeConvention.OTHER
 
     @property
     def conventional_extent(self) -> Tuple[float, float, float, float]:
@@ -1999,17 +2037,17 @@ class Raster(object):
                 np.linspace(x0, x1, xn), np.linspace(y0, y1, yn)
             )
             # in degrees
-            self.grid_cell_radius = (
+            self._grid_cell_radius = (
                 math.sqrt(math.pow(((y0 - y1) / yn), 2) + math.pow(((x0 - x1) / xn), 2))
                 / 2
             )
-            self.data_mask = ~np.isnan(self.data)
+            self._data_mask = ~np.isnan(self.data)
             grid_points = [
                 pygplates.PointOnSphere((float(p[1]), float(p[0]))).to_xyz()
-                for p in np.dstack((grid_x, grid_y))[self.data_mask]
+                for p in np.dstack((grid_x, grid_y))[self._data_mask]
             ]
             logger.debug("building the spatial tree...")
-            self.spatial_cKDTree = _cKDTree(grid_points)
+            self._spatial_cKDTree = _cKDTree(grid_points)
 
         query_points = [
             pygplates.PointOnSphere((float(p[1]), float(p[0]))).to_xyz()
@@ -2018,17 +2056,17 @@ class Raster(object):
 
         if region_of_interest is None:
             # convert the arch length(in degrees) to direct length in 3D space
-            roi = 2 * math.sin(math.radians(self.grid_cell_radius / 2.0))
+            roi = 2 * math.sin(math.radians(self._grid_cell_radius / 2.0))
         else:
             roi = 2 * math.sin(
                 region_of_interest / pygplates.Earth.mean_radius_in_kms / 2.0
             )
 
-        dists, indices = self.spatial_cKDTree.query(
+        dists, indices = self._spatial_cKDTree.query(
             query_points, k=1, distance_upper_bound=roi
         )
         # print(dists, indices)
-        return np.concatenate((self.data[self.data_mask], [math.nan]))[indices]
+        return np.concatenate((self.data[self._data_mask], [math.nan]))[indices]
 
     def clip_by_extent(self, extent):
         """Clip the raster according to a given extent ``(x_min, x_max, y_min, y_max)``.
@@ -2101,7 +2139,45 @@ class Raster(object):
             extent=new_extent,
         )
 
-    def _clip_by_polygon(self, polygon):
+    def to_longitude_positive_360(self, inplace=False):
+        """Convert a grid's longitude coordinates to the [0, 360] convention."""
+        _grid_data, _lons = _convert_longitude(
+            self.data,
+            self.lons,
+            map_fn=lambda l: l % 360,
+            valid_max=360,
+            seam_name="0/360",
+        )
+        if inplace:
+            self._data = _grid_data
+            self._lons = _lons
+            return self
+        else:
+            new_raster = self.copy()
+            new_raster._data = _grid_data
+            new_raster._lons = _lons
+            return new_raster
+
+    def to_longitude_signed_180(self, inplace=False):
+        """Convert a grid's longitude coordinates to the [-180, 180] convention."""
+        _grid_data, _lons = _convert_longitude(
+            self.data,
+            self.lons,
+            map_fn=lambda l: ((l + 180) % 360) - 180,
+            valid_max=180,
+            seam_name="-180/180",
+        )
+        if inplace:
+            self._data = _grid_data
+            self._lons = _lons
+            return self
+        else:
+            new_raster = self.copy()
+            new_raster._data = _grid_data
+            new_raster._lons = _lons
+            return new_raster
+
+    def clip_by_polygons(self, polygons: list[pygplates.PolygonOnSphere]):
         """TODO:"""
         pass
 
@@ -2533,11 +2609,6 @@ class Raster(object):
 
     def write_netcdf_grid(self, *args, **kwargs):
         from .grids import write_netcdf_grid as _impl
-
-        return _impl(*args, **kwargs)
-
-    def sample_grid(self, *args, **kwargs):
-        from .grids import sample_grid as _impl
 
         return _impl(*args, **kwargs)
 
