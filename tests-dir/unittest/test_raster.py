@@ -38,7 +38,7 @@ def main(show=True):
 
     xx, yy = np.meshgrid(np.linspace(-180, 180, 180), np.linspace(-90, 90, 90))
 
-    values = age_grid_raster.query(
+    values = age_grid_raster.query_by_KDTree(
         lons=xx.flatten(), lats=yy.flatten(), region_of_interest=8.8
     )
 

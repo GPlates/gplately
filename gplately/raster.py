@@ -40,7 +40,7 @@ from scipy.spatial import (
     cKDTree as _cKDTree,  # pyright: ignore[reportAttributeAccessIssue]
 )
 from scipy.spatial import KDTree
-
+from scipy.ndimage import map_coordinates
 from .lib.exceptions import NegativeReconstructionTime
 
 from .geometry import pygplates_to_shapely
@@ -564,13 +564,14 @@ class Raster(object):
             # The second array holds the columns of the raster where point data spatially falls near.
             sampled_indices = (array([1019, 1019, 1019, ..., 1086, 1086, 1087]), array([2237, 2237, 2237, ...,  983,  983,  983]))
         """
-        return self.sample_grid(
-            lon=lons,
-            lat=lats,
-            grid=self,
+        values, indices = self.sample_values(
+            lons=lons,
+            lats=lats,
             method=method,
-            return_indices=return_indices,
         )
+        if return_indices:
+            return values, indices
+        return values
 
     def resample(
         self,
@@ -1841,7 +1842,130 @@ class Raster(object):
 
         return Raster(data=Z)
 
-    def query(self, lons, lats, region_of_interest=None):
+    def sample_values(self, *, lons, lats, method="linear"):
+        order = {
+            "nearest": 0,
+            "linear": 1,
+            "cubic": 3,
+        }.get(method, method)
+        if order not in {0, 1, 2, 3, 4, 5}:
+            raise ValueError(f"Invalid `method` parameter: {method}")
+
+        extent = self.extent
+        grid = self.data
+
+        # Do not wrap from North to South Pole (or vice versa)
+        if np.any(np.abs(lats) > 90.0):
+            warnings.warn(
+                "Invalid values encountered in lat; clipping to [-90, 90]",
+                RuntimeWarning,
+            )
+            lats = np.clip(lats, -90.0, 90.0)
+
+        dx = (extent[1] - extent[0]) / (np.shape(grid)[1] - 1)
+        dy = (extent[3] - extent[2]) / (np.shape(grid)[0] - 1)
+        point_i = (lats - extent[2]) / dy
+        point_j = (lons - extent[0]) / dx
+
+        point_coords = np.vstack(
+            (
+                np.ravel(point_i),
+                np.ravel(point_j),
+            )
+        )
+        if np.ndim(grid) == 2:
+            interpolated = map_coordinates(
+                np.array(grid, dtype="float"),
+                point_coords,
+                order=order,
+                mode="grid-wrap",
+                prefilter=order > 1,
+            )
+            interpolated = np.reshape(interpolated, np.shape(lons))
+        else:  # ndim(grid) == 3
+            depth = np.shape(grid)[2]
+            interpolated = []
+            interpolated_k = np.array([])
+            for k in range(depth):
+                interpolated_k = map_coordinates(
+                    grid[..., k],
+                    point_coords,
+                    order=order,
+                    mode="grid-wrap",
+                    prefilter=order > 1,
+                )
+                interpolated_k = np.reshape(
+                    interpolated_k,
+                    np.shape(lons),
+                )
+                interpolated.append(interpolated_k)
+            del interpolated_k
+            interpolated = np.stack(interpolated, axis=-1)
+
+        interpolated = interpolated.astype(grid.dtype)
+
+        indices = (
+            np.rint(np.ravel(point_i)).astype(np.int_),
+            np.rint(np.ravel(point_j)).astype(np.int_),
+        )
+        return interpolated, indices
+
+    def query(
+        self,
+        *,
+        lons: np.ndarray,
+        lats: np.ndarray,
+        interpolation_method: Union[None, str] = None,
+        region_of_interest: Union[None, float] = None,
+    ):
+        """Query raster values at given longitude/latitude coordinates.
+
+        Parameters
+        ----------
+        lons, lats : np.ndarray
+            Longitude and latitude coordinates. 1D arrays of the same length.
+        interpolation_method : str or None, default None
+            Interpolation method, such as "linear" or "nearest".
+            If ``None``, nearest-gridpoint sampling is used (exact value at the
+            nearest source cell).
+
+        Returns
+        -------
+        tuple
+            ``(values, (row_indices, col_indices))`` where:
+
+            - ``values`` are sampled values with shape matching broadcasted
+              input coordinates (plus trailing band dimension for multiband data).
+            - ``row_indices`` and ``col_indices`` are nearest-gridpoint indices
+              in the original raster, each with the same shape as input points.
+        """
+        if region_of_interest is not None:
+            return self._query_by_KDTree(lons, lats, region_of_interest)
+
+        method = "nearest" if interpolation_method is None else interpolation_method
+        values_interp, indices = self.interpolate(
+            lons,
+            lats,
+            method=method,
+            return_indices=True,
+        )
+
+        rows = np.asarray(indices[0]).reshape(lons.shape)
+        cols = np.asarray(indices[1]).reshape(lons.shape)
+
+        if interpolation_method is None:
+            values = self.data[rows, cols]
+        else:
+            values = values_interp
+
+        return values, (rows, cols)
+
+    def _query_by_KDTree(
+        self,
+        lons: np.ndarray,
+        lats: np.ndarray,
+        region_of_interest: Union[None, float] = None,
+    ):
         """Given a set of location coordinates, return the grid values at these locations.
 
         Parameters
