@@ -242,15 +242,6 @@ class Raster(object):
             len(self._lats) == self._data.shape[0]
         ), "The length of the latitude array does not match the number of rows in the data array."
 
-        # we realign the grid to -180/180 when the longitudes are from 0 to 360
-        # this is a temporary fix. we need a more sophisticated solution.
-        # for example, some people may use (-360-0) or some other ranges for longitudes. It is unlikely, but possible.
-        if False and np.max(self._lons) > 180:  # disable "realign grid" for now
-            # realign to -180,180 and flip grid if needed
-            self._data, self._lons, self._lats = self._realign_grid(
-                self._data, self._lons, self._lats
-            )
-
         if (not isinstance(data, str)) and (resample is not None):
             self.resample(*resample, inplace=True)
 
@@ -987,8 +978,7 @@ class Raster(object):
             # prepare rotation model for reconstruction
             rotation_model = None
             if anchor_plate_id is not None:
-                # the self._get_rotation_model_with_a_different_default_anchor_plate_id() return None
-                # if the anchor_plate_id is the same as the default anchor plate ID in the current rotation model
+                # the self._get_rotation_model_with_a_different_default_anchor_plate_id() returns None if the anchor_plate_id is the same as the default anchor plate ID in the current rotation model
                 # but it doesn't matter for the function call self._recconstruct_raster() because it will use the default rotation model in self.plate_reconstruction.rotation_model if rotation_model is None
                 rotation_model = (
                     self._get_rotation_model_with_a_different_default_anchor_plate_id(
@@ -996,15 +986,35 @@ class Raster(object):
                     )
                 )
 
-            result = self._recconstruct_raster(
-                to_time=to_time_f,
-                rotation_model=rotation_model,
-                partitioning_features=partitioning_features,
-                threads=threads,
-                fill_value=fill_value,
-            )
+            if self.longitude_convention == LongitudeConvention.POSITIVE_360:
+                # If the raster is in 0-360 convention, we need to convert it to -180/180 convention for reconstruction,
+                # and then convert it back to 0-360 convention after reconstruction.
+                # The reason is that the static polygons are usually defined in -180/180 convention.
+                # The mismatch of longitude conventions may cause problems when determining the plate IDs for the raster cells.
 
-        # use the new reconstructed raster data to replace the current Raster obj
+                # NOTE: See the warning below
+                # TODO: The code below assumes the partitioning features (static polygons) are in -180/180 convention.
+                # If they are in 0-360 convention, the code may not work correctly. We need to check the longitude convention of the partitioning features and convert them if necessary.
+                raster_180 = self.to_longitude_signed_180()
+                result = raster_180._recconstruct_raster(
+                    to_time=to_time_f,
+                    rotation_model=rotation_model,
+                    partitioning_features=partitioning_features,
+                    threads=threads,
+                    fill_value=fill_value,
+                )
+                raster_180.data = result
+                result = raster_180.to_longitude_positive_360().data
+            else:
+                result = self._recconstruct_raster(
+                    to_time=to_time_f,
+                    rotation_model=rotation_model,
+                    partitioning_features=partitioning_features,
+                    threads=threads,
+                    fill_value=fill_value,
+                )
+
+        # use the new reconstructed raster data to replace the data in the current Raster object
         # put anchor_plate_id into rotation_model if it is not None
         if inplace:
             self.data = result
@@ -1023,7 +1033,7 @@ class Raster(object):
                 return result
             return self
 
-        # create a new Raster obj to return
+        # If `inplace` is False, create a new Raster object to return
         if not return_array:
             result = Raster(
                 data=result,
@@ -1260,7 +1270,9 @@ class Raster(object):
         """
         # If the original raster extent is global, the output raster extent will also be global.
         left, right, bottom, top = self.extent
-        if math.isclose(abs(left - right), 360) or math.isclose(abs(bottom - top), 180):
+        if math.isclose(abs(left - right), 360) and math.isclose(
+            abs(bottom - top), 180
+        ):
             output_raster_extent = self.extent
         else:
             # Get output raster extent from the partitioning polygons at the `to_time`.
@@ -2591,11 +2603,6 @@ class Raster(object):
         from .grids import fill_raster as _impl
 
         return _impl(data, invalid=invalid)
-
-    def _realign_grid(self, array, lons, lats):
-        from .grids import _realign_grid as _impl
-
-        return _impl(array, lons, lats)
 
     def _find_extent_from_data(self, data, origin):
         from .grids import _find_extent_from_data as _impl
