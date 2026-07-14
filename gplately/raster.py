@@ -474,7 +474,7 @@ class Raster(object):
             time=self.time,
         )
 
-    def gap_filling(self, method="nearest", inplace=False) -> "Raster":
+    def fill_gaps(self, method="nearest", inplace=False) -> "Raster":
         """Fill gaps in the raster data using the specified method.
 
         Parameters
@@ -489,35 +489,50 @@ class Raster(object):
         Raster
             A new Raster object with gaps filled, or the current object if inplace is True.
         """
-        # TODO: generated code, not tested yet, do not use
-        # Create a mask of the valid (non-NaN) data points
-        valid_mask = ~np.isnan(self.data)
-        valid_points = np.column_stack(
-            (self.lons[valid_mask.any(axis=0)], self.lats[valid_mask.any(axis=1)])
-        )
-        valid_values = self.data[valid_mask]
+        # This method currently supports 2D scalar rasters.
+        if self.data.ndim != 2:
+            raise ValueError("fill_gaps currently supports 2D raster data only.")
 
-        # Create a grid of points for interpolation
+        # Create a grid of point coordinates.
         lon_grid, lat_grid = np.meshgrid(self.lons, self.lats)
-        grid_points = np.column_stack((lon_grid.ravel(), lat_grid.ravel()))
 
-        # Perform interpolation to fill gaps
+        # Build a valid mask and point/value arrays with matching lengths.
+        data = np.asarray(self.data)
+        valid_mask = np.isfinite(data)
+        if np.all(valid_mask):
+            return self if inplace else self.copy()
+
+        valid_points = np.column_stack((lon_grid[valid_mask], lat_grid[valid_mask]))
+        valid_values = data[valid_mask]
+
+        # Perform interpolation to fill gaps.
         from scipy.interpolate import griddata
 
         filled_data = griddata(
-            valid_points, valid_values, grid_points, method=method
-        ).reshape(self.data.shape)
+            valid_points,
+            valid_values,
+            (lon_grid, lat_grid),
+            method=method,
+        )
+
+        # For methods like linear/cubic, points outside the convex hull can remain NaN.
+        # Fill remaining gaps using nearest-neighbour interpolation.
+        if np.any(np.isnan(filled_data)):
+            nearest_data = griddata(
+                valid_points,
+                valid_values,
+                (lon_grid, lat_grid),
+                method="nearest",
+            )
+            filled_data = np.where(np.isnan(filled_data), nearest_data, filled_data)
 
         if inplace:
             self.data = filled_data
             return self
         else:
-            return Raster(
-                filled_data,
-                copy.deepcopy(self.plate_reconstruction),
-                self.extent,
-                time=self.time,
-            )
+            ret = self.copy()
+            ret.data = filled_data
+            return ret
 
     @overload
     def interpolate(

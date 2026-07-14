@@ -134,7 +134,7 @@ def fill_raster(data, invalid=None):
         if masked_array:
             invalid += mask_fill_value
     ind = distance_transform_edt(invalid, return_distances=False, return_indices=True)
-    assert ind
+    assert ind is not None
     return data[tuple(ind)]
 
 

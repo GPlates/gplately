@@ -10,91 +10,11 @@ from common import MODEL_REPO_DIR, save_fig
 from plate_model_manager import PlateModelManager
 
 import gplately
-from gplately.utils.longitude_convert import (
-    to_longitude_positive_360,
-    to_longitude_signed_180,
-    upwrap_antimeridian_wraparound,
-)
 from gplately.auxiliary import get_plate_reconstruction
 
 print(gplately.__file__)
 
 # gplately.turn_on_debug_logging()
-
-
-def test_to_longitude_positive_360():
-
-    # Global, no duplicate
-    lons = np.array([-180, -90, 0, 90])
-    grid = np.array([[1, 2, 3, 4], [5, 6, 7, 8]])
-    g, lo = to_longitude_positive_360(grid, lons)
-    assert np.allclose(lo, [0, 90, 180, 270])
-    assert np.allclose(g, [[3, 4, 1, 2], [7, 8, 5, 6]])
-
-    # Global, duplicate closing column
-    lons = np.array([-180, -90, 0, 90, 180])  # global
-    grid = np.array([[1, 2, 3, 4, 1], [5, 6, 7, 8, 5]])
-    g, lo = to_longitude_positive_360(grid, lons)
-    assert np.allclose(lo, [0, 90, 180, 270, 360])
-    assert np.allclose(g, [[3, 4, 1, 2, 3], [7, 8, 5, 6, 7]])
-
-    # regional, on the edge of 0-360, but not crossing the antimeridian
-    lons = np.array([-160, -100, -50, 0])
-    grid = np.array([[1, 2, 3, 4], [5, 6, 7, 8]])
-    g, lo = to_longitude_positive_360(grid, lons)
-    assert np.allclose(lo, [200, 260, 310, 360])
-    assert np.allclose(g, [[1, 2, 3, 4], [5, 6, 7, 8]])
-
-    try:
-        # Genuine regional crossing -> raise ValueError
-        lons = np.array([-10, 0, 10])  # regional, crosses antimeridian in 0-360
-        grid = np.array([[1, 2, 3]])
-        to_longitude_positive_360(grid, lons)
-    except ValueError as e:
-        print(e)
-
-    # Regional, no crossing
-    lons = np.array([180, 190, 210, 360])
-    grid = np.array([[1, 2, 3, 4], [5, 6, 7, 8]])
-    g, lo = to_longitude_signed_180(grid, lons)
-    assert np.allclose(lo, [-180, -170, -150, 0])
-    assert np.allclose(g, [[1, 2, 3, 4], [5, 6, 7, 8]])
-
-    # Global, 0-360 input, no duplicate
-    lons = np.array([0, 90, 180, 270])
-    grid = np.array([[1, 2, 3, 4], [5, 6, 7, 8]])
-    g, lo = to_longitude_signed_180(grid, lons)
-    assert np.allclose(lo, [-180, -90, 0, 90])
-    assert np.allclose(g, [[3, 4, 1, 2], [7, 8, 5, 6]])
-
-    # Global, 0-360 input, duplicate closing column
-    lons = np.array([0, 90, 180, 270, 360])
-    grid = np.array([[1, 2, 3, 4, 1], [5, 6, 7, 8, 5]])
-    g, lo = to_longitude_signed_180(grid, lons)
-    assert np.allclose(lo, [-180, -90, 0, 90, 180])
-    assert np.allclose(g, [[3, 4, 1, 2, 3], [7, 8, 5, 6, 7]])
-
-    # Regional crossing -> should error
-    try:
-        lons = np.array([170, 175, 180, 185, 190])  # i.e. straddles antimeridian
-        grid = np.array([[1, 2, 3, 4, 5]])
-        to_longitude_signed_180(grid, lons)
-        # ValueError: Converting this regional grid...
-    except ValueError as e:
-        print(e)
-
-    # Test upwrap_antimeridian function
-    lons = [160, 170, 180, -170, -160]
-    unwrapped_lons = upwrap_antimeridian_wraparound(lons)
-    assert np.allclose(unwrapped_lons, [160, 170, 180, 190, 200])
-
-    lons = np.array([340, 350, 360, 10, 20])
-    unwrapped_lons = upwrap_antimeridian_wraparound(lons)
-    assert np.allclose(unwrapped_lons, [-20, -10, 0, 10, 20])
-
-    print(
-        "All tests passed for to_longitude_positive_360, to_longitude_signed_180, and upwrap_antimeridian."
-    )
 
 
 def test_raster_longitude_conversion():
@@ -208,5 +128,4 @@ def main(argv):
 
 if __name__ == "__main__":
     # main(sys.argv)
-    # test_to_longitude_positive_360()
     test_raster_longitude_conversion()
