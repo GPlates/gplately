@@ -146,6 +146,7 @@ class Raster(object):
         self._lats = None
         self._default_value = None
         self._filename = None
+        self._data_mask = None
 
         # deal with deprecated arguments, such as ``PlateReconstruction_object``, ``filename``, and ``array``
         # if, in some exceptional cases, the user has to use the deprecated arguments,
@@ -220,7 +221,7 @@ class Raster(object):
             )
             self._data = np.array(data)  # copy to avoid modifying original data
 
-        self._check_grid(self._data)
+        self._validate_data()
 
         # if we cannot find reliable lons and lats from the input data, try the user provided `lons` and `lats`.
         if self._lons is None or self._lats is None:
@@ -326,6 +327,13 @@ class Raster(object):
                 f"Shape mismatch error: old dimensions are {np.shape(self.data)}, new dimensions are {z.shape}"
             )
         self._data = z
+
+    @property
+    def masked_data(self) -> np.ma.masked_array:
+        """Masked Numpy array for the raster data."""
+        if self._data_mask is None:
+            self._data_mask = np.isnan(self._data)
+        return np.ma.masked_array(self._data, mask=self._data_mask)
 
     @property
     def lons(self) -> np.ndarray:
@@ -474,65 +482,163 @@ class Raster(object):
             time=self.time,
         )
 
-    def fill_gaps(self, method="nearest", inplace=False) -> "Raster":
-        """Fill gaps in the raster data using the specified method.
+    def fill_gaps(
+        self,
+        method="nearest",
+        inplace=False,
+        valid_mask=None,
+        invalid_value=None,
+    ) -> "Raster":
+        """Fill invalid cells in a raster using interpolation.
+
+        Supports both scalar rasters (``ny x nx``) and image rasters
+        (``ny x nx x channels``) where ``channels`` is 3 (RGB) or 4 (RGBA).
 
         Parameters
         ----------
         method : str, default: 'nearest'
-            The method to use for gap filling. Options include 'nearest', 'linear', and 'cubic'.
+            Interpolation method passed to :func:`scipy.interpolate.griddata`.
+            Typical options are ``'nearest'``, ``'linear'`` and ``'cubic'``.
         inplace : bool, default: False
-            If True, modify the current Raster object. If False, return a new Raster object.
+            If ``True``, modify and return the current object. Otherwise,
+            return a new :class:`Raster`.
+        valid_mask : array-like of bool, optional
+            A 2D mask with shape ``(len(lats), len(lons))`` indicating valid
+            source pixels (``True`` = valid). If omitted, validity is inferred
+            from finite values and, if provided, ``invalid_value``.
+        invalid_value : scalar or sequence, optional
+            Additional marker for invalid pixels.
+
+            - For scalar rasters, cells equal to this value are treated as invalid.
+            - For RGB/RGBA rasters, this can be a scalar (applied to all channels)
+              or a sequence with length equal to the channel count.
 
         Returns
         -------
         Raster
-            A new Raster object with gaps filled, or the current object if inplace is True.
-        """
-        # This method currently supports 2D scalar rasters.
-        if self.data.ndim != 2:
-            raise ValueError("fill_gaps currently supports 2D raster data only.")
+            A raster with gaps filled.
 
-        # Create a grid of point coordinates.
+        Raises
+        ------
+        ValueError
+            If raster dimensionality/channel count is unsupported, mask shape is
+            invalid, or no valid points are available for interpolation.
+        """
+        data = np.asarray(self.data)
+        if data.ndim == 2:
+            is_image = False
+        elif data.ndim == 3 and data.shape[2] in (3, 4):
+            is_image = True
+        else:
+            raise ValueError(
+                "fill_gaps supports either 2D scalar rasters or 3D RGB/RGBA rasters."
+            )
+
+        ny, nx = data.shape[:2]
         lon_grid, lat_grid = np.meshgrid(self.lons, self.lats)
 
-        # Build a valid mask and point/value arrays with matching lengths.
-        data = np.asarray(self.data)
-        valid_mask = np.isfinite(data)
-        if np.all(valid_mask):
+        finite_mask = np.isfinite(data).all(axis=2) if is_image else np.isfinite(data)
+
+        invalid_mask = np.zeros((ny, nx), dtype=bool)
+        if invalid_value is not None:
+            if is_image:
+                invalid_arr = np.asarray(invalid_value)
+                if invalid_arr.ndim == 0:
+                    invalid_mask = np.all(data == invalid_arr.item(), axis=2)
+                else:
+                    invalid_arr = invalid_arr.ravel()
+                    if invalid_arr.size != data.shape[2]:
+                        raise ValueError(
+                            "For RGB/RGBA rasters, invalid_value must be a scalar "
+                            "or have one value per channel."
+                        )
+                    invalid_mask = np.all(
+                        data == invalid_arr.reshape((1, 1, -1)), axis=2
+                    )
+            else:
+                invalid_mask = data == invalid_value
+
+        inferred_valid_mask = finite_mask & (~invalid_mask)
+
+        if valid_mask is None:
+            effective_valid_mask = inferred_valid_mask
+        else:
+            user_valid_mask = np.asarray(valid_mask, dtype=bool)
+            if user_valid_mask.shape != (ny, nx):
+                raise ValueError(
+                    f"valid_mask shape mismatch: expected {(ny, nx)}, got {user_valid_mask.shape}."
+                )
+            # Never treat non-finite/explicitly invalid values as valid interpolation inputs.
+            effective_valid_mask = user_valid_mask & inferred_valid_mask
+
+        if np.all(effective_valid_mask):
             return self if inplace else self.copy()
 
-        valid_points = np.column_stack((lon_grid[valid_mask], lat_grid[valid_mask]))
-        valid_values = data[valid_mask]
+        if not np.any(effective_valid_mask):
+            raise ValueError("No valid points available to interpolate gaps.")
 
-        # Perform interpolation to fill gaps.
-        from scipy.interpolate import griddata
-
-        filled_data = griddata(
-            valid_points,
-            valid_values,
-            (lon_grid, lat_grid),
-            method=method,
+        gap_mask = ~effective_valid_mask
+        valid_points = np.column_stack(
+            (lon_grid[effective_valid_mask], lat_grid[effective_valid_mask])
         )
 
-        # For methods like linear/cubic, points outside the convex hull can remain NaN.
-        # Fill remaining gaps using nearest-neighbour interpolation.
-        if np.any(np.isnan(filled_data)):
-            nearest_data = griddata(
+        from scipy.interpolate import griddata
+
+        filled_data = np.asarray(data, dtype=np.float64).copy()
+
+        if is_image:
+            for channel_idx in range(data.shape[2]):
+                channel = data[:, :, channel_idx]
+                valid_values = channel[effective_valid_mask]
+                interpolated = griddata(
+                    valid_points,
+                    valid_values,
+                    (lon_grid, lat_grid),
+                    method=method,
+                )
+                if np.any(np.isnan(interpolated[gap_mask])):
+                    nearest = griddata(
+                        valid_points,
+                        valid_values,
+                        (lon_grid, lat_grid),
+                        method="nearest",
+                    )
+                    interpolated = np.where(
+                        np.isnan(interpolated), nearest, interpolated
+                    )
+                filled_data[:, :, channel_idx][gap_mask] = interpolated[gap_mask]
+        else:
+            valid_values = data[effective_valid_mask]
+            interpolated = griddata(
                 valid_points,
                 valid_values,
                 (lon_grid, lat_grid),
-                method="nearest",
+                method=method,
             )
-            filled_data = np.where(np.isnan(filled_data), nearest_data, filled_data)
+            if np.any(np.isnan(interpolated[gap_mask])):
+                nearest = griddata(
+                    valid_points,
+                    valid_values,
+                    (lon_grid, lat_grid),
+                    method="nearest",
+                )
+                interpolated = np.where(np.isnan(interpolated), nearest, interpolated)
+            filled_data[gap_mask] = interpolated[gap_mask]
+
+        if np.issubdtype(data.dtype, np.integer):
+            info = np.iinfo(data.dtype)
+            filled_data = np.clip(np.rint(filled_data), info.min, info.max).astype(
+                data.dtype
+            )
+        else:
+            filled_data = filled_data.astype(data.dtype, copy=False)
 
         if inplace:
             self.data = filled_data
             return self
-        else:
-            ret = self.copy()
-            ret.data = filled_data
-            return ret
+        ret = self.copy()
+        ret.data = filled_data
+        return ret
 
     @overload
     def interpolate(
@@ -2614,10 +2720,6 @@ class Raster(object):
     # A number of low-level helper functions are still implemented in grids.py.
     # We provide lazy wrappers here to avoid import-time circular dependencies.
     # TODO: sort out this issue later
-    def fill_raster(self, data, invalid=None):
-        from .grids import fill_raster as _impl
-
-        return _impl(data, invalid=invalid)
 
     def _find_extent_from_data(self, data, origin):
         from .grids import _find_extent_from_data as _impl
@@ -2639,10 +2741,38 @@ class Raster(object):
 
         return _impl(*args, **kwargs)
 
-    def _check_grid(self, data) -> np.ndarray:
-        from .grids import _check_grid as _impl
+    def _validate_data(self):
+        _data = self.data
+        assert isinstance(_data, np.ndarray), "Raster data must be a numpy ndarray"
 
-        return _impl(data)
+        _ndim = np.ndim(_data)
+        _shape = np.shape(_data)
+        if _ndim not in (2, 3):
+            # ndim == 2: greyscale image/grid
+            # ndim == 3: colour RGB(A) image
+            raise ValueError(
+                f"Raster data must be 2D or 3D, but got {_ndim}D with shape {_shape}"
+            )
+        if _ndim == 3 and _shape[2] not in (3, 4):
+            # shape[2] == 3: colour image (RGB)
+            # shape[2] == 4: colour image w/ transparency (RGBA)
+            raise ValueError(
+                f"Image data must have 3 (RGB) or 4 (RGBA) channels, but got {_shape[2]} channels"
+            )
+        if _data.ndim == 3:
+            # data is an RGB(A) image
+            _dtype = _data.dtype
+            if _dtype.kind == "i":
+                _data = _data.astype("u1")
+                _dtype = _data.dtype
+            _min_value = np.nanmin(_data)
+            _max_value = np.nanmax(_data)
+            if _min_value < 0:
+                raise ValueError(f"Invalid value for RGB(A) image: {_min_value}")
+            if (_dtype.kind == "f" and _max_value > 1.0) or (
+                _dtype.kind == "u" and _max_value > 255
+            ):
+                raise ValueError(f"Invalid value for RGB(A) image: {_max_value}")
 
     def _get_lats_lons_from_extent_origin(
         self,
