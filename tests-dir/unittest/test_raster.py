@@ -11,10 +11,11 @@ from plate_model_manager import PlateModelManager
 
 import gplately
 from gplately.auxiliary import get_plate_reconstruction
+from gplately.utils.log_utils import turn_on_debug_logging
 
 print(gplately.__file__)
 
-# gplately.turn_on_debug_logging()
+turn_on_debug_logging()
 
 
 def test_raster_longitude_conversion():
