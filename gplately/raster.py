@@ -252,32 +252,66 @@ class Raster(object):
             self.resize(*resize, inplace=True)
 
     def to_data_array(self, name=""):
-        """Convert the raster to an xarray DataArray with latitude and longitude coordinates."""
+        """Convert the raster to an xarray DataArray with spatial coordinates.
+
+        Supports both:
+
+        - 2D scalar rasters with dimensions ``(lat, lon)``
+        - 3D RGB/RGBA rasters with dimensions ``(lat, lon, band)``
+        """
         if not name:
             name = self._data_var_name if self._data_var_name else "z"
+
+        coords = {
+            "lat": (
+                "lat",
+                self.lats,
+                {
+                    "standard_name": "latitude",
+                    "long_name": "latitude",
+                    "units": "degrees_north",
+                },
+            ),
+            "lon": (
+                "lon",
+                self.lons,
+                {
+                    "standard_name": "longitude",
+                    "long_name": "longitude",
+                    "units": "degrees_east",
+                },
+            ),
+        }
+
+        if self.data.ndim == 2:
+            dims = ["lat", "lon"]
+        elif self.data.ndim == 3:
+            if self.data.shape[2] == 3:
+                band_labels = np.array(["r", "g", "b"], dtype=object)
+            elif self.data.shape[2] == 4:
+                band_labels = np.array(["r", "g", "b", "a"], dtype=object)
+            else:
+                raise ValueError(
+                    "3D raster data must have 3 (RGB) or 4 (RGBA) channels."
+                )
+
+            coords["band"] = (
+                "band",
+                band_labels,
+                {
+                    "long_name": "color channel",
+                },
+            )
+            dims = ["lat", "lon", "band"]
+        else:
+            raise ValueError(
+                f"Unsupported raster dimensionality {self.data.ndim}; expected 2D or 3D data."
+            )
+
         return xr.DataArray(
             self.data,
-            coords={
-                "lat": (
-                    "lat",
-                    self.lats,
-                    {
-                        "standard_name": "latitude",
-                        "long_name": "latitude",
-                        "units": "degrees_north",
-                    },
-                ),
-                "lon": (
-                    "lon",
-                    self.lons,
-                    {
-                        "standard_name": "longitude",
-                        "long_name": "longitude",
-                        "units": "degrees_east",
-                    },
-                ),
-            },
-            dims=["lat", "lon"],
+            coords=coords,
+            dims=dims,
             name=name,
         )
 
@@ -675,6 +709,110 @@ class Raster(object):
         *,
         return_indices: Literal[True],
     ) -> tuple[np.ndarray, tuple[np.ndarray, np.ndarray]]: ...
+
+    InterpMethod = Literal[
+        "linear",
+        "nearest",
+        "zero",
+        "slinear",
+        "quadratic",
+        "cubic",
+        "quintic",
+        "polynomial",
+    ]
+
+    def interp(
+        self,
+        *,
+        lons,
+        lats,
+        data: Union[xr.DataArray, None] = None,
+        method: InterpMethod = "linear",
+        fill_value=np.nan,
+        pointwise=True,
+    ) -> np.ndarray:
+        """
+        Interpolate `data` at given longitude/latitude locations.
+
+        `data` may be:
+        - 2D, with dims ('lat', 'lon')
+        - 3D, with dims ('lat', 'lon', <channel>) for RGB/RGBA images
+
+        Parameters
+        ----------
+        pointwise : bool
+            If True (default), `lons`/`lats` are treated as paired query
+            points (lons[i], lats[i]) — e.g. sampling at scattered station
+            locations. Output shape: (N,) or (N, C).
+
+            If False, `lons`/`lats` define a new rectangular grid (outer
+            product) — e.g. resampling the whole image onto a new lat/lon
+            mesh. Output shape: (len(lats), len(lons)) or
+            (len(lats), len(lons), C).
+
+        Returns
+        -------
+        np.ndarray
+        """
+        lons = np.asarray(lons)
+        lats = np.asarray(lats)
+
+        if data is None:
+            data = self.to_data_array()
+
+        orig_dtype = data.dtype
+
+        if "lat" not in data.dims or "lon" not in data.dims:
+            raise ValueError(f"data must have 'lat' and 'lon' dims, got {data.dims}")
+
+        if pointwise:
+            if lons.shape != lats.shape:
+                raise ValueError(
+                    "lons and lats must have the same shape for pointwise interp"
+                )
+
+            # wrap query points as DataArrays sharing a common dim so xarray
+            # does pointwise (vectorized) interpolation instead of building
+            # an outer-product grid
+            lon_da = xr.DataArray(lons, dims="points")
+            lat_da = xr.DataArray(lats, dims="points")
+
+            result = data.interp(
+                lon=lon_da,
+                lat=lat_da,
+                method=method,
+                kwargs={"fill_value": fill_value, "bounds_error": False},
+            )
+
+            # move 'points' to the front, keep any remaining dims (e.g. channel) after it
+            extra_dims = [d for d in result.dims if d != "points"]
+            if extra_dims:
+                result = result.transpose("points", *extra_dims)
+
+        else:
+            # grid mode: lons/lats are new 1D coordinate axes, xarray
+            # broadcasts them as an outer product, replacing 'lon' and 'lat'
+            # in place — original dim order (lat, lon, [channel]) is preserved
+            result = data.interp(
+                lon=lons,
+                lat=lats,
+                method=method,
+                kwargs={"fill_value": fill_value, "bounds_error": False},
+            )
+
+        values = result.values
+
+        if np.issubdtype(orig_dtype, np.integer):
+            info = np.iinfo(orig_dtype)
+            # NaNs can appear from fill_value / out-of-bounds points; interp
+            # output can't be safely rounded to int while NaNs are present,
+            # so fill them with 0 first (adjust default if 0 isn't a sane nodata value)
+            values = np.nan_to_num(values, nan=0)
+            values = np.clip(np.round(values), info.min, info.max).astype(orig_dtype)
+        else:
+            values = values.astype(orig_dtype)
+
+        return values
 
     def interpolate(
         self,
@@ -2136,7 +2274,7 @@ class Raster(object):
         *,
         lons: np.ndarray,
         lats: np.ndarray,
-        interpolation_method: Union[None, str] = None,
+        interpolation_method: str = "nearest",
         region_of_interest: Union[None, float] = None,
     ):
         """Query raster values at given longitude/latitude coordinates.
@@ -2145,41 +2283,28 @@ class Raster(object):
         ----------
         lons, lats : np.ndarray
             Longitude and latitude coordinates. 1D arrays of the same length.
-        interpolation_method : str or None, default None
-            Interpolation method, such as "linear" or "nearest".
-            If ``None``, nearest-gridpoint sampling is used (exact value at the
-            nearest source cell).
+        interpolation_method : str, default "nearest"
+            Interpolation method, such as "linear" or "nearest". See `Raster.InterpMethod` for details.
+
 
         Returns
         -------
         tuple
-            ``(values, (row_indices, col_indices))`` where:
-
-            - ``values`` are sampled values with shape matching broadcasted
-              input coordinates (plus trailing band dimension for multiband data).
-            - ``row_indices`` and ``col_indices`` are nearest-gridpoint indices
-              in the original raster, each with the same shape as input points.
+            Sampled values at the given coordinates.
         """
         if region_of_interest is not None:
-            return self._query_by_KDTree(lons, lats, region_of_interest)
+            try:
+                return self._query_by_KDTree(lons, lats, float(region_of_interest))
+            except (ValueError, TypeError):
+                raise ValueError(
+                    f"Invalid value for region_of_interest: {region_of_interest}"
+                )
 
-        method = "nearest" if interpolation_method is None else interpolation_method
-        values_interp, indices = self.interpolate(
-            lons,
-            lats,
-            method=method,
-            return_indices=True,
+        return self.interp(
+            lons=lons,
+            lats=lats,
+            method=cast(Raster.InterpMethod, interpolation_method),
         )
-
-        rows = np.asarray(indices[0]).reshape(lons.shape)
-        cols = np.asarray(indices[1]).reshape(lons.shape)
-
-        if interpolation_method is None:
-            values = self.data[rows, cols]
-        else:
-            values = values_interp
-
-        return values, (rows, cols)
 
     def _query_by_KDTree(
         self,
