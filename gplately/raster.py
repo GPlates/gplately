@@ -1422,6 +1422,13 @@ class Raster(object):
                 raster_180.data = result
                 result = raster_180.to_longitude_positive_360().data
             else:
+                if self.origin == "upper":
+                    # If the raster origin is lower left, we need to flip it to upper left for reconstruction,
+                    # and then flip it back to lower left after reconstruction.
+                    # The reason is that the reconstruction function assumes the raster origin is upper left.
+                    # The mismatch of raster origins may cause problems when determining the plate IDs for the raster cells.
+                    self.data = np.flipud(self.data)
+                    self.lats = np.flip(self.lats)
                 result = self._recconstruct_raster(
                     to_time=to_time_f,
                     rotation_model=rotation_model,
@@ -1429,6 +1436,9 @@ class Raster(object):
                     threads=threads,
                     fill_value=fill_value,
                 )
+                # if self.origin == "upper":
+                #    result = np.flipud(result)
+                #    self.lons = np.flip(self.lons)
 
         # use the new reconstructed raster data to replace the data in the current Raster object
         # put anchor_plate_id into rotation_model if it is not None
@@ -2458,16 +2468,21 @@ class Raster(object):
         """
         if region_of_interest is not None:
             try:
-                return self._query_by_KDTree(
-                    lons,
-                    lats,
-                    float(region_of_interest),
-                    pointwise=pointwise,
-                )
+                roi_float = float(region_of_interest)
             except (ValueError, TypeError):
                 raise ValueError(
                     f"Invalid value for region_of_interest: {region_of_interest}"
                 )
+            if roi_float < 0:
+                raise ValueError(
+                    f"Invalid value for region_of_interest: {region_of_interest}. It must be non-negative."
+                )
+            return self._query_by_KDTree(
+                lons,
+                lats,
+                roi_float,
+                pointwise=pointwise,
+            )
 
         return self.interp(
             lons=lons,
