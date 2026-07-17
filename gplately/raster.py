@@ -23,6 +23,7 @@ from time import perf_counter
 import warnings
 from multiprocessing import cpu_count
 from typing import List, Tuple, Union, cast, overload, Literal
+from xarray.core.types import InterpOptions
 
 # pyright: reportMissingImports=false
 # pyright: reportMissingModuleSource=false
@@ -45,7 +46,7 @@ from scipy.ndimage import map_coordinates
 
 from gplately.utils.longitude_convert import _convert_longitude
 from .lib.exceptions import NegativeReconstructionTime
-from .lib.enums import GridRegistration, LongitudeConvention
+from .lib.enums import GridRegistration, LongitudeConvention, InterpMethod
 
 from .geometry import pygplates_to_shapely
 from .reconstruction import PlateReconstruction
@@ -149,6 +150,8 @@ class Raster(object):
         self._default_value = None
         self._filename = None
         self._data_mask = None
+        self._spatial_cKDTree = None
+        self._spatial_cKDTree_values = None
 
         # deal with deprecated arguments, such as ``PlateReconstruction_object``, ``filename``, and ``array``
         # if, in some exceptional cases, the user has to use the deprecated arguments,
@@ -363,6 +366,7 @@ class Raster(object):
                 f"Shape mismatch error: old dimensions are {np.shape(self.data)}, new dimensions are {z.shape}"
             )
         self._data = z
+        self._invalidate_spatial_cache()
 
     @property
     def masked_data(self) -> np.ma.masked_array:
@@ -385,6 +389,7 @@ class Raster(object):
                 f"The length of the new longitude array ({x.size}) does not match the number of columns in the data array ({np.shape(self.data)[1]})"
             )
         self._lons = x
+        self._invalidate_spatial_cache()
 
     @property
     def lats(self) -> np.ndarray:
@@ -400,6 +405,7 @@ class Raster(object):
                 f"The length of the new latitude array ({y.size}) does not match the number of rows in the data array ({np.shape(self.data)[0]})"
             )
         self._lats = y
+        self._invalidate_spatial_cache()
 
     @property
     def extent(self) -> Tuple[float, float, float, float]:
@@ -534,7 +540,10 @@ class Raster(object):
 
     def fill_gaps(
         self,
+        *,
         method="nearest",
+        use_gmt=False,
+        use_spatial_tree=False,
         inplace=False,
         valid_mask=None,
         invalid_value=None,
@@ -549,6 +558,12 @@ class Raster(object):
         method : str, default: 'nearest'
             Interpolation method passed to :func:`scipy.interpolate.griddata`.
             Typical options are ``'nearest'``, ``'linear'`` and ``'cubic'``.
+        use_gmt : bool, default: False
+            If ``True``, use PyGMT ``grdfill``/``fillgrd`` for filling gaps.
+            This option currently supports only 2D scalar rasters.
+        use_spatial_tree : bool, default: False
+            If ``True``, use method :meth:`Raster._query_by_KDTree` to fill the gaps.
+            Mutually exclusive with ``use_gmt``. This option support both 2D scalar rasters and 3D RGB/RGBA rasters.
         inplace : bool, default: False
             If ``True``, modify and return the current object. Otherwise,
             return a new :class:`Raster`.
@@ -575,18 +590,80 @@ class Raster(object):
             invalid, or no valid points are available for interpolation.
         """
         data = np.asarray(self.data)
-        if data.ndim == 2:
-            is_image = False
-        elif data.ndim == 3 and data.shape[2] in (3, 4):
-            is_image = True
-        else:
+        is_image = self._validate_fill_gaps_data(data)
+
+        if use_gmt and use_spatial_tree:
+            raise ValueError("`use_gmt` and `use_spatial_tree` are mutually exclusive.")
+        if use_spatial_tree and str(method).lower() != "nearest":
             raise ValueError(
-                "fill_gaps supports either 2D scalar rasters or 3D RGB/RGBA rasters."
+                "use_spatial_tree=True currently supports only method='nearest'."
             )
 
-        ny, nx = data.shape[:2]
-        lon_grid, lat_grid = np.meshgrid(self.lons, self.lats)
+        effective_valid_mask = self._build_fill_gaps_valid_mask(
+            data,
+            is_image=is_image,
+            valid_mask=valid_mask,
+            invalid_value=invalid_value,
+        )
 
+        if np.all(effective_valid_mask):
+            return self if inplace else self.copy()
+
+        if not np.any(effective_valid_mask):
+            raise ValueError("No valid points available to interpolate gaps.")
+
+        gap_mask = ~effective_valid_mask
+
+        if use_gmt:
+            filled_data = self._fill_gaps_with_gmt(data, gap_mask, is_image, method)
+        elif use_spatial_tree:
+            filled_data = self._fill_gaps_with_spatial_tree(
+                data,
+                gap_mask,
+                effective_valid_mask,
+            )
+        else:
+            filled_data = self._fill_gaps_with_griddata(
+                data,
+                gap_mask,
+                effective_valid_mask,
+                is_image,
+                method,
+            )
+
+        if np.issubdtype(data.dtype, np.integer):
+            info = np.iinfo(data.dtype)
+            filled_data = np.clip(np.rint(filled_data), info.min, info.max).astype(
+                data.dtype
+            )
+        else:
+            filled_data = filled_data.astype(data.dtype, copy=False)
+
+        if inplace:
+            self.data = filled_data
+            return self
+        ret = self.copy()
+        ret.data = filled_data
+        return ret
+
+    def _validate_fill_gaps_data(self, data: np.ndarray) -> bool:
+        if data.ndim == 2:
+            return False
+        if data.ndim == 3 and data.shape[2] in (3, 4):
+            return True
+        raise ValueError(
+            "fill_gaps supports either 2D scalar rasters or 3D RGB/RGBA rasters."
+        )
+
+    def _build_fill_gaps_valid_mask(
+        self,
+        data: np.ndarray,
+        *,
+        is_image: bool,
+        valid_mask,
+        invalid_value,
+    ) -> np.ndarray:
+        ny, nx = data.shape[:2]
         finite_mask = np.isfinite(data).all(axis=2) if is_image else np.isfinite(data)
 
         invalid_mask = np.zeros((ny, nx), dtype=bool)
@@ -609,25 +686,89 @@ class Raster(object):
                 invalid_mask = data == invalid_value
 
         inferred_valid_mask = finite_mask & (~invalid_mask)
-
         if valid_mask is None:
-            effective_valid_mask = inferred_valid_mask
-        else:
-            user_valid_mask = np.asarray(valid_mask, dtype=bool)
-            if user_valid_mask.shape != (ny, nx):
-                raise ValueError(
-                    f"valid_mask shape mismatch: expected {(ny, nx)}, got {user_valid_mask.shape}."
-                )
-            # Never treat non-finite/explicitly invalid values as valid interpolation inputs.
-            effective_valid_mask = user_valid_mask & inferred_valid_mask
+            return inferred_valid_mask
 
-        if np.all(effective_valid_mask):
-            return self if inplace else self.copy()
+        user_valid_mask = np.asarray(valid_mask, dtype=bool)
+        if user_valid_mask.shape != (ny, nx):
+            raise ValueError(
+                f"valid_mask shape mismatch: expected {(ny, nx)}, got {user_valid_mask.shape}."
+            )
+        return user_valid_mask & inferred_valid_mask
 
-        if not np.any(effective_valid_mask):
-            raise ValueError("No valid points available to interpolate gaps.")
+    def _fill_gaps_with_gmt(
+        self,
+        data: np.ndarray,
+        gap_mask: np.ndarray,
+        is_image: bool,
+        method,
+    ) -> np.ndarray:
+        if is_image:
+            raise ValueError("use_gmt=True is only supported for 2D scalar rasters.")
 
-        gap_mask = ~effective_valid_mask
+        try:
+            import pygmt
+        except Exception as exc:
+            raise ImportError(
+                "PyGMT is required when use_gmt=True, but it could not be imported."
+            ) from exc
+
+        gmt_fill = getattr(pygmt, "grdfill", None)
+        if gmt_fill is None:
+            gmt_fill = getattr(pygmt, "fillgrd", None)
+        if gmt_fill is None:
+            raise AttributeError(
+                "PyGMT does not provide grdfill/fillgrd in this environment."
+            )
+
+        method_l = str(method).lower()
+        fill_option_map = {
+            "nearest": {"neighborfill": True},
+            "linear": {"splinefill": True},
+            "cubic": {"splinefill": True},
+            "spline": {"splinefill": True},
+        }
+        fill_kwargs = fill_option_map.get(method_l)
+        if fill_kwargs is None:
+            raise ValueError(
+                "Unsupported method for use_gmt=True. "
+                "Use one of: nearest, linear, cubic, spline."
+            )
+
+        gmt_input = np.asarray(data, dtype=np.float64).copy()
+        gmt_input[gap_mask] = np.nan
+        gmt_grid = xr.DataArray(
+            gmt_input,
+            dims=("lat", "lon"),
+            coords={"lat": self.lats, "lon": self.lons},
+            name=self._data_var_name if self._data_var_name else "z",
+        )
+
+        try:
+            gmt_filled = gmt_fill(grid=gmt_grid, **fill_kwargs)
+        except TypeError:
+            legacy_mode_map = {
+                "nearest": "n",
+                "linear": "s",
+                "cubic": "s",
+                "spline": "s",
+            }
+            gmt_filled = gmt_fill(grid=gmt_grid, mode=legacy_mode_map[method_l])
+
+        filled_data = np.asarray(data, dtype=np.float64).copy()
+        gmt_filled = np.asarray(gmt_filled)
+        filled_data[gap_mask] = gmt_filled[gap_mask]
+        return filled_data
+
+    def _fill_gaps_with_griddata(
+        self,
+        data: np.ndarray,
+        gap_mask: np.ndarray,
+        effective_valid_mask: np.ndarray,
+        is_image: bool,
+        method,
+    ) -> np.ndarray:
+        lon_grid, lat_grid = np.meshgrid(self.lons, self.lats)
         valid_points = np.column_stack(
             (lon_grid[effective_valid_mask], lat_grid[effective_valid_mask])
         )
@@ -635,7 +776,6 @@ class Raster(object):
         from scipy.interpolate import griddata
 
         filled_data = np.asarray(data, dtype=np.float64).copy()
-
         if is_image:
             for channel_idx in range(data.shape[2]):
                 channel = data[:, :, channel_idx]
@@ -675,20 +815,49 @@ class Raster(object):
                 interpolated = np.where(np.isnan(interpolated), nearest, interpolated)
             filled_data[gap_mask] = interpolated[gap_mask]
 
-        if np.issubdtype(data.dtype, np.integer):
-            info = np.iinfo(data.dtype)
-            filled_data = np.clip(np.rint(filled_data), info.min, info.max).astype(
-                data.dtype
-            )
-        else:
-            filled_data = filled_data.astype(data.dtype, copy=False)
+        return filled_data
 
-        if inplace:
-            self.data = filled_data
-            return self
-        ret = self.copy()
-        ret.data = filled_data
-        return ret
+    def _fill_gaps_with_spatial_tree(
+        self,
+        data: np.ndarray,
+        gap_mask: np.ndarray,
+        effective_valid_mask: np.ndarray,
+    ) -> np.ndarray:
+        if not np.any(gap_mask):
+            return np.asarray(data, dtype=np.float64).copy()
+
+        lon_grid, lat_grid = np.meshgrid(self.lons, self.lats)
+        query_lons = lon_grid[gap_mask]
+        query_lats = lat_grid[gap_mask]
+
+        old_data_mask = self._data_mask
+        old_tree = self._spatial_cKDTree
+        old_tree_values = self._spatial_cKDTree_values
+        try:
+            invalid_mask = ~effective_valid_mask
+            if data.ndim == 3:
+                invalid_mask = np.repeat(
+                    invalid_mask[:, :, np.newaxis], data.shape[2], axis=2
+                )
+
+            self._data_mask = invalid_mask
+            self._spatial_cKDTree = None
+            self._spatial_cKDTree_values = None
+
+            sampled = self._query_by_KDTree(
+                query_lons,
+                query_lats,
+                region_of_interest=np.inf,
+                pointwise=True,
+            )
+        finally:
+            self._data_mask = old_data_mask
+            self._spatial_cKDTree = old_tree
+            self._spatial_cKDTree_values = old_tree_values
+
+        filled_data = np.asarray(data, dtype=np.float64).copy()
+        filled_data[gap_mask] = sampled
+        return filled_data
 
     @overload
     def interpolate(
@@ -710,24 +879,13 @@ class Raster(object):
         return_indices: Literal[True],
     ) -> tuple[np.ndarray, tuple[np.ndarray, np.ndarray]]: ...
 
-    InterpMethod = Literal[
-        "linear",
-        "nearest",
-        "zero",
-        "slinear",
-        "quadratic",
-        "cubic",
-        "quintic",
-        "polynomial",
-    ]
-
     def interp(
         self,
         *,
         lons,
         lats,
         data: Union[xr.DataArray, None] = None,
-        method: InterpMethod = "linear",
+        method: InterpMethod = InterpMethod.LINEAR,
         fill_value=np.nan,
         pointwise=True,
     ) -> np.ndarray:
@@ -780,7 +938,7 @@ class Raster(object):
             result = data.interp(
                 lon=lon_da,
                 lat=lat_da,
-                method=method,
+                method=cast(InterpOptions, method.value),
                 kwargs={"fill_value": fill_value, "bounds_error": False},
             )
 
@@ -796,7 +954,7 @@ class Raster(object):
             result = data.interp(
                 lon=lons,
                 lat=lats,
-                method=method,
+                method=cast(InterpOptions, method.value),
                 kwargs={"fill_value": fill_value, "bounds_error": False},
             )
 
@@ -978,6 +1136,7 @@ class Raster(object):
             self._data = data
             self._lons = lons
             self._lats = lats
+            self._invalidate_spatial_cache()
             return self
         else:
             return Raster(
@@ -1085,6 +1244,7 @@ class Raster(object):
             self._data = data
             self._lons = lons
             self._lats = lats
+            self._invalidate_spatial_cache()
             # Return the current data or Raster.
             if return_array:
                 return self.data
@@ -2276,15 +2436,19 @@ class Raster(object):
         lats: np.ndarray,
         interpolation_method: str = "nearest",
         region_of_interest: Union[None, float] = None,
+        pointwise: bool = True,
     ):
         """Query raster values at given longitude/latitude coordinates.
 
         Parameters
         ----------
         lons, lats : np.ndarray
-            Longitude and latitude coordinates. 1D arrays of the same length.
+            Longitude and latitude coordinates.
         interpolation_method : str, default "nearest"
             Interpolation method, such as "linear" or "nearest". See `Raster.InterpMethod` for details.
+        pointwise : bool, default True
+            If True, sample paired points `(lons[i], lats[i])`. If False,
+            treat `lons` and `lats` as 1D axes of an output grid.
 
 
         Returns
@@ -2294,7 +2458,12 @@ class Raster(object):
         """
         if region_of_interest is not None:
             try:
-                return self._query_by_KDTree(lons, lats, float(region_of_interest))
+                return self._query_by_KDTree(
+                    lons,
+                    lats,
+                    float(region_of_interest),
+                    pointwise=pointwise,
+                )
             except (ValueError, TypeError):
                 raise ValueError(
                     f"Invalid value for region_of_interest: {region_of_interest}"
@@ -2303,16 +2472,19 @@ class Raster(object):
         return self.interp(
             lons=lons,
             lats=lats,
-            method=cast(Raster.InterpMethod, interpolation_method),
+            method=InterpMethod(interpolation_method),
+            pointwise=pointwise,
         )
 
     def _query_by_KDTree(
         self,
         lons: np.ndarray,
         lats: np.ndarray,
-        region_of_interest: Union[None, float] = None,
+        region_of_interest: float = np.inf,
+        pointwise: bool = True,
     ):
-        """Given a set of location coordinates, return the grid values at these locations.
+        """Given a list of location coordinates, return the nearest valid raster values at these locations.
+        If `region_of_interest` is given, don't consider the cells out of the region of interest.
 
         Parameters
         ----------
@@ -2321,8 +2493,16 @@ class Raster(object):
         lats: list
             a list of latitude of the location coordinates
         region_of_interest: float
-            the radius of the region of interest in km
-            this is the arch length. we need to calculate the straight distance between the two points in 3D space from this arch length.
+            the radius of the region of interest in km. This is the great arch length.
+        pointwise : bool
+            If True (default), `lons`/`lats` are treated as paired query
+            points (lons[i], lats[i]) — e.g. sampling at scattered station
+            locations. Output shape: (N,) or (N, C).
+
+            If False, `lons`/`lats` define a new rectangular grid (outer
+            product) — e.g. resampling the whole image onto a new lat/lon
+            mesh. Output shape: (len(lats), len(lons)) or
+            (len(lats), len(lons), C).
 
         Returns
         -------
@@ -2330,51 +2510,84 @@ class Raster(object):
             a list of grid values for the given locations.
         """
 
-        if not hasattr(self, "spatial_cKDTree"):
-            # build the spatial tree if the tree has not been built yet
-            x0 = self.extent[0]
-            x1 = self.extent[1]
-            y0 = self.extent[2]
-            y1 = self.extent[3]
-            yn = self.data.shape[0]
-            xn = self.data.shape[1]
-            # we assume the grid is Grid-line Registration, not Pixel Registration
-            # http://www.soest.hawaii.edu/pwessel/courses/gg710-01/GMT_grid.pdf
-            # TODO: support both Grid-line and Pixel Registration
-            grid_x, grid_y = np.meshgrid(
-                np.linspace(x0, x1, xn), np.linspace(y0, y1, yn)
-            )
-            # in degrees
-            self._grid_cell_radius = (
-                math.sqrt(math.pow(((y0 - y1) / yn), 2) + math.pow(((x0 - x1) / xn), 2))
-                / 2
-            )
-            self._data_mask = ~np.isnan(self.data)
-            grid_points = [
-                pygplates.PointOnSphere((float(p[1]), float(p[0]))).to_xyz()
-                for p in np.dstack((grid_x, grid_y))[self._data_mask]
-            ]
-            logger.debug("building the spatial tree...")
-            self._spatial_cKDTree = _cKDTree(grid_points)
+        lons_arr = np.asarray(lons, dtype=float)
+        lats_arr = np.asarray(lats, dtype=float)
 
-        query_points = [
-            pygplates.PointOnSphere((float(p[1]), float(p[0]))).to_xyz()
-            for p in zip(lons, lats)
-        ]
-
-        if region_of_interest is None:
-            # convert the arch length(in degrees) to direct length in 3D space
-            roi = 2 * math.sin(math.radians(self._grid_cell_radius / 2.0))
+        if pointwise:
+            if lons_arr.shape != lats_arr.shape:
+                raise ValueError(
+                    "lons and lats must have the same shape for pointwise query"
+                )
+            output_shape = (lons_arr.size,)
+            query_lons = lons_arr.ravel()
+            query_lats = lats_arr.ravel()
         else:
-            roi = 2 * math.sin(
+            if lons_arr.ndim != 1 or lats_arr.ndim != 1:
+                raise ValueError(
+                    "When pointwise is False, lons and lats must be 1D arrays."
+                )
+            output_shape = (lats_arr.size, lons_arr.size)
+            lon_array, lat_array = np.meshgrid(lons_arr, lats_arr)
+            query_lons = lon_array.ravel()
+            query_lats = lat_array.ravel()
+
+        result_dtype = np.result_type(self.data.dtype, float)
+
+        if self._spatial_cKDTree is None or self._spatial_cKDTree_values is None:
+            # The tree has not been built yet. Build the spatial tree.
+            masked_data = np.ma.asarray(self.masked_data)
+            mask = np.ma.getmaskarray(masked_data)
+
+            if masked_data.ndim == 2:
+                valid_mask = ~mask
+            else:
+                valid_mask = ~np.any(mask, axis=2)
+
+            if not np.any(valid_mask):
+                empty_shape = output_shape
+                if self.data.ndim == 3:
+                    empty_shape = empty_shape + (self.data.shape[2],)
+                return np.full(empty_shape, np.nan, dtype=result_dtype)
+
+            lon_grid, lat_grid = np.meshgrid(self.lons, self.lats)
+            valid_grid_points = self._lat_lon_to_vector(
+                lat_grid[valid_mask], lon_grid[valid_mask], degrees=True
+            )
+            valid_grid_points = np.atleast_2d(valid_grid_points)
+            self._spatial_cKDTree = _cKDTree(valid_grid_points)
+            self._spatial_cKDTree_values = np.asarray(self.data)[valid_mask]
+
+        query_points = self._lat_lon_to_vector(query_lats, query_lons, degrees=True)
+
+        if region_of_interest < 0:
+            raise ValueError("region_of_interest must be non-negative.")
+
+        distance_upper_bound = np.inf
+        if np.isfinite(region_of_interest):
+            distance_upper_bound = 2 * math.sin(
                 region_of_interest / pygplates.Earth.mean_radius_in_kms / 2.0
             )
 
-        dists, indices = self._spatial_cKDTree.query(
-            query_points, k=1, distance_upper_bound=roi
+        _, indices = self._spatial_cKDTree.query(
+            query_points, k=1, distance_upper_bound=distance_upper_bound
         )
-        # print(dists, indices)
-        return np.concatenate((self.data[self._data_mask], [math.nan]))[indices]
+        indices = np.asarray(indices, dtype=np.int_)
+        if indices.ndim == 0:
+            indices = indices.reshape(1)
+        values = self._spatial_cKDTree_values
+        assert values is not None
+
+        valid_hits = indices < len(values)
+
+        if values.ndim == 1:
+            result = np.full(indices.shape, np.nan, dtype=result_dtype)
+            result[valid_hits] = values[indices[valid_hits]]
+            return result.reshape(output_shape)
+
+        channel_count = values.shape[1]
+        result = np.full((indices.size, channel_count), np.nan, dtype=result_dtype)
+        result[valid_hits] = values[indices[valid_hits]]
+        return result.reshape(output_shape + (channel_count,))
 
     def clip_by_extent(self, extent):
         """Clip the raster according to a given extent ``(x_min, x_max, y_min, y_max)``.
@@ -2459,6 +2672,7 @@ class Raster(object):
         if inplace:
             self._data = _grid_data
             self._lons = _lons
+            self._invalidate_spatial_cache()
             return self
         else:
             new_raster = self.copy()
@@ -2478,6 +2692,7 @@ class Raster(object):
         if inplace:
             self._data = _grid_data
             self._lons = _lons
+            self._invalidate_spatial_cache()
             return self
         else:
             new_raster = self.copy()
@@ -2626,6 +2841,11 @@ class Raster(object):
         from .grids import _lat_lon_to_vector as _impl
 
         return _impl(lat, lon, degrees=degrees)
+
+    def _invalidate_spatial_cache(self):
+        self._data_mask = None
+        self._spatial_cKDTree = None
+        self._spatial_cKDTree_values = None
 
     def _is_a_common_name_for_longitude(self, name: str) -> bool:
         """Return True if the `name` parameter is a possible common name for longitude."""

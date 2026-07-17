@@ -31,3 +31,14 @@ class LongitudeConvention(Enum):
     SIGNED_180 = "-180_180"
     POSITIVE_180 = "0_180"  # regional grids within longitude range 0-180, not able to decide whether it is POSITIVE_360 or SIGNED_180
     OTHER = "other"  # for other longitude range not belonging to the above conventions, e.g. (360,720), (-540,-180), etc.
+
+
+class InterpMethod(Enum):
+    LINEAR = "linear"
+    NEAREST = "nearest"
+    ZERO = "zero"
+    SLINEAR = "slinear"
+    QUADRATIC = "quadratic"
+    CUBIC = "cubic"
+    QUINTIC = "quintic"
+    POLYNOMIAL = "polynomial"
