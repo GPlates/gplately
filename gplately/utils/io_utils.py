@@ -175,14 +175,15 @@ def load_data_array_from_netcdf(filename, var_name=None):
     filename : str
         Path to the netCDF file to be read.
     var_name : str, optional
-        The variable name of the raster data in the netCDF file. If not provided, the first variable in the netCDF file will be used.
+        The variable name of the raster data in the netCDF file.
+        If not provided, the program will try the best to guess.
 
     Returns
     -------
     data_array : xarray.DataArray
         The data array loaded from the netCDF file.
     """
-
+    raster_xr = None
     try:
         raster_xr = xr.open_dataarray(filename)
     except ValueError:
@@ -191,8 +192,19 @@ def load_data_array_from_netcdf(filename, var_name=None):
         if var_name and var_name in dataset.data_vars:
             raster_xr = dataset[var_name]
         else:
-            first_var = next(iter(dataset.data_vars))
-            raster_xr = dataset[first_var]
+            for name in ["z", "data", "values"]:
+                if name in dataset.data_vars:
+                    raster_xr = dataset[name]
+                    if raster_xr.ndim == 2 and len(raster_xr.coords) == 2:
+                        return raster_xr
+
+            for name in dataset.data_vars:
+                raster_xr = dataset[name]
+                if raster_xr.ndim == 2 and len(raster_xr.coords) == 2:
+                    return raster_xr
+    assert (
+        raster_xr is not None
+    ), f"Failed to load a 2D data array from the netCDF file: {filename}"
     return raster_xr
 
 

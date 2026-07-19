@@ -15,28 +15,14 @@
 #    51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 
-"""
-This sub-module contains tools for working with MaskedArray, ndarray and netCDF4 rasters, as well as gridded-data.
+"""This sub-module contains tools for working with MaskedArray, ndarray and netCDF4 rasters, as well as gridded-data."""
 
-Some methods available in `grids`:
-
-* Point data can be interpolated onto a raster or grid with Scipy using linear or
-nearest-neighbour interpolation.
-* Rasters can be resampled with a set of X and Y-direction spacings, and can be resized
-using given X and Y resolutions.
-* Grids with invalid (NaN-type) data cells can have their NaN entries replaced
-with the values of their nearest valid neighbours.
-"""
-
-import copy
 import logging
 import math
 import os
-from pathlib import Path
 import warnings
 from multiprocessing import cpu_count
-from typing import List, Tuple, Union, cast, overload, Literal
-from enum import Enum
+from typing import Tuple, Union, cast, overload, Literal
 
 # pyright: reportMissingImports=false
 # pyright: reportMissingModuleSource=false
@@ -44,7 +30,6 @@ from enum import Enum
 import matplotlib.colors
 import netCDF4
 import numpy as np
-from shapely.lib import reverse
 import pygplates
 from rasterio.enums import MergeAlg
 from rasterio.features import rasterize as _rasterize
@@ -53,17 +38,13 @@ from scipy.ndimage import distance_transform_edt, map_coordinates
 from scipy.spatial import (
     cKDTree as _cKDTree,  # pyright: ignore[reportAttributeAccessIssue]
 )
-from scipy.spatial import KDTree
 from scipy.spatial.transform import Rotation as _Rotation
 
-
 from .geometry import pygplates_to_shapely
-from .tools import _deg2pixels, griddata_sphere
-from .utils.io_utils import load_feature_collection
 
-# re-export, don't remove
+# re-export, for backward compatibility, don't remove
 from .lib.regular_grid_interpolator import RegularGridInterpolator
-from .raster import Raster, GridRegistration
+from .raster import Raster
 
 logger = logging.getLogger("gplately")
 
@@ -78,7 +59,6 @@ __all__ = [
     "rasterise",
     "rasterize",
     "Raster",
-    "GridRegistration",
     # "TimeRaster",
 ]
 

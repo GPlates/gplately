@@ -254,70 +254,6 @@ class Raster(object):
         if (not isinstance(data, str)) and (resize is not None):
             self.resize(*resize, inplace=True)
 
-    def to_data_array(self, name=""):
-        """Convert the raster to an xarray DataArray with spatial coordinates.
-
-        Supports both:
-
-        - 2D scalar rasters with dimensions ``(lat, lon)``
-        - 3D RGB/RGBA rasters with dimensions ``(lat, lon, band)``
-        """
-        if not name:
-            name = self._data_var_name if self._data_var_name else "z"
-
-        coords = {
-            "lat": (
-                "lat",
-                self.lats,
-                {
-                    "standard_name": "latitude",
-                    "long_name": "latitude",
-                    "units": "degrees_north",
-                },
-            ),
-            "lon": (
-                "lon",
-                self.lons,
-                {
-                    "standard_name": "longitude",
-                    "long_name": "longitude",
-                    "units": "degrees_east",
-                },
-            ),
-        }
-
-        if self.data.ndim == 2:
-            dims = ["lat", "lon"]
-        elif self.data.ndim == 3:
-            if self.data.shape[2] == 3:
-                band_labels = np.array(["r", "g", "b"], dtype=object)
-            elif self.data.shape[2] == 4:
-                band_labels = np.array(["r", "g", "b", "a"], dtype=object)
-            else:
-                raise ValueError(
-                    "3D raster data must have 3 (RGB) or 4 (RGBA) channels."
-                )
-
-            coords["band"] = (
-                "band",
-                band_labels,
-                {
-                    "long_name": "color channel",
-                },
-            )
-            dims = ["lat", "lon", "band"]
-        else:
-            raise ValueError(
-                f"Unsupported raster dimensionality {self.data.ndim}; expected 2D or 3D data."
-            )
-
-        return xr.DataArray(
-            self.data,
-            coords=coords,
-            dims=dims,
-            name=name,
-        )
-
     @property
     def time(self) -> float:
         """The geological time of the time-dependant raster data."""
@@ -330,7 +266,7 @@ class Raster(object):
         if not math.isclose(self._time, new_time_f):
             self._time = new_time_f
             logger.info(
-                f"Reconstructing raster data from current time {self._time} to a new time {new_time_f} Ma."
+                f"Reconstructing raster data inplace from current time {self._time} to a new time {new_time_f} Ma."
             )
             self.reconstruct(new_time_f, inplace=True)
         else:
@@ -529,6 +465,309 @@ class Raster(object):
                 new_plate_recon_obj = PlateReconstruction(new_plate_recon_obj)
         self._plate_reconstruction = new_plate_recon_obj
 
+    def to_data_array(self, name=""):
+        """Convert the raster to an xarray DataArray with spatial coordinates.
+
+        Supports both:
+
+        - 2D scalar rasters with dimensions ``(lat, lon)``
+        - 3D RGB/RGBA rasters with dimensions ``(lat, lon, band)``
+        """
+        if not name:
+            name = self._data_var_name if self._data_var_name else "z"
+
+        coords = {
+            "lat": (
+                "lat",
+                self.lats,
+                {
+                    "standard_name": "latitude",
+                    "long_name": "latitude",
+                    "units": "degrees_north",
+                },
+            ),
+            "lon": (
+                "lon",
+                self.lons,
+                {
+                    "standard_name": "longitude",
+                    "long_name": "longitude",
+                    "units": "degrees_east",
+                },
+            ),
+        }
+
+        if self.data.ndim == 2:
+            dims = ["lat", "lon"]
+        elif self.data.ndim == 3:
+            if self.data.shape[2] == 3:
+                band_labels = np.array(["r", "g", "b"], dtype=object)
+            elif self.data.shape[2] == 4:
+                band_labels = np.array(["r", "g", "b", "a"], dtype=object)
+            else:
+                raise ValueError(
+                    "3D raster data must have 3 (RGB) or 4 (RGBA) channels."
+                )
+
+            coords["band"] = (
+                "band",
+                band_labels,
+                {
+                    "long_name": "color channel",
+                },
+            )
+            dims = ["lat", "lon", "band"]
+        else:
+            raise ValueError(
+                f"Unsupported raster dimensionality {self.data.ndim}; expected 2D or 3D data."
+            )
+
+        return xr.DataArray(
+            self.data,
+            coords=coords,
+            dims=dims,
+            name=name,
+        )
+
+    @overload
+    def reconstruct(
+        self,
+        time,
+        *,
+        fill_value=None,
+        partitioning_features=None,
+        threads=1,
+        anchor_plate_id=None,
+        inplace=False,
+        return_array: Literal[False] = False,
+    ) -> "Raster": ...
+
+    @overload
+    def reconstruct(
+        self,
+        time,
+        *,
+        fill_value=None,
+        partitioning_features=None,
+        threads=1,
+        anchor_plate_id=None,
+        inplace=False,
+        return_array: Literal[True],
+    ) -> np.ndarray: ...
+
+    def reconstruct(
+        self,
+        time,
+        *,
+        fill_value=None,
+        partitioning_features=None,
+        threads=1,
+        anchor_plate_id=None,
+        inplace=False,
+        return_array=False,
+    ) -> Union["Raster", np.ndarray]:
+        """Reconstruct the raster from its current time to a new time.
+
+        Parameters
+        ----------
+        time : float
+            Time to which the data will be reconstructed.
+        fill_value : float, int, str, or tuple, optional
+            The value to be used for regions outside of the static polygons
+            at ``time``. By default (``fill_value=None``), this value will be
+            determined based on the input.
+        partitioning_features : sequence of Feature or str, optional
+            The features used to partition the raster grid and assign plate
+            IDs. By default, ``self.plate_reconstruction.static_polygons``
+            will be used, but alternatively any valid argument to
+            ``pygplates.FeaturesFunctionArgument`` can be specified here.
+        threads : int, default 1
+            Number of threads to use for certain computationally heavy routines.
+        anchor_plate_id : int, optional
+            ID of the anchored plate. By default, reconstructions are made with respect to
+            the anchor plate ID specified in the :class:`PlateReconstruction` object.
+        inplace : bool, default False
+            Perform the reconstruction in-place (replace the raster's data with the reconstructed data).
+        return_array : bool, default False
+            Return a ``numpy.ndarray``, rather than a :class:`Raster`.
+
+        Returns
+        -------
+        Raster or np.ndarray
+            The reconstructed grid. Areas for which no plate ID could be determined will be filled with ``fill_value``.
+
+
+        .. note::
+
+            For two-dimensional grids, ``fill_value`` should be a single
+            number. The default value will be ``np.nan`` for float or
+            complex types, the minimum value for integer types, and the
+            maximum value for unsigned types.
+            For RGB image grids, ``fill_value`` should be a 3-tuple RGB
+            colour code or a matplotlib colour string. The default value
+            will be black (0.0, 0.0, 0.0) or (0, 0, 0).
+            For RGBA image grids, ``fill_value`` should be a 4-tuple RGBA
+            colour code or a matplotlib colour string. The default fill
+            value will be transparent black (0.0, 0.0, 0.0, 0.0) or
+            (0, 0, 0, 0).
+        """
+        to_time_f = self._get_valid_reconstruction_time(time)
+
+        assert (
+            self.plate_reconstruction is not None
+        ), "A valid PlateReconstruction object is required!"
+
+        assert (
+            self.plate_reconstruction.rotation_model is not None
+        ), "A valid RotationModel object is required!"
+
+        if partitioning_features is None:
+            partitioning_features = self.plate_reconstruction.static_polygons
+
+        assert (
+            partitioning_features is not None
+        ), "No partitioning features, such as static polygons, provided!"
+
+        # Flag to roll back to the old implementation quickly if needed.
+        # Keep this flag here for a while until the dust settles.
+        use_old_implementation = False
+        if use_old_implementation:
+            _result = self._reconstruct_grid(
+                grid=self.data,
+                partitioning_features=partitioning_features,
+                rotation_model=self.plate_reconstruction.rotation_model,
+                from_time=self.time,
+                to_time=to_time_f,
+                extent=self.extent,
+                origin=self.origin,
+                fill_value=fill_value,
+                threads=threads,
+                anchor_plate_id=anchor_plate_id,
+            )
+        else:
+            # prepare rotation model for reconstruction
+            rotation_model = None
+            if anchor_plate_id is not None:
+                # the self._get_rotation_model_with_a_different_default_anchor_plate_id() returns None if the anchor_plate_id is the same as the default anchor plate ID in the current rotation model
+                # but it doesn't matter for the function call self._recconstruct_raster() because it will use the default rotation model in self.plate_reconstruction.rotation_model if rotation_model is None
+                rotation_model = (
+                    self._get_rotation_model_with_a_different_default_anchor_plate_id(
+                        anchor_plate_id
+                    )
+                )
+
+            if not self.is_normalized():
+                # If the raster is in 0-360 convention, we need to convert it to -180/180 convention for reconstruction,
+                # and then convert it back to 0-360 convention after reconstruction.
+                # The reason is that the static polygons are usually defined in -180/180 convention.
+                # The mismatch of longitude conventions may cause problems when determining the plate IDs for the raster cells.
+
+                # NOTE: See the warning below
+                # TODO: The code below assumes the partitioning features (static polygons) are in -180/180 convention.
+                # If they are in 0-360 convention, the code may not work correctly. We need to check the longitude convention of the partitioning features and convert them if necessary.
+                _normalized_raster = self.normalized()
+                _result = _normalized_raster._recconstruct_raster(
+                    to_time=to_time_f,
+                    rotation_model=rotation_model,
+                    partitioning_features=partitioning_features,
+                    threads=threads,
+                    fill_value=fill_value,
+                )
+                _normalized_raster.data = _result
+                if self.longitude_convention == LongitudeConvention.POSITIVE_360:
+                    _normalized_raster = _normalized_raster.to_longitude_positive_360()
+                    _result = _normalized_raster.data
+                if self.origin == "upper":
+                    _result = np.flipud(_normalized_raster.data)
+            else:
+                _result = self._recconstruct_raster(
+                    to_time=to_time_f,
+                    rotation_model=rotation_model,
+                    partitioning_features=partitioning_features,
+                    threads=threads,
+                    fill_value=fill_value,
+                )
+
+        # Use the new reconstructed raster data to replace the data in the current Raster object.
+        # Put anchor_plate_id into rotation_model if it is not None.
+        if inplace:
+            self.data = _result
+            self._time = to_time_f
+            if (
+                anchor_plate_id is not None
+                and (
+                    rot_model := self._get_rotation_model_with_a_different_default_anchor_plate_id(
+                        anchor_plate_id
+                    )
+                )
+                is not None
+            ):
+                self.plate_reconstruction.rotation_model = rot_model
+            if return_array:
+                return _result
+            return self
+
+        # If `inplace` is False, create a new Raster object to return
+        if not return_array:
+            _result = Raster(
+                data=_result,
+                plate_reconstruction=copy.deepcopy(self.plate_reconstruction),
+                extent=self.extent,
+                time=to_time_f,
+                origin=self.origin,
+            )
+            if (
+                _result.plate_reconstruction is not None
+                and anchor_plate_id is not None
+                and (
+                    rot_model := self._get_rotation_model_with_a_different_default_anchor_plate_id(
+                        anchor_plate_id
+                    )
+                )
+                is not None
+            ):
+                _result.plate_reconstruction.rotation_model = rot_model
+        return _result
+
+    def plot(self, ax_or_fig=None, projection=None, use_gmt=False, **kwargs):
+        """Plot the raster data using either matplotlib or pygmt.
+
+        Parameters
+        ----------
+        ax_or_fig : matplotlib.axes.Axes or matplotlib.figure.Figure, optional
+            If specified, the image will be drawn within these axes or figure.
+        projection : cartopy.crs.Projection, optional
+            The map projection to be used. If both ``ax_or_fig`` and ``projection`
+            are specified, this will be checked against the ``projection``
+            attribute of ``ax_or_fig``, if it exists.
+        use_gmt : bool, default False
+            If True, use pygmt to plot the raster data. If False, use matplotlib.
+        **kwargs : dict, optional
+            Any further keyword arguments are passed to the plotting function.
+        """
+        if not use_gmt:
+            ax = kwargs.pop("ax", None)
+            if ax_or_fig and ax:
+                raise ValueError("Only one of `ax_or_fig` or `ax` can be specified.")
+            if ax and ax_or_fig is None:
+                ax_or_fig = ax
+            return self.imshow(ax=ax_or_fig, projection=projection, **kwargs)
+        else:
+            from .mapping.pygmt_plot import PygmtPlotEngine
+
+            fig = kwargs.pop("fig", None)
+            if ax_or_fig and fig:
+                raise ValueError("Only one of `ax_or_fig` or `fig` can be specified.")
+            if fig and ax_or_fig is None:
+                ax_or_fig = fig
+            if not ax_or_fig:
+                raise ValueError(
+                    "When `use_gmt` is True, either `ax_or_fig` or `fig` must be specified."
+                )
+            return PygmtPlotEngine().plot_grid(
+                ax_or_fig=ax_or_fig, grid=self, projection=projection, **kwargs
+            )
+
     def copy(self) -> "Raster":
         """Return a copy of the :class:`Raster` object."""
         return Raster(
@@ -537,6 +776,39 @@ class Raster(object):
             self.extent,
             time=self.time,
         )
+
+    def is_normalized(self) -> bool:
+        """Check if the raster is normalized.
+
+        For now, the normalized raster means longitude: [-180, 180] and latitude: [-90, 90].
+        """
+        return (
+            self.longitude_convention == LongitudeConvention.SIGNED_180
+            and self.origin == "lower"
+        )
+
+    def normalized(self) -> "Raster":
+        """Return a normalized Raster object.
+
+        For now, the normalized raster means longitude: [-180, 180] and latitude: [-90, 90].
+
+        Returns
+        -------
+        Raster
+            A new Raster object with normalized longitude and latitude.
+            If the current Raster object is already normalized, it will return itself.
+        """
+        if (
+            self.longitude_convention == LongitudeConvention.SIGNED_180
+            and self.origin == "lower"
+        ):
+            return self
+        else:
+            _normalized_raster = self.to_longitude_signed_180()
+            if _normalized_raster.origin == "upper":
+                _normalized_raster.data = np.flipud(_normalized_raster.data)
+                _normalized_raster.lats = np.flip(_normalized_raster.lats)
+            return _normalized_raster
 
     def fill_gaps(
         self,
@@ -645,219 +917,6 @@ class Raster(object):
         ret = self.copy()
         ret.data = filled_data
         return ret
-
-    def _validate_fill_gaps_data(self, data: np.ndarray) -> bool:
-        if data.ndim == 2:
-            return False
-        if data.ndim == 3 and data.shape[2] in (3, 4):
-            return True
-        raise ValueError(
-            "fill_gaps supports either 2D scalar rasters or 3D RGB/RGBA rasters."
-        )
-
-    def _build_fill_gaps_valid_mask(
-        self,
-        data: np.ndarray,
-        *,
-        is_image: bool,
-        valid_mask,
-        invalid_value,
-    ) -> np.ndarray:
-        ny, nx = data.shape[:2]
-        finite_mask = np.isfinite(data).all(axis=2) if is_image else np.isfinite(data)
-
-        invalid_mask = np.zeros((ny, nx), dtype=bool)
-        if invalid_value is not None:
-            if is_image:
-                invalid_arr = np.asarray(invalid_value)
-                if invalid_arr.ndim == 0:
-                    invalid_mask = np.all(data == invalid_arr.item(), axis=2)
-                else:
-                    invalid_arr = invalid_arr.ravel()
-                    if invalid_arr.size != data.shape[2]:
-                        raise ValueError(
-                            "For RGB/RGBA rasters, invalid_value must be a scalar "
-                            "or have one value per channel."
-                        )
-                    invalid_mask = np.all(
-                        data == invalid_arr.reshape((1, 1, -1)), axis=2
-                    )
-            else:
-                invalid_mask = data == invalid_value
-
-        inferred_valid_mask = finite_mask & (~invalid_mask)
-        if valid_mask is None:
-            return inferred_valid_mask
-
-        user_valid_mask = np.asarray(valid_mask, dtype=bool)
-        if user_valid_mask.shape != (ny, nx):
-            raise ValueError(
-                f"valid_mask shape mismatch: expected {(ny, nx)}, got {user_valid_mask.shape}."
-            )
-        return user_valid_mask & inferred_valid_mask
-
-    def _fill_gaps_with_gmt(
-        self,
-        data: np.ndarray,
-        gap_mask: np.ndarray,
-        is_image: bool,
-        method,
-    ) -> np.ndarray:
-        if is_image:
-            raise ValueError("use_gmt=True is only supported for 2D scalar rasters.")
-
-        try:
-            import pygmt
-        except Exception as exc:
-            raise ImportError(
-                "PyGMT is required when use_gmt=True, but it could not be imported."
-            ) from exc
-
-        gmt_fill = getattr(pygmt, "grdfill", None)
-        if gmt_fill is None:
-            gmt_fill = getattr(pygmt, "fillgrd", None)
-        if gmt_fill is None:
-            raise AttributeError(
-                "PyGMT does not provide grdfill/fillgrd in this environment."
-            )
-
-        method_l = str(method).lower()
-        fill_option_map = {
-            "nearest": {"neighborfill": True},
-            "linear": {"splinefill": True},
-            "cubic": {"splinefill": True},
-            "spline": {"splinefill": True},
-        }
-        fill_kwargs = fill_option_map.get(method_l)
-        if fill_kwargs is None:
-            raise ValueError(
-                "Unsupported method for use_gmt=True. "
-                "Use one of: nearest, linear, cubic, spline."
-            )
-
-        gmt_input = np.asarray(data, dtype=np.float64).copy()
-        gmt_input[gap_mask] = np.nan
-        gmt_grid = xr.DataArray(
-            gmt_input,
-            dims=("lat", "lon"),
-            coords={"lat": self.lats, "lon": self.lons},
-            name=self._data_var_name if self._data_var_name else "z",
-        )
-
-        try:
-            gmt_filled = gmt_fill(grid=gmt_grid, **fill_kwargs)
-        except TypeError:
-            legacy_mode_map = {
-                "nearest": "n",
-                "linear": "s",
-                "cubic": "s",
-                "spline": "s",
-            }
-            gmt_filled = gmt_fill(grid=gmt_grid, mode=legacy_mode_map[method_l])
-
-        filled_data = np.asarray(data, dtype=np.float64).copy()
-        gmt_filled = np.asarray(gmt_filled)
-        filled_data[gap_mask] = gmt_filled[gap_mask]
-        return filled_data
-
-    def _fill_gaps_with_griddata(
-        self,
-        data: np.ndarray,
-        gap_mask: np.ndarray,
-        effective_valid_mask: np.ndarray,
-        is_image: bool,
-        method,
-    ) -> np.ndarray:
-        lon_grid, lat_grid = np.meshgrid(self.lons, self.lats)
-        valid_points = np.column_stack(
-            (lon_grid[effective_valid_mask], lat_grid[effective_valid_mask])
-        )
-
-        from scipy.interpolate import griddata
-
-        filled_data = np.asarray(data, dtype=np.float64).copy()
-        if is_image:
-            for channel_idx in range(data.shape[2]):
-                channel = data[:, :, channel_idx]
-                valid_values = channel[effective_valid_mask]
-                interpolated = griddata(
-                    valid_points,
-                    valid_values,
-                    (lon_grid, lat_grid),
-                    method=method,
-                )
-                if np.any(np.isnan(interpolated[gap_mask])):
-                    nearest = griddata(
-                        valid_points,
-                        valid_values,
-                        (lon_grid, lat_grid),
-                        method="nearest",
-                    )
-                    interpolated = np.where(
-                        np.isnan(interpolated), nearest, interpolated
-                    )
-                filled_data[:, :, channel_idx][gap_mask] = interpolated[gap_mask]
-        else:
-            valid_values = data[effective_valid_mask]
-            interpolated = griddata(
-                valid_points,
-                valid_values,
-                (lon_grid, lat_grid),
-                method=method,
-            )
-            if np.any(np.isnan(interpolated[gap_mask])):
-                nearest = griddata(
-                    valid_points,
-                    valid_values,
-                    (lon_grid, lat_grid),
-                    method="nearest",
-                )
-                interpolated = np.where(np.isnan(interpolated), nearest, interpolated)
-            filled_data[gap_mask] = interpolated[gap_mask]
-
-        return filled_data
-
-    def _fill_gaps_with_spatial_tree(
-        self,
-        data: np.ndarray,
-        gap_mask: np.ndarray,
-        effective_valid_mask: np.ndarray,
-    ) -> np.ndarray:
-        if not np.any(gap_mask):
-            return np.asarray(data, dtype=np.float64).copy()
-
-        lon_grid, lat_grid = np.meshgrid(self.lons, self.lats)
-        query_lons = lon_grid[gap_mask]
-        query_lats = lat_grid[gap_mask]
-
-        old_data_mask = self._data_mask
-        old_tree = self._spatial_cKDTree
-        old_tree_values = self._spatial_cKDTree_values
-        try:
-            invalid_mask = ~effective_valid_mask
-            if data.ndim == 3:
-                invalid_mask = np.repeat(
-                    invalid_mask[:, :, np.newaxis], data.shape[2], axis=2
-                )
-
-            self._data_mask = invalid_mask
-            self._spatial_cKDTree = None
-            self._spatial_cKDTree_values = None
-
-            sampled = self._query_by_KDTree(
-                query_lons,
-                query_lats,
-                region_of_interest=np.inf,
-                pointwise=True,
-            )
-        finally:
-            self._data_mask = old_data_mask
-            self._spatial_cKDTree = old_tree
-            self._spatial_cKDTree_values = old_tree_values
-
-        filled_data = np.asarray(data, dtype=np.float64).copy()
-        filled_data[gap_mask] = sampled
-        return filled_data
 
     @overload
     def interpolate(
@@ -1273,213 +1332,418 @@ class Raster(object):
     def save_to_netcdf4(self, filename, significant_digits=None, fill_value=None):
         """Saves the grid attributed to the :class:`Raster` object to the given ``filename`` (including
         the ".nc" extension) in netCDF4 format."""
-        self.write_netcdf_grid(
+        self._write_netcdf_grid(
             str(filename), self.data, self.extent, significant_digits, fill_value
         )
 
-    @overload
-    def reconstruct(
+    def rotate_reference_frames(
         self,
-        time,
-        *,
-        fill_value=None,
-        partitioning_features=None,
-        threads=1,
-        anchor_plate_id=None,
-        inplace=False,
-        return_array: Literal[False] = False,
-    ) -> "Raster": ...
-
-    @overload
-    def reconstruct(
-        self,
-        time,
-        *,
-        fill_value=None,
-        partitioning_features=None,
-        threads=1,
-        anchor_plate_id=None,
-        inplace=False,
-        return_array: Literal[True],
-    ) -> np.ndarray: ...
-
-    def reconstruct(
-        self,
-        time,
-        *,
-        fill_value=None,
-        partitioning_features=None,
-        threads=1,
-        anchor_plate_id=None,
-        inplace=False,
-        return_array=False,
-    ) -> Union["Raster", np.ndarray]:
-        """Reconstruct the raster from its current time to a new time.
+        grid_spacing_degrees,
+        reconstruction_time,
+        from_rotation_features_or_model=None,
+        to_rotation_features_or_model=None,
+        from_rotation_reference_plate=0,
+        to_rotation_reference_plate=0,
+        non_reference_plate=701,
+        output_name=None,
+    ):
+        """Rotate a grid defined in one plate model reference frame
+        within a :class:`Raster` object to another plate reconstruction model reference frame.
 
         Parameters
         ----------
-        time : float
-            Time to which the data will be reconstructed.
-        fill_value : float, int, str, or tuple, optional
-            The value to be used for regions outside of the static polygons
-            at ``time``. By default (``fill_value=None``), this value will be
-            determined based on the input.
-        partitioning_features : sequence of Feature or str, optional
-            The features used to partition the raster grid and assign plate
-            IDs. By default, ``self.plate_reconstruction.static_polygons``
-            will be used, but alternatively any valid argument to
-            ``pygplates.FeaturesFunctionArgument`` can be specified here.
-        threads : int, default 1
-            Number of threads to use for certain computationally heavy routines.
-        anchor_plate_id : int, optional
-            ID of the anchored plate. By default, reconstructions are made with respect to
-            the anchor plate ID specified in the :class:`PlateReconstruction` object.
-        inplace : bool, default False
-            Perform the reconstruction in-place (replace the raster's data with the reconstructed data).
-        return_array : bool, default False
-            Return a ``numpy.ndarray``, rather than a :class:`Raster`.
+        grid_spacing_degrees : float
+            The spacing (in degrees) for the output rotated grid.
+        reconstruction_time : float
+            The time at which to rotate the input grid.
+        from_rotation_features_or_model : str, list of str, instance of pygplates.RotationModel, filename(s), or pyGPlates feature(s)/collection(s)
+            A filename, or a list of filenames, or a pyGPlates
+            RotationModel object that defines the rotation model
+            that the input grid is currently associated with.
+        to_rotation_features_or_model : str, list of str, instance of pygplates.RotationModel, filename(s), or pyGPlates feature(s)/collection(s)
+            A filename, or a list of filenames, or a pyGPlates
+            RotationModel object that defines the rotation model
+            that the input grid shall be rotated with.
+        from_rotation_reference_plate : int, default = 0
+            The current reference plate for the plate model the grid
+            is defined in. Defaults to the anchor plate 0.
+        to_rotation_reference_plate : int, default = 0
+            The desired reference plate for the plate model the grid
+            is being rotated to. Defaults to the anchor plate 0.
+        non_reference_plate : int, default = 701
+            An arbitrary placeholder reference frame with which
+            to define the "from" and "to" reference frames.
+        output_name : str, default None
+            If passed, the rotated grid is saved as a netCDF grid to this filename.
 
         Returns
         -------
-        Raster or np.ndarray
-            The reconstructed grid. Areas for which no plate ID could be determined will be filled with ``fill_value``.
-
-
-        .. note::
-
-            For two-dimensional grids, ``fill_value`` should be a single
-            number. The default value will be ``np.nan`` for float or
-            complex types, the minimum value for integer types, and the
-            maximum value for unsigned types.
-            For RGB image grids, ``fill_value`` should be a 3-tuple RGB
-            colour code or a matplotlib colour string. The default value
-            will be black (0.0, 0.0, 0.0) or (0, 0, 0).
-            For RGBA image grids, ``fill_value`` should be a 4-tuple RGBA
-            colour code or a matplotlib colour string. The default fill
-            value will be transparent black (0.0, 0.0, 0.0, 0.0) or
-            (0, 0, 0, 0).
+        Raster
+            An instance of the :class:`Raster` object containing the rotated grid.
         """
-        to_time_f = self._get_valid_reconstruction_time(time)
 
-        assert (
-            self.plate_reconstruction is not None
-        ), "A valid PlateReconstruction object is required!"
+        if from_rotation_features_or_model is None:
+            if self.plate_reconstruction is None:
+                raise ValueError("Set a plate reconstruction model")
+            from_rotation_features_or_model = self.plate_reconstruction.rotation_model
+        if to_rotation_features_or_model is None:
+            if self.plate_reconstruction is None:
+                raise ValueError("Set a plate reconstruction model")
+            to_rotation_features_or_model = self.plate_reconstruction.rotation_model
 
-        assert (
-            self.plate_reconstruction.rotation_model is not None
-        ), "A valid RotationModel object is required!"
+        # Create the pygplates.FiniteRotation that rotates
+        # between the two reference frames.
+        from_rotation_model = pygplates.RotationModel(from_rotation_features_or_model)
+        to_rotation_model = pygplates.RotationModel(to_rotation_features_or_model)
+        from_rotation = from_rotation_model.get_rotation(
+            reconstruction_time,
+            non_reference_plate,
+            anchor_plate_id=from_rotation_reference_plate,
+        )
+        to_rotation = to_rotation_model.get_rotation(
+            reconstruction_time,
+            non_reference_plate,
+            anchor_plate_id=to_rotation_reference_plate,
+        )
+        reference_frame_conversion_rotation = to_rotation * from_rotation.get_inverse()
 
-        if partitioning_features is None:
-            partitioning_features = self.plate_reconstruction.static_polygons
+        # Resize the input grid to the specified output resolution before rotating
+        resX = _deg2pixels(grid_spacing_degrees, self.extent[0], self.extent[1])
+        resY = _deg2pixels(grid_spacing_degrees, self.extent[2], self.extent[3])
+        resized_input_grid = self.resize(resX, resY, inplace=False)
 
-        assert (
-            partitioning_features is not None
-        ), "No partitioning features, such as static polygons, provided!"
+        # Get the flattened lons, lats
+        llons, llats = np.meshgrid(resized_input_grid.lons, resized_input_grid.lats)
+        llons = llons.ravel()
+        llats = llats.ravel()
 
-        use_old_implementation = False
-        if use_old_implementation:
-            result = self.reconstruct_grid(
-                grid=self.data,
-                partitioning_features=partitioning_features,
-                rotation_model=self.plate_reconstruction.rotation_model,
-                from_time=self.time,
-                to_time=to_time_f,
-                extent=self.extent,
-                origin=self.origin,
-                fill_value=fill_value,
-                threads=threads,
-                anchor_plate_id=anchor_plate_id,
+        # Convert lon-lat points of Raster grid to pyGPlates points
+        input_points = pygplates.MultiPointOnSphere(
+            (lat, lon) for lon, lat in zip(llons, llats)
+        )
+        # Get grid values of the resized Raster object
+        values = np.array(resized_input_grid.data).ravel()
+
+        # Rotate grid nodes to the other reference frame
+        output_points = reference_frame_conversion_rotation * input_points
+
+        # Assemble rotated points with grid values.
+        out_lon = np.empty_like(llons)
+        out_lat = np.empty_like(llats)
+        zdata = np.empty_like(values)
+        for i, point in enumerate(output_points):
+            out_lat[i], out_lon[i] = point.to_lat_lon()
+            zdata[i] = values[i]
+
+        # Create a regular grid on which to interpolate lats, lons and zdata
+        # Use the extent of the original Raster object
+        extent_globe = self.extent
+
+        resX = (
+            int(np.floor((extent_globe[1] - extent_globe[0]) / grid_spacing_degrees))
+            + 1
+        )
+        resY = (
+            int(np.floor((extent_globe[3] - extent_globe[2]) / grid_spacing_degrees))
+            + 1
+        )
+
+        grid_lon = np.linspace(extent_globe[0], extent_globe[1], resX)
+        grid_lat = np.linspace(extent_globe[2], extent_globe[3], resY)
+
+        X, Y = np.meshgrid(grid_lon, grid_lat)
+
+        # Interpolate lons, lats and zvals over a regular grid using nearest
+        # neighbour interpolation
+        Z = griddata_sphere((out_lon, out_lat), zdata, (X, Y), method="nearest")
+
+        # Write output grid to netCDF if requested.
+        if output_name:
+            self._write_netcdf_grid(output_name, Z, extent=extent_globe)
+
+        return Raster(data=Z)
+
+    def sample_values(self, *, lons, lats, method="linear"):
+        order = {
+            "nearest": 0,
+            "linear": 1,
+            "cubic": 3,
+        }.get(method, method)
+        if order not in {0, 1, 2, 3, 4, 5}:
+            raise ValueError(f"Invalid `method` parameter: {method}")
+
+        extent = self.extent
+        grid = self.data
+
+        # Do not wrap from North to South Pole (or vice versa)
+        if np.any(np.abs(lats) > 90.0):
+            if np.any(np.abs(lats) > 90.0 + 1e-8):
+                # Only raise a warning when the values are really invalid, not just slightly out of bounds due to floating point errors.
+                warnings.warn(
+                    f"Invalid values({lats[np.abs(lats) > 90.0]}) encountered in latitudes; clipping to [-90, 90]",
+                    RuntimeWarning,
+                )
+            lats = np.clip(lats, -90.0, 90.0)
+
+        dx = (extent[1] - extent[0]) / (np.shape(grid)[1] - 1)
+        dy = (extent[3] - extent[2]) / (np.shape(grid)[0] - 1)
+        point_i = (lats - extent[2]) / dy
+        point_j = (lons - extent[0]) / dx
+
+        point_coords = np.vstack(
+            (
+                np.ravel(point_i),
+                np.ravel(point_j),
             )
-        else:
-            # prepare rotation model for reconstruction
-            rotation_model = None
-            if anchor_plate_id is not None:
-                # the self._get_rotation_model_with_a_different_default_anchor_plate_id() returns None if the anchor_plate_id is the same as the default anchor plate ID in the current rotation model
-                # but it doesn't matter for the function call self._recconstruct_raster() because it will use the default rotation model in self.plate_reconstruction.rotation_model if rotation_model is None
-                rotation_model = (
-                    self._get_rotation_model_with_a_different_default_anchor_plate_id(
-                        anchor_plate_id
-                    )
+        )
+        if np.ndim(grid) == 2:
+            interpolated = map_coordinates(
+                np.array(grid, dtype="float"),
+                point_coords,
+                order=order,
+                mode="grid-wrap",
+                prefilter=order > 1,
+            )
+            interpolated = np.reshape(interpolated, np.shape(lons))
+        else:  # ndim(grid) == 3
+            depth = np.shape(grid)[2]
+            interpolated = []
+            interpolated_k = np.array([])
+            for k in range(depth):
+                interpolated_k = map_coordinates(
+                    grid[..., k],
+                    point_coords,
+                    order=order,
+                    mode="grid-wrap",
+                    prefilter=order > 1,
                 )
-
-            if self.longitude_convention == LongitudeConvention.POSITIVE_360:
-                # If the raster is in 0-360 convention, we need to convert it to -180/180 convention for reconstruction,
-                # and then convert it back to 0-360 convention after reconstruction.
-                # The reason is that the static polygons are usually defined in -180/180 convention.
-                # The mismatch of longitude conventions may cause problems when determining the plate IDs for the raster cells.
-
-                # NOTE: See the warning below
-                # TODO: The code below assumes the partitioning features (static polygons) are in -180/180 convention.
-                # If they are in 0-360 convention, the code may not work correctly. We need to check the longitude convention of the partitioning features and convert them if necessary.
-                raster_180 = self.to_longitude_signed_180()
-                result = raster_180._recconstruct_raster(
-                    to_time=to_time_f,
-                    rotation_model=rotation_model,
-                    partitioning_features=partitioning_features,
-                    threads=threads,
-                    fill_value=fill_value,
+                interpolated_k = np.reshape(
+                    interpolated_k,
+                    np.shape(lons),
                 )
-                raster_180.data = result
-                result = raster_180.to_longitude_positive_360().data
-            else:
-                if self.origin == "upper":
-                    # If the raster origin is lower left, we need to flip it to upper left for reconstruction,
-                    # and then flip it back to lower left after reconstruction.
-                    # The reason is that the reconstruction function assumes the raster origin is upper left.
-                    # The mismatch of raster origins may cause problems when determining the plate IDs for the raster cells.
-                    self.data = np.flipud(self.data)
-                    self.lats = np.flip(self.lats)
-                result = self._recconstruct_raster(
-                    to_time=to_time_f,
-                    rotation_model=rotation_model,
-                    partitioning_features=partitioning_features,
-                    threads=threads,
-                    fill_value=fill_value,
-                )
-                # if self.origin == "upper":
-                #    result = np.flipud(result)
-                #    self.lons = np.flip(self.lons)
+                interpolated.append(interpolated_k)
+            del interpolated_k
+            interpolated = np.stack(interpolated, axis=-1)
 
-        # use the new reconstructed raster data to replace the data in the current Raster object
-        # put anchor_plate_id into rotation_model if it is not None
+        interpolated = interpolated.astype(grid.dtype)
+
+        indices = (
+            np.rint(np.ravel(point_i)).astype(np.int_),
+            np.rint(np.ravel(point_j)).astype(np.int_),
+        )
+        return interpolated, indices
+
+    def query(
+        self,
+        *,
+        lons: np.ndarray,
+        lats: np.ndarray,
+        interpolation_method: str = "nearest",
+        region_of_interest: Union[None, float] = None,
+        pointwise: bool = True,
+    ):
+        """Query raster values at given longitude/latitude coordinates.
+
+        Parameters
+        ----------
+        lons, lats : np.ndarray
+            Longitude and latitude coordinates.
+        interpolation_method : str, default "nearest"
+            Interpolation method, such as "linear" or "nearest". See `Raster.InterpMethod` for details.
+        pointwise : bool, default True
+            If True, sample paired points `(lons[i], lats[i])`. If False,
+            treat `lons` and `lats` as 1D axes of an output grid.
+
+
+        Returns
+        -------
+        tuple
+            Sampled values at the given coordinates.
+        """
+        if region_of_interest is not None:
+            try:
+                roi_float = float(region_of_interest)
+            except (ValueError, TypeError):
+                raise ValueError(
+                    f"Invalid value for region_of_interest: {region_of_interest}"
+                )
+            if roi_float < 0:
+                raise ValueError(
+                    f"Invalid value for region_of_interest: {region_of_interest}. It must be non-negative."
+                )
+            return self._query_by_KDTree(
+                lons,
+                lats,
+                roi_float,
+                pointwise=pointwise,
+            )
+
+        return self.interp(
+            lons=lons,
+            lats=lats,
+            method=InterpMethod(interpolation_method),
+            pointwise=pointwise,
+        )
+
+    def clip_by_extent(self, extent):
+        """Clip the raster according to a given extent ``(x_min, x_max, y_min, y_max)``.
+        The extent of the returned raster may be slightly bigger than the given extent.
+        This happens when the border of the given extent fall between two gird lines.
+
+        Parameters
+        ----------
+        extent: tuple
+            A tuple of 4 (min_lon, max_lon, min_lat, max_lat) extent.
+
+        Returns
+        --------
+        Raster
+            The clipped grid.
+        """
+        if (
+            extent[0] >= extent[1]
+            or extent[2] >= extent[3]
+            or extent[0] < -180
+            or extent[1] > 180
+            or extent[2] < -90
+            or extent[3] > 90
+        ):
+            raise Exception(f"Invalid extent: {extent}")
+        if (
+            extent[0] < self.extent[0]
+            or extent[1] > self.extent[1]
+            or extent[2] < self.extent[2]
+            or extent[3] > self.extent[3]
+        ):
+            raise Exception(
+                f"The given extent is out of scope. {extent} -- {self.extent}"
+            )
+        y_len, x_len = self.data.shape
+        logger.debug(f"the shape of raster data x:{x_len} y:{y_len}")
+
+        x0 = math.floor(
+            (extent[0] - self.extent[0])
+            / (self.extent[1] - self.extent[0])
+            * (x_len - 1)
+        )
+        x1 = math.ceil(
+            (extent[1] - self.extent[0])
+            / (self.extent[1] - self.extent[0])
+            * (x_len - 1)
+        )
+        # print(x0, x1)
+        y0 = math.floor(
+            (extent[2] - self.extent[2])
+            / (self.extent[3] - self.extent[2])
+            * (y_len - 1)
+        )
+        y1 = math.ceil(
+            (extent[3] - self.extent[2])
+            / (self.extent[3] - self.extent[2])
+            * (y_len - 1)
+        )
+        # print(y0, y1)
+        new_extent = (
+            x0 / (x_len - 1) * (self.extent[1] - self.extent[0]) - 180,
+            x1 / (x_len - 1) * (self.extent[1] - self.extent[0]) - 180,
+            y0 / (y_len - 1) * (self.extent[3] - self.extent[2]) - 90,
+            y1 / (y_len - 1) * (self.extent[3] - self.extent[2]) - 90,
+        )
+        # print(new_extent)
+        # print(self.data[y0 : y1 + 1, x0 : x1 + 1].shape)
+        return Raster(
+            data=self.data[y0 : y1 + 1, x0 : x1 + 1],
+            extent=new_extent,
+        )
+
+    def clip_by_polygons(self, polygons: list[pygplates.PolygonOnSphere]):
+        """TODO:"""
+        pass
+
+    def to_longitude_positive_360(self, inplace=False):
+        """Convert a grid's longitude coordinates to the [0, 360] convention."""
+        _grid_data, _lons = _convert_longitude(
+            self.data,
+            self.lons,
+            map_fn=lambda l: l % 360,
+            valid_max=360,
+            seam_name="0/360",
+        )
         if inplace:
-            self.data = result
-            self._time = to_time_f
-            if (
-                anchor_plate_id is not None
-                and (
-                    rot_model := self._get_rotation_model_with_a_different_default_anchor_plate_id(
-                        anchor_plate_id
-                    )
-                )
-                is not None
-            ):
-                self.plate_reconstruction.rotation_model = rot_model
-            if return_array:
-                return result
+            self._data = _grid_data
+            self._lons = _lons
+            self._invalidate_spatial_cache()
             return self
+        else:
+            new_raster = self.copy()
+            new_raster._data = _grid_data
+            new_raster._lons = _lons
+            return new_raster
 
-        # If `inplace` is False, create a new Raster object to return
-        if not return_array:
-            result = Raster(
-                data=result,
-                plate_reconstruction=copy.deepcopy(self.plate_reconstruction),
-                extent=self.extent,
-                time=to_time_f,
-                origin=self.origin,
-            )
-            if (
-                result.plate_reconstruction is not None
-                and anchor_plate_id is not None
-                and (
-                    rot_model := self._get_rotation_model_with_a_different_default_anchor_plate_id(
-                        anchor_plate_id
-                    )
+    def to_longitude_signed_180(self, inplace=False):
+        """Convert a grid's longitude coordinates to the [-180, 180] convention."""
+        _grid_data, _lons = _convert_longitude(
+            self.data,
+            self.lons,
+            map_fn=lambda l: ((l + 180) % 360) - 180,
+            valid_max=180,
+            seam_name="-180/180",
+        )
+        if inplace:
+            self._data = _grid_data
+            self._lons = _lons
+            self._invalidate_spatial_cache()
+            return self
+        else:
+            new_raster = self.copy()
+            new_raster._data = _grid_data
+            new_raster._lons = _lons
+            return new_raster
+
+    def imshow(self, ax=None, projection=None, **kwargs):
+        """Deprecated. Use :meth:`plot` instead. Plot the raster data using matplotlib."""
+        for kw in ("origin", "extent"):
+            if kw in kwargs.keys():
+                raise TypeError(
+                    "imshow got an unexpected keyword argument: {}".format(kw)
                 )
-                is not None
+        if ax is None:
+            existing_figure = len(plt.get_fignums()) > 0
+            current_axes = plt.gca()
+            if projection is None:
+                ax = current_axes
+            elif (
+                isinstance(current_axes, _GeoAxes)
+                and current_axes.projection == projection
             ):
-                result.plate_reconstruction.rotation_model = rot_model
-        return result
+                ax = current_axes
+            else:
+                if not existing_figure:
+                    current_axes.remove()
+                ax = plt.axes(projection=projection)
+        elif projection is not None:
+            # projection and ax both specified
+            if isinstance(ax, _GeoAxes) and ax.projection == projection:
+                pass  # projections match
+            else:
+                raise ValueError(
+                    "Both `projection` and `ax` were specified, but"
+                    + " `projection` does not match `ax.projection`"
+                )
+
+        if isinstance(ax, _GeoAxes) and "transform" not in kwargs.keys():
+            kwargs["transform"] = _PlateCarree()
+        extent = self.extent
+        if self.origin == "upper":
+            extent = (
+                extent[0],
+                extent[1],
+                extent[3],
+                extent[2],
+            )
+        self.data[self.data is None] = 0
+        im = ax.imshow(self.data, origin=self.origin, extent=extent, **kwargs)
+        return im
 
     def _recconstruct_raster(
         self,
@@ -2131,366 +2395,6 @@ class Raster(object):
         assert len(polygons_within_extent) == len(polygons_within_extent_features)
         return polygons_within_extent, polygons_within_extent_features
 
-    def imshow(self, ax=None, projection=None, **kwargs):
-        """Display raster data.
-
-        A pre-existing matplotlib ``Axes`` instance is used if available,
-        else a new one is created. The ``origin`` and ``extent`` of the image
-        are determined automatically and should not be specified.
-
-        Parameters
-        ----------
-        ax : matplotlib.axes.Axes, optional
-            If specified, the image will be drawn within these axes.
-        projection : cartopy.crs.Projection, optional
-            The map projection to be used. If both ``ax`` and ``projection``
-            are specified, this will be checked against the ``projection``
-            attribute of ``ax``, if it exists.
-        **kwargs : dict, optional
-            Any further keyword arguments are passed to
-            ``matplotlib.pyplot.imshow`` or ``matplotlib.axes.Axes.imshow``,
-            where appropriate.
-
-        Returns
-        -------
-        matplotlib.image.AxesImage
-
-        Raises
-        ------
-        ValueError
-            If ``ax`` and ``projection`` are both specified, but do not match (i.e. ``ax.projection != projection``).
-        """
-        for kw in ("origin", "extent"):
-            if kw in kwargs.keys():
-                raise TypeError(
-                    "imshow got an unexpected keyword argument: {}".format(kw)
-                )
-        if ax is None:
-            existing_figure = len(plt.get_fignums()) > 0
-            current_axes = plt.gca()
-            if projection is None:
-                ax = current_axes
-            elif (
-                isinstance(current_axes, _GeoAxes)
-                and current_axes.projection == projection
-            ):
-                ax = current_axes
-            else:
-                if not existing_figure:
-                    current_axes.remove()
-                ax = plt.axes(projection=projection)
-        elif projection is not None:
-            # projection and ax both specified
-            if isinstance(ax, _GeoAxes) and ax.projection == projection:
-                pass  # projections match
-            else:
-                raise ValueError(
-                    "Both `projection` and `ax` were specified, but"
-                    + " `projection` does not match `ax.projection`"
-                )
-
-        if isinstance(ax, _GeoAxes) and "transform" not in kwargs.keys():
-            kwargs["transform"] = _PlateCarree()
-        extent = self.extent
-        if self.origin == "upper":
-            extent = (
-                extent[0],
-                extent[1],
-                extent[3],
-                extent[2],
-            )
-        self.data[self.data is None] = 0
-        im = ax.imshow(self.data, origin=self.origin, extent=extent, **kwargs)
-        return im
-
-    def plot(self, ax_or_fig=None, projection=None, use_gmt=False, **kwargs):
-        """Plot the raster data using either matplotlib or pygmt.
-
-        Parameters
-        ----------
-        ax_or_fig : matplotlib.axes.Axes or matplotlib.figure.Figure, optional
-            If specified, the image will be drawn within these axes or figure.
-        projection : cartopy.crs.Projection, optional
-            The map projection to be used. If both ``ax_or_fig`` and ``projection`
-            are specified, this will be checked against the ``projection``
-            attribute of ``ax_or_fig``, if it exists.
-        use_gmt : bool, default False
-            If True, use pygmt to plot the raster data. If False, use matplotlib.
-        **kwargs : dict, optional
-            Any further keyword arguments are passed to the plotting function.
-        """
-        if not use_gmt:
-            ax = kwargs.pop("ax", None)
-            if ax_or_fig and ax:
-                raise ValueError("Only one of `ax_or_fig` or `ax` can be specified.")
-            if ax and ax_or_fig is None:
-                ax_or_fig = ax
-            return self.imshow(ax=ax_or_fig, projection=projection, **kwargs)
-        else:
-            from .mapping.pygmt_plot import PygmtPlotEngine
-
-            fig = kwargs.pop("fig", None)
-            if ax_or_fig and fig:
-                raise ValueError("Only one of `ax_or_fig` or `fig` can be specified.")
-            if fig and ax_or_fig is None:
-                ax_or_fig = fig
-            if not ax_or_fig:
-                raise ValueError(
-                    "When `use_gmt` is True, either `ax_or_fig` or `fig` must be specified."
-                )
-            return PygmtPlotEngine().plot_grid(
-                ax_or_fig=ax_or_fig, grid=self, projection=projection, **kwargs
-            )
-
-    def rotate_reference_frames(
-        self,
-        grid_spacing_degrees,
-        reconstruction_time,
-        from_rotation_features_or_model=None,
-        to_rotation_features_or_model=None,
-        from_rotation_reference_plate=0,
-        to_rotation_reference_plate=0,
-        non_reference_plate=701,
-        output_name=None,
-    ):
-        """Rotate a grid defined in one plate model reference frame
-        within a :class:`Raster` object to another plate reconstruction model reference frame.
-
-        Parameters
-        ----------
-        grid_spacing_degrees : float
-            The spacing (in degrees) for the output rotated grid.
-        reconstruction_time : float
-            The time at which to rotate the input grid.
-        from_rotation_features_or_model : str, list of str, instance of pygplates.RotationModel, filename(s), or pyGPlates feature(s)/collection(s)
-            A filename, or a list of filenames, or a pyGPlates
-            RotationModel object that defines the rotation model
-            that the input grid is currently associated with.
-        to_rotation_features_or_model : str, list of str, instance of pygplates.RotationModel, filename(s), or pyGPlates feature(s)/collection(s)
-            A filename, or a list of filenames, or a pyGPlates
-            RotationModel object that defines the rotation model
-            that the input grid shall be rotated with.
-        from_rotation_reference_plate : int, default = 0
-            The current reference plate for the plate model the grid
-            is defined in. Defaults to the anchor plate 0.
-        to_rotation_reference_plate : int, default = 0
-            The desired reference plate for the plate model the grid
-            is being rotated to. Defaults to the anchor plate 0.
-        non_reference_plate : int, default = 701
-            An arbitrary placeholder reference frame with which
-            to define the "from" and "to" reference frames.
-        output_name : str, default None
-            If passed, the rotated grid is saved as a netCDF grid to this filename.
-
-        Returns
-        -------
-        Raster
-            An instance of the :class:`Raster` object containing the rotated grid.
-        """
-
-        if from_rotation_features_or_model is None:
-            if self.plate_reconstruction is None:
-                raise ValueError("Set a plate reconstruction model")
-            from_rotation_features_or_model = self.plate_reconstruction.rotation_model
-        if to_rotation_features_or_model is None:
-            if self.plate_reconstruction is None:
-                raise ValueError("Set a plate reconstruction model")
-            to_rotation_features_or_model = self.plate_reconstruction.rotation_model
-
-        # Create the pygplates.FiniteRotation that rotates
-        # between the two reference frames.
-        from_rotation_model = pygplates.RotationModel(from_rotation_features_or_model)
-        to_rotation_model = pygplates.RotationModel(to_rotation_features_or_model)
-        from_rotation = from_rotation_model.get_rotation(
-            reconstruction_time,
-            non_reference_plate,
-            anchor_plate_id=from_rotation_reference_plate,
-        )
-        to_rotation = to_rotation_model.get_rotation(
-            reconstruction_time,
-            non_reference_plate,
-            anchor_plate_id=to_rotation_reference_plate,
-        )
-        reference_frame_conversion_rotation = to_rotation * from_rotation.get_inverse()
-
-        # Resize the input grid to the specified output resolution before rotating
-        resX = _deg2pixels(grid_spacing_degrees, self.extent[0], self.extent[1])
-        resY = _deg2pixels(grid_spacing_degrees, self.extent[2], self.extent[3])
-        resized_input_grid = self.resize(resX, resY, inplace=False)
-
-        # Get the flattened lons, lats
-        llons, llats = np.meshgrid(resized_input_grid.lons, resized_input_grid.lats)
-        llons = llons.ravel()
-        llats = llats.ravel()
-
-        # Convert lon-lat points of Raster grid to pyGPlates points
-        input_points = pygplates.MultiPointOnSphere(
-            (lat, lon) for lon, lat in zip(llons, llats)
-        )
-        # Get grid values of the resized Raster object
-        values = np.array(resized_input_grid.data).ravel()
-
-        # Rotate grid nodes to the other reference frame
-        output_points = reference_frame_conversion_rotation * input_points
-
-        # Assemble rotated points with grid values.
-        out_lon = np.empty_like(llons)
-        out_lat = np.empty_like(llats)
-        zdata = np.empty_like(values)
-        for i, point in enumerate(output_points):
-            out_lat[i], out_lon[i] = point.to_lat_lon()
-            zdata[i] = values[i]
-
-        # Create a regular grid on which to interpolate lats, lons and zdata
-        # Use the extent of the original Raster object
-        extent_globe = self.extent
-
-        resX = (
-            int(np.floor((extent_globe[1] - extent_globe[0]) / grid_spacing_degrees))
-            + 1
-        )
-        resY = (
-            int(np.floor((extent_globe[3] - extent_globe[2]) / grid_spacing_degrees))
-            + 1
-        )
-
-        grid_lon = np.linspace(extent_globe[0], extent_globe[1], resX)
-        grid_lat = np.linspace(extent_globe[2], extent_globe[3], resY)
-
-        X, Y = np.meshgrid(grid_lon, grid_lat)
-
-        # Interpolate lons, lats and zvals over a regular grid using nearest
-        # neighbour interpolation
-        Z = griddata_sphere((out_lon, out_lat), zdata, (X, Y), method="nearest")
-
-        # Write output grid to netCDF if requested.
-        if output_name:
-            self.write_netcdf_grid(output_name, Z, extent=extent_globe)
-
-        return Raster(data=Z)
-
-    def sample_values(self, *, lons, lats, method="linear"):
-        order = {
-            "nearest": 0,
-            "linear": 1,
-            "cubic": 3,
-        }.get(method, method)
-        if order not in {0, 1, 2, 3, 4, 5}:
-            raise ValueError(f"Invalid `method` parameter: {method}")
-
-        extent = self.extent
-        grid = self.data
-
-        # Do not wrap from North to South Pole (or vice versa)
-        if np.any(np.abs(lats) > 90.0):
-            if np.any(np.abs(lats) > 90.0 + 1e-8):
-                # Only raise a warning when the values are really invalid, not just slightly out of bounds due to floating point errors.
-                warnings.warn(
-                    f"Invalid values({lats[np.abs(lats) > 90.0]}) encountered in latitudes; clipping to [-90, 90]",
-                    RuntimeWarning,
-                )
-            lats = np.clip(lats, -90.0, 90.0)
-
-        dx = (extent[1] - extent[0]) / (np.shape(grid)[1] - 1)
-        dy = (extent[3] - extent[2]) / (np.shape(grid)[0] - 1)
-        point_i = (lats - extent[2]) / dy
-        point_j = (lons - extent[0]) / dx
-
-        point_coords = np.vstack(
-            (
-                np.ravel(point_i),
-                np.ravel(point_j),
-            )
-        )
-        if np.ndim(grid) == 2:
-            interpolated = map_coordinates(
-                np.array(grid, dtype="float"),
-                point_coords,
-                order=order,
-                mode="grid-wrap",
-                prefilter=order > 1,
-            )
-            interpolated = np.reshape(interpolated, np.shape(lons))
-        else:  # ndim(grid) == 3
-            depth = np.shape(grid)[2]
-            interpolated = []
-            interpolated_k = np.array([])
-            for k in range(depth):
-                interpolated_k = map_coordinates(
-                    grid[..., k],
-                    point_coords,
-                    order=order,
-                    mode="grid-wrap",
-                    prefilter=order > 1,
-                )
-                interpolated_k = np.reshape(
-                    interpolated_k,
-                    np.shape(lons),
-                )
-                interpolated.append(interpolated_k)
-            del interpolated_k
-            interpolated = np.stack(interpolated, axis=-1)
-
-        interpolated = interpolated.astype(grid.dtype)
-
-        indices = (
-            np.rint(np.ravel(point_i)).astype(np.int_),
-            np.rint(np.ravel(point_j)).astype(np.int_),
-        )
-        return interpolated, indices
-
-    def query(
-        self,
-        *,
-        lons: np.ndarray,
-        lats: np.ndarray,
-        interpolation_method: str = "nearest",
-        region_of_interest: Union[None, float] = None,
-        pointwise: bool = True,
-    ):
-        """Query raster values at given longitude/latitude coordinates.
-
-        Parameters
-        ----------
-        lons, lats : np.ndarray
-            Longitude and latitude coordinates.
-        interpolation_method : str, default "nearest"
-            Interpolation method, such as "linear" or "nearest". See `Raster.InterpMethod` for details.
-        pointwise : bool, default True
-            If True, sample paired points `(lons[i], lats[i])`. If False,
-            treat `lons` and `lats` as 1D axes of an output grid.
-
-
-        Returns
-        -------
-        tuple
-            Sampled values at the given coordinates.
-        """
-        if region_of_interest is not None:
-            try:
-                roi_float = float(region_of_interest)
-            except (ValueError, TypeError):
-                raise ValueError(
-                    f"Invalid value for region_of_interest: {region_of_interest}"
-                )
-            if roi_float < 0:
-                raise ValueError(
-                    f"Invalid value for region_of_interest: {region_of_interest}. It must be non-negative."
-                )
-            return self._query_by_KDTree(
-                lons,
-                lats,
-                roi_float,
-                pointwise=pointwise,
-            )
-
-        return self.interp(
-            lons=lons,
-            lats=lats,
-            method=InterpMethod(interpolation_method),
-            pointwise=pointwise,
-        )
-
     def _query_by_KDTree(
         self,
         lons: np.ndarray,
@@ -2604,121 +2508,6 @@ class Raster(object):
         result[valid_hits] = values[indices[valid_hits]]
         return result.reshape(output_shape + (channel_count,))
 
-    def clip_by_extent(self, extent):
-        """Clip the raster according to a given extent ``(x_min, x_max, y_min, y_max)``.
-        The extent of the returned raster may be slightly bigger than the given extent.
-        This happens when the border of the given extent fall between two gird lines.
-
-        Parameters
-        ----------
-        extent: tuple
-            A tuple of 4 (min_lon, max_lon, min_lat, max_lat) extent.
-
-        Returns
-        --------
-        Raster
-            The clipped grid.
-        """
-        if (
-            extent[0] >= extent[1]
-            or extent[2] >= extent[3]
-            or extent[0] < -180
-            or extent[1] > 180
-            or extent[2] < -90
-            or extent[3] > 90
-        ):
-            raise Exception(f"Invalid extent: {extent}")
-        if (
-            extent[0] < self.extent[0]
-            or extent[1] > self.extent[1]
-            or extent[2] < self.extent[2]
-            or extent[3] > self.extent[3]
-        ):
-            raise Exception(
-                f"The given extent is out of scope. {extent} -- {self.extent}"
-            )
-        y_len, x_len = self.data.shape
-        logger.debug(f"the shape of raster data x:{x_len} y:{y_len}")
-
-        x0 = math.floor(
-            (extent[0] - self.extent[0])
-            / (self.extent[1] - self.extent[0])
-            * (x_len - 1)
-        )
-        x1 = math.ceil(
-            (extent[1] - self.extent[0])
-            / (self.extent[1] - self.extent[0])
-            * (x_len - 1)
-        )
-        # print(x0, x1)
-        y0 = math.floor(
-            (extent[2] - self.extent[2])
-            / (self.extent[3] - self.extent[2])
-            * (y_len - 1)
-        )
-        y1 = math.ceil(
-            (extent[3] - self.extent[2])
-            / (self.extent[3] - self.extent[2])
-            * (y_len - 1)
-        )
-        # print(y0, y1)
-        new_extent = (
-            x0 / (x_len - 1) * (self.extent[1] - self.extent[0]) - 180,
-            x1 / (x_len - 1) * (self.extent[1] - self.extent[0]) - 180,
-            y0 / (y_len - 1) * (self.extent[3] - self.extent[2]) - 90,
-            y1 / (y_len - 1) * (self.extent[3] - self.extent[2]) - 90,
-        )
-        # print(new_extent)
-        # print(self.data[y0 : y1 + 1, x0 : x1 + 1].shape)
-        return Raster(
-            data=self.data[y0 : y1 + 1, x0 : x1 + 1],
-            extent=new_extent,
-        )
-
-    def to_longitude_positive_360(self, inplace=False):
-        """Convert a grid's longitude coordinates to the [0, 360] convention."""
-        _grid_data, _lons = _convert_longitude(
-            self.data,
-            self.lons,
-            map_fn=lambda l: l % 360,
-            valid_max=360,
-            seam_name="0/360",
-        )
-        if inplace:
-            self._data = _grid_data
-            self._lons = _lons
-            self._invalidate_spatial_cache()
-            return self
-        else:
-            new_raster = self.copy()
-            new_raster._data = _grid_data
-            new_raster._lons = _lons
-            return new_raster
-
-    def to_longitude_signed_180(self, inplace=False):
-        """Convert a grid's longitude coordinates to the [-180, 180] convention."""
-        _grid_data, _lons = _convert_longitude(
-            self.data,
-            self.lons,
-            map_fn=lambda l: ((l + 180) % 360) - 180,
-            valid_max=180,
-            seam_name="-180/180",
-        )
-        if inplace:
-            self._data = _grid_data
-            self._lons = _lons
-            self._invalidate_spatial_cache()
-            return self
-        else:
-            new_raster = self.copy()
-            new_raster._data = _grid_data
-            new_raster._lons = _lons
-            return new_raster
-
-    def clip_by_polygons(self, polygons: list[pygplates.PolygonOnSphere]):
-        """TODO:"""
-        pass
-
     def _get_rotation_model_with_a_different_default_anchor_plate_id(
         self, anchor_plate_id: int
     ) -> Union[pygplates.RotationModel, None]:
@@ -2737,6 +2526,219 @@ class Raster(object):
                 default_anchor_plate_id=anchor_plate_id,
             )
         return None
+
+    def _validate_fill_gaps_data(self, data: np.ndarray) -> bool:
+        if data.ndim == 2:
+            return False
+        if data.ndim == 3 and data.shape[2] in (3, 4):
+            return True
+        raise ValueError(
+            "fill_gaps supports either 2D scalar rasters or 3D RGB/RGBA rasters."
+        )
+
+    def _build_fill_gaps_valid_mask(
+        self,
+        data: np.ndarray,
+        *,
+        is_image: bool,
+        valid_mask,
+        invalid_value,
+    ) -> np.ndarray:
+        ny, nx = data.shape[:2]
+        finite_mask = np.isfinite(data).all(axis=2) if is_image else np.isfinite(data)
+
+        invalid_mask = np.zeros((ny, nx), dtype=bool)
+        if invalid_value is not None:
+            if is_image:
+                invalid_arr = np.asarray(invalid_value)
+                if invalid_arr.ndim == 0:
+                    invalid_mask = np.all(data == invalid_arr.item(), axis=2)
+                else:
+                    invalid_arr = invalid_arr.ravel()
+                    if invalid_arr.size != data.shape[2]:
+                        raise ValueError(
+                            "For RGB/RGBA rasters, invalid_value must be a scalar "
+                            "or have one value per channel."
+                        )
+                    invalid_mask = np.all(
+                        data == invalid_arr.reshape((1, 1, -1)), axis=2
+                    )
+            else:
+                invalid_mask = data == invalid_value
+
+        inferred_valid_mask = finite_mask & (~invalid_mask)
+        if valid_mask is None:
+            return inferred_valid_mask
+
+        user_valid_mask = np.asarray(valid_mask, dtype=bool)
+        if user_valid_mask.shape != (ny, nx):
+            raise ValueError(
+                f"valid_mask shape mismatch: expected {(ny, nx)}, got {user_valid_mask.shape}."
+            )
+        return user_valid_mask & inferred_valid_mask
+
+    def _fill_gaps_with_gmt(
+        self,
+        data: np.ndarray,
+        gap_mask: np.ndarray,
+        is_image: bool,
+        method,
+    ) -> np.ndarray:
+        if is_image:
+            raise ValueError("use_gmt=True is only supported for 2D scalar rasters.")
+
+        try:
+            import pygmt
+        except Exception as exc:
+            raise ImportError(
+                "PyGMT is required when use_gmt=True, but it could not be imported."
+            ) from exc
+
+        gmt_fill = getattr(pygmt, "grdfill", None)
+        if gmt_fill is None:
+            gmt_fill = getattr(pygmt, "fillgrd", None)
+        if gmt_fill is None:
+            raise AttributeError(
+                "PyGMT does not provide grdfill/fillgrd in this environment."
+            )
+
+        method_l = str(method).lower()
+        fill_option_map = {
+            "nearest": {"neighborfill": True},
+            "linear": {"splinefill": True},
+            "cubic": {"splinefill": True},
+            "spline": {"splinefill": True},
+        }
+        fill_kwargs = fill_option_map.get(method_l)
+        if fill_kwargs is None:
+            raise ValueError(
+                "Unsupported method for use_gmt=True. "
+                "Use one of: nearest, linear, cubic, spline."
+            )
+
+        gmt_input = np.asarray(data, dtype=np.float64).copy()
+        gmt_input[gap_mask] = np.nan
+        gmt_grid = xr.DataArray(
+            gmt_input,
+            dims=("lat", "lon"),
+            coords={"lat": self.lats, "lon": self.lons},
+            name=self._data_var_name if self._data_var_name else "z",
+        )
+
+        try:
+            gmt_filled = gmt_fill(grid=gmt_grid, **fill_kwargs)
+        except TypeError:
+            legacy_mode_map = {
+                "nearest": "n",
+                "linear": "s",
+                "cubic": "s",
+                "spline": "s",
+            }
+            gmt_filled = gmt_fill(grid=gmt_grid, mode=legacy_mode_map[method_l])
+
+        filled_data = np.asarray(data, dtype=np.float64).copy()
+        gmt_filled = np.asarray(gmt_filled)
+        filled_data[gap_mask] = gmt_filled[gap_mask]
+        return filled_data
+
+    def _fill_gaps_with_griddata(
+        self,
+        data: np.ndarray,
+        gap_mask: np.ndarray,
+        effective_valid_mask: np.ndarray,
+        is_image: bool,
+        method,
+    ) -> np.ndarray:
+        lon_grid, lat_grid = np.meshgrid(self.lons, self.lats)
+        valid_points = np.column_stack(
+            (lon_grid[effective_valid_mask], lat_grid[effective_valid_mask])
+        )
+
+        from scipy.interpolate import griddata
+
+        filled_data = np.asarray(data, dtype=np.float64).copy()
+        if is_image:
+            for channel_idx in range(data.shape[2]):
+                channel = data[:, :, channel_idx]
+                valid_values = channel[effective_valid_mask]
+                interpolated = griddata(
+                    valid_points,
+                    valid_values,
+                    (lon_grid, lat_grid),
+                    method=method,
+                )
+                if np.any(np.isnan(interpolated[gap_mask])):
+                    nearest = griddata(
+                        valid_points,
+                        valid_values,
+                        (lon_grid, lat_grid),
+                        method="nearest",
+                    )
+                    interpolated = np.where(
+                        np.isnan(interpolated), nearest, interpolated
+                    )
+                filled_data[:, :, channel_idx][gap_mask] = interpolated[gap_mask]
+        else:
+            valid_values = data[effective_valid_mask]
+            interpolated = griddata(
+                valid_points,
+                valid_values,
+                (lon_grid, lat_grid),
+                method=method,
+            )
+            if np.any(np.isnan(interpolated[gap_mask])):
+                nearest = griddata(
+                    valid_points,
+                    valid_values,
+                    (lon_grid, lat_grid),
+                    method="nearest",
+                )
+                interpolated = np.where(np.isnan(interpolated), nearest, interpolated)
+            filled_data[gap_mask] = interpolated[gap_mask]
+
+        return filled_data
+
+    def _fill_gaps_with_spatial_tree(
+        self,
+        data: np.ndarray,
+        gap_mask: np.ndarray,
+        effective_valid_mask: np.ndarray,
+    ) -> np.ndarray:
+        if not np.any(gap_mask):
+            return np.asarray(data, dtype=np.float64).copy()
+
+        lon_grid, lat_grid = np.meshgrid(self.lons, self.lats)
+        query_lons = lon_grid[gap_mask]
+        query_lats = lat_grid[gap_mask]
+
+        old_data_mask = self._data_mask
+        old_tree = self._spatial_cKDTree
+        old_tree_values = self._spatial_cKDTree_values
+        try:
+            invalid_mask = ~effective_valid_mask
+            if data.ndim == 3:
+                invalid_mask = np.repeat(
+                    invalid_mask[:, :, np.newaxis], data.shape[2], axis=2
+                )
+
+            self._data_mask = invalid_mask
+            self._spatial_cKDTree = None
+            self._spatial_cKDTree_values = None
+
+            sampled = self._query_by_KDTree(
+                query_lons,
+                query_lats,
+                region_of_interest=np.inf,
+                pointwise=True,
+            )
+        finally:
+            self._data_mask = old_data_mask
+            self._spatial_cKDTree = old_tree
+            self._spatial_cKDTree_values = old_tree_values
+
+        filled_data = np.asarray(data, dtype=np.float64).copy()
+        filled_data[gap_mask] = sampled
+        return filled_data
 
     def _get_valid_reconstruction_time(self, new_time) -> float:
         """Validate the new reconstruction time and return it as a float.
@@ -2853,9 +2855,32 @@ class Raster(object):
         return _data, _plate_reconstruction
 
     def _lat_lon_to_vector(self, lat, lon, degrees=False):
-        from .grids import _lat_lon_to_vector as _impl
+        """Convert (lat, lon) coordinates (degrees or radians) to vectors on
+        the unit sphere. Returns a vector of shape (3,) if `lat` and `lon` are
+        single values, else an array of shape (N, 3) containing N (x, y, z)
+        row vectors, where N is the size of `lat` and `lon`.
+        """
+        lon = np.atleast_1d(lon).flatten()
+        lat = np.atleast_1d(lat).flatten()
+        if degrees:
+            lat = np.deg2rad(lat)
+            lon = np.deg2rad(lon)
 
-        return _impl(lat, lon, degrees=degrees)
+        x = np.cos(lat) * np.cos(lon)
+        y = np.cos(lat) * np.sin(lon)
+        z = np.sin(lat)
+
+        size = x.size
+        if size == 1:
+            x = np.atleast_1d(np.squeeze(x))[0]
+            y = np.atleast_1d(np.squeeze(y))[0]
+            z = np.atleast_1d(np.squeeze(z))[0]
+            return np.array((x, y, z))
+
+        x = x.reshape((-1, 1))
+        y = y.reshape((-1, 1))
+        z = z.reshape((-1, 1))
+        return np.hstack((x, y, z))
 
     def _invalidate_spatial_cache(self):
         self._data_mask = None
@@ -2973,6 +2998,113 @@ class Raster(object):
                 return fill_array.item()
 
         return fill_value
+
+    def _validate_data(self):
+        _data = self.data
+        assert isinstance(_data, np.ndarray), "Raster data must be a numpy ndarray"
+
+        _ndim = np.ndim(_data)
+        _shape = np.shape(_data)
+        if _ndim not in (2, 3):
+            # ndim == 2: greyscale image/grid
+            # ndim == 3: colour RGB(A) image
+            raise ValueError(
+                f"Raster data must be 2D or 3D, but got {_ndim}D with shape {_shape}"
+            )
+        if _ndim == 3 and _shape[2] not in (3, 4):
+            # shape[2] == 3: colour image (RGB)
+            # shape[2] == 4: colour image w/ transparency (RGBA)
+            raise ValueError(
+                f"Image data must have 3 (RGB) or 4 (RGBA) channels, but got {_shape[2]} channels"
+            )
+        if _data.ndim == 3:
+            # data is an RGB(A) image
+            _dtype = _data.dtype
+            if _dtype.kind == "i":
+                _data = _data.astype("u1")
+                _dtype = _data.dtype
+            _min_value = np.nanmin(_data)
+            _max_value = np.nanmax(_data)
+            if _min_value < 0:
+                raise ValueError(f"Invalid value for RGB(A) image: {_min_value}")
+            if (_dtype.kind == "f" and _max_value > 1.0) or (
+                _dtype.kind == "u" and _max_value > 255
+            ):
+                raise ValueError(f"Invalid value for RGB(A) image: {_max_value}")
+
+    def _get_lats_lons_from_extent_origin(
+        self,
+        extent: Union[str, Tuple[float, float, float, float], None],
+        origin: Union[Literal["lower", "upper"], str, None],
+    ) -> Tuple[np.ndarray, np.ndarray]:
+        """Build latitude and longitude coordinate vectors from raster extent.
+
+        Parameters
+        ----------
+        extent : {'global', None} or 4-tuple
+            Spatial bounds as ``(min_lon, max_lon, min_lat, max_lat)``.
+            ``None`` or ``'global'`` maps to ``(-180, 180, -90, 90)``.
+        origin : {'lower', 'upper'} or None
+            Desired vertical axis direction for latitude values.
+            If provided, latitude bounds are reordered to match:
+            - ``'lower'`` -> ascending latitudes
+            - ``'upper'`` -> descending latitudes
+
+        Returns
+        -------
+        tuple[numpy.ndarray, numpy.ndarray]
+            ``(lats, lons)`` matching ``self.data.shape`` as
+            ``(n_rows, n_cols)``.
+
+        Raises
+        ------
+        TypeError
+            If ``extent`` is not ``None``, ``'global'``, or a 4-element sequence.
+        ValueError
+            If ``origin`` is not one of ``'lower'`` or ``'upper'``.
+        """
+        # Normalise extent input.
+        if extent is None:
+            min_lon, max_lon, min_lat, max_lat = (
+                -180.0,
+                180.0,
+                -90.0,
+                90.0,
+            )
+        elif isinstance(extent, str):
+            if extent.lower() != "global":
+                raise ValueError(
+                    "`extent` string must be 'global' (or use a 4-element tuple)."
+                )
+            min_lon, max_lon, min_lat, max_lat = (-180.0, 180.0, -90.0, 90.0)
+        else:
+            if len(extent) != 4:
+                raise TypeError(
+                    "`extent` must be a four-element tuple, 'global', or None"
+                )
+            min_lon, max_lon, min_lat, max_lat = (
+                float(extent[0]),
+                float(extent[1]),
+                float(extent[2]),
+                float(extent[3]),
+            )
+
+        if origin is not None:
+            origin_str = str(origin).lower()
+            if origin_str not in ("lower", "upper"):
+                raise ValueError("`origin` must be one of: 'lower', 'upper', or None")
+
+            if origin_str == "lower" and min_lat > max_lat:
+                # increasing latitudes for 'lower' origin
+                min_lat, max_lat = max_lat, min_lat
+            elif origin_str == "upper" and min_lat < max_lat:
+                # decreasing latitudes for 'upper' origin
+                min_lat, max_lat = max_lat, min_lat
+
+        lons = np.linspace(min_lon, max_lon, self.data.shape[1])
+        lats = np.linspace(min_lat, max_lat, self.data.shape[0])
+
+        return lats, lons
 
     def __array__(self):
         return np.array(self.data)
@@ -3130,130 +3262,12 @@ class Raster(object):
     # A number of low-level helper functions are still implemented in grids.py.
     # We provide lazy wrappers here to avoid import-time circular dependencies.
     # TODO: sort out this issue later
-
-    def _find_extent_from_data(self, data, origin):
-        from .grids import _find_extent_from_data as _impl
-
-        return _impl(data, origin)
-
-    def read_netcdf_grid(self, *args, **kwargs):
-        from .grids import read_netcdf_grid as _impl
-
-        return _impl(*args, **kwargs)
-
-    def write_netcdf_grid(self, *args, **kwargs):
+    def _write_netcdf_grid(self, *args, **kwargs):
         from .grids import write_netcdf_grid as _impl
 
         return _impl(*args, **kwargs)
 
-    def reconstruct_grid(self, *args, **kwargs):
+    def _reconstruct_grid(self, *args, **kwargs):
         from .grids import reconstruct_grid as _impl
 
         return _impl(*args, **kwargs)
-
-    def _validate_data(self):
-        _data = self.data
-        assert isinstance(_data, np.ndarray), "Raster data must be a numpy ndarray"
-
-        _ndim = np.ndim(_data)
-        _shape = np.shape(_data)
-        if _ndim not in (2, 3):
-            # ndim == 2: greyscale image/grid
-            # ndim == 3: colour RGB(A) image
-            raise ValueError(
-                f"Raster data must be 2D or 3D, but got {_ndim}D with shape {_shape}"
-            )
-        if _ndim == 3 and _shape[2] not in (3, 4):
-            # shape[2] == 3: colour image (RGB)
-            # shape[2] == 4: colour image w/ transparency (RGBA)
-            raise ValueError(
-                f"Image data must have 3 (RGB) or 4 (RGBA) channels, but got {_shape[2]} channels"
-            )
-        if _data.ndim == 3:
-            # data is an RGB(A) image
-            _dtype = _data.dtype
-            if _dtype.kind == "i":
-                _data = _data.astype("u1")
-                _dtype = _data.dtype
-            _min_value = np.nanmin(_data)
-            _max_value = np.nanmax(_data)
-            if _min_value < 0:
-                raise ValueError(f"Invalid value for RGB(A) image: {_min_value}")
-            if (_dtype.kind == "f" and _max_value > 1.0) or (
-                _dtype.kind == "u" and _max_value > 255
-            ):
-                raise ValueError(f"Invalid value for RGB(A) image: {_max_value}")
-
-    def _get_lats_lons_from_extent_origin(
-        self,
-        extent: Union[str, Tuple[float, float, float, float], None],
-        origin: Union[Literal["lower", "upper"], str, None],
-    ) -> Tuple[np.ndarray, np.ndarray]:
-        """Build latitude and longitude coordinate vectors from raster extent.
-
-        Parameters
-        ----------
-        extent : {'global', None} or 4-tuple
-            Spatial bounds as ``(min_lon, max_lon, min_lat, max_lat)``.
-            ``None`` or ``'global'`` maps to ``(-180, 180, -90, 90)``.
-        origin : {'lower', 'upper'} or None
-            Desired vertical axis direction for latitude values.
-            If provided, latitude bounds are reordered to match:
-            - ``'lower'`` -> ascending latitudes
-            - ``'upper'`` -> descending latitudes
-
-        Returns
-        -------
-        tuple[numpy.ndarray, numpy.ndarray]
-            ``(lats, lons)`` matching ``self.data.shape`` as
-            ``(n_rows, n_cols)``.
-
-        Raises
-        ------
-        TypeError
-            If ``extent`` is not ``None``, ``'global'``, or a 4-element sequence.
-        ValueError
-            If ``origin`` is not one of ``'lower'`` or ``'upper'``.
-        """
-        # Normalise extent input.
-        if extent is None:
-            min_lon, max_lon, min_lat, max_lat = (
-                -180.0,
-                180.0,
-                -90.0,
-                90.0,
-            )
-        elif isinstance(extent, str):
-            if extent.lower() != "global":
-                raise ValueError(
-                    "`extent` string must be 'global' (or use a 4-element tuple)."
-                )
-            min_lon, max_lon, min_lat, max_lat = (-180.0, 180.0, -90.0, 90.0)
-        else:
-            if len(extent) != 4:
-                raise TypeError(
-                    "`extent` must be a four-element tuple, 'global', or None"
-                )
-            min_lon, max_lon, min_lat, max_lat = (
-                float(extent[0]),
-                float(extent[1]),
-                float(extent[2]),
-                float(extent[3]),
-            )
-
-        if origin is not None:
-            origin_str = str(origin).lower()
-            if origin_str not in ("lower", "upper"):
-                raise ValueError("`origin` must be one of: 'lower', 'upper', or None")
-
-            if origin_str == "lower" and min_lat > max_lat:
-                # increasing latitudes for 'lower' origin
-                min_lat, max_lat = max_lat, min_lat
-            elif origin_str == "upper" and min_lat < max_lat:
-                # decreasing latitudes for 'upper' origin
-                min_lat, max_lat = max_lat, min_lat
-
-        lons = np.linspace(min_lon, max_lon, self.data.shape[1])
-        lats = np.linspace(min_lat, max_lat, self.data.shape[0])
-
-        return lats, lons
