@@ -632,25 +632,11 @@ class Raster(object):
         # Flag to roll back to the old implementation quickly if needed.
         # Keep this flag here for a while until the dust settles. -- MC 2026-07-20
         use_old_implementation = False
-        if use_old_implementation:
-            _result = self._reconstruct_grid(
-                grid=self.data,
-                partitioning_features=partitioning_features,
-                rotation_model=self.plate_reconstruction.rotation_model,
-                from_time=self.time,
-                to_time=to_time_f,
-                extent=self.extent,
-                origin=self.origin,
-                fill_value=fill_value,
-                threads=threads,
-                anchor_plate_id=anchor_plate_id,
-            )
-        else:
-            # prepare rotation model for reconstruction
-            rotation_model = None
+        if not use_old_implementation:
+            rotation_model = None  # if this is None, the default rotation model in self.plate_reconstruction.rotation_model will be used
             if anchor_plate_id is not None:
                 # the self._get_rotation_model_with_a_different_default_anchor_plate_id() returns None if the anchor_plate_id is the same as the default anchor plate ID in the current rotation model
-                # but it doesn't matter for the function call self._recconstruct_raster() because it will use the default rotation model in self.plate_reconstruction.rotation_model if rotation_model is None
+                # but it doesn't matter for the function call self._reconstruct_raster() because it will use the default rotation model in self.plate_reconstruction.rotation_model if rotation_model is None
                 rotation_model = (
                     self._get_rotation_model_with_a_different_default_anchor_plate_id(
                         anchor_plate_id
@@ -667,7 +653,7 @@ class Raster(object):
                 # TODO: The code below assumes the partitioning features (static polygons) are in -180/180 convention.
                 # If they are in 0-360 convention, the code may not work correctly. We need to check the longitude convention of the partitioning features and convert them if necessary.
                 _normalized_raster = self.normalized()
-                _reconstructed_raster = _normalized_raster._recconstruct_impl(
+                _reconstructed_raster = _normalized_raster._reconstruct_impl(
                     to_time=to_time_f,
                     rotation_model=rotation_model,
                     partitioning_features=partitioning_features,
@@ -682,58 +668,82 @@ class Raster(object):
 
                 if self.origin == "upper":
                     _reconstructed_raster.data = np.flipud(_reconstructed_raster.data)
-
-                _result = _reconstructed_raster.data
+                    _reconstructed_raster.lats = np.flip(_reconstructed_raster.lats)
             else:
-                _reconstructed_raster = self._recconstruct_impl(
+                _reconstructed_raster = self._reconstruct_impl(
                     to_time=to_time_f,
                     rotation_model=rotation_model,
                     partitioning_features=partitioning_features,
                     threads=threads,
                     fill_value=fill_value,
                 )
-                _result = _reconstructed_raster.data
 
-        # Use the new reconstructed raster data to replace the data in the current Raster object.
-        # Put anchor_plate_id into rotation_model if it is not None.
-        if inplace:
-            self.data = _result
-            self._time = to_time_f
-            if (
-                anchor_plate_id is not None
-                and (
-                    rot_model := self._get_rotation_model_with_a_different_default_anchor_plate_id(
-                        anchor_plate_id
-                    )
-                )
-                is not None
-            ):
-                self.plate_reconstruction.rotation_model = rot_model
-            if return_array:
-                return _result
-            return self
-
-        # If `inplace` is False, create a new Raster object to return
-        if not return_array:
-            _result = Raster(
-                data=_result,
-                plate_reconstruction=copy.deepcopy(self.plate_reconstruction),
+            if inplace:
+                self.data = _reconstructed_raster.data
+                self._time = to_time_f
+                if rotation_model is not None:
+                    self.plate_reconstruction.rotation_model = rotation_model
+                if return_array:
+                    return self.data
+                return self
+            else:
+                if return_array:
+                    return _reconstructed_raster.data
+                return _reconstructed_raster
+        else:
+            # Code below uses the old implementation for reconstruction
+            _result = self._reconstruct_grid(
+                grid=self.data,
+                partitioning_features=partitioning_features,
+                rotation_model=self.plate_reconstruction.rotation_model,
+                from_time=self.time,
+                to_time=to_time_f,
                 extent=self.extent,
-                time=to_time_f,
                 origin=self.origin,
+                fill_value=fill_value,
+                threads=threads,
+                anchor_plate_id=anchor_plate_id,
             )
-            if (
-                _result.plate_reconstruction is not None
-                and anchor_plate_id is not None
-                and (
-                    rot_model := self._get_rotation_model_with_a_different_default_anchor_plate_id(
-                        anchor_plate_id
+            # Use the new reconstructed raster data to replace the data in the current Raster object.
+            # Put anchor_plate_id into rotation_model if it is not None.
+            if inplace:
+                self.data = _result
+                self._time = to_time_f
+                if (
+                    anchor_plate_id is not None
+                    and (
+                        rot_model := self._get_rotation_model_with_a_different_default_anchor_plate_id(
+                            anchor_plate_id
+                        )
                     )
+                    is not None
+                ):
+                    self.plate_reconstruction.rotation_model = rot_model
+                if return_array:
+                    return _result
+                return self
+
+            # If `inplace` is False, create a new Raster object to return
+            if not return_array:
+                _result = Raster(
+                    data=_result,
+                    plate_reconstruction=copy.deepcopy(self.plate_reconstruction),
+                    extent=self.extent,
+                    time=to_time_f,
+                    origin=self.origin,
                 )
-                is not None
-            ):
-                _result.plate_reconstruction.rotation_model = rot_model
-        return _result
+                if (
+                    _result.plate_reconstruction is not None
+                    and anchor_plate_id is not None
+                    and (
+                        rot_model := self._get_rotation_model_with_a_different_default_anchor_plate_id(
+                            anchor_plate_id
+                        )
+                    )
+                    is not None
+                ):
+                    _result.plate_reconstruction.rotation_model = rot_model
+            return _result
 
     def plot(self, ax_or_fig=None, projection=None, use_gmt=False, **kwargs):
         """Plot the raster data using either matplotlib or pygmt.
@@ -782,6 +792,17 @@ class Raster(object):
             self.extent,
             time=self.time,
         )
+
+    def is_global(self) -> bool:
+        if not math.isclose(abs(self.lats[-1] - self.lats[0]), 180):
+            return False
+
+        if np.isclose(self.lons[-1] - self.lons[0], 360):
+            # something like [0, 1, 2, ..., 359, 360] or [-180, -179, ..., 179, 180]
+            return True
+        avg_spacing = np.mean(np.diff(self.lons))
+        # something like [0, 1, 2, ..., 358, 359] or [-180, -179, ..., 178, 179], without the duplicate 360 or 180 at the end, but still covering the whole globe
+        return (self.lons[-1] - self.lons[0]) >= (360 - 1.5 * avg_spacing)
 
     def is_normalized(self) -> bool:
         """Check if the raster is normalized.
@@ -1767,7 +1788,7 @@ class Raster(object):
         im = ax.imshow(self.data, origin=self.origin, extent=extent, **kwargs)
         return im
 
-    def _recconstruct_impl(
+    def _reconstruct_impl(
         self,
         to_time: float,
         rotation_model: Union[pygplates.RotationModel, None] = None,
@@ -1806,6 +1827,9 @@ class Raster(object):
         Raster
             The reconstructed raster. Areas outside of the partitioning polygons will be filled with invalid/default values.
         """
+        assert (
+            self.is_normalized()
+        ), "Raster data must be normalized before calling Raster._reconstruct_impl()."
         timings: dict[str, float] = {}
         total_t0 = perf_counter()
 
@@ -1910,6 +1934,7 @@ class Raster(object):
         stage_t0 = perf_counter()
         (
             output_raster,
+            output_raster_extent,
             output_sample_points_lons,
             output_sample_points_lats,
             output_sample_points_row_col_indices,
@@ -1920,16 +1945,9 @@ class Raster(object):
 
         # build a KDTree from the reconstructed original raster data points
         # and query the nearest neighbor for the sample points of output raster
-        reconstructed_original_sample_points_lats = (
-            reconstructed_original_sample_point_lat_lon_array[:, 0]
-        )
-        reconstructed_original_sample_points_lons = (
-            reconstructed_original_sample_point_lat_lon_array[:, 1]
-        )
-
         reconstructed_original_sample_points_vecs = self._lat_lon_to_vector(
-            reconstructed_original_sample_points_lats,
-            reconstructed_original_sample_points_lons,
+            reconstructed_original_sample_point_lat_lon_array[:, 0],
+            reconstructed_original_sample_point_lat_lon_array[:, 1],
             degrees=True,
         )
         # Build a KDTree from the reconstructed original raster data points
@@ -1982,21 +2000,29 @@ class Raster(object):
         logger.debug(
             f"Raster._recconstruct_raster timing (total={total_elapsed:.3f}s): {timings_summary}"
         )
-        ret_raster_obj = Raster(
-            data=output_raster,
-            extent=(
-                output_sample_points_lons.min(),
-                output_sample_points_lons.max(),
-                output_sample_points_lats.min(),
-                output_sample_points_lats.max(),
-            ),
-            time=to_time,
-        )
+        if self.is_global():
+            ret_raster_obj = Raster(
+                data=output_raster,
+                extent=(-180, 180, -90, 90),
+                time=to_time,
+            )
+        else:
+            ret_raster_obj = Raster(
+                data=output_raster,
+                extent=output_raster_extent,
+                time=to_time,
+            )
+        ret_raster_obj.plate_reconstruction = self.plate_reconstruction
+        assert (
+            ret_raster_obj.plate_reconstruction is not None
+        ), "Plate reconstruction should not be None."
+        if rotation_model is not None:
+            ret_raster_obj.plate_reconstruction.rotation_model = rotation_model
         return ret_raster_obj
 
     def _get_output_raster_and_sample_points(
         self, partitioning_polygons_at_to_time, fill_value=None
-    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    ) -> Tuple[np.ndarray, tuple, np.ndarray, np.ndarray, np.ndarray]:
         """Get the output raster and the sample points that are inside the partitioning polygons at `to_time`.
 
         Parameters
@@ -2011,6 +2037,8 @@ class Raster(object):
         -------
         output_raster : np.ndarray
             A 2D array of the output raster, initialized with the specified fill value.
+        output_raster_extent : tuple
+            The extent of the output raster.
         output_sample_points_lons : np.ndarray
             A 1D array of longitudes of the sample points that are inside the partitioning polygons at `to_time`.
         output_sample_points_lats : np.ndarray
@@ -2019,10 +2047,7 @@ class Raster(object):
             A 1D array of tuples, where each tuple contains the row and column indices of the sample points in the output raster that are inside the partitioning polygons at `to_time`.
         """
         # If the original raster extent is global, the output raster extent will also be global.
-        left, right, bottom, top = self.extent
-        if math.isclose(abs(left - right), 360) and math.isclose(
-            abs(bottom - top), 180
-        ):
+        if self.is_global():
             output_raster_extent = self.extent
         else:
             # Get output raster extent from the partitioning polygons at the `to_time`.
@@ -2093,6 +2118,7 @@ class Raster(object):
 
         return (
             output_raster,
+            output_raster_extent,
             output_sample_points_lons,
             output_sample_points_lats,
             output_sample_points_row_col_indices,
@@ -2393,12 +2419,12 @@ class Raster(object):
                         partitioning_polygons.append(geom)
                         associated_features.append(f)
 
-        left, right, bottom, top = self.extent
-        # If the extent is global, no need to cut the partitioning polygons.
-        if math.isclose(abs(left - right), 360) or math.isclose(abs(bottom - top), 180):
+        # If the raster is global, no need to cut the partitioning polygons.
+        if self.is_global():
             return partitioning_polygons, associated_features
 
         # Otherwise, define the rectangular extent polygon to cut the partitioning polygons
+        left, right, bottom, top = self.extent
         extent_polygon = pygplates.PolygonOnSphere((lat, lon) for lon, lat in [(left, bottom), (left, top), (right, top), (right, bottom)])  # type: ignore
         extent_feature = pygplates.Feature()  # type: ignore
         extent_feature.set_geometry(extent_polygon)  # type: ignore
