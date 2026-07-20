@@ -307,19 +307,20 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_spaced_axis</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">,</span> <span class="n">step</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Build an inclusive coordinate axis from `start` to `stop` with the given `step`.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Build an inclusive coordinate axis from `start` to `stop`, sampled every `step`.</span>
 
-<span class="sd">    Equivalent in intent to ``np.arange(start, stop + step, step)``, but the endpoints</span>
-<span class="sd">    are exact. Accumulated floating-point error in ``np.arange`` can push the final</span>
-<span class="sd">    value past `stop` (e.g. a 0.2-degree global latitude axis ends at</span>
-<span class="sd">    90.00000000000256), which later trips the pole-clipping warning in `sample_grid`.</span>
-<span class="sd">    Deriving the number of samples and using `np.linspace` keeps both endpoints exact.</span>
+<span class="sd">    Equivalent to ``np.arange(start, stop + step, step)``, but with exact endpoints.</span>
+<span class="sd">    Accumulated floating-point error in ``np.arange`` can push the final sample past</span>
+<span class="sd">    `stop` — a 0.2-degree global latitude axis ends at 90.00000000000256, which trips</span>
+<span class="sd">    the pole-clipping guard in `sample_grid`. Deriving the sample count and handing it</span>
+<span class="sd">    to `np.linspace` keeps both endpoints exact.</span>
 
-<span class="sd">    `step` must have the same sign as ``stop - start``; descending axes (as produced by</span>
-<span class="sd">    an ``upper`` origin) are therefore handled the same way as ascending ones.</span>
+<span class="sd">    `step` must share the sign of ``stop - start``, so descending axes (as produced by</span>
+<span class="sd">    an ``upper`` origin) are handled the same way as ascending ones. As with</span>
+<span class="sd">    ``np.arange``, a mis-signed `step` yields an empty axis.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">n</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">((</span><span class="n">stop</span> <span class="o">-</span> <span class="n">start</span><span class="p">)</span> <span class="o">/</span> <span class="n">step</span><span class="p">))</span> <span class="o">+</span> <span class="mi">1</span>
-    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">,</span> <span class="nb">max</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">,</span> <span class="nb">max</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_find_extent_from_data</span><span class="p">(</span>
