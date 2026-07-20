@@ -17,7 +17,7 @@
 import logging
 from functools import wraps
 
-from .lib.exceptions import ReconstructionTimeNotSet
+from .exceptions import ReconstructionTimeNotSet
 
 logger = logging.getLogger("gplately")
 

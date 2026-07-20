@@ -44,7 +44,7 @@ from scipy.spatial import KDTree
 from scipy.spatial.transform import Rotation as _Rotation
 from scipy.ndimage import map_coordinates
 
-from gplately.utils.longitude_convert import _convert_longitude
+from .utils.longitude_convert import _convert_longitude, upwrap_antimeridian_wraparound
 from .lib.exceptions import NegativeReconstructionTime
 from .lib.enums import GridRegistration, LongitudeConvention, InterpMethod
 
@@ -594,7 +594,8 @@ class Raster(object):
         Returns
         -------
         Raster or np.ndarray
-            The reconstructed grid. Areas for which no plate ID could be determined will be filled with ``fill_value``.
+            The reconstructed Raster as a Raster object or a numpy array.
+            Areas with no valid data will be filled with ``fill_value``.
 
 
         .. note::
@@ -626,10 +627,10 @@ class Raster(object):
 
         assert (
             partitioning_features is not None
-        ), "No partitioning features, such as static polygons, provided!"
+        ), "Partitioning features, such as static polygons, are required! They can be provided either in the PlateReconstruction object or as an argument to this function."
 
         # Flag to roll back to the old implementation quickly if needed.
-        # Keep this flag here for a while until the dust settles.
+        # Keep this flag here for a while until the dust settles. -- MC 2026-07-20
         use_old_implementation = False
         if use_old_implementation:
             _result = self._reconstruct_grid(
@@ -666,27 +667,32 @@ class Raster(object):
                 # TODO: The code below assumes the partitioning features (static polygons) are in -180/180 convention.
                 # If they are in 0-360 convention, the code may not work correctly. We need to check the longitude convention of the partitioning features and convert them if necessary.
                 _normalized_raster = self.normalized()
-                _result = _normalized_raster._recconstruct_raster(
+                _reconstructed_raster = _normalized_raster._recconstruct_impl(
                     to_time=to_time_f,
                     rotation_model=rotation_model,
                     partitioning_features=partitioning_features,
                     threads=threads,
                     fill_value=fill_value,
                 )
-                _normalized_raster.data = _result
+
                 if self.longitude_convention == LongitudeConvention.POSITIVE_360:
-                    _normalized_raster = _normalized_raster.to_longitude_positive_360()
-                    _result = _normalized_raster.data
+                    _reconstructed_raster = (
+                        _reconstructed_raster.to_longitude_positive_360()
+                    )
+
                 if self.origin == "upper":
-                    _result = np.flipud(_normalized_raster.data)
+                    _reconstructed_raster.data = np.flipud(_reconstructed_raster.data)
+
+                _result = _reconstructed_raster.data
             else:
-                _result = self._recconstruct_raster(
+                _reconstructed_raster = self._recconstruct_impl(
                     to_time=to_time_f,
                     rotation_model=rotation_model,
                     partitioning_features=partitioning_features,
                     threads=threads,
                     fill_value=fill_value,
                 )
+                _result = _reconstructed_raster.data
 
         # Use the new reconstructed raster data to replace the data in the current Raster object.
         # Put anchor_plate_id into rotation_model if it is not None.
@@ -786,6 +792,22 @@ class Raster(object):
             self.longitude_convention == LongitudeConvention.SIGNED_180
             and self.origin == "lower"
         )
+
+    def is_longitude_wrapped(self) -> bool:
+        """Check if the longitude coordinates have wrapped around the antimeridian."""
+        if np.any(np.abs(np.diff(self.lons)) > 180):
+            return True
+        return False
+
+    def unwrap_longitude(self):
+        """Unwrap the longitude coordinates around the antimeridian.
+        For example, if the longitude coordinates are [170, 175, 180, -175, -170] in range[-180, 180], they will be unwrapped to [170, 175, 180, 185, 190] in range[0, 360].
+
+        .. note:: There is no need to rearrange the raster data because unwrapping the longitude coordinates does not change the order of the data.
+            The data will still be in the same order as before, but the longitude coordinates will be adjusted to avoid wrapping around the antimeridian.
+        """
+        if self.is_longitude_wrapped():
+            self.lons = upwrap_antimeridian_wraparound(self.lons)
 
     def normalized(self) -> "Raster":
         """Return a normalized Raster object.
@@ -1745,14 +1767,14 @@ class Raster(object):
         im = ax.imshow(self.data, origin=self.origin, extent=extent, **kwargs)
         return im
 
-    def _recconstruct_raster(
+    def _recconstruct_impl(
         self,
         to_time: float,
         rotation_model: Union[pygplates.RotationModel, None] = None,
         partitioning_features: Union[pygplates.FeatureCollection, None] = None,
         fill_value: Union[float, int, str, tuple, None] = None,
         threads: Union[int, None] = None,
-    ) -> np.ndarray:
+    ) -> "Raster":
         """Reconstruct the raster from its current time to a new time.
 
         .. note::
@@ -1781,8 +1803,8 @@ class Raster(object):
 
         Returns
         -------
-        np.ndarray
-            The reconstructed raster data. Areas outside of the partitioning polygons will be filled with invalid/default values.
+        Raster
+            The reconstructed raster. Areas outside of the partitioning polygons will be filled with invalid/default values.
         """
         timings: dict[str, float] = {}
         total_t0 = perf_counter()
@@ -1800,7 +1822,7 @@ class Raster(object):
                 "Reconstruction time is the same as the original time and no other rotation model is provided; returning input grid unchanged",
                 UserWarning,
             )
-            return self.data
+            return self
 
         # Get the partitioning polygons at the `from_time` and their corresponding features(we need the features to query plate IDs, or other attributes).
         # Only get those polygons that are valid at both the `from_time` and `to_time`,
@@ -1960,8 +1982,17 @@ class Raster(object):
         logger.debug(
             f"Raster._recconstruct_raster timing (total={total_elapsed:.3f}s): {timings_summary}"
         )
-
-        return output_raster
+        ret_raster_obj = Raster(
+            data=output_raster,
+            extent=(
+                output_sample_points_lons.min(),
+                output_sample_points_lons.max(),
+                output_sample_points_lats.min(),
+                output_sample_points_lats.max(),
+            ),
+            time=to_time,
+        )
+        return ret_raster_obj
 
     def _get_output_raster_and_sample_points(
         self, partitioning_polygons_at_to_time, fill_value=None

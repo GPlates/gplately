@@ -10,7 +10,7 @@
 
 # %%
 from test_raster_impl import (
-    test_raster_longitude_conversion,
+    test_raster_reconstruct_lon_0_360,
     test_raster_query,
     test_raster_clip_by_extent,
     test_upper_origin_raster_reconstruction,
@@ -18,15 +18,15 @@ from test_raster_impl import (
 )
 
 all_flag = False
-test_raster_longitude_conversion_flag = False
+test_raster_reconstruct_lon_0_360_flag = False
 test_raster_query_flag = False
 test_raster_clip_by_extent_flag = False
-test_upper_origin_raster_reconstruction_flag = True
+test_upper_origin_raster_reconstruction_flag = False
 test_raster_reconstruction_flag = True
 
 # %%
-if all_flag or test_raster_longitude_conversion_flag:
-    test_raster_longitude_conversion()
+if all_flag or test_raster_reconstruct_lon_0_360_flag:
+    test_raster_reconstruct_lon_0_360()
 # %%
 if all_flag or test_raster_query_flag:
     test_raster_query()

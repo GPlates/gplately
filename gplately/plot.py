@@ -36,7 +36,7 @@ from shapely.geometry.base import BaseGeometry, BaseMultipartGeometry
 from shapely.ops import linemerge
 
 from . import ptt
-from .decorators import (
+from .lib.decorators import (
     append_docstring,
     validate_reconstruction_time,
     validate_topology_availability,
