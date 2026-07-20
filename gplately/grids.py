@@ -221,6 +221,22 @@ def _is_a_common_name_for_latitude(name: str) -> bool:
     return name in ["lat", "lats", "latitude", "y", "north", "northing", "northings"]
 
 
+def _spaced_axis(start, stop, step):
+    """Build an inclusive coordinate axis from `start` to `stop` with the given `step`.
+
+    Equivalent in intent to ``np.arange(start, stop + step, step)``, but the endpoints
+    are exact. Accumulated floating-point error in ``np.arange`` can push the final
+    value past `stop` (e.g. a 0.2-degree global latitude axis ends at
+    90.00000000000256), which later trips the pole-clipping warning in `sample_grid`.
+    Deriving the number of samples and using `np.linspace` keeps both endpoints exact.
+
+    `step` must have the same sign as ``stop - start``; descending axes (as produced by
+    an ``upper`` origin) are therefore handled the same way as ascending ones.
+    """
+    n = int(round((stop - start) / step)) + 1
+    return np.linspace(start, stop, max(n, 1))
+
+
 def _find_extent_from_data(
     data, origin
 ) -> Union[Tuple[float, float, float, float], None]:
@@ -401,8 +417,8 @@ def read_netcdf_grid(
         dY = np.diff(cdf_lat).mean()
 
         if not np.isclose(dX, spacingX) or not np.isclose(dY, spacingY):
-            lon_grid = np.arange(cdf_lon.min(), cdf_lon.max() + spacingX, spacingX)
-            lat_grid = np.arange(cdf_lat.min(), cdf_lat.max() + spacingY, spacingY)
+            lon_grid = _spaced_axis(cdf_lon.min(), cdf_lon.max(), spacingX)
+            lat_grid = _spaced_axis(cdf_lat.min(), cdf_lat.max(), spacingY)
             lonq, latq = np.meshgrid(lon_grid, lat_grid)
             original_extent = (
                 cdf_lon[0],
@@ -1512,8 +1528,8 @@ def rasterise(
         lons = np.linspace(minx, maxx, shape[1], endpoint=True)
         lats = np.linspace(miny, maxy, shape[0], endpoint=True)
     else:
-        lons = np.arange(minx, maxx + resx, resx)
-        lats = np.arange(miny, maxy + resy, resy)
+        lons = _spaced_axis(minx, maxx, resx)
+        lats = _spaced_axis(miny, maxy, resy)
     nx = lons.size
     ny = lats.size
 
@@ -2301,8 +2317,8 @@ class Raster(object):
                     time=self.time,
                 )
 
-        lons = np.arange(self.extent[0], self.extent[1] + spacingX, spacingX)
-        lats = np.arange(self.extent[2], self.extent[3] + spacingY, spacingY)
+        lons = _spaced_axis(self.extent[0], self.extent[1], spacingX)
+        lats = _spaced_axis(self.extent[2], self.extent[3], spacingY)
         lonq, latq = np.meshgrid(lons, lats)
 
         data = self.interpolate(lonq, latq, method=method)

@@ -1,5 +1,6 @@
 import copy
 import os
+import warnings
 
 import numpy as np
 import pygplates
@@ -99,6 +100,29 @@ def test_rotate_reference_frames_ignores_masked_fill_values():
 def test_resizing(graster):
     resized_agegrid = graster.resize(1000, 400, return_array=True)
     assert np.shape(resized_agegrid) == (400, 1000), "Unable to rezise"
+
+
+# TEST THAT RESAMPLED AXES LAND EXACTLY ON THE REQUESTED EXTENT
+@pytest.mark.parametrize("spacing", [0.05, 0.1, 0.2, 0.25, 0.5, 1.0])
+def test_resample_axis_endpoints_are_exact(spacing):
+    """Resampled axes must not drift past the poles or the dateline.
+
+    Building these axes with ``np.arange`` accumulates floating-point error, so a
+    0.2-degree global latitude axis used to end at 90.00000000000256 and trip the
+    pole-clipping warning in ``sample_grid``.
+    """
+    raster = gplately.Raster(
+        data=np.zeros((181, 361)), extent=(-180.0, 180.0, -90.0, 90.0)
+    )
+
+    with warnings.catch_warnings():
+        warnings.filterwarnings(
+            "error", message="Invalid values encountered in lat"
+        )
+        resampled = raster.resample(spacing, spacing)
+
+    assert resampled.lats[0] == -90.0 and resampled.lats[-1] == 90.0
+    assert resampled.lons[0] == -180.0 and resampled.lons[-1] == 180.0
 
 
 # TEST FILLING NaNs IN AGE GRIDS
