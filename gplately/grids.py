@@ -222,19 +222,20 @@ def _is_a_common_name_for_latitude(name: str) -> bool:
 
 
 def _spaced_axis(start, stop, step):
-    """Build an inclusive coordinate axis from `start` to `stop` with the given `step`.
+    """Build an inclusive coordinate axis from `start` to `stop`, sampled every `step`.
 
-    Equivalent in intent to ``np.arange(start, stop + step, step)``, but the endpoints
-    are exact. Accumulated floating-point error in ``np.arange`` can push the final
-    value past `stop` (e.g. a 0.2-degree global latitude axis ends at
-    90.00000000000256), which later trips the pole-clipping warning in `sample_grid`.
-    Deriving the number of samples and using `np.linspace` keeps both endpoints exact.
+    Equivalent to ``np.arange(start, stop + step, step)``, but with exact endpoints.
+    Accumulated floating-point error in ``np.arange`` can push the final sample past
+    `stop` — a 0.2-degree global latitude axis ends at 90.00000000000256, which trips
+    the pole-clipping guard in `sample_grid`. Deriving the sample count and handing it
+    to `np.linspace` keeps both endpoints exact.
 
-    `step` must have the same sign as ``stop - start``; descending axes (as produced by
-    an ``upper`` origin) are therefore handled the same way as ascending ones.
+    `step` must share the sign of ``stop - start``, so descending axes (as produced by
+    an ``upper`` origin) are handled the same way as ascending ones. As with
+    ``np.arange``, a mis-signed `step` yields an empty axis.
     """
     n = int(round((stop - start) / step)) + 1
-    return np.linspace(start, stop, max(n, 1))
+    return np.linspace(start, stop, max(n, 0))
 
 
 def _find_extent_from_data(
