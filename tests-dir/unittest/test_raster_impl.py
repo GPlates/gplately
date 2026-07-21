@@ -15,7 +15,7 @@ from gplately.utils.log_utils import turn_on_debug_logging
 
 print(gplately.__file__)
 
-# turn_on_debug_logging()
+turn_on_debug_logging()
 
 cpt_file = "agegrid.cpt"
 if not os.path.isfile(cpt_file):

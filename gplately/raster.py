@@ -565,6 +565,7 @@ class Raster(object):
         anchor_plate_id=None,
         inplace=False,
         return_array=False,
+        use_spatial_tree: bool = True,
     ) -> Union["Raster", np.ndarray]:
         """Reconstruct the raster from its current time to a new time.
 
@@ -590,6 +591,8 @@ class Raster(object):
             Perform the reconstruction in-place (replace the raster's data with the reconstructed data).
         return_array : bool, default False
             Return a ``numpy.ndarray``, rather than a :class:`Raster`.
+        use_spatial_tree : bool, default False
+            Whether to use a spatial tree for faster feature lookup.
 
         Returns
         -------
@@ -659,6 +662,7 @@ class Raster(object):
                     partitioning_features=partitioning_features,
                     threads=threads,
                     fill_value=fill_value,
+                    use_spatial_tree=use_spatial_tree,
                 )
 
                 if self.longitude_convention == LongitudeConvention.POSITIVE_360:
@@ -676,6 +680,7 @@ class Raster(object):
                     partitioning_features=partitioning_features,
                     threads=threads,
                     fill_value=fill_value,
+                    use_spatial_tree=use_spatial_tree,
                 )
 
             if inplace:
@@ -1795,6 +1800,7 @@ class Raster(object):
         partitioning_features: Union[pygplates.FeatureCollection, None] = None,
         fill_value: Union[float, int, str, tuple, None] = None,
         threads: Union[int, None] = None,
+        use_spatial_tree: bool = False,
     ) -> "Raster":
         """Reconstruct the raster from its current time to a new time.
 
@@ -1805,6 +1811,23 @@ class Raster(object):
         This is a private method and not intended to be called directly by users.
         Instead, users should call the public method :meth:`reconstruct` to reconstruct the raster data.
         The doc is provided here for developers/AI assistants who want to understand the implementation of the raster reconstruction.
+
+        .. note::
+
+            There are two options to reconstruct the raster data.
+
+            Option 1: Use spatial tree (use_spatial_tree=True)
+                1. Get the partitioning polygons at the `from_time`.
+                2. Reconstruct the partitioning polygons to the `to_time`.
+                3. Initialize the output raster and get the output sample points that are inside the partitioning polygons at `to_time`.
+                4. Reconstruct the input sample points to the `to_time`.
+                5. Use spatial tree to find the nearest input sample point for each output sample point and get the value.
+
+            Option 2: Use raster interpolation (use_spatial_tree=False)
+                1. Get the partitioning polygons at the `from_time`.
+                2. Reconstruct the partitioning polygons to the `to_time`.
+                3. Initialize the output raster and get the output sample points that are inside the partitioning polygons at `to_time`.
+                4. Reverse reconstruct the output sample points to the `from_time` and query the raster values at those points.
 
         Parameters
         ----------
@@ -1821,6 +1844,8 @@ class Raster(object):
             By default (``fill_value=None``), this value will be determined based on the input.
         threads : int, default 1
             Number of threads to use for certain computationally heavy routines.
+        use_spatial_tree : bool, default False
+            Whether to use a spatial tree for faster feature lookup.
 
         Returns
         -------
@@ -1879,54 +1904,17 @@ class Raster(object):
             features_of_partitioning_polygons_at_from_time
         ), "The number of partitioning polygons and their corresponding features must be the same."
 
-        # Partition the original raster data points using the partitioning polygons
-        # and get the plate IDs from the associated features for each data point.
-        stage_t0 = perf_counter()
-        m_lons, m_lats = np.meshgrid(self.lons, self.lats)
-        plate_id_grid = self._get_plate_id_grid(
-            m_lons,
-            m_lats,
-            partitioning_polygons_at_from_time,
-            features_of_partitioning_polygons_at_from_time,
-        )
-        timings["plate_id_grid"] = perf_counter() - stage_t0
-        assert (
-            plate_id_grid.shape == m_lons.shape
-        ), "The shape of the plate ID grid should match the shape of the raster data grid."
-
-        logger.debug(
-            f"Number of valid raster data points inside partitioning polygons at from_time {from_time}: {np.count_nonzero(~np.isnan(plate_id_grid))}"
-        )
-
-        # Reconstruct the raster data points to the `to_time` using the given rotation model and plate IDs.
-        # The returned `reconstructed_original_sample_point_lat_lon_array` and `original_sample_point_row_col_index_array` are 1D numpy arrays of the same length,
-        # containing the reconstructed latitudes and longitudes of the raster data points and
-        # the corresponding row and column indices of the raster data points in the original raster.
-        # Note: only the raster data points that are inside the partitioning polygons at `from_time` will be reconstructed.
-        stage_t0 = perf_counter()
-        (
-            reconstructed_original_sample_point_lat_lon_array,
-            original_sample_point_row_col_index_array,
-        ) = self._reconstruct_raster_data_points(
-            from_time=from_time,
-            to_time=to_time,
-            m_lons=m_lons,
-            m_lats=m_lats,
-            plate_id_grid=plate_id_grid,
-            rotation_model=rotation_model,
-        )
-        timings["reconstruct_points"] = perf_counter() - stage_t0
-
         # We also need to reconstruct the partitioning polygons to the `to_time`.
         stage_t0 = perf_counter()
-        partitioning_polygons_at_to_time: List[pygplates.PolygonOnSphere] = (
-            self._get_partitioning_polygons_at_to_time(
-                partitioning_polygons_at_from_time,
-                features_of_partitioning_polygons_at_from_time,
-                from_time,
-                to_time,
-                rotation_model,
-            )
+        (
+            partitioning_polygons_at_to_time,
+            features_of_partitioning_polygons_at_to_time,
+        ) = self._get_partitioning_polygons_at_to_time(
+            partitioning_polygons_at_from_time,
+            features_of_partitioning_polygons_at_from_time,
+            from_time,
+            to_time,
+            rotation_model,
         )
         timings["reconstruct_partitioning_polygons"] = perf_counter() - stage_t0
 
@@ -1937,58 +1925,123 @@ class Raster(object):
             output_raster_extent,
             output_sample_points_lons,
             output_sample_points_lats,
+            output_sample_points_pids,
             output_sample_points_row_col_indices,
         ) = self._get_output_raster_and_sample_points(
-            partitioning_polygons_at_to_time, fill_value=fill_value
+            partitioning_polygons_at_to_time,
+            features_of_partitioning_polygons_at_to_time,
+            fill_value=fill_value,
         )
         timings["prepare_output_raster"] = perf_counter() - stage_t0
 
-        # build a KDTree from the reconstructed original raster data points
-        # and query the nearest neighbor for the sample points of output raster
-        reconstructed_original_sample_points_vecs = self._lat_lon_to_vector(
-            reconstructed_original_sample_point_lat_lon_array[:, 0],
-            reconstructed_original_sample_point_lat_lon_array[:, 1],
-            degrees=True,
-        )
-        # Build a KDTree from the reconstructed original raster data points
-        stage_t0 = perf_counter()
-        tree = _cKDTree(reconstructed_original_sample_points_vecs)
-        timings["kdtree_build"] = perf_counter() - stage_t0
+        if not use_spatial_tree:
+            stage_t0 = perf_counter()
+            (
+                reverse_reconstructed_lons,
+                reverse_reconstructed_lats,
+            ) = self._reverse_reconstruct_data_points(
+                from_time=from_time,
+                to_time=to_time,
+                lons=output_sample_points_lons,
+                lats=output_sample_points_lats,
+                plate_ids=output_sample_points_pids,
+                rotation_model=rotation_model,
+            )
+            timings["reconstruct_points"] = perf_counter() - stage_t0
+            values = self.interp(
+                lons=reverse_reconstructed_lons, lats=reverse_reconstructed_lats
+            )
 
-        output_vecs = self._lat_lon_to_vector(
-            output_sample_points_lats,
-            output_sample_points_lons,
-            degrees=True,
-        )
-        assert (
-            len(output_vecs) > 1
-        ), "No enough output sample points to proceed. Please check your partitioning features to make sure there are valid polygons at `to_time`."
+            output_raster[
+                output_sample_points_row_col_indices[:, 0],
+                output_sample_points_row_col_indices[:, 1],
+            ] = values
+        else:
+            # Partition the original raster data points using the partitioning polygons
+            # and get the plate IDs from the associated features for each data point.
+            stage_t0 = perf_counter()
+            m_lons, m_lats = np.meshgrid(self.lons, self.lats)
+            plate_id_grid = self._get_plate_id_grid(
+                m_lons,
+                m_lats,
+                partitioning_polygons_at_from_time,
+                features_of_partitioning_polygons_at_from_time,
+            )
+            timings["plate_id_grid"] = perf_counter() - stage_t0
+            assert (
+                plate_id_grid.shape == m_lons.shape
+            ), "The shape of the plate ID grid should match the shape of the raster data grid."
 
-        # Compatibility with older versions of SciPy:
-        # 'n_jobs' argument was replaced with 'workers'
-        if threads is None:
-            cpu_no = cpu_count()
-            if cpu_no > 2:
-                threads = cpu_count() - 2  # leave 2 cores for other tasks
-            else:
-                threads = 1
-        stage_t0 = perf_counter()
-        try:
-            _, indices = tree.query(output_vecs, k=1, workers=threads)
-        except TypeError:
-            _, indices = tree.query(output_vecs, k=1, n_jobs=threads)  # type: ignore
-        timings["kdtree_query"] = perf_counter() - stage_t0
+            logger.debug(
+                f"Number of valid raster data points inside partitioning polygons at from_time {from_time}: {np.count_nonzero(~np.isnan(plate_id_grid))}"
+            )
 
-        assert isinstance(indices, np.ndarray)
+            # Reconstruct the raster data points to the `to_time` using the given rotation model and plate IDs.
+            # The returned `reconstructed_original_sample_point_lat_lon_array` and `original_sample_point_row_col_index_array` are 1D numpy arrays of the same length,
+            # containing the reconstructed latitudes and longitudes of the raster data points and
+            # the corresponding row and column indices of the raster data points in the original raster.
+            # Note: only the raster data points that are inside the partitioning polygons at `from_time` will be reconstructed.
+            stage_t0 = perf_counter()
+            (
+                reconstructed_original_sample_point_lat_lon_array,
+                original_sample_point_row_col_index_array,
+            ) = self._reconstruct_raster_data_points(
+                from_time=from_time,
+                to_time=to_time,
+                m_lons=m_lons,
+                m_lats=m_lats,
+                plate_id_grid=plate_id_grid,
+                rotation_model=rotation_model,
+            )
+            timings["reconstruct_points"] = perf_counter() - stage_t0
 
-        # Fill the output grid with the values from the original raster data.
-        stage_t0 = perf_counter()
-        dst_rows = output_sample_points_row_col_indices[:, 0]
-        dst_cols = output_sample_points_row_col_indices[:, 1]
-        src_rows = original_sample_point_row_col_index_array[indices, 0]
-        src_cols = original_sample_point_row_col_index_array[indices, 1]
-        output_raster[dst_rows, dst_cols] = self.data[src_rows, src_cols]
-        timings["fill_output_raster"] = perf_counter() - stage_t0
+            # build a KDTree from the reconstructed original raster data points
+            # and query the nearest neighbor for the sample points of output raster
+            reconstructed_original_sample_points_vecs = self._lat_lon_to_vector(
+                reconstructed_original_sample_point_lat_lon_array[:, 0],
+                reconstructed_original_sample_point_lat_lon_array[:, 1],
+                degrees=True,
+            )
+            # Build a KDTree from the reconstructed original raster data points
+            stage_t0 = perf_counter()
+            tree = _cKDTree(reconstructed_original_sample_points_vecs)
+            timings["kdtree_build"] = perf_counter() - stage_t0
+
+            output_vecs = self._lat_lon_to_vector(
+                output_sample_points_lats,
+                output_sample_points_lons,
+                degrees=True,
+            )
+            assert (
+                len(output_vecs) > 1
+            ), "No enough output sample points to proceed. Please check your partitioning features to make sure there are valid polygons at `to_time`."
+
+            # Compatibility with older versions of SciPy:
+            # 'n_jobs' argument was replaced with 'workers'
+            if threads is None:
+                cpu_no = cpu_count()
+                if cpu_no > 2:
+                    threads = cpu_count() - 2  # leave 2 cores for other tasks
+                else:
+                    threads = 1
+            stage_t0 = perf_counter()
+            try:
+                _, indices = tree.query(output_vecs, k=1, workers=threads)
+            except TypeError:
+                _, indices = tree.query(output_vecs, k=1, n_jobs=threads)  # type: ignore
+            timings["kdtree_query"] = perf_counter() - stage_t0
+
+            assert isinstance(indices, np.ndarray)
+
+            # Fill the output grid with the values from the original raster data.
+            stage_t0 = perf_counter()
+            src_rows = original_sample_point_row_col_index_array[indices, 0]
+            src_cols = original_sample_point_row_col_index_array[indices, 1]
+            output_raster[
+                output_sample_points_row_col_indices[:, 0],
+                output_sample_points_row_col_indices[:, 1],
+            ] = self.data[src_rows, src_cols]
+            timings["fill_output_raster"] = perf_counter() - stage_t0
 
         total_elapsed = perf_counter() - total_t0
         timings_summary = ", ".join(
@@ -2021,8 +2074,11 @@ class Raster(object):
         return ret_raster_obj
 
     def _get_output_raster_and_sample_points(
-        self, partitioning_polygons_at_to_time, fill_value=None
-    ) -> Tuple[np.ndarray, tuple, np.ndarray, np.ndarray, np.ndarray]:
+        self,
+        partitioning_polygons_at_to_time,
+        features_of_partitioning_polygons_at_to_time,
+        fill_value=None,
+    ) -> Tuple[np.ndarray, tuple, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
         """Get the output raster and the sample points that are inside the partitioning polygons at `to_time`.
 
         Parameters
@@ -2043,8 +2099,11 @@ class Raster(object):
             A 1D array of longitudes of the sample points that are inside the partitioning polygons at `to_time`.
         output_sample_points_lats : np.ndarray
             A 1D array of latitudes of the sample points that are inside the partitioning polygons at `to_time`.
+        output_sample_points_pids : np.ndarray
+            A 1D array of plate IDs corresponding to the sample points that are inside the partitioning polygons at `to_time`.
         output_sample_points_row_col_indices : np.ndarray
             A 1D array of tuples, where each tuple contains the row and column indices of the sample points in the output raster that are inside the partitioning polygons at `to_time`.
+
         """
         # If the original raster extent is global, the output raster extent will also be global.
         if self.is_global():
@@ -2095,25 +2154,33 @@ class Raster(object):
         )
         if not isinstance(shapely_geoms, list):
             shapely_geoms = [shapely_geoms]
+        pids = [
+            f.get_reconstruction_plate_id()  # type: ignore
+            for f in features_of_partitioning_polygons_at_to_time
+        ]
+        assert len(shapely_geoms) == len(
+            pids
+        ), "The number of partitioning polygons and their corresponding plate IDs must be the same."
         ny, nx = output_lon_mesh.shape
         minx, maxx, miny, maxy = output_raster_extent
         polygon_mask = _rasterize(
-            shapes=zip(shapely_geoms, [1] * len(shapely_geoms)),
+            shapes=zip(shapely_geoms, pids),
             out_shape=(ny, nx),
             fill=0,
-            dtype=np.uint8,
+            dtype=np.uint32,
             merge_alg=MergeAlg.replace,
             transform=_from_bounds(minx, miny, maxx, maxy, nx, ny),
         )
         assert (
             polygon_mask is not None
         ), "Rasterization of partitioning polygons failed. This should never happen."
-        polygon_mask = np.flipud(polygon_mask).astype(bool)
+        polygon_mask = np.flipud(polygon_mask)
 
         # Extract output sample points in a vectorized way for better performance.
-        rows, cols = np.where(polygon_mask)
+        rows, cols = np.where(polygon_mask > 0)
         output_sample_points_lons = output_lon_mesh[rows, cols]
         output_sample_points_lats = output_lat_mesh[rows, cols]
+        output_sample_points_pids = polygon_mask[rows, cols]
         output_sample_points_row_col_indices = np.column_stack((rows, cols))
 
         return (
@@ -2121,6 +2188,7 @@ class Raster(object):
             output_raster_extent,
             output_sample_points_lons,
             output_sample_points_lats,
+            output_sample_points_pids,
             output_sample_points_row_col_indices,
         )
 
@@ -2131,7 +2199,7 @@ class Raster(object):
         from_time: float,
         to_time: float,
         rotation_model: pygplates.RotationModel,
-    ) -> List[pygplates.PolygonOnSphere]:
+    ) -> Tuple[list[pygplates.PolygonOnSphere], list[pygplates.Feature]]:
         """Get the partitioning polygons at the `to_time` by reconstructing the partitioning polygons at the `from_time`."""
         polygon_feature_collection = pygplates.FeatureCollection()
         for p, f in zip(
@@ -2159,11 +2227,13 @@ class Raster(object):
         rfgs = []
         pygplates.reconstruct(polygon_feature_collection, rotation_model, rfgs, to_time)  # type: ignore
         polygons_at_to_time = []
+        features_of_partitioning_polygons = []
         for rfg in rfgs:
             geom = rfg.get_reconstructed_geometry()
             if geom is not None and isinstance(geom, pygplates.PolygonOnSphere):
                 polygons_at_to_time.append(geom)
-        return polygons_at_to_time
+                features_of_partitioning_polygons.append(rfg.get_feature())
+        return polygons_at_to_time, features_of_partitioning_polygons
 
     def _get_plate_id_grid(
         self,
@@ -2224,6 +2294,90 @@ class Raster(object):
                 transform=_from_bounds(minx, miny, maxx, maxy, nx, ny),
             )
         )
+
+    def _reverse_reconstruct_data_points(
+        self,
+        *,
+        from_time: float,
+        to_time: float,
+        lons: np.ndarray,
+        lats: np.ndarray,
+        plate_ids: np.ndarray,
+        rotation_model: pygplates.RotationModel,
+    ) -> Tuple[np.ndarray, np.ndarray]:
+        """Reverse reconstruct the raster data points from `to_time` to `from_time` using the given rotation model and plate IDs."""
+        assert (
+            lons.shape == lats.shape == plate_ids.shape
+        ), "Input arrays must have the same shape."
+
+        assert np.all(plate_ids > 0), "All plate IDs must be positive integers."
+
+        if rotation_model is None:
+            rotation_model = self.plate_reconstruction.rotation_model
+        assert rotation_model is not None, "A valid RotationModel object is required!"
+
+        unique_plate_ids, inv = np.unique(plate_ids, return_inverse=True)
+
+        # Compute one finite rotation per unique plate, then broadcast by inverse index.
+        rotations_dict: dict[int, np.ndarray] = {}
+        for plate_id in unique_plate_ids:
+            if (
+                not math.isclose(to_time, 0.0)
+                and self.plate_reconstruction is not None
+                and self.plate_reconstruction.rotation_model is not None
+                and rotation_model is not self.plate_reconstruction.rotation_model
+            ):
+                # If to_time is not 0 and a different rotation model is used,
+                # rotate from to_time to present-day with the provided model,
+                # then from present-day to from_time with the original model.
+                assert self.plate_reconstruction.rotation_model is not None
+                rotation_to_present_day = rotation_model.get_rotation(
+                    to_time=0.0,
+                    from_time=float(to_time),
+                    moving_plate_id=int(plate_id),
+                )
+                rotation_to_from_time = (
+                    self.plate_reconstruction.rotation_model.get_rotation(
+                        to_time=float(from_time),
+                        from_time=0.0,
+                        moving_plate_id=int(plate_id),
+                    )
+                )
+                rotation = rotation_to_from_time * rotation_to_present_day
+            else:
+                rotation = rotation_model.get_rotation(
+                    to_time=float(from_time),
+                    from_time=float(to_time),
+                    moving_plate_id=int(plate_id),
+                )
+
+            if not isinstance(rotation, pygplates.FiniteRotation):
+                raise ValueError(f"No rotation found for plate ID: {plate_id}")
+
+            lat, lon, angle = rotation.get_lat_lon_euler_pole_and_angle_degrees()
+            angle = np.deg2rad(angle)
+            axis_vec = self._lat_lon_to_vector(lat, lon, degrees=True)
+            rotations_dict[int(plate_id)] = np.asarray(axis_vec, dtype=float) * float(
+                angle
+            )
+
+        rotation_vectors = np.array(
+            [rotations_dict[int(pid)] for pid in unique_plate_ids]
+        )
+        combined_rotations = _Rotation.from_rotvec(rotation_vectors[inv])
+
+        point_vecs = self._lat_lon_to_vector(
+            lats,
+            lons,
+            degrees=True,
+        )
+        rotated_vecs = combined_rotations.apply(point_vecs)
+
+        # Convert vectors back to (lat, lon) in degrees.
+        rotated_lats = np.rad2deg(np.arcsin(np.clip(rotated_vecs[:, 2], -1.0, 1.0)))
+        rotated_lons = np.rad2deg(np.arctan2(rotated_vecs[:, 1], rotated_vecs[:, 0]))
+
+        return rotated_lons, rotated_lats
 
     def _reconstruct_raster_data_points(
         self,
