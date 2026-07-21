@@ -2042,7 +2042,7 @@ class Raster(object):
                 extent=output_raster_extent,
                 time=to_time,
             )
-        ret_raster_obj.plate_reconstruction = self.plate_reconstruction
+        ret_raster_obj.plate_reconstruction = copy.deepcopy(self.plate_reconstruction)
         assert (
             ret_raster_obj.plate_reconstruction is not None
         ), "Plate reconstruction should not be None."
