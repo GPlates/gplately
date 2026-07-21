@@ -203,6 +203,23 @@ def _is_a_common_name_for_latitude(name: str) -> bool:
     return name in ["lat", "lats", "latitude", "y", "north", "northing", "northings"]
 
 
+def _spaced_axis(start, stop, step):
+    """Build an inclusive coordinate axis from `start` to `stop`, sampled every `step`.
+
+    Equivalent to ``np.arange(start, stop + step, step)``, but with exact endpoints.
+    Accumulated floating-point error in ``np.arange`` can push the final sample past
+    `stop` — a 0.2-degree global latitude axis ends at 90.00000000000256, which trips
+    the pole-clipping guard in `sample_grid`. Deriving the sample count and handing it
+    to `np.linspace` keeps both endpoints exact.
+
+    `step` must share the sign of ``stop - start``, so descending axes (as produced by
+    an ``upper`` origin) are handled the same way as ascending ones. As with
+    ``np.arange``, a mis-signed `step` yields an empty axis.
+    """
+    n = int(round((stop - start) / step)) + 1
+    return np.linspace(start, stop, max(n, 0))
+
+
 def _find_extent_from_data(
     data, origin
 ) -> Union[Tuple[float, float, float, float], None]:
@@ -381,8 +398,8 @@ def read_netcdf_grid(
         dY = np.diff(cdf_lat).mean()
 
         if not np.isclose(dX, spacingX) or not np.isclose(dY, spacingY):
-            lon_grid = np.arange(cdf_lon.min(), cdf_lon.max() + spacingX, spacingX)
-            lat_grid = np.arange(cdf_lat.min(), cdf_lat.max() + spacingY, spacingY)
+            lon_grid = _spaced_axis(cdf_lon.min(), cdf_lon.max(), spacingX)
+            lat_grid = _spaced_axis(cdf_lat.min(), cdf_lat.max(), spacingY)
             lonq, latq = np.meshgrid(lon_grid, lat_grid)
             original_extent = (
                 cdf_lon[0],
@@ -1295,8 +1312,8 @@ def rasterise(
         lons = np.linspace(minx, maxx, shape[1], endpoint=True)
         lats = np.linspace(miny, maxy, shape[0], endpoint=True)
     else:
-        lons = np.arange(minx, maxx + resx, resx)
-        lats = np.arange(miny, maxy + resy, resy)
+        lons = _spaced_axis(minx, maxx, resx)
+        lats = _spaced_axis(miny, maxy, resy)
     nx = lons.size
     ny = lats.size
 
