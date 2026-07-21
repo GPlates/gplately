@@ -586,6 +586,8 @@ class Points(object):
         )
         gpts.add_attributes(**self.attributes.copy())
 
+        return gpts
+
     def add_attributes(self, **kwargs):
         """Adds the value of a feature attribute associated with a key.
 
@@ -716,6 +718,16 @@ class Points(object):
         """The same as :meth:`get_geopandas_dataframe`."""
         return self.get_geopandas_dataframe()
 
+    def _initial_times_for_indices(self, point_indices):
+        """Return a 1D array of per-point initial times for the given point indices.
+
+        Works whether :py:attr:`time` (``self._time``) is a scalar (broadcast to all points) or a
+        per-point 1D array (indexed by ``point_indices``).
+        """
+        if np.isscalar(self._time):
+            return np.full(len(point_indices), self._time)
+        return self._time[point_indices]
+
     def reconstruct(
         self, time, anchor_plate_id=None, return_array=False, return_point_indices=False
     ):
@@ -779,16 +791,23 @@ class Points(object):
             if point_indices_with_plate_id.size == 0:
                 continue
 
-            # Get the per-point initial times for this plate group.
-            # When 'self._time' is a scalar all points share the same initial time;
-            # when it is an array we also need to iterate over unique initial times.
-            if np.isscalar(self._time):
-                initial_times_for_group = np.full(
-                    len(point_indices_with_plate_id), self._time
-                )
-            else:
-                initial_times_for_group = self._time[point_indices_with_plate_id]
+            # Get the per-point initial times for this plate group. When 'self._time' is a scalar all
+            # points share the same initial time; when it is an array we iterate over unique times.
+            initial_times_for_group = self._initial_times_for_indices(
+                point_indices_with_plate_id
+            )
             unique_initial_times = np.unique(initial_times_for_group)
+
+            # Rotation from present day to 'time' (using the *requested* anchor plate ID).
+            # This is independent of the initial time, so compute it once for this plate ID.
+            present_to_time_rotation = (
+                self.plate_reconstruction.rotation_model.get_rotation(
+                    to_time=time,
+                    moving_plate_id=plate_id,
+                    from_time=0,
+                    anchor_plate_id=anchor_plate_id,
+                )
+            )
 
             for init_t in unique_initial_times:
                 sub_mask = initial_times_for_group == init_t
@@ -806,12 +825,7 @@ class Points(object):
                 # Note 'self.points' (and hence 'reconstructed_points_sub') are the locations at 'init_t'
                 #      (just like 'self.lons' and 'self.lats').
                 reconstruct_rotation = (
-                    self.plate_reconstruction.rotation_model.get_rotation(
-                        to_time=time,
-                        moving_plate_id=plate_id,
-                        from_time=0,
-                        anchor_plate_id=anchor_plate_id,
-                    )
+                    present_to_time_rotation
                     * self.plate_reconstruction.rotation_model.get_rotation(
                         to_time=0,
                         moving_plate_id=plate_id,
@@ -956,12 +970,9 @@ class Points(object):
                 continue
 
             # Get the per-point initial times for this plate group.
-            if np.isscalar(self._time):
-                initial_times_for_group = np.full(
-                    len(point_indices_with_plate_id), self._time
-                )
-            else:
-                initial_times_for_group = self._time[point_indices_with_plate_id]
+            initial_times_for_group = self._initial_times_for_indices(
+                point_indices_with_plate_id
+            )
             unique_initial_times = np.unique(initial_times_for_group)
 
             for init_t in unique_initial_times:
@@ -971,6 +982,17 @@ class Points(object):
                 # Get all the unique reconstruct ages of all valid points with the current plate ID and initial time.
                 point_reconstruct_ages_sub = reconstruct_ages[indices_with_init_t]
                 unique_reconstruct_ages_sub = np.unique(point_reconstruct_ages_sub)
+
+                # Rotation from the initial time ('init_t') to present day (using our internal anchor
+                # plate ID). This is independent of the reconstruct age, so compute it once per initial time.
+                init_t_to_present_rotation = (
+                    self.plate_reconstruction.rotation_model.get_rotation(
+                        to_time=0,
+                        moving_plate_id=plate_id,
+                        from_time=init_t,
+                        anchor_plate_id=self.anchor_plate_id,
+                    )
+                )
 
                 for reconstruct_age in unique_reconstruct_ages_sub:
                     # Indices of points with the current plate ID, initial time, and reconstruct age.
@@ -997,12 +1019,7 @@ class Points(object):
                             from_time=0,
                             anchor_plate_id=anchor_plate_id,
                         )
-                        * self.plate_reconstruction.rotation_model.get_rotation(
-                            to_time=0,
-                            moving_plate_id=plate_id,
-                            from_time=init_t,
-                            anchor_plate_id=self.anchor_plate_id,
-                        )
+                        * init_t_to_present_rotation
                     )
                     reconstructed_points_sub = (
                         reconstruct_rotation * reconstructed_points_sub
@@ -1175,13 +1192,21 @@ class Points(object):
             )
 
             # Get the per-point initial times for this plate group.
-            if np.isscalar(self._time):
-                initial_times_for_group = np.full(
-                    len(point_indices_with_plate_id), self._time
-                )
-            else:
-                initial_times_for_group = self._time[point_indices_with_plate_id]
+            initial_times_for_group = self._initial_times_for_indices(
+                point_indices_with_plate_id
+            )
             unique_initial_times = np.unique(initial_times_for_group)
+
+            # Rotation from present day to 'time' (using the *requested* anchor plate ID).
+            # This is independent of the initial time, so compute it once for this plate ID.
+            present_to_time_rotation = (
+                self.plate_reconstruction.rotation_model.get_rotation(
+                    to_time=time,
+                    moving_plate_id=plate_id,
+                    from_time=0,
+                    anchor_plate_id=anchor_plate_id,
+                )
+            )
 
             for init_t in unique_initial_times:
                 sub_mask = initial_times_for_group == init_t
@@ -1199,12 +1224,7 @@ class Points(object):
                 # Note 'self.points' (and hence 'reconstructed_points_sub') are the locations at 'init_t'
                 #      (just like 'self.lons' and 'self.lats').
                 reconstruct_rotation = (
-                    self.plate_reconstruction.rotation_model.get_rotation(
-                        to_time=time,
-                        moving_plate_id=plate_id,
-                        from_time=0,
-                        anchor_plate_id=anchor_plate_id,
-                    )
+                    present_to_time_rotation
                     * self.plate_reconstruction.rotation_model.get_rotation(
                         to_time=0,
                         moving_plate_id=plate_id,

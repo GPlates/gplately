@@ -726,6 +726,89 @@ def test_flowline_array_time():
     )
 
 
+# RECONSTRUCTION METHODS WITH PER-POINT (ARRAY) INITIAL TIMES + MULTIPLE PLATE IDS
+def test_reconstruct_methods_array_time():
+    """reconstruct / reconstruct_to_birth_age / plate_velocity / copy with array initial times.
+
+    Uses two plate IDs and two initial times so the (plate-id, initial-time) grouping is exercised.
+    Each per-point result must match a scalar-time Points object built from that single point.
+    Runs fully offline using a synthetic rotation model.
+    """
+    model = _synthetic_plate_reconstruction()
+
+    # p0: plate 901, initial time 0; p1: plate 901, initial time 50; p2: plate 902, initial time 0.
+    lons = np.array([0.0, 20.0, -30.0])
+    lats = np.array([0.0, 30.0, -20.0])
+    times = np.array([0.0, 50.0, 0.0])
+    plate_ids = np.array([901, 901, 902])
+
+    gpts = gplately.Points(model, lons, lats, time=times, plate_id=plate_ids, age=np.inf)
+
+    # Scalar-time reference Points, one per point.
+    refs = [
+        gplately.Points(
+            model,
+            lons=np.array([lons[i]]),
+            lats=np.array([lats[i]]),
+            time=float(times[i]),
+            plate_id=int(plate_ids[i]),
+            age=np.inf,
+        )
+        for i in range(3)
+    ]
+
+    # --- reconstruct ---
+    target_time = 30
+    rlons, rlats = gpts.reconstruct(target_time, return_array=True)
+    assert rlons.shape[0] == 3
+    for i, ref in enumerate(refs):
+        ref_rlons, ref_rlats = ref.reconstruct(target_time, return_array=True)
+        assert rlons[i] == pytest.approx(ref_rlons[0], abs=1e-6)
+        assert rlats[i] == pytest.approx(ref_rlats[0], abs=1e-6)
+
+    # --- plate_velocity ---
+    vlons, vlats = gpts.plate_velocity(target_time)
+    assert vlons.shape[0] == 3
+    for i, ref in enumerate(refs):
+        ref_vlons, ref_vlats = ref.plate_velocity(target_time)
+        assert vlons[i] == pytest.approx(ref_vlons[0], abs=1e-6)
+        assert vlats[i] == pytest.approx(ref_vlats[0], abs=1e-6)
+
+    # --- reconstruct_to_birth_age (per-point reconstruct ages) ---
+    ages_to = np.array([10.0, 20.0, 30.0])
+    brlons, brlats = gpts.reconstruct_to_birth_age(ages_to)
+    assert brlons.shape[0] == 3
+    for i, ref in enumerate(refs):
+        ref_brlons, ref_brlats = ref.reconstruct_to_birth_age(np.array([ages_to[i]]))
+        assert brlons[i] == pytest.approx(ref_brlons[0], abs=1e-6)
+        assert brlats[i] == pytest.approx(ref_brlats[0], abs=1e-6)
+
+    # --- copy preserves the array time and produces identical reconstructions ---
+    gpts_copy = gpts.copy()
+    assert isinstance(gpts_copy.time, np.ndarray)
+    np.testing.assert_array_equal(gpts_copy.time, gpts.time)
+    # The copy's time array must be independent of the original.
+    assert gpts_copy.time is not gpts.time
+    copy_rlons, copy_rlats = gpts_copy.reconstruct(target_time, return_array=True)
+    assert copy_rlons == pytest.approx(rlons, abs=1e-6)
+    assert copy_rlats == pytest.approx(rlats, abs=1e-6)
+
+
+# ARRAY 'time' VALIDATION
+def test_point_array_time_2d_raises():
+    """A 2D 'time' array must raise a ValueError (only scalar or 1D allowed)."""
+    model = _synthetic_plate_reconstruction()
+    with pytest.raises(ValueError, match="1D array"):
+        gplately.Points(
+            model,
+            lons=np.array([0.0, 1.0]),
+            lats=np.array([0.0, 1.0]),
+            time=np.array([[0.0, 1.0]]),  # 2D
+            plate_id=901,
+            age=np.inf,
+        )
+
+
 # TESTING PLATE VELOCITY CALCULATIONS
 @pytest.mark.parametrize("time", reconstruction_times)
 def test_plate_velocity(
