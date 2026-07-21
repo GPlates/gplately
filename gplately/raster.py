@@ -1855,8 +1855,6 @@ class Raster(object):
         assert (
             self.is_normalized()
         ), "Raster data must be normalized before calling Raster._reconstruct_impl()."
-        timings: dict[str, float] = {}
-        total_t0 = perf_counter()
 
         # The original time of the raster data, which is the time when the raster data was created or last reconstructed.
         from_time = self.time
@@ -1886,7 +1884,6 @@ class Raster(object):
 
         # Accept all supported forms (filenames, FeatureCollection, Feature, lists)
         # and normalize them before feature-level operations.
-        stage_t0 = perf_counter()
         partitioning_features = load_feature_collection(partitioning_features)
         (
             partitioning_polygons_at_from_time,
@@ -1896,7 +1893,6 @@ class Raster(object):
             from_time=from_time,
             to_time=to_time,
         )
-        timings["partitioning_features_prepare"] = perf_counter() - stage_t0
         logger.debug(
             f"Number of partitioning polygons at from_time {from_time}: {len(partitioning_polygons_at_from_time)}"
         )
@@ -1905,7 +1901,6 @@ class Raster(object):
         ), "The number of partitioning polygons and their corresponding features must be the same."
 
         # We also need to reconstruct the partitioning polygons to the `to_time`.
-        stage_t0 = perf_counter()
         (
             partitioning_polygons_at_to_time,
             features_of_partitioning_polygons_at_to_time,
@@ -1916,10 +1911,8 @@ class Raster(object):
             to_time,
             rotation_model,
         )
-        timings["reconstruct_partitioning_polygons"] = perf_counter() - stage_t0
 
-        # Initialize the output raster and get the sample points that are inside the partitioning polygons at `to_time`.
-        stage_t0 = perf_counter()
+        # Initialize the output raster and get the output sample points that are inside the partitioning polygons at `to_time`.
         (
             output_raster,
             output_raster_extent,
@@ -1932,10 +1925,11 @@ class Raster(object):
             features_of_partitioning_polygons_at_to_time,
             fill_value=fill_value,
         )
-        timings["prepare_output_raster"] = perf_counter() - stage_t0
 
         if not use_spatial_tree:
-            stage_t0 = perf_counter()
+            logger.debug(
+                f"Using raster interpolation to reconstruct the raster data from time {from_time} to {to_time}."
+            )
             (
                 reverse_reconstructed_lons,
                 reverse_reconstructed_lats,
@@ -1947,9 +1941,11 @@ class Raster(object):
                 plate_ids=output_sample_points_pids,
                 rotation_model=rotation_model,
             )
-            timings["reconstruct_points"] = perf_counter() - stage_t0
+
             values = self.interp(
-                lons=reverse_reconstructed_lons, lats=reverse_reconstructed_lats
+                lons=reverse_reconstructed_lons,
+                lats=reverse_reconstructed_lats,
+                method=InterpMethod.NEAREST,
             )
 
             output_raster[
@@ -1959,7 +1955,6 @@ class Raster(object):
         else:
             # Partition the original raster data points using the partitioning polygons
             # and get the plate IDs from the associated features for each data point.
-            stage_t0 = perf_counter()
             m_lons, m_lats = np.meshgrid(self.lons, self.lats)
             plate_id_grid = self._get_plate_id_grid(
                 m_lons,
@@ -1967,7 +1962,6 @@ class Raster(object):
                 partitioning_polygons_at_from_time,
                 features_of_partitioning_polygons_at_from_time,
             )
-            timings["plate_id_grid"] = perf_counter() - stage_t0
             assert (
                 plate_id_grid.shape == m_lons.shape
             ), "The shape of the plate ID grid should match the shape of the raster data grid."
@@ -1981,7 +1975,6 @@ class Raster(object):
             # containing the reconstructed latitudes and longitudes of the raster data points and
             # the corresponding row and column indices of the raster data points in the original raster.
             # Note: only the raster data points that are inside the partitioning polygons at `from_time` will be reconstructed.
-            stage_t0 = perf_counter()
             (
                 reconstructed_original_sample_point_lat_lon_array,
                 original_sample_point_row_col_index_array,
@@ -1993,7 +1986,6 @@ class Raster(object):
                 plate_id_grid=plate_id_grid,
                 rotation_model=rotation_model,
             )
-            timings["reconstruct_points"] = perf_counter() - stage_t0
 
             # build a KDTree from the reconstructed original raster data points
             # and query the nearest neighbor for the sample points of output raster
@@ -2003,9 +1995,7 @@ class Raster(object):
                 degrees=True,
             )
             # Build a KDTree from the reconstructed original raster data points
-            stage_t0 = perf_counter()
             tree = _cKDTree(reconstructed_original_sample_points_vecs)
-            timings["kdtree_build"] = perf_counter() - stage_t0
 
             output_vecs = self._lat_lon_to_vector(
                 output_sample_points_lats,
@@ -2024,35 +2014,22 @@ class Raster(object):
                     threads = cpu_count() - 2  # leave 2 cores for other tasks
                 else:
                     threads = 1
-            stage_t0 = perf_counter()
+
             try:
                 _, indices = tree.query(output_vecs, k=1, workers=threads)
             except TypeError:
                 _, indices = tree.query(output_vecs, k=1, n_jobs=threads)  # type: ignore
-            timings["kdtree_query"] = perf_counter() - stage_t0
 
             assert isinstance(indices, np.ndarray)
 
             # Fill the output grid with the values from the original raster data.
-            stage_t0 = perf_counter()
             src_rows = original_sample_point_row_col_index_array[indices, 0]
             src_cols = original_sample_point_row_col_index_array[indices, 1]
             output_raster[
                 output_sample_points_row_col_indices[:, 0],
                 output_sample_points_row_col_indices[:, 1],
             ] = self.data[src_rows, src_cols]
-            timings["fill_output_raster"] = perf_counter() - stage_t0
 
-        total_elapsed = perf_counter() - total_t0
-        timings_summary = ", ".join(
-            [
-                f"{k}={v:.3f}s"
-                for k, v in sorted(timings.items(), key=lambda kv: kv[1], reverse=True)
-            ]
-        )
-        logger.debug(
-            f"Raster._recconstruct_raster timing (total={total_elapsed:.3f}s): {timings_summary}"
-        )
         if self.is_global():
             ret_raster_obj = Raster(
                 data=output_raster,
