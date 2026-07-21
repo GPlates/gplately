@@ -550,6 +550,182 @@ def test_point_array_time():
         assert rlats_array[1] == pytest.approx(rlats_B[0], abs=1e-6)
 
 
+def _synthetic_plate_reconstruction():
+    """Build a small synthetic (offline) PlateReconstruction with plates 901 and 902.
+
+    Plates 901 and 902 rotate about the North Pole (relative to plate 0) by differing amounts.
+    Only a rotation model is needed (no topologies or static polygons) because the tests that use
+    this always supply plate IDs explicitly.
+    """
+    import tempfile
+    import os
+
+    rot_content = (
+        "1 0.0 0.0 0.0 0.0 0 !Identity\n"
+        "1 600.0 0.0 0.0 0.0 0 !Identity\n"
+        "901 0.0 0.0 0.0 0.0 0 !Plate 901 at 0 Ma\n"
+        "901 100.0 90.0 0.0 60.0 0 !Plate 901 at 100 Ma (60 deg about North Pole)\n"
+        "902 0.0 0.0 0.0 0.0 0 !Plate 902 at 0 Ma\n"
+        "902 100.0 90.0 0.0 -40.0 0 !Plate 902 at 100 Ma (-40 deg about North Pole)\n"
+    )
+    with tempfile.NamedTemporaryFile(suffix=".rot", mode="w", delete=False) as f:
+        f.write(rot_content)
+        rot_file = f.name
+    rot_model = pygplates.RotationModel(rot_file)
+    os.unlink(rot_file)
+
+    return gplately.PlateReconstruction(rot_model)
+
+
+# MOTION PATH WITH PER-POINT (ARRAY) INITIAL TIMES
+def test_motion_path_array_time():
+    """Motion paths must honor per-point initial times (see PR #384 follow-up).
+
+    Runs fully offline using a synthetic rotation model.
+    """
+    model = _synthetic_plate_reconstruction()
+
+    time_array = np.array([0.0, 10.0, 20.0, 30.0, 40.0, 50.0, 60.0])
+    target_time = 0.0
+
+    # A per-point-time 'Points' requires an explicit 'time' (else the paths would be ragged).
+    gpts_no_time = gplately.Points(
+        model,
+        lons=np.array([0.0, 20.0]),
+        lats=np.array([0.0, 30.0]),
+        time=np.array([0.0, 50.0]),
+        plate_id=901,
+        age=np.inf,
+    )
+    with pytest.raises(ValueError, match="must be specified explicitly"):
+        gpts_no_time.motion_path(time_array)
+
+    # Array-time Points with:
+    #  - point 1 unreconstructable (age 30 younger than its time 50) but NOT removed -> tests mask alignment,
+    #  - two initial times (0 and 50) sharing plate 901 -> tests grouping by initial time,
+    #  - point 3 on a different plate (902) at initial time 0 -> tests mixed plate IDs within a group.
+    lons = np.array([0.0, 10.0, 20.0, -30.0])
+    lats = np.array([0.0, 10.0, 30.0, -20.0])
+    times = np.array([0.0, 50.0, 50.0, 0.0])
+    plate_ids = np.array([901, 901, 901, 902])
+    ages = np.array([np.inf, 30.0, np.inf, np.inf])
+
+    gpts = gplately.Points(model, lons, lats, time=times, plate_id=plate_ids, age=ages)
+    assert gpts._reconstructable.tolist() == [True, False, True, True]
+
+    rlons, rlats = gpts.motion_path(time_array, time=target_time)
+    # One row per reconstructable point (points 0, 2, 3), in original order.
+    assert rlons.shape[0] == 3
+    assert rlats.shape[0] == 3
+
+    # Each row must match a scalar-time Points object built from the corresponding reconstructable point.
+    ref_specs = [
+        (0.0, 0.0, 0.0, 901),  # point 0
+        (20.0, 30.0, 50.0, 901),  # point 2
+        (-30.0, -20.0, 0.0, 902),  # point 3
+    ]
+    for row, (lon, lat, initial_time, plate_id) in enumerate(ref_specs):
+        ref = gplately.Points(
+            model,
+            lons=np.array([lon]),
+            lats=np.array([lat]),
+            time=initial_time,
+            plate_id=plate_id,
+            age=np.inf,
+        )
+        ref_rlons, ref_rlats = ref.motion_path(time_array, time=target_time)
+        assert rlons[row] == pytest.approx(ref_rlons[0], abs=1e-6)
+        assert rlats[row] == pytest.approx(ref_rlats[0], abs=1e-6)
+
+    # Documented tuple lengths for the optional-return flags.
+    assert len(gpts.motion_path(time_array, time=target_time)) == 2
+    assert (
+        len(
+            gpts.motion_path(
+                time_array,
+                time=target_time,
+                return_times=True,
+                return_rate_of_motion=True,
+            )
+        )
+        == 4
+    )
+
+
+# FLOWLINE WITH PER-POINT (ARRAY) INITIAL TIMES
+def test_flowline_array_time():
+    """Flowlines must honor per-point initial times (see PR #384 follow-up).
+
+    Runs fully offline using a synthetic rotation model.
+    """
+    model = _synthetic_plate_reconstruction()
+
+    time_array = np.array([0.0, 10.0, 20.0, 30.0, 40.0, 50.0, 60.0])
+    target_time = 0.0
+    left_plate_id = 901
+    right_plate_id = 902
+
+    # A per-point-time 'Points' requires an explicit 'time'.
+    gpts_no_time = gplately.Points(
+        model,
+        lons=np.array([0.0, 20.0]),
+        lats=np.array([0.0, 30.0]),
+        time=np.array([0.0, 50.0]),
+        plate_id=901,
+        age=np.inf,
+    )
+    with pytest.raises(ValueError, match="must be specified explicitly"):
+        gpts_no_time.flowline(time_array, left_plate_id, right_plate_id)
+
+    # Array-time Points (initial times 0 and 50) must match per-initial-time scalar Points.
+    lons = np.array([0.0, 20.0])
+    lats = np.array([0.0, 30.0])
+    times = np.array([0.0, 50.0])
+    gpts = gplately.Points(model, lons, lats, time=times, plate_id=901, age=np.inf)
+
+    left_rlons, left_rlats, right_rlons, right_rlats = gpts.flowline(
+        time_array, left_plate_id, right_plate_id, time=target_time
+    )
+    assert left_rlons.shape[0] == 2
+
+    ref_specs = [(0.0, 0.0, 0.0), (20.0, 30.0, 50.0)]
+    for row, (lon, lat, initial_time) in enumerate(ref_specs):
+        ref = gplately.Points(
+            model,
+            lons=np.array([lon]),
+            lats=np.array([lat]),
+            time=initial_time,
+            plate_id=901,
+            age=np.inf,
+        )
+        ref_left_rlons, ref_left_rlats, ref_right_rlons, ref_right_rlats = ref.flowline(
+            time_array, left_plate_id, right_plate_id, time=target_time
+        )
+        assert left_rlons[row] == pytest.approx(ref_left_rlons[0], abs=1e-6)
+        assert left_rlats[row] == pytest.approx(ref_left_rlats[0], abs=1e-6)
+        assert right_rlons[row] == pytest.approx(ref_right_rlons[0], abs=1e-6)
+        assert right_rlats[row] == pytest.approx(ref_right_rlats[0], abs=1e-6)
+
+    # Documented tuple lengths for the optional-return flags.
+    assert (
+        len(gpts.flowline(time_array, left_plate_id, right_plate_id, time=target_time))
+        == 4
+    )
+    assert (
+        len(
+            gpts.flowline(
+                time_array,
+                left_plate_id,
+                right_plate_id,
+                time=target_time,
+                return_times=True,
+                return_rate_of_motion=True,
+            )
+        )
+        == 6
+    )
+
+
 # TESTING PLATE VELOCITY CALCULATIONS
 @pytest.mark.parametrize("time", reconstruction_times)
 def test_plate_velocity(

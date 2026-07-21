@@ -1261,6 +1261,69 @@ class Points(object):
 
         return return_tuple
 
+    def _reconstruct_paths_with_array_time(
+        self,
+        rec_times,
+        num_reconstructable_points,
+        num_position_arrays,
+        per_group_func,
+        return_times,
+        return_rate_of_motion,
+    ):
+        """Assemble motion-path/flowline results when 'self._time' is a per-point array.
+
+        The seed points (already restricted to the *reconstructable* points) are grouped by their
+        unique initial times. For each unique initial time, ``per_group_func(group_indices, from_time)``
+        is called (a thin wrapper around :meth:`PlateReconstruction.create_motion_path` or
+        :meth:`~PlateReconstruction.create_flowline`) with a *scalar* ``from_time``. Each call must
+        request ``return_times=True`` and pass through ``return_rate_of_motion``, so its result is
+        ``(pos_0, ..., pos_{num_position_arrays-1}, rtimes[, rate_of_motion])``.
+
+        The per-group 2D result rows are scattered back into full ``(n, m)`` arrays in the original
+        point order. The reconstruction time (``to_time``) is shared across all groups, so every group
+        returns the same number of columns ``m`` and the same ``rtimes`` (see plan/PR notes).
+        """
+        out_positions = None
+        out_rate = None
+        rtimes = None
+
+        for from_time in np.unique(rec_times):
+            group_indices = np.where(rec_times == from_time)[0]
+
+            result = per_group_func(group_indices, from_time)
+            position_arrays = result[:num_position_arrays]
+            rtimes_group = result[num_position_arrays]
+            if return_rate_of_motion:
+                rate_group = result[num_position_arrays + 1]
+
+            # Allocate the full-size output arrays from the first group (all groups share 'to_time'
+            # and therefore share the number of columns and the 'rtimes' array).
+            if out_positions is None:
+                num_columns = position_arrays[0].shape[1]
+                out_positions = [
+                    np.empty((num_reconstructable_points, num_columns))
+                    for _ in range(num_position_arrays)
+                ]
+                rtimes = rtimes_group
+                if return_rate_of_motion:
+                    out_rate = np.empty(
+                        (num_reconstructable_points, rate_group.shape[1])
+                    )
+
+            # Scatter this group's rows back into the original point order.
+            for out_array, position_array in zip(out_positions, position_arrays):
+                out_array[group_indices] = position_array
+            if return_rate_of_motion:
+                out_rate[group_indices] = rate_group
+
+        return_tuple = tuple(out_positions)
+        if return_times:
+            return_tuple += (rtimes,)
+        if return_rate_of_motion:
+            return_tuple += (out_rate,)
+
+        return return_tuple
+
     def motion_path(
         self,
         time_array,
@@ -1296,6 +1359,12 @@ class Points(object):
         time : float, optional
             The reconstruction time (Ma) to reconstruct the motion path to.
             Defaults to the current time (:py:attr:`time` attribute).
+
+            If this :py:class:`Points` object was created with per-point initial times (ie, the
+            :py:attr:`time` attribute is a 1D array) then ``time`` **must** be specified explicitly,
+            otherwise a :class:`ValueError` is raised. This is because each point would otherwise be
+            reconstructed to its own initial time, giving motion paths of differing lengths that
+            cannot be returned as rectangular 2D arrays.
         relative_plate_id : int, optional
             The ID of the plate that the motion path is relative to. Defaults to ``anchor_plate_id`` which itself
             defaults to the current anchor plate ID (:py:attr:`anchor_plate_id` attribute).
@@ -1356,17 +1425,77 @@ class Points(object):
                 current_lats = rlats[i]
         """
         # Create a motion path for each point that is *reconstructable*.
-        return self.plate_reconstruction.create_motion_path(
-            self.lons[self._reconstructable],
-            self.lats[self._reconstructable],
-            time_array,
-            from_time=self.time,
-            to_time=time,  # if None then defaults to 'self.time'
-            plate_id=self.plate_id[self._reconstructable],
-            relative_plate_id=relative_plate_id,
-            anchor_plate_id=anchor_plate_id,
-            return_times=return_times,
-            return_rate_of_motion=return_rate_of_motion,
+        reconstructable = self._reconstructable
+
+        # When all points share a single initial time we can pass it straight through as a scalar
+        # 'from_time' (the common, backward-compatible case).
+        if np.isscalar(self._time):
+            return self.plate_reconstruction.create_motion_path(
+                self.lons[reconstructable],
+                self.lats[reconstructable],
+                time_array,
+                from_time=self.time,
+                to_time=time,  # if None then defaults to 'self.time'
+                plate_id=self.plate_id[reconstructable],
+                relative_plate_id=relative_plate_id,
+                anchor_plate_id=anchor_plate_id,
+                return_times=return_times,
+                return_rate_of_motion=return_rate_of_motion,
+            )
+
+        # Otherwise each point has its own initial time. 'create_motion_path' only accepts a scalar
+        # 'from_time', so we group points by unique initial time and call it once per group.
+        # A common reconstruction time ('to_time') is required so that all groups produce the same
+        # number of columns (see the 'time' parameter documentation above).
+        if time is None:
+            raise ValueError(
+                "When 'Points' has per-point initial times, 'time' must be specified explicitly "
+                "for motion_path()."
+            )
+
+        # Note: 'self._time' is masked (alongside lons/lats/plate_id) so it stays aligned.
+        rec_lons = self.lons[reconstructable]
+        rec_lats = self.lats[reconstructable]
+        rec_plate_ids = self.plate_id[reconstructable]
+        rec_times = self._time[reconstructable]
+
+        # No reconstructable points: delegate a single call (with a scalar 'from_time') so the
+        # empty-output shape matches the scalar code path.
+        if rec_lons.size == 0:
+            return self.plate_reconstruction.create_motion_path(
+                rec_lons,
+                rec_lats,
+                time_array,
+                from_time=time,
+                to_time=time,
+                plate_id=rec_plate_ids,
+                relative_plate_id=relative_plate_id,
+                anchor_plate_id=anchor_plate_id,
+                return_times=return_times,
+                return_rate_of_motion=return_rate_of_motion,
+            )
+
+        def create_motion_path_for_group(group_indices, from_time):
+            return self.plate_reconstruction.create_motion_path(
+                rec_lons[group_indices],
+                rec_lats[group_indices],
+                time_array,
+                from_time=from_time,
+                to_time=time,
+                plate_id=rec_plate_ids[group_indices],
+                relative_plate_id=relative_plate_id,
+                anchor_plate_id=anchor_plate_id,
+                return_times=True,  # needed internally to size outputs / capture shared 'rtimes'
+                return_rate_of_motion=return_rate_of_motion,
+            )
+
+        return self._reconstruct_paths_with_array_time(
+            rec_times,
+            rec_lons.size,
+            2,  # rlons, rlats
+            create_motion_path_for_group,
+            return_times,
+            return_rate_of_motion,
         )
 
     def flowline(
@@ -1409,6 +1538,12 @@ class Points(object):
         time : float, optional
             The reconstruction time (Ma) to reconstruct the flowline to.
             Defaults to the current time (:py:attr:`time` attribute).
+
+            If this :py:class:`Points` object was created with per-point initial times (ie, the
+            :py:attr:`time` attribute is a 1D array) then ``time`` **must** be specified explicitly,
+            otherwise a :class:`ValueError` is raised. This is because each point would otherwise be
+            reconstructed to its own initial time, giving flowlines of differing lengths that cannot
+            be returned as rectangular 2D arrays.
         anchor_plate_id : int, optional
             Anchor plate ID. Defaults to the current anchor plate ID (:py:attr:`anchor_plate_id` attribute).
         return_times : bool, default=False
@@ -1482,17 +1617,76 @@ class Points(object):
                 current_right_lats = right_rlats[i]
         """
         # Create a flowline for each point that is *reconstructable*.
-        return self.plate_reconstruction.create_flowline(
-            self.lons[self._reconstructable],
-            self.lats[self._reconstructable],
-            time_array,
-            left_plate_id,
-            right_plate_id,
-            from_time=self.time,
-            to_time=time,  # if None then defaults to 'self.time'
-            anchor_plate_id=anchor_plate_id,
-            return_times=return_times,
-            return_rate_of_motion=return_rate_of_motion,
+        reconstructable = self._reconstructable
+
+        # When all points share a single initial time we can pass it straight through as a scalar
+        # 'from_time' (the common, backward-compatible case).
+        if np.isscalar(self._time):
+            return self.plate_reconstruction.create_flowline(
+                self.lons[reconstructable],
+                self.lats[reconstructable],
+                time_array,
+                left_plate_id,
+                right_plate_id,
+                from_time=self.time,
+                to_time=time,  # if None then defaults to 'self.time'
+                anchor_plate_id=anchor_plate_id,
+                return_times=return_times,
+                return_rate_of_motion=return_rate_of_motion,
+            )
+
+        # Otherwise each point has its own initial time. 'create_flowline' only accepts a scalar
+        # 'from_time', so we group points by unique initial time and call it once per group.
+        # A common reconstruction time ('to_time') is required so that all groups produce the same
+        # number of columns (see the 'time' parameter documentation above).
+        if time is None:
+            raise ValueError(
+                "When 'Points' has per-point initial times, 'time' must be specified explicitly "
+                "for flowline()."
+            )
+
+        # Note: 'self._time' is masked (alongside lons/lats) so it stays aligned.
+        rec_lons = self.lons[reconstructable]
+        rec_lats = self.lats[reconstructable]
+        rec_times = self._time[reconstructable]
+
+        # No reconstructable points: delegate a single call (with a scalar 'from_time') so the
+        # empty-output shape matches the scalar code path.
+        if rec_lons.size == 0:
+            return self.plate_reconstruction.create_flowline(
+                rec_lons,
+                rec_lats,
+                time_array,
+                left_plate_id,
+                right_plate_id,
+                from_time=time,
+                to_time=time,
+                anchor_plate_id=anchor_plate_id,
+                return_times=return_times,
+                return_rate_of_motion=return_rate_of_motion,
+            )
+
+        def create_flowline_for_group(group_indices, from_time):
+            return self.plate_reconstruction.create_flowline(
+                rec_lons[group_indices],
+                rec_lats[group_indices],
+                time_array,
+                left_plate_id,
+                right_plate_id,
+                from_time=from_time,
+                to_time=time,
+                anchor_plate_id=anchor_plate_id,
+                return_times=True,  # needed internally to size outputs / capture shared 'rtimes'
+                return_rate_of_motion=return_rate_of_motion,
+            )
+
+        return self._reconstruct_paths_with_array_time(
+            rec_times,
+            rec_lons.size,
+            4,  # left_rlons, left_rlats, right_rlons, right_rlats
+            create_flowline_for_group,
+            return_times,
+            return_rate_of_motion,
         )
 
     def _get_dataframe(self):
