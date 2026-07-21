@@ -641,7 +641,7 @@ class DataServer(object):
             if raster_name.lower() == "etopo1_tif":
                 raster.lats = raster.lats[::-1]
             if raster_name.lower() == "etopo1_grd":
-                raster._data = raster._data.astype(float)  # type: ignore
+                raster.data = raster.data.astype(float)  # type: ignore
             return raster
         else:
             raise Exception("The 'raster_name' parameter is required!")
