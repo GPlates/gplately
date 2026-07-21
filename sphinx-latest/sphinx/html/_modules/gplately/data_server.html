@@ -751,7 +751,7 @@
             <span class="k">if</span> <span class="n">raster_name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;etopo1_tif&quot;</span><span class="p">:</span>
                 <span class="n">raster</span><span class="o">.</span><span class="n">lats</span> <span class="o">=</span> <span class="n">raster</span><span class="o">.</span><span class="n">lats</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
             <span class="k">if</span> <span class="n">raster_name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;etopo1_grd&quot;</span><span class="p">:</span>
-                <span class="n">raster</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="n">raster</span><span class="o">.</span><span class="n">_data</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
+                <span class="n">raster</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">raster</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
             <span class="k">return</span> <span class="n">raster</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;The &#39;raster_name&#39; parameter is required!&quot;</span><span class="p">)</span></div>
@@ -917,7 +917,7 @@
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2023-2025, The University of Sydney.</p>
+    <p>&#169; Copyright 2023-2026, The University of Sydney.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

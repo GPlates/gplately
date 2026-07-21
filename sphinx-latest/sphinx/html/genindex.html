@@ -103,6 +103,7 @@
  | <a href="#R"><strong>R</strong></a>
  | <a href="#S"><strong>S</strong></a>
  | <a href="#T"><strong>T</strong></a>
+ | <a href="#U"><strong>U</strong></a>
  | <a href="#V"><strong>V</strong></a>
  | <a href="#W"><strong>W</strong></a>
  
@@ -180,6 +181,8 @@
 </li>
       <li><a href="generated/gplately.Raster.html#gplately.Raster.clip_by_extent">clip_by_extent() (gplately.Raster method)</a>
 </li>
+      <li><a href="generated/gplately.Raster.html#gplately.Raster.clip_by_polygons">clip_by_polygons() (gplately.Raster method)</a>
+</li>
       <li><a href="generated/gplately.DataServer.html#gplately.DataServer.coastlines">coastlines (gplately.DataServer property)</a>
 
       <ul>
@@ -230,6 +233,8 @@
 </li>
       <li><a href="generated/gplately.default_netcdf_fill_value.html#gplately.default_netcdf_fill_value">default_netcdf_fill_value() (in module gplately)</a>
 </li>
+      <li><a href="generated/gplately.Raster.html#gplately.Raster.default_value">default_value (gplately.Raster property)</a>
+</li>
       <li><a href="generated/gplately.PlateReconstruction.html#gplately.PlateReconstruction.divergent_convergent_plate_boundaries">divergent_convergent_plate_boundaries() (gplately.PlateReconstruction method)</a>
 </li>
   </ul></td>
@@ -272,9 +277,11 @@
 </li>
       <li><a href="filters_and_transformers.html#gplately.utils.feature_filter.FeatureTypeFilter">FeatureTypeFilter (class in gplately.utils.feature_filter)</a>
 </li>
+      <li><a href="generated/gplately.Raster.html#gplately.Raster.filename">filename (gplately.Raster property)</a>
+</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="generated/gplately.Raster.html#gplately.Raster.filename">filename (gplately.Raster property)</a>
+      <li><a href="generated/gplately.Raster.html#gplately.Raster.fill_gaps">fill_gaps() (gplately.Raster method)</a>
 </li>
       <li><a href="generated/gplately.Raster.html#gplately.Raster.fill_NaNs">fill_NaNs() (gplately.Raster method)</a>
 </li>
@@ -453,11 +460,19 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="generated/gplately.Raster.html#gplately.Raster.imshow">imshow() (gplately.Raster method)</a>
 </li>
+      <li><a href="generated/gplately.Raster.html#gplately.Raster.interp">interp() (gplately.Raster method)</a>
+</li>
       <li><a href="generated/gplately.Raster.html#gplately.Raster.interpolate">interpolate() (gplately.Raster method)</a>
+</li>
+      <li><a href="generated/gplately.Raster.html#gplately.Raster.is_global">is_global() (gplately.Raster method)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="generated/gplately.Raster.html#gplately.Raster.is_longitude_wrapped">is_longitude_wrapped() (gplately.Raster method)</a>
+</li>
       <li><a href="generated/gplately.PlateModel.html#gplately.PlateModel.is_model_dir">is_model_dir() (gplately.PlateModel static method)</a>
+</li>
+      <li><a href="generated/gplately.Raster.html#gplately.Raster.is_normalized">is_normalized() (gplately.Raster method)</a>
 </li>
       <li><a href="generated/gplately.PresentDayRasterManager.html#gplately.PresentDayRasterManager.is_wms">is_wms() (gplately.PresentDayRasterManager method)</a>
 </li>
@@ -479,6 +494,8 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="generated/gplately.PresentDayRasterManager.html#gplately.PresentDayRasterManager.list_present_day_rasters">list_present_day_rasters() (gplately.PresentDayRasterManager method)</a>
 </li>
+      <li><a href="generated/gplately.Raster.html#gplately.Raster.longitude_convention">longitude_convention (gplately.Raster property)</a>
+</li>
       <li><a href="generated/gplately.Points.html#gplately.Points.lons">lons (gplately.Points property)</a>
 
       <ul>
@@ -491,16 +508,18 @@
 <h2 id="M">M</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="generated/gplately.Raster.html#gplately.Raster.masked_data">masked_data (gplately.Raster property)</a>
+</li>
       <li><a href="generated/gplately.SeafloorGrid.html#gplately.SeafloorGrid.max_time">max_time (gplately.SeafloorGrid property)</a>
 </li>
       <li><a href="generated/gplately.PlotTopologies.html#gplately.PlotTopologies.misc_transforms">misc_transforms (gplately.PlotTopologies property)</a>
 </li>
       <li><a href="generated/gplately.PlateModel.html#gplately.PlateModel.model">model (gplately.PlateModel property)</a>
 </li>
-      <li><a href="generated/gplately.PlateModel.html#gplately.PlateModel.model_dir">model_dir (gplately.PlateModel property)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="generated/gplately.PlateModel.html#gplately.PlateModel.model_dir">model_dir (gplately.PlateModel property)</a>
+</li>
       <li><a href="generated/gplately.PlateModelManager.html#gplately.PlateModelManager.models">models (gplately.PlateModelManager property)</a>
 </li>
       <li>
@@ -519,6 +538,12 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="generated/gplately.Raster.html#gplately.Raster.ndim">ndim (gplately.Raster property)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="generated/gplately.Raster.html#gplately.Raster.normalized">normalized() (gplately.Raster method)</a>
+</li>
+      <li><a href="generated/gplately.Raster.html#gplately.Raster.normalized_extent">normalized_extent (gplately.Raster property)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -788,6 +813,8 @@
 <h2 id="S">S</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="generated/gplately.Raster.html#gplately.Raster.sample_values">sample_values() (gplately.Raster method)</a>
+</li>
       <li><a href="generated/gplately.Points.html#gplately.Points.save">save() (gplately.Points method)</a>
 </li>
       <li><a href="generated/gplately.Raster.html#gplately.Raster.save_to_netcdf4">save_to_netcdf4() (gplately.Raster method)</a>
@@ -880,6 +907,10 @@
 </li>
       <li><a href="generated/gplately.Raster.html#gplately.Raster.to_data_array">to_data_array() (gplately.Raster method)</a>
 </li>
+      <li><a href="generated/gplately.Raster.html#gplately.Raster.to_longitude_positive_360">to_longitude_positive_360() (gplately.Raster method)</a>
+</li>
+      <li><a href="generated/gplately.Raster.html#gplately.Raster.to_longitude_signed_180">to_longitude_signed_180() (gplately.Raster method)</a>
+</li>
       <li><a href="generated/gplately.PlotTopologies.html#gplately.PlotTopologies.topological_plate_boundaries">topological_plate_boundaries (gplately.PlotTopologies property)</a>
 </li>
       <li><a href="filters_and_transformers.html#gplately.utils.feature_filter.TopologicalReferenceFilter.topological_reference_map">topological_reference_map (gplately.utils.feature_filter.TopologicalReferenceFilter property)</a>
@@ -888,10 +919,10 @@
 </li>
       <li><a href="filters_and_transformers.html#gplately.utils.feature_filter.TopologicalFeaturesWithDuplicateSectionsFilter">TopologicalFeaturesWithDuplicateSectionsFilter (class in gplately.utils.feature_filter)</a>
 </li>
-      <li><a href="filters_and_transformers.html#gplately.utils.feature_filter.TopologicalReferenceFilter">TopologicalReferenceFilter (class in gplately.utils.feature_filter)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="filters_and_transformers.html#gplately.utils.feature_filter.TopologicalReferenceFilter">TopologicalReferenceFilter (class in gplately.utils.feature_filter)</a>
+</li>
       <li><a href="generated/gplately.PlotTopologies.html#gplately.PlotTopologies.topologies">topologies (gplately.PlotTopologies property)</a>
 </li>
       <li><a href="generated/gplately.DataServer.html#gplately.DataServer.topology_features">topology_features (gplately.DataServer property)</a>
@@ -921,6 +952,14 @@
       <li><a href="generated/gplately.PlotTopologies.html#gplately.PlotTopologies.trench_right">trench_right (gplately.PlotTopologies attribute)</a>
 </li>
       <li><a href="generated/gplately.PlotTopologies.html#gplately.PlotTopologies.trenches">trenches (gplately.PlotTopologies attribute)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="U">U</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="generated/gplately.Raster.html#gplately.Raster.unwrap_longitude">unwrap_longitude() (gplately.Raster method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -956,7 +995,7 @@
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2023-2025, The University of Sydney.</p>
+    <p>&#169; Copyright 2023-2026, The University of Sydney.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

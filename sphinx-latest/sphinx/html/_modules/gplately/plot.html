@@ -121,45 +121,27 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">shapely.ops</span><span class="w"> </span><span class="kn">import</span> <span class="n">linemerge</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">ptt</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">.decorators</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.lib.decorators</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">append_docstring</span><span class="p">,</span>
     <span class="n">validate_reconstruction_time</span><span class="p">,</span>
     <span class="n">validate_topology_availability</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.gpml</span><span class="w"> </span><span class="kn">import</span> <span class="n">_load_FeatureCollection</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">.grids</span><span class="w"> </span><span class="kn">import</span> <span class="n">Raster</span><span class="p">,</span> <span class="n">read_netcdf_grid</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.grids</span><span class="w"> </span><span class="kn">import</span> <span class="n">Raster</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.mapping.cartopy_plot</span><span class="w"> </span><span class="kn">import</span> <span class="n">DEFAULT_CARTOPY_PROJECTION</span><span class="p">,</span> <span class="n">CartopyPlotEngine</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.mapping.plot_engine</span><span class="w"> </span><span class="kn">import</span> <span class="n">PlotEngine</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">.tools</span><span class="w"> </span><span class="kn">import</span> <span class="n">EARTH_RADIUS</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">.utils.feature_utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">shapelify_features</span> <span class="k">as</span> <span class="n">_shapelify_features</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.utils.plot_utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">_meridian_from_ax</span><span class="p">,</span> <span class="n">PLOT_DOCSTRING</span><span class="p">,</span> <span class="n">GET_DATE_DOCSTRING</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">.utils.plot_utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">plot_subduction_teeth</span> <span class="k">as</span> <span class="n">_plot_subduction_teeth</span>
+
 <span class="kn">from</span><span class="w"> </span><span class="nn">.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">deprecated</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.utils.io_utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">to_geographic_data_array</span><span class="p">,</span> <span class="n">load_data_array_from_netcdf</span>
 
+<span class="c1"># re-export. do not remove.</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.utils.plot_utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">plot_subduction_teeth</span> <span class="k">as</span> <span class="n">plot_subduction_teeth</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.utils.feature_utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">shapelify_features</span> <span class="k">as</span> <span class="n">shapelify_features</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.utils.feature_utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">shapelify_features</span> <span class="k">as</span> <span class="n">shapelify_feature_lines</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.utils.feature_utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">shapelify_features</span> <span class="k">as</span> <span class="n">shapelify_feature_polygons</span>
+
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">&quot;gplately&quot;</span><span class="p">)</span>
-
-
-<span class="k">def</span><span class="w"> </span><span class="nf">shapelify_features</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-    <span class="k">return</span> <span class="n">_shapelify_features</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-
-
-<span class="k">def</span><span class="w"> </span><span class="nf">shapelify_feature_lines</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-    <span class="k">return</span> <span class="n">_shapelify_features</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-
-
-<span class="k">def</span><span class="w"> </span><span class="nf">shapelify_feature_polygons</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-    <span class="k">return</span> <span class="n">_shapelify_features</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-
-
-<span class="k">def</span><span class="w"> </span><span class="nf">plot_subduction_teeth</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-    <span class="k">return</span> <span class="n">_plot_subduction_teeth</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-
-
-<span class="n">plot_subduction_teeth</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="n">_plot_subduction_teeth</span><span class="o">.</span><span class="vm">__doc__</span>
-<span class="n">shapelify_features</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="n">_shapelify_features</span><span class="o">.</span><span class="vm">__doc__</span>
-<span class="n">shapelify_feature_lines</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="n">_shapelify_features</span><span class="o">.</span><span class="vm">__doc__</span>
-<span class="n">shapelify_feature_polygons</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="n">_shapelify_features</span><span class="o">.</span><span class="vm">__doc__</span>
 
 
 <div class="viewcode-block" id="PlotTopologies">
@@ -2247,7 +2229,7 @@
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2023-2025, The University of Sydney.</p>
+    <p>&#169; Copyright 2023-2026, The University of Sydney.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
