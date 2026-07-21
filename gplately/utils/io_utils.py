@@ -27,13 +27,18 @@ If `GeoPandas` is not found on the system, input files are read with
 
 """
 
+import logging
+
 # pyright: reportMissingImports=false
 # pyright: reportMissingModuleSource=false
 
 
+import pygplates
 from shapely.geometry import shape
 from shapely.geometry.base import BaseGeometry
 import xarray as xr
+
+logger = logging.getLogger("gplately")
 
 gpd = None
 shpreader = None
@@ -170,14 +175,15 @@ def load_data_array_from_netcdf(filename, var_name=None):
     filename : str
         Path to the netCDF file to be read.
     var_name : str, optional
-        The variable name of the raster data in the netCDF file. If not provided, the first variable in the netCDF file will be used.
+        The variable name of the raster data in the netCDF file.
+        If not provided, the program will try the best to guess.
 
     Returns
     -------
     data_array : xarray.DataArray
         The data array loaded from the netCDF file.
     """
-
+    raster_xr = None
     try:
         raster_xr = xr.open_dataarray(filename)
     except ValueError:
@@ -186,8 +192,19 @@ def load_data_array_from_netcdf(filename, var_name=None):
         if var_name and var_name in dataset.data_vars:
             raster_xr = dataset[var_name]
         else:
-            first_var = next(iter(dataset.data_vars))
-            raster_xr = dataset[first_var]
+            for name in ["z", "data", "values"]:
+                if name in dataset.data_vars:
+                    raster_xr = dataset[name]
+                    if raster_xr.ndim == 2 and len(raster_xr.coords) == 2:
+                        return raster_xr
+
+            for name in dataset.data_vars:
+                raster_xr = dataset[name]
+                if raster_xr.ndim == 2 and len(raster_xr.coords) == 2:
+                    return raster_xr
+    assert (
+        raster_xr is not None
+    ), f"Failed to load a 2D data array from the netCDF file: {filename}"
     return raster_xr
 
 
@@ -256,3 +273,33 @@ def to_geographic_data_array(data_array):
     ret_da.gmt.gtype = 1  # 1 = geographic
     # ret_da.gmt.registration = 0  # 0 = gridline node
     return ret_da
+
+
+def load_feature_collection(source) -> pygplates.FeatureCollection:
+    """Load and return a `pygplates.FeatureCollection`_ from a source.
+
+    Parameters
+    ----------
+    source : str/`os.PathLike`, or a sequence (eg, `list` or `tuple`) of instances of `pygplates.Feature`_, or a single instance of `pygplates.Feature`_, or an instance of `pygplates.FeatureCollection`_, or a sequence of any combination of those four types
+        Can be a filename, a sequence of features, a single feature,
+        a feature collection, or a sequence (eg, a list or tuple) of any combination of those four types.
+
+    Returns
+    -------
+    `pygplates.FeatureCollection`_
+        A feature collection containing all features. If failed to load, an empty feature collection will be returned.
+
+
+    .. _pygplates.Feature: https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature
+    .. _pygplates.FeatureCollection: https://www.gplates.org/docs/pygplates/generated/pygplates.featurecollection#pygplates.FeatureCollection
+    """
+    try:
+        return pygplates.FeatureCollection(
+            pygplates.FeaturesFunctionArgument(source).get_features()
+        )
+    except Exception:
+        logger.error(
+            "Failed to load feature collection. Expected a feature collection, a filename, a feature, a sequence of features, or a sequence (eg, list or tuple) of any combination of aforementioned four types."
+            + f"The source provided is of {source}. An empty feature collection will be returned."
+        )
+        return pygplates.FeatureCollection()

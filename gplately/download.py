@@ -929,7 +929,7 @@ def get_raster(raster_id_string=None, verbose=True):
         if raster_id_string.lower() == "etopo1_tif":
             raster.lats = raster.lats[::-1]
         if raster_id_string.lower() == "etopo1_grd":
-            raster._data = raster._data.astype(float)  # type: ignore
+            raster.data = raster.data.astype(float)  # type: ignore
 
     return raster
 

@@ -164,27 +164,30 @@ def add_arguments(parser: argparse.ArgumentParser):
     )
 
 
-__description__ = """Retrieve paleomagnetic data from https://www.gpmdb.net, create GPlates-compatible VGP features and save the VGP features in a .gpmlz file.
+__description__ = """Retrieve paleomagnetic data from https://www.gpmdb.net, create GPlates-compatible VGP features, and save them to a .gpmlz file.
 
-    The URL being used are 
+    Data source URL:
         - https://www.gpmdb.net/api/search/
-       
 
-    This command will create two files.
-        - the .gpmlz file -- contains the GPlates-compatible VGP features
-        - the gpmdb.json -- contains the raw paleomagnetic data
+    This command creates two files:
+        - vgp_features_<model_name>.gpmlz (or the file set with -o/--outfile), containing GPlates-compatible VGP features
+        - data-cache/gpmdb.json, containing the raw paleomagnetic data
 
-    Usage example: gplately gpmdb -m zahirovic2022 -o test.gpmlz
+    Usage example:
+        gplately gpmdb -m Zahirovic2022 -o test.gpmlz
 
-    The default reconstruction model being used to assign plate IDs is "zahirovic2022". User can choose to specify the model with "-m/--model". 
-    The avaliable model names can be found with command `pmm ls` (plate-model-manager https://pypi.org/project/plate-model-manager/; use gplately conda env).
+    Notes:
+        - The default reconstruction model used to assign plate IDs is "Zahirovic2022".
+        - You can specify a different model with -m/--model.
+        - Available model names can be listed with "pmm ls"
+          (plate-model-manager: https://pypi.org/project/plate-model-manager/).
+        - You can specify the output .gpmlz filename with -o/--outfile.
+        - If -o/--outfile is not provided, the output filename is
+          "vgp_features_<model_name>.gpmlz".
+        - The cached raw data filename is always "gpmdb.json".
 
-    User can specify the output .gpmlz file name with "-o/--outfile". By default, the output file name will be "vgp_features_{model name}.gmplz".
-
-    The `gplately gpmdb` will use model "zahirovic2022" and create the output file "vgp_features_zahirovic2022.gmplz". 
-
-    The file name for the raw paleomagnetic data is always "gpmdb.json".
-
+    If https://www.gpmdb.net is not accessible, you can use backup data, for example:
+        gplately gpmdb --gpmdb-server-url https://repo.gplates.org/webdav/gplately/gpmdb.json
     """
 
 

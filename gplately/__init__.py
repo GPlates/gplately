@@ -40,8 +40,8 @@ from plate_model_manager import PlateModel, PlateModelManager, PresentDayRasterM
 
 from . import auxiliary, ptt
 from .download import DataServer
+from .raster import Raster, GridRegistration
 from .grids import (
-    Raster,
     read_netcdf_grid,
     write_netcdf_grid,
     default_netcdf_fill_value,
@@ -56,6 +56,7 @@ from .lib.reconstruct import (
 from .mapping.cartopy_plot import CartopyPlotEngine
 from .mapping.plot_engine import PlotEngine
 from .mapping.pygmt_plot import PygmtPlotEngine
+from .mapping.hillshade import get_topo_cmap
 from .oceans import SeafloorGrid
 from .plot import PlotTopologies
 from .points import Points

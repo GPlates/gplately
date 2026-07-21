@@ -1,5 +1,5 @@
 #
-#    Copyright (C) 2024-2025 The University of Sydney, Australia
+#    Copyright (C) 2024-2026 The University of Sydney, Australia
 #
 #    This program is free software; you can redistribute it and/or modify it under
 #    the terms of the GNU General Public License, version 2, as published by
@@ -32,3 +32,10 @@ class UnableToGetModelList(Exception):
         super().__init__(
             "Unable to get a list of model names over Internet. Your network may be down or the servers may be offline."
         )
+
+
+class NegativeReconstructionTime(Exception):
+    """raise this exception when the reconstruction time is negative."""
+
+    def __init__(self, time):
+        super().__init__(f"The reconstruction time ({time}) must be a positive number.")

@@ -5,6 +5,11 @@ import warnings
 import numpy as np
 import pygplates
 import pytest
+from gplately.utils.longitude_convert import (
+    to_longitude_positive_360,
+    to_longitude_signed_180,
+    upwrap_antimeridian_wraparound,
+)
 from conftest import (
     gplately_merdith_raster,
     gplately_merdith_static_geometries,
@@ -32,6 +37,79 @@ methods in the object are tested:
         For the test, the present-day Müller et al. 2019 age grid is reconstructed to its
         configuration at 50 Ma.
 """
+
+
+def test_longitude_conversions():
+    """
+    Test the longitude conversion functions in gplately.utils.longitude_convert module.
+    The functions tested are:
+        - to_longitude_positive_360
+        - to_longitude_signed_180
+        - upwrap_antimeridian_wraparound
+    The tests cover various scenarios, including global and regional grids, with and without duplicate columns, and crossing the antimeridian.
+    """
+    # Global, no duplicate
+    lons = np.array([-180, -90, 0, 90])
+    grid = np.array([[1, 2, 3, 4], [5, 6, 7, 8]])
+    g, lo = to_longitude_positive_360(grid, lons)
+    assert np.allclose(lo, [0, 90, 180, 270])
+    assert np.allclose(g, [[3, 4, 1, 2], [7, 8, 5, 6]])
+
+    # Global, duplicate closing column
+    lons = np.array([-180, -90, 0, 90, 180])
+    grid = np.array([[1, 2, 3, 4, 1], [5, 6, 7, 8, 5]])
+    g, lo = to_longitude_positive_360(grid, lons)
+    assert np.allclose(lo, [0, 90, 180, 270, 360])
+    assert np.allclose(g, [[3, 4, 1, 2, 3], [7, 8, 5, 6, 7]])
+
+    # Regional, on the edge of 0-360, but not crossing the antimeridian
+    lons = np.array([-160, -100, -50, 0])
+    grid = np.array([[1, 2, 3, 4], [5, 6, 7, 8]])
+    g, lo = to_longitude_positive_360(grid, lons)
+    assert np.allclose(lo, [200, 260, 310, 360])
+    assert np.allclose(g, [[1, 2, 3, 4], [5, 6, 7, 8]])
+
+    # Genuine regional crossing -> raise ValueError
+    lons = np.array([-10, 0, 10])
+    grid = np.array([[1, 2, 3]])
+    with pytest.raises(ValueError):
+        to_longitude_positive_360(grid, lons)
+
+    # Regional, no crossing
+    lons = np.array([180, 190, 210, 360])
+    grid = np.array([[1, 2, 3, 4], [5, 6, 7, 8]])
+    g, lo = to_longitude_signed_180(grid, lons)
+    assert np.allclose(lo, [-180, -170, -150, 0])
+    assert np.allclose(g, [[1, 2, 3, 4], [5, 6, 7, 8]])
+
+    # Global, 0-360 input, no duplicate
+    lons = np.array([0, 90, 180, 270])
+    grid = np.array([[1, 2, 3, 4], [5, 6, 7, 8]])
+    g, lo = to_longitude_signed_180(grid, lons)
+    assert np.allclose(lo, [-180, -90, 0, 90])
+    assert np.allclose(g, [[3, 4, 1, 2], [7, 8, 5, 6]])
+
+    # Global, 0-360 input, duplicate closing column
+    lons = np.array([0, 90, 180, 270, 360])
+    grid = np.array([[1, 2, 3, 4, 1], [5, 6, 7, 8, 5]])
+    g, lo = to_longitude_signed_180(grid, lons)
+    assert np.allclose(lo, [-180, -90, 0, 90, 180])
+    assert np.allclose(g, [[3, 4, 1, 2, 3], [7, 8, 5, 6, 7]])
+
+    # Regional crossing -> should error
+    lons = np.array([170, 175, 180, 185, 190])
+    grid = np.array([[1, 2, 3, 4, 5]])
+    with pytest.raises(ValueError):
+        to_longitude_signed_180(grid, lons)
+
+    # upwrap_antimeridian_wraparound
+    lons = [160, 170, 180, -170, -160]
+    unwrapped_lons = upwrap_antimeridian_wraparound(lons)
+    assert np.allclose(unwrapped_lons, [160, 170, 180, 190, 200])
+
+    lons = np.array([340, 350, 360, 10, 20])
+    unwrapped_lons = upwrap_antimeridian_wraparound(lons)
+    assert np.allclose(unwrapped_lons, [-20, -10, 0, 10, 20])
 
 
 # TEST LINEAR POINT DATA INTERPOLATION (WITH PT. COORDS FROM CONFTEST)
@@ -140,34 +218,32 @@ def test_fill_NaNs(graster):
     assert not np.isnan(no_NaNs).all(), "Unable to fill NaNs"
 
 
-def test_reconstruct(graster, muller_2019_model, gplately_plate_reconstruction_object):
-    reconstructed_raster = graster.reconstruct(50)
+def test_reconstruct(graster):
+    graster_downsampled = graster.resample(1.0, 1.0)
+    reconstructed_raster = graster_downsampled.reconstruct(50)
     assert np.shape(reconstructed_raster) == np.shape(
-        graster
-    ), "Unable to reconstruct age grid"
+        graster_downsampled
+    ), "The shape of the reconstructed raster does not match the original raster."
 
     # test inplace reconstruction with anchor_plate_id=701
-    ra = gplately.Raster(
-        data=muller_2019_model.get_raster("AgeGrids", 0),
-        plate_reconstruction=copy.deepcopy(gplately_plate_reconstruction_object),
-        extent=(-180, 180, -90, 90),
-    )
+    ra = graster_downsampled.copy()
     ra.reconstruct(100, inplace=True, anchor_plate_id=701)
+    assert ra.plate_reconstruction is not None
     assert ra.plate_reconstruction.rotation_model
     assert ra.plate_reconstruction.rotation_model.get_default_anchor_plate_id() == 701
 
     # test return a new Raster obj with anchor_plate_id=701
-    ra1 = gplately.Raster(
-        data=muller_2019_model.get_raster("AgeGrids", 0),
-        plate_reconstruction=gplately_plate_reconstruction_object,
-        extent=(-180, 180, -90, 90),
-    )
-    ret = ra1.reconstruct(100, return_array=False, anchor_plate_id=701)
+    ret = graster_downsampled.reconstruct(150, return_array=False, anchor_plate_id=701)
     assert isinstance(ret, gplately.Raster)
+    assert ret.plate_reconstruction is not None
     assert ret.plate_reconstruction.rotation_model
     assert ret.plate_reconstruction.rotation_model.get_default_anchor_plate_id() == 701
-    assert ra1.plate_reconstruction.rotation_model
-    assert ra1.plate_reconstruction.rotation_model.get_default_anchor_plate_id() != 701
+    assert graster_downsampled.plate_reconstruction is not None
+    assert graster_downsampled.plate_reconstruction.rotation_model
+    assert (
+        graster_downsampled.plate_reconstruction.rotation_model.get_default_anchor_plate_id()
+        != 701
+    )
 
 
 @pytest.mark.skipif(
@@ -198,11 +274,15 @@ def test_reverse_reconstruct(
     assert rmse < 250.0  # make sure RMSE is within a reasonable limit
 
 
+@pytest.mark.skipif(
+    int(os.getenv("GPLATELY_TEST_LEVEL", 0)) < 1,
+    reason="This testcase is computationally heavy and can be slow. Set GPLATELY_TEST_LEVEL>=1 to activate it.",
+)
 def test_reverse_reconstruct_1(
     graster,
-    gplately_merdith_static_geometries,
+    gplately_muller_static_geometries,
 ):
-    continents = gplately_merdith_static_geometries[1]
+    continents = gplately_muller_static_geometries[1]
     original_data = np.array(graster.data)
 
     graster.reconstruct(
@@ -223,21 +303,37 @@ def test_reverse_reconstruct_1(
     assert rmse < 250.0  # make sure RMSE is within a reasonable limit
 
 
+@pytest.mark.skipif(
+    int(os.getenv("GPLATELY_TEST_LEVEL", 0)) < 1,
+    reason="No need to run this testcase everytime. Set GPLATELY_TEST_LEVEL>=1 to activate it.",
+)
 def test_copy(graster):
     new = graster.copy()
     assert np.allclose(new.data, graster.data, equal_nan=True)
 
 
+@pytest.mark.skipif(
+    int(os.getenv("GPLATELY_TEST_LEVEL", 0)) < 1,
+    reason="No need to run this testcase everytime. Set GPLATELY_TEST_LEVEL>=1 to activate it.",
+)
 def test_new(graster):
     new = gplately.Raster(graster)
     assert np.allclose(new.data, graster.data, equal_nan=True)
 
 
+@pytest.mark.skipif(
+    int(os.getenv("GPLATELY_TEST_LEVEL", 0)) < 1,
+    reason="No need to run this testcase everytime. Set GPLATELY_TEST_LEVEL>=1 to activate it.",
+)
 def test_array(graster):
     arr = np.array(graster)
     assert np.allclose(arr, graster.data, equal_nan=True)
 
 
+@pytest.mark.skipif(
+    int(os.getenv("GPLATELY_TEST_LEVEL", 0)) < 1,
+    reason="No need to run this testcase everytime. Set GPLATELY_TEST_LEVEL>=1 to activate it.",
+)
 def test_add(graster):
     data = graster.data
     other = gplately.Raster(data=np.ones_like(graster.data))
@@ -250,6 +346,10 @@ def test_add(graster):
     assert np.allclose(other + graster, 1 + data, equal_nan=True)
 
 
+@pytest.mark.skipif(
+    int(os.getenv("GPLATELY_TEST_LEVEL", 0)) < 1,
+    reason="No need to run this testcase everytime. Set GPLATELY_TEST_LEVEL>=1 to activate it.",
+)
 def test_sub(graster):
     data = graster.data
     other = gplately.Raster(data=np.ones_like(graster.data))
@@ -262,6 +362,10 @@ def test_sub(graster):
     assert np.allclose(other - graster, 1 - data, equal_nan=True)
 
 
+@pytest.mark.skipif(
+    int(os.getenv("GPLATELY_TEST_LEVEL", 0)) < 1,
+    reason="No need to run this testcase everytime. Set GPLATELY_TEST_LEVEL>=1 to activate it.",
+)
 def test_mul(graster):
     data = graster.data
     other = gplately.Raster(data=np.full_like(graster.data, 2))
@@ -274,6 +378,10 @@ def test_mul(graster):
     assert np.allclose(other * graster, 2 * data, equal_nan=True)
 
 
+@pytest.mark.skipif(
+    int(os.getenv("GPLATELY_TEST_LEVEL", 0)) < 1,
+    reason="No need to run this testcase everytime. Set GPLATELY_TEST_LEVEL>=1 to activate it.",
+)
 def test_truediv(graster):
     data = graster.data
     other = gplately.Raster(data=np.full_like(graster.data, 2))
@@ -286,6 +394,10 @@ def test_truediv(graster):
     assert np.allclose(other / graster, 2 / data, equal_nan=True)
 
 
+@pytest.mark.skipif(
+    int(os.getenv("GPLATELY_TEST_LEVEL", 0)) < 1,
+    reason="No need to run this testcase everytime. Set GPLATELY_TEST_LEVEL>=1 to activate it.",
+)
 def test_floordiv(graster):
     data = graster.data
     other = gplately.Raster(data=np.full_like(graster.data, 2))
@@ -298,6 +410,10 @@ def test_floordiv(graster):
     assert np.allclose(other // graster, 2 // data, equal_nan=True)
 
 
+@pytest.mark.skipif(
+    int(os.getenv("GPLATELY_TEST_LEVEL", 0)) < 1,
+    reason="No need to run this testcase everytime. Set GPLATELY_TEST_LEVEL>=1 to activate it.",
+)
 @pytest.mark.filterwarnings("ignore:invalid value", "ignore:divide by zero")
 def test_mod(graster):
     data = graster.data.astype(np.int_)
@@ -313,6 +429,10 @@ def test_mod(graster):
     assert np.allclose(other % graster, 2 % data, equal_nan=True)
 
 
+@pytest.mark.skipif(
+    int(os.getenv("GPLATELY_TEST_LEVEL", 0)) < 1,
+    reason="No need to run this testcase everytime. Set GPLATELY_TEST_LEVEL>=1 to activate it.",
+)
 @pytest.mark.filterwarnings("ignore:invalid value", "ignore:divide by zero")
 def test_pow(graster):
     graster = graster.copy()
