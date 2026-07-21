@@ -288,6 +288,23 @@
     <span class="k">return</span> <span class="n">name</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;lat&quot;</span><span class="p">,</span> <span class="s2">&quot;lats&quot;</span><span class="p">,</span> <span class="s2">&quot;latitude&quot;</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">,</span> <span class="s2">&quot;north&quot;</span><span class="p">,</span> <span class="s2">&quot;northing&quot;</span><span class="p">,</span> <span class="s2">&quot;northings&quot;</span><span class="p">]</span>
 
 
+<span class="k">def</span><span class="w"> </span><span class="nf">_spaced_axis</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">,</span> <span class="n">step</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Build an inclusive coordinate axis from `start` to `stop`, sampled every `step`.</span>
+
+<span class="sd">    Equivalent to ``np.arange(start, stop + step, step)``, but with exact endpoints.</span>
+<span class="sd">    Accumulated floating-point error in ``np.arange`` can push the final sample past</span>
+<span class="sd">    `stop` — a 0.2-degree global latitude axis ends at 90.00000000000256, which trips</span>
+<span class="sd">    the pole-clipping guard in `sample_grid`. Deriving the sample count and handing it</span>
+<span class="sd">    to `np.linspace` keeps both endpoints exact.</span>
+
+<span class="sd">    `step` must share the sign of ``stop - start``, so descending axes (as produced by</span>
+<span class="sd">    an ``upper`` origin) are handled the same way as ascending ones. As with</span>
+<span class="sd">    ``np.arange``, a mis-signed `step` yields an empty axis.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">((</span><span class="n">stop</span> <span class="o">-</span> <span class="n">start</span><span class="p">)</span> <span class="o">/</span> <span class="n">step</span><span class="p">))</span> <span class="o">+</span> <span class="mi">1</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">,</span> <span class="nb">max</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+
+
 <span class="k">def</span><span class="w"> </span><span class="nf">_find_extent_from_data</span><span class="p">(</span>
     <span class="n">data</span><span class="p">,</span> <span class="n">origin</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span> <span class="kc">None</span><span class="p">]:</span>
@@ -468,8 +485,8 @@
         <span class="n">dY</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">cdf_lat</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="n">dX</span><span class="p">,</span> <span class="n">spacingX</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="n">dY</span><span class="p">,</span> <span class="n">spacingY</span><span class="p">):</span>
-            <span class="n">lon_grid</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">cdf_lon</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">cdf_lon</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">+</span> <span class="n">spacingX</span><span class="p">,</span> <span class="n">spacingX</span><span class="p">)</span>
-            <span class="n">lat_grid</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">cdf_lat</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">cdf_lat</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">+</span> <span class="n">spacingY</span><span class="p">,</span> <span class="n">spacingY</span><span class="p">)</span>
+            <span class="n">lon_grid</span> <span class="o">=</span> <span class="n">_spaced_axis</span><span class="p">(</span><span class="n">cdf_lon</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">cdf_lon</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span> <span class="n">spacingX</span><span class="p">)</span>
+            <span class="n">lat_grid</span> <span class="o">=</span> <span class="n">_spaced_axis</span><span class="p">(</span><span class="n">cdf_lat</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">cdf_lat</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span> <span class="n">spacingY</span><span class="p">)</span>
             <span class="n">lonq</span><span class="p">,</span> <span class="n">latq</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">lon_grid</span><span class="p">,</span> <span class="n">lat_grid</span><span class="p">)</span>
             <span class="n">original_extent</span> <span class="o">=</span> <span class="p">(</span>
                 <span class="n">cdf_lon</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
@@ -1392,8 +1409,8 @@
         <span class="n">lons</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">minx</span><span class="p">,</span> <span class="n">maxx</span><span class="p">,</span> <span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">endpoint</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="n">lats</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">miny</span><span class="p">,</span> <span class="n">maxy</span><span class="p">,</span> <span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">endpoint</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="n">lons</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">minx</span><span class="p">,</span> <span class="n">maxx</span> <span class="o">+</span> <span class="n">resx</span><span class="p">,</span> <span class="n">resx</span><span class="p">)</span>
-        <span class="n">lats</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">miny</span><span class="p">,</span> <span class="n">maxy</span> <span class="o">+</span> <span class="n">resy</span><span class="p">,</span> <span class="n">resy</span><span class="p">)</span>
+        <span class="n">lons</span> <span class="o">=</span> <span class="n">_spaced_axis</span><span class="p">(</span><span class="n">minx</span><span class="p">,</span> <span class="n">maxx</span><span class="p">,</span> <span class="n">resx</span><span class="p">)</span>
+        <span class="n">lats</span> <span class="o">=</span> <span class="n">_spaced_axis</span><span class="p">(</span><span class="n">miny</span><span class="p">,</span> <span class="n">maxy</span><span class="p">,</span> <span class="n">resy</span><span class="p">)</span>
     <span class="n">nx</span> <span class="o">=</span> <span class="n">lons</span><span class="o">.</span><span class="n">size</span>
     <span class="n">ny</span> <span class="o">=</span> <span class="n">lats</span><span class="o">.</span><span class="n">size</span>
 
