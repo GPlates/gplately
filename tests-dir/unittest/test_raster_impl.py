@@ -125,7 +125,9 @@ def test_upper_origin_raster_reconstruction():
     print("Saved age_grid_raster_upper_origin_50_ma.nc")
 
 
-def test_raster_reconstruction():
+def test_raster_reconstruction(
+    use_spatial_tree: bool = False, use_old_implementation: bool = False
+):
     anchor_pid = 0
     from gplately.auxiliary import get_gplot
 
@@ -141,7 +143,8 @@ def test_raster_reconstruction():
         data=image.imread(PresentDayRasterManager().get_raster("ETOPO1_tif")),
         plate_reconstruction=model,
     )
-    etopo.lats = etopo.lats[::-1]
+    # etopo.lats = etopo.lats[::-1]
+    etopo.data = np.flipud(etopo.data)
 
     etopo_downscaled = etopo.resample(0.5, 0.5)
     assert etopo_downscaled
@@ -155,7 +158,11 @@ def test_raster_reconstruction():
 
     # reconstruct to 50 Ma
     r_50 = etopo_downscaled.reconstruct(
-        50, fill_value="white", anchor_plate_id=anchor_pid
+        50,
+        fill_value="white",
+        anchor_plate_id=anchor_pid,
+        use_spatial_tree=use_spatial_tree,
+        use_old_implementation=use_old_implementation,
     )
 
     # plot 50 Ma
@@ -167,7 +174,11 @@ def test_raster_reconstruction():
 
     # reconstruct to 200 Ma with PID 0
     r_200 = etopo_downscaled.reconstruct(
-        200, fill_value="white", anchor_plate_id=anchor_pid
+        200,
+        fill_value="white",
+        anchor_plate_id=anchor_pid,
+        use_spatial_tree=use_spatial_tree,
+        use_old_implementation=use_old_implementation,
     )
     # plot 200 Ma
     ax_3 = fig.add_subplot(223, projection=ccrs.PlateCarree())
@@ -179,7 +190,11 @@ def test_raster_reconstruction():
     # reconstruct to 200 Ma with PID 701701
     anchor_pid = 701701
     r_200_701701 = etopo_downscaled.reconstruct(
-        200, fill_value="white", anchor_plate_id=anchor_pid
+        200,
+        fill_value="white",
+        anchor_plate_id=anchor_pid,
+        use_spatial_tree=use_spatial_tree,
+        use_old_implementation=use_old_implementation,
     )
 
     gplot = get_gplot(

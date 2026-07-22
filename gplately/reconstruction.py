@@ -770,7 +770,10 @@ class PlateReconstruction(object):
         # This is just an optimisation to avoid unnecessarily sampling all plate boundaries.
         def _boundary_section_filter_function(resolved_topological_section):
             feature = resolved_topological_section.get_feature()
-            if feature.get_enumeration(pygplates.PropertyName.gpml_subduction_polarity) is None:
+            if (
+                feature.get_enumeration(pygplates.PropertyName.gpml_subduction_polarity)
+                is None
+            ):
                 return False
             if not include_all_subducting_boundary_types:
                 return (

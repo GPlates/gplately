@@ -1,5 +1,5 @@
 #
-#    Copyright (C) 2024-2025 The University of Sydney, Australia
+#    Copyright (C) 2024-2026 The University of Sydney, Australia
 #
 #    This program is free software; you can redistribute it and/or modify it under
 #    the terms of the GNU General Public License, version 2, as published by
@@ -24,7 +24,6 @@ from typing import Union
 # pyright: reportMissingImports=false
 # pyright: reportMissingModuleSource=false
 
-import pygplates
 
 logger = logging.getLogger("gplately")
 try:
@@ -116,10 +115,8 @@ def get_plate_reconstruction(
         static_polygons = plate_model.get_layer("StaticPolygons")
 
     return PlateReconstruction(
-        pygplates.RotationModel(
-            plate_model.get_rotation_model(),
-            default_anchor_plate_id=default_anchor_plate_id,
-        ),
+        plate_model.get_rotation_model(),
+        anchor_plate_id=default_anchor_plate_id,
         topology_features=topology_features,
         static_polygons=static_polygons,
         plate_model=plate_model,

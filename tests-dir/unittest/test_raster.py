@@ -9,6 +9,8 @@
 # `jupytext --to notebook test_raster.py -o test_raster.ipynb`
 
 # %%
+import time
+
 from test_raster_impl import (
     test_raster_reconstruct_lon_0_360,
     test_raster_query,
@@ -38,4 +40,16 @@ if all_flag or test_upper_origin_raster_reconstruction_flag:
     test_upper_origin_raster_reconstruction()
 # %%
 if all_flag or test_raster_reconstruction_flag:
+    start = time.perf_counter()
     test_raster_reconstruction()
+    print(f"Elapsed: {time.perf_counter() - start:.4f} seconds")
+# %%
+if True:
+    start = time.perf_counter()
+    test_raster_reconstruction(use_spatial_tree=True)
+    print(f"Elapsed: {time.perf_counter() - start:.4f} seconds")
+# %%
+if True:
+    start = time.perf_counter()
+    test_raster_reconstruction(use_old_implementation=True)
+    print(f"Elapsed: {time.perf_counter() - start:.4f} seconds")

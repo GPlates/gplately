@@ -540,6 +540,8 @@ class Raster(object):
         anchor_plate_id=None,
         inplace=False,
         return_array: Literal[False] = False,
+        use_spatial_tree: bool = False,
+        use_old_implementation: bool = False,
     ) -> "Raster": ...
 
     @overload
@@ -553,6 +555,8 @@ class Raster(object):
         anchor_plate_id=None,
         inplace=False,
         return_array: Literal[True],
+        use_spatial_tree: bool = False,
+        use_old_implementation: bool = False,
     ) -> np.ndarray: ...
 
     def reconstruct(
@@ -565,7 +569,8 @@ class Raster(object):
         anchor_plate_id=None,
         inplace=False,
         return_array=False,
-        use_spatial_tree: bool = True,
+        use_spatial_tree: bool = False,
+        use_old_implementation: bool = False,
     ) -> Union["Raster", np.ndarray]:
         """Reconstruct the raster from its current time to a new time.
 
@@ -634,7 +639,6 @@ class Raster(object):
 
         # Flag to roll back to the old implementation quickly if needed.
         # Keep this flag here for a while until the dust settles. -- MC 2026-07-20
-        use_old_implementation = False
         if not use_old_implementation:
             rotation_model = None  # if this is None, the default rotation model in self.plate_reconstruction.rotation_model will be used
             if anchor_plate_id is not None:
@@ -646,6 +650,7 @@ class Raster(object):
                     )
                 )
 
+            # Raster normalization is expensive. Normalize your raster beforehand if you need to call reconstruct() repeatedly.
             if not self.is_normalized():
                 # If the raster is in 0-360 convention, we need to convert it to -180/180 convention for reconstruction,
                 # and then convert it back to 0-360 convention after reconstruction.
@@ -732,7 +737,7 @@ class Raster(object):
             if not return_array:
                 _result = Raster(
                     data=_result,
-                    plate_reconstruction=copy.deepcopy(self.plate_reconstruction),
+                    plate_reconstruction=copy.copy(self.plate_reconstruction),
                     extent=self.extent,
                     time=to_time_f,
                     origin=self.origin,
@@ -793,7 +798,7 @@ class Raster(object):
         """Return a copy of the :class:`Raster` object."""
         return Raster(
             self.data.copy(),
-            copy.deepcopy(self.plate_reconstruction),
+            copy.copy(self.plate_reconstruction),
             self.extent,
             time=self.time,
         )
@@ -851,12 +856,16 @@ class Raster(object):
             and self.origin == "lower"
         ):
             return self
-        else:
+
+        if self.longitude_convention != LongitudeConvention.SIGNED_180:
             _normalized_raster = self.to_longitude_signed_180()
-            if _normalized_raster.origin == "upper":
-                _normalized_raster.data = np.flipud(_normalized_raster.data)
-                _normalized_raster.lats = np.flip(_normalized_raster.lats)
-            return _normalized_raster
+        else:
+            _normalized_raster = self.copy()
+
+        if _normalized_raster.origin == "upper":
+            _normalized_raster.data = np.flipud(_normalized_raster.data)
+            _normalized_raster.lats = np.flip(_normalized_raster.lats)
+        return _normalized_raster
 
     def fill_gaps(
         self,
@@ -1730,6 +1739,11 @@ class Raster(object):
 
     def to_longitude_signed_180(self, inplace=False):
         """Convert a grid's longitude coordinates to the [-180, 180] convention."""
+        if self.longitude_convention == LongitudeConvention.SIGNED_180:
+            logger.warning(
+                "The raster is already in the [-180, 180] longitude convention. No conversion is performed. Returning the original raster object."
+            )
+            return self
         _grid_data, _lons = _convert_longitude(
             self.data,
             self.lons,
@@ -2949,7 +2963,7 @@ class Raster(object):
         if plate_reconstruction is not None:
             self.plate_reconstruction = plate_reconstruction
         else:
-            self.plate_reconstruction = copy.deepcopy(other.plate_reconstruction)
+            self.plate_reconstruction = copy.copy(other.plate_reconstruction)
         self._lons = other._lons.copy()
         self._lats = other._lats.copy()
         self._time = other._time
