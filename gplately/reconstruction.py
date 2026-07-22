@@ -223,6 +223,29 @@ class PlateReconstruction(object):
         # Note: PyGPlates features and features collections (and rotation models) can be pickled though.
         #
 
+    def copy(self):
+        """Return a copy of the :py:class:`PlateReconstruction` object.
+        This is a pure shallow copy, so the copy shares the same underlying data as the original.
+        For example, if you modify the rotation model of the copy, it will also modify the rotation model of the original.
+        However, if you assign a new rotation model to the copy, it will not affect the original.
+        I need this function for a less expensive way to create a copy of the PlateReconstruction object.
+        """
+        cls = type(self)
+        new_obj = cls.__new__(cls)
+
+        # copy __dict__-based attributes, if present
+        if hasattr(self, "__dict__"):
+            new_obj.__dict__.update(self.__dict__)
+
+        # copy __slots__-based attributes, if present (walk the MRO in case
+        # slots are defined across multiple base classes)
+        for klass in cls.__mro__:
+            for slot in getattr(klass, "__slots__", ()):
+                if hasattr(self, slot):
+                    setattr(new_obj, slot, getattr(self, slot))
+
+        return new_obj
+
     @property
     def anchor_plate_id(self):
         """Default anchor plate ID for reconstruction. Must be an integer >= 0."""
