@@ -1,5 +1,9 @@
 import os
 
+import pygmt
+
+from gplately import raster
+
 os.environ["DISABLE_GPLATELY_DEV_WARNING"] = "true"
 import cartopy.crs as ccrs
 import matplotlib.pyplot as plt
@@ -210,6 +214,46 @@ def test_raster_reconstruction(
     r_200_701701.plot(ax_4)
     gplot.plot_continents(ax=ax_4, facecolor="none", edgecolor="black", linewidth=0.5)
     ax_4.set_title(f"200 Ma - APID:{anchor_pid}")
+
+
+def test_create_raster_from_points():
+    import pygmt
+
+    relief = pygmt.datasets.load_earth_relief(
+        resolution="10m", region=[-180, 180, -80, 80]
+    )
+
+    # randomly subsample the regular grid into "scattered" points
+    rng = np.random.default_rng(0)
+    ny, nx = relief.shape
+    n_points = 5000
+    iy = rng.integers(0, ny, n_points)
+    ix = rng.integers(0, nx, n_points)
+
+    lon = relief.lon.values[ix]
+    lat = relief.lat.values[iy]
+    val = relief.values[iy, ix]
+
+    # Create a Raster from the points
+    raster = gplately.Raster.from_points(
+        lon=lon,
+        lat=lat,
+        values=val,
+        spacing="0.5d",  # dataset covers only a small region, so use fine spacing
+    )
+    # quick visual check
+    fig = pygmt.Figure()
+    raster.plot(ax_or_fig=fig, use_gmt=True)
+    fig.plot(
+        x=lon,
+        y=lat,
+        style="c0.05c",
+        fill="black",
+        label="Sample points",
+    )
+    fig.colorbar(frame='af+l"Earth Relief (m)"')
+    fig.legend()
+    fig.show()
 
 
 def main(argv):
