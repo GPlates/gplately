@@ -1,12 +1,12 @@
 import os
 
 os.environ["DISABLE_GPLATELY_DEV_WARNING"] = "true"
-import cartopy.crs as ccrs
-import matplotlib.pyplot as plt
-import numpy as np
+import cartopy.crs as ccrs  # pyright: ignore[reportMissingImports]
+import matplotlib.pyplot as plt  # pyright: ignore[reportMissingModuleSource]
+import numpy as np  # pyright: ignore[reportMissingImports]
 from common import MODEL_REPO_DIR, save_fig
 from plate_model_manager import PlateModelManager
-from matplotlib import image
+from matplotlib import image  # pyright: ignore[reportMissingModuleSource]
 from plate_model_manager import PresentDayRasterManager
 
 import gplately
@@ -125,7 +125,9 @@ def test_upper_origin_raster_reconstruction():
     print("Saved age_grid_raster_upper_origin_50_ma.nc")
 
 
-def test_raster_reconstruction():
+def test_raster_reconstruction(
+    use_spatial_tree: bool = False, use_old_implementation: bool = False
+):
     anchor_pid = 0
     from gplately.auxiliary import get_gplot
 
@@ -141,7 +143,8 @@ def test_raster_reconstruction():
         data=image.imread(PresentDayRasterManager().get_raster("ETOPO1_tif")),
         plate_reconstruction=model,
     )
-    etopo.lats = etopo.lats[::-1]
+    # etopo.lats = etopo.lats[::-1]
+    etopo.data = np.flipud(etopo.data)
 
     etopo_downscaled = etopo.resample(0.5, 0.5)
     assert etopo_downscaled
@@ -155,7 +158,11 @@ def test_raster_reconstruction():
 
     # reconstruct to 50 Ma
     r_50 = etopo_downscaled.reconstruct(
-        50, fill_value="white", anchor_plate_id=anchor_pid
+        50,
+        fill_value="white",
+        anchor_plate_id=anchor_pid,
+        use_spatial_tree=use_spatial_tree,
+        use_old_implementation=use_old_implementation,
     )
 
     # plot 50 Ma
@@ -167,7 +174,11 @@ def test_raster_reconstruction():
 
     # reconstruct to 200 Ma with PID 0
     r_200 = etopo_downscaled.reconstruct(
-        200, fill_value="white", anchor_plate_id=anchor_pid
+        200,
+        fill_value="white",
+        anchor_plate_id=anchor_pid,
+        use_spatial_tree=use_spatial_tree,
+        use_old_implementation=use_old_implementation,
     )
     # plot 200 Ma
     ax_3 = fig.add_subplot(223, projection=ccrs.PlateCarree())
@@ -179,7 +190,11 @@ def test_raster_reconstruction():
     # reconstruct to 200 Ma with PID 701701
     anchor_pid = 701701
     r_200_701701 = etopo_downscaled.reconstruct(
-        200, fill_value="white", anchor_plate_id=anchor_pid
+        200,
+        fill_value="white",
+        anchor_plate_id=anchor_pid,
+        use_spatial_tree=use_spatial_tree,
+        use_old_implementation=use_old_implementation,
     )
 
     gplot = get_gplot(
@@ -195,6 +210,46 @@ def test_raster_reconstruction():
     r_200_701701.plot(ax_4)
     gplot.plot_continents(ax=ax_4, facecolor="none", edgecolor="black", linewidth=0.5)
     ax_4.set_title(f"200 Ma - APID:{anchor_pid}")
+
+
+def test_create_raster_from_points():
+    import pygmt  # pyright: ignore[reportMissingImports]
+
+    relief = pygmt.datasets.load_earth_relief(
+        resolution="10m", region=[-180, 180, -80, 80]
+    )
+
+    # randomly subsample the regular grid into "scattered" points
+    rng = np.random.default_rng(0)
+    ny, nx = relief.shape
+    n_points = 5000
+    iy = rng.integers(0, ny, n_points)
+    ix = rng.integers(0, nx, n_points)
+
+    lon = relief.lon.values[ix]
+    lat = relief.lat.values[iy]
+    val = relief.values[iy, ix]
+
+    # Create a Raster from the points
+    raster = gplately.Raster.from_points(
+        lon=lon,
+        lat=lat,
+        values=val,
+        spacing="0.5d",  # dataset covers only a small region, so use fine spacing
+    )
+    # quick visual check
+    fig = pygmt.Figure()
+    raster.plot(ax_or_fig=fig, use_gmt=True)
+    fig.plot(
+        x=lon,
+        y=lat,
+        style="c0.05c",
+        fill="black",
+        label="Sample points",
+    )
+    fig.colorbar(frame='af+l"Earth Relief (m)"')
+    fig.legend()
+    fig.show()
 
 
 def main(argv):

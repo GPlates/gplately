@@ -38,9 +38,10 @@ dependencies = [
     "geopandas",
     "plate-model-manager>=1.3.0",
     "pyyaml",
-    "pygmt",
+    "pygmt>=0.15.0",
     "rioxarray",
     "pygplates>=1.0.0",
+    "packaging",
 ]
 
 [tool.setuptools.packages.find]

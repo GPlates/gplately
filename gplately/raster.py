@@ -18,20 +18,31 @@
 import copy
 import logging
 import math
+import numbers
 from pathlib import Path
 from time import perf_counter
 import warnings
 from multiprocessing import cpu_count
 from typing import List, Tuple, Union, cast, overload, Literal
+import pygmt
 from xarray.core.types import InterpOptions
 
 # pyright: reportMissingImports=false
 # pyright: reportMissingModuleSource=false
 
 import matplotlib.pyplot as plt
+import pandas as pd
 import numpy as np
 import xarray as xr
 import pygplates
+from pygplates import (
+    RotationModel as _RotationModel,  # pyright: ignore[reportAttributeAccessIssue]
+    PolygonOnSphere as _PolygonOnSphere,  # pyright: ignore[reportAttributeAccessIssue]
+    FeatureCollection as _FeatureCollection,  # pyright: ignore[reportAttributeAccessIssue]
+    Feature as _Feature,  # pyright: ignore[reportAttributeAccessIssue]
+    FiniteRotation as _FiniteRotation,  # pyright: ignore[reportAttributeAccessIssue]
+    MultiPointOnSphere as _MultiPointOnSphere,  # pyright: ignore[reportAttributeAccessIssue]
+)
 from cartopy.crs import PlateCarree as _PlateCarree
 from cartopy.mpl.geoaxes import GeoAxes as _GeoAxes
 from rasterio.enums import MergeAlg
@@ -147,7 +158,7 @@ class Raster(object):
         self._data_var_name = data_variable_name
         self._lons = None
         self._lats = None
-        self._default_value = None
+        self._fill_value = None
         self._filename = None
         self._data_mask = None
         self._spatial_cKDTree = None
@@ -166,7 +177,9 @@ class Raster(object):
         # We also allow the user to override the plate reconstruction of the other Raster object by
         # providing a new plate reconstruction object.
         if isinstance(data, self.__class__):
-            self._copy_constructor(data, plate_reconstruction)
+            self._copy_from_other(data)
+            if plate_reconstruction is not None:
+                self.plate_reconstruction = plate_reconstruction
             return
 
         self.plate_reconstruction = plate_reconstruction
@@ -275,19 +288,34 @@ class Raster(object):
             )
 
     @property
-    def default_value(self):
-        """The default value used for the raster data."""
-        if self._default_value is None:
-            dtype = self.data.dtype
-            if np.issubdtype(dtype, np.floating):
-                self._default_value = np.nan
-            elif np.issubdtype(dtype, np.signedinteger):
-                self._default_value = np.iinfo(dtype).min
-            elif np.issubdtype(dtype, np.unsignedinteger):
-                self._default_value = np.iinfo(dtype).max
-            else:
-                self._default_value = 0
-        return self._default_value
+    def fill_value(self):
+        """The fill value used for the raster data.
+
+        This property is being set when this Raster object is being created with Raster reconstruction.
+        The `fill_value` means there is no valid data at the corresponding location.
+
+        The value of this property could be:
+
+            - None, which means this raster data was never created by reconstruction.
+            - a single number for 2D scalar rasters, such as np.nan, minimum value for signed integer, and the
+                maximum value for unsigned interger.
+            - a 3-tuple RGB colour code, such as black (0.0, 0.0, 0.0) or (0, 0, 0).
+            - a 4-tuple RGBA colour code, such as transparent black (0.0, 0.0, 0.0, 0.0) or (0, 0, 0, 0).
+        """
+        return self._fill_value
+
+    @fill_value.setter
+    def fill_value(self, value):
+        assert value is None or isinstance(
+            value, (numbers.Number, tuple)
+        ), f"fill_value must be None, a number, or a tuple. Got {type(value)}: {value}."
+        if isinstance(value, tuple):
+            assert len(value) in (3, 4), "fill_value tuple must be of length 3 or 4."
+            for v in value:
+                assert isinstance(
+                    v, numbers.Number
+                ), f"fill_value tuple must contain only numbers. Got {type(value)}: {value}."
+        self._fill_value = value
 
     @property
     def data(self) -> np.ndarray:
@@ -465,6 +493,100 @@ class Raster(object):
                 new_plate_recon_obj = PlateReconstruction(new_plate_recon_obj)
         self._plate_reconstruction = new_plate_recon_obj
 
+    @classmethod
+    def from_points(
+        cls,
+        lon,
+        lat,
+        values,
+        region=None,
+        spacing="0.1d",
+        tension=0.35,
+        preprocess="blockmean",
+        **surface_kwargs,
+    ) -> "Raster":
+        """
+        Class method to create a :class:`Raster` object from scattered geographic points.
+        Interpolate scattered geographic points onto a regular grid using
+        PyGMT's `surface` (Green's-function-based minimum-curvature gridding),
+        with optional block-averaging preprocessing to avoid duplicate/
+        near-duplicate point errors.
+
+        Parameters
+        ----------
+        lon, lat, values : array-like
+            1D arrays (or lists) of equal length giving the longitude,
+            latitude, and data value of each scattered point.
+        region : str or list, optional
+            GMT-style region specification [xmin, xmax, ymin, ymax].
+            If None, it is inferred from the data extent (with no padding).
+        spacing : str or float, optional
+            Grid spacing passed to `surface`/`blockmean` (e.g. "0.1d" for
+            0.1 degree, or "10k" for 10 km). Default "0.1d".
+        tension : float, optional
+            Tension factor for `surface`, between 0 (minimum curvature,
+            can overshoot) and 1 (harmonic, no overshoot). Default 0.35.
+        preprocess : {"blockmean", "blockmedian", None}, optional
+            Whether to pre-bin the scattered points onto the target grid
+            spacing before running `surface`. `surface` requires at most
+            one point per grid cell, so this is standard practice for
+            real-world (noisy / clustered / duplicate) data. Set to None
+            to skip and pass points to `surface` directly. Default
+            "blockmean".
+        **surface_kwargs :
+            Any additional keyword arguments forwarded to `pygmt.surface`
+            (e.g. `maxradius`, `convergence`, etc.).
+
+        Returns
+        -------
+        Raster
+            A Raster object containing the gridded surface.
+
+        Example
+        -------
+        >>> import numpy as np
+        >>> lon = np.random.uniform(120, 130, 500)
+        >>> lat = np.random.uniform(30, 40, 500)
+        >>> val = np.random.uniform(0, 100, 500)
+        >>> raster = Raster.from_points(lon, lat, val, spacing="0.05d")
+        """
+        lon = np.asarray(lon, dtype=float)
+        lat = np.asarray(lat, dtype=float)
+        values = np.asarray(values, dtype=float)
+
+        if not (len(lon) == len(lat) == len(values)):
+            raise ValueError("lon, lat, and values must have the same length")
+
+        df = pd.DataFrame({"x": lon, "y": lat, "z": values})
+
+        if region is None:
+            # Snap bounding box outward to an integer multiple of `spacing`
+            region = pygmt.info(data=df[["x", "y"]], spacing=spacing)
+
+        region = tuple(region)  # Ensure region is a tuple for PyGMT
+
+        if preprocess == "blockmean":
+            df = pygmt.blockmean(data=df, region=region, spacing=spacing)
+        elif preprocess == "blockmedian":
+            df = pygmt.blockmedian(data=df, region=region, spacing=spacing)
+        elif preprocess is not None:
+            raise ValueError(
+                "preprocess must be one of 'blockmean', 'blockmedian', or None"
+            )
+        with pygmt.config(GMT_VERBOSE="q"):
+            grid = pygmt.surface(
+                data=df,
+                region=region,
+                spacing=spacing,
+                tension=tension,
+                **surface_kwargs,
+            )
+
+        assert (
+            grid is not None
+        ), "PyGMT surface gridding returned None. Maybe `outgrid` is set (grid output will be stored in file set by `outgrid`)"
+        return cls(grid)
+
     def to_data_array(self, name=""):
         """Convert the raster to an xarray DataArray with spatial coordinates.
 
@@ -540,6 +662,8 @@ class Raster(object):
         anchor_plate_id=None,
         inplace=False,
         return_array: Literal[False] = False,
+        use_spatial_tree: bool = False,
+        use_old_implementation: bool = False,
     ) -> "Raster": ...
 
     @overload
@@ -553,6 +677,8 @@ class Raster(object):
         anchor_plate_id=None,
         inplace=False,
         return_array: Literal[True],
+        use_spatial_tree: bool = False,
+        use_old_implementation: bool = False,
     ) -> np.ndarray: ...
 
     def reconstruct(
@@ -565,7 +691,8 @@ class Raster(object):
         anchor_plate_id=None,
         inplace=False,
         return_array=False,
-        use_spatial_tree: bool = True,
+        use_spatial_tree: bool = False,
+        use_old_implementation: bool = False,
     ) -> Union["Raster", np.ndarray]:
         """Reconstruct the raster from its current time to a new time.
 
@@ -634,7 +761,6 @@ class Raster(object):
 
         # Flag to roll back to the old implementation quickly if needed.
         # Keep this flag here for a while until the dust settles. -- MC 2026-07-20
-        use_old_implementation = False
         if not use_old_implementation:
             rotation_model = None  # if this is None, the default rotation model in self.plate_reconstruction.rotation_model will be used
             if anchor_plate_id is not None:
@@ -645,7 +771,8 @@ class Raster(object):
                         anchor_plate_id
                     )
                 )
-
+            _parsed_fill_value = self._parse_fill_value(fill_value)
+            # Raster normalization is expensive. Normalize your raster beforehand if you need to call reconstruct() repeatedly.
             if not self.is_normalized():
                 # If the raster is in 0-360 convention, we need to convert it to -180/180 convention for reconstruction,
                 # and then convert it back to 0-360 convention after reconstruction.
@@ -661,7 +788,7 @@ class Raster(object):
                     rotation_model=rotation_model,
                     partitioning_features=partitioning_features,
                     threads=threads,
-                    fill_value=fill_value,
+                    fill_value=_parsed_fill_value,
                     use_spatial_tree=use_spatial_tree,
                 )
 
@@ -679,13 +806,14 @@ class Raster(object):
                     rotation_model=rotation_model,
                     partitioning_features=partitioning_features,
                     threads=threads,
-                    fill_value=fill_value,
+                    fill_value=_parsed_fill_value,
                     use_spatial_tree=use_spatial_tree,
                 )
 
             if inplace:
                 self.data = _reconstructed_raster.data
                 self._time = to_time_f
+                self.fill_value = _parsed_fill_value
                 if rotation_model is not None:
                     self.plate_reconstruction.rotation_model = rotation_model
                 if return_array:
@@ -732,7 +860,7 @@ class Raster(object):
             if not return_array:
                 _result = Raster(
                     data=_result,
-                    plate_reconstruction=copy.deepcopy(self.plate_reconstruction),
+                    plate_reconstruction=copy.copy(self.plate_reconstruction),
                     extent=self.extent,
                     time=to_time_f,
                     origin=self.origin,
@@ -791,12 +919,9 @@ class Raster(object):
 
     def copy(self) -> "Raster":
         """Return a copy of the :class:`Raster` object."""
-        return Raster(
-            self.data.copy(),
-            copy.deepcopy(self.plate_reconstruction),
-            self.extent,
-            time=self.time,
-        )
+        new_obj = self.__class__.__new__(self.__class__)
+        new_obj._copy_from_other(self)
+        return new_obj
 
     def is_global(self) -> bool:
         if not math.isclose(abs(self.lats[-1] - self.lats[0]), 180):
@@ -851,12 +976,16 @@ class Raster(object):
             and self.origin == "lower"
         ):
             return self
-        else:
+
+        if self.longitude_convention != LongitudeConvention.SIGNED_180:
             _normalized_raster = self.to_longitude_signed_180()
-            if _normalized_raster.origin == "upper":
-                _normalized_raster.data = np.flipud(_normalized_raster.data)
-                _normalized_raster.lats = np.flip(_normalized_raster.lats)
-            return _normalized_raster
+        else:
+            _normalized_raster = self.copy()
+
+        if _normalized_raster.origin == "upper":
+            _normalized_raster.data = np.flipud(_normalized_raster.data)
+            _normalized_raster.lats = np.flip(_normalized_raster.lats)
+        return _normalized_raster
 
     def fill_gaps(
         self,
@@ -1025,10 +1154,16 @@ class Raster(object):
         if data is None:
             data = self.to_data_array()
 
+        assert data is not None and isinstance(
+            data, xr.DataArray
+        ), "The `data` variable must be an xarray DataArray"
+
         orig_dtype = data.dtype
 
         if "lat" not in data.dims or "lon" not in data.dims:
-            raise ValueError(f"data must have 'lat' and 'lon' dims, got {data.dims}")
+            raise ValueError(
+                f"The `data` variable must have 'lat' and 'lon' dimensions, got {data.dims}"
+            )
 
         if pointwise:
             if lons.shape != lats.shape:
@@ -1441,8 +1576,8 @@ class Raster(object):
 
         # Create the pygplates.FiniteRotation that rotates
         # between the two reference frames.
-        from_rotation_model = pygplates.RotationModel(from_rotation_features_or_model)
-        to_rotation_model = pygplates.RotationModel(to_rotation_features_or_model)
+        from_rotation_model = _RotationModel(from_rotation_features_or_model)
+        to_rotation_model = _RotationModel(to_rotation_features_or_model)
         from_rotation = from_rotation_model.get_rotation(
             reconstruction_time,
             non_reference_plate,
@@ -1466,9 +1601,7 @@ class Raster(object):
         llats = llats.ravel()
 
         # Convert lon-lat points of Raster grid to pyGPlates points
-        input_points = pygplates.MultiPointOnSphere(
-            (lat, lon) for lon, lat in zip(llons, llats)
-        )
+        input_points = _MultiPointOnSphere((lat, lon) for lon, lat in zip(llons, llats))
         # Get grid values of the resized Raster object
         values = np.array(resized_input_grid.data).ravel()
 
@@ -1704,7 +1837,7 @@ class Raster(object):
             extent=new_extent,
         )
 
-    def clip_by_polygons(self, polygons: list[pygplates.PolygonOnSphere]):
+    def clip_by_polygons(self, polygons: list[_PolygonOnSphere]):
         """TODO:"""
         pass
 
@@ -1730,6 +1863,11 @@ class Raster(object):
 
     def to_longitude_signed_180(self, inplace=False):
         """Convert a grid's longitude coordinates to the [-180, 180] convention."""
+        if self.longitude_convention == LongitudeConvention.SIGNED_180:
+            logger.warning(
+                "The raster is already in the [-180, 180] longitude convention. No conversion is performed. Returning the original raster object."
+            )
+            return self
         _grid_data, _lons = _convert_longitude(
             self.data,
             self.lons,
@@ -1796,9 +1934,10 @@ class Raster(object):
     def _reconstruct_impl(
         self,
         to_time: float,
-        rotation_model: Union[pygplates.RotationModel, None] = None,
-        partitioning_features: Union[pygplates.FeatureCollection, None] = None,
-        fill_value: Union[float, int, str, tuple, None] = None,
+        rotation_model: Union[_RotationModel, None] = None,
+        partitioning_features: Union[_FeatureCollection, None] = None,
+        *,
+        fill_value: Union[float, int, str, tuple],
         threads: Union[int, None] = None,
         use_spatial_tree: bool = False,
     ) -> "Raster":
@@ -1839,9 +1978,9 @@ class Raster(object):
         partitioning_features : Union[pygplates.FeatureCollection, None], default None
             The features used to partition the raster grid and assign plate IDs, such as static polygons.
             If None is provided, the `self.plate_reconstruction.static_polygons` will be used.
-        fill_value : Union[float, int, str, tuple, None], default None
+        fill_value : Union[float, int, str, tuple]
             The value to be used for regions outside of the static polygons at ``to_time``.
-            By default (``fill_value=None``), this value will be determined based on the input.
+            The fill value must have been parsed, see :meth:`_parse_fill_value`.
         threads : int, default 1
             Number of threads to use for certain computationally heavy routines.
         use_spatial_tree : bool, default False
@@ -1948,6 +2087,19 @@ class Raster(object):
                 method=InterpMethod.NEAREST,
             )
 
+            # The interpolated values may contain a few old fill value, which is a tiny problem by itself(just a small number near the polgyon boundaries).
+            # However, the issue will be amplified when use the method `Raster.fill_gaps()` to fill the gaps in the raster, which will propagate the old fill value to a much larger area.
+            # We need to replace the old fill value with the new fill value.
+            if self.fill_value is not None and self.fill_value != fill_value:
+                logger.debug(
+                    f"Replacing fill value {self.fill_value} with new fill value {fill_value}."
+                )
+                Raster._replace_values(
+                    values,
+                    self.fill_value,
+                    fill_value,
+                )
+
             output_raster[
                 output_sample_points_row_col_indices[:, 0],
                 output_sample_points_row_col_indices[:, 1],
@@ -2042,19 +2194,21 @@ class Raster(object):
                 extent=output_raster_extent,
                 time=to_time,
             )
-        ret_raster_obj.plate_reconstruction = copy.deepcopy(self.plate_reconstruction)
         assert (
-            ret_raster_obj.plate_reconstruction is not None
-        ), "Plate reconstruction should not be None."
+            self.plate_reconstruction is not None
+        ), "The PlateReconstruction object in this Raster object should not be None."
+        ret_raster_obj.plate_reconstruction = self.plate_reconstruction.copy()
         if rotation_model is not None:
             ret_raster_obj.plate_reconstruction.rotation_model = rotation_model
+        ret_raster_obj.fill_value = fill_value
         return ret_raster_obj
 
     def _get_output_raster_and_sample_points(
         self,
         partitioning_polygons_at_to_time,
         features_of_partitioning_polygons_at_to_time,
-        fill_value=None,
+        *,
+        fill_value,
     ) -> Tuple[np.ndarray, tuple, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
         """Get the output raster and the sample points that are inside the partitioning polygons at `to_time`.
 
@@ -2062,9 +2216,11 @@ class Raster(object):
         ----------
         partitioning_polygons_at_to_time : list[pygplates.PolygonOnSphere]
             A list of partitioning polygons at the `to_time`.
-        fill_value : float, int, str, or tuple, optional
+        features_of_partitioning_polygons_at_to_time : list[pygplates.Feature]
+            A list of features corresponding to the partitioning polygons at the `to_time`.
+        fill_value : float, int, str, or tuple
             The value to be used for regions outside of the partitioning polygons at ``to_time``.
-            If None, the default value will be determined based on the input raster data type.
+            The fill value must have been parsed, see :meth:`_parse_fill_value`.
 
         Returns
         -------
@@ -2117,7 +2273,7 @@ class Raster(object):
             output_shape = output_shape + self.data.shape[2:]
         output_raster = np.full(
             output_shape,
-            self._parse_fill_value(fill_value),
+            fill_value,
             dtype=self.data.dtype,
         )
 
@@ -2171,19 +2327,19 @@ class Raster(object):
 
     def _get_partitioning_polygons_at_to_time(
         self,
-        partitioning_polygons_at_from_time: list[pygplates.PolygonOnSphere],
-        features_of_partitioning_polygons_at_from_time: list[pygplates.Feature],
+        partitioning_polygons_at_from_time: list[_PolygonOnSphere],
+        features_of_partitioning_polygons_at_from_time: list[_Feature],
         from_time: float,
         to_time: float,
-        rotation_model: pygplates.RotationModel,
-    ) -> Tuple[list[pygplates.PolygonOnSphere], list[pygplates.Feature]]:
+        rotation_model: _RotationModel,
+    ) -> Tuple[list[_PolygonOnSphere], list[_Feature]]:
         """Get the partitioning polygons at the `to_time` by reconstructing the partitioning polygons at the `from_time`."""
-        polygon_feature_collection = pygplates.FeatureCollection()
+        polygon_feature_collection = _FeatureCollection()
         for p, f in zip(
             partitioning_polygons_at_from_time,
             features_of_partitioning_polygons_at_from_time,
         ):
-            feature = pygplates.Feature()  # type: ignore
+            feature = _Feature()
             feature.set_reconstruction_plate_id(f.get_reconstruction_plate_id())  # type: ignore
             feature.set_geometry(p)
             polygon_feature_collection.add(feature)
@@ -2207,7 +2363,7 @@ class Raster(object):
         features_of_partitioning_polygons = []
         for rfg in rfgs:
             geom = rfg.get_reconstructed_geometry()
-            if geom is not None and isinstance(geom, pygplates.PolygonOnSphere):
+            if geom is not None and isinstance(geom, _PolygonOnSphere):
                 polygons_at_to_time.append(geom)
                 features_of_partitioning_polygons.append(rfg.get_feature())
         return polygons_at_to_time, features_of_partitioning_polygons
@@ -2216,8 +2372,8 @@ class Raster(object):
         self,
         lon_mesh: np.ndarray,
         lat_mesh: np.ndarray,
-        partitioning_polygons: list[pygplates.PolygonOnSphere],
-        features_of_partitioning_polygons: list[pygplates.Feature],
+        partitioning_polygons: list[_PolygonOnSphere],
+        features_of_partitioning_polygons: list[_Feature],
     ) -> np.ndarray:
         """Get the plate ID grid for the raster data points based on the partitioning polygons and their corresponding features.
 
@@ -2280,7 +2436,7 @@ class Raster(object):
         lons: np.ndarray,
         lats: np.ndarray,
         plate_ids: np.ndarray,
-        rotation_model: pygplates.RotationModel,
+        rotation_model: _RotationModel,
     ) -> Tuple[np.ndarray, np.ndarray]:
         """Reverse reconstruct the raster data points from `to_time` to `from_time` using the given rotation model and plate IDs."""
         assert (
@@ -2288,6 +2444,9 @@ class Raster(object):
         ), "Input arrays must have the same shape."
 
         assert np.all(plate_ids > 0), "All plate IDs must be positive integers."
+        assert (
+            self.plate_reconstruction is not None
+        ), "A valid PlateReconstruction object is required!"
 
         if rotation_model is None:
             rotation_model = self.plate_reconstruction.rotation_model
@@ -2328,7 +2487,7 @@ class Raster(object):
                     moving_plate_id=int(plate_id),
                 )
 
-            if not isinstance(rotation, pygplates.FiniteRotation):
+            if not isinstance(rotation, _FiniteRotation):
                 raise ValueError(f"No rotation found for plate ID: {plate_id}")
 
             lat, lon, angle = rotation.get_lat_lon_euler_pole_and_angle_degrees()
@@ -2363,7 +2522,7 @@ class Raster(object):
         m_lons: np.ndarray,
         m_lats: np.ndarray,
         plate_id_grid: np.ndarray,
-        rotation_model: pygplates.RotationModel,
+        rotation_model: _RotationModel,
     ) -> Tuple[np.ndarray, np.ndarray]:
         """Reconstruct the raster data points from `from_time` to `to_time` using the given rotation model and plate IDs.
 
@@ -2400,6 +2559,9 @@ class Raster(object):
         ), "Input arrays must have the same shape."
 
         if rotation_model is None:
+            assert (
+                self.plate_reconstruction is not None
+            ), "A valid PlateReconstruction object is required!"
             rotation_model = self.plate_reconstruction.rotation_model
         assert rotation_model is not None, "A valid RotationModel object is required!"
 
@@ -2447,7 +2609,7 @@ class Raster(object):
                     moving_plate_id=int(plate_id),
                 )
 
-            if not isinstance(rotation, pygplates.FiniteRotation):
+            if not isinstance(rotation, _FiniteRotation):
                 raise ValueError(f"No rotation found for plate ID: {plate_id}")
 
             lat, lon, angle = rotation.get_lat_lon_euler_pole_and_angle_degrees()
@@ -2483,7 +2645,7 @@ class Raster(object):
         self,
         lon_mesh: np.ndarray,
         lat_mesh: np.ndarray,
-        polygons: list[pygplates.PolygonOnSphere],
+        polygons: list[_PolygonOnSphere],
     ) -> np.ndarray:
         """Find which partitioning polygon each point in the lat_lon mesh belongs to.
         Return a 2D array of the same shape as the input lat_lon mesh.
@@ -2505,13 +2667,11 @@ class Raster(object):
 
     def _get_partitioning_polygons_at_from_time(
         self,
-        partitioning_features: Union[
-            pygplates.FeatureCollection, List[pygplates.Feature]
-        ],
+        partitioning_features: Union[_FeatureCollection, List[_Feature]],
         *,
         from_time: float,
         to_time: float,
-    ) -> Tuple[List[pygplates.PolygonOnSphere], List[pygplates.Feature]]:
+    ) -> Tuple[List[_PolygonOnSphere], List[_Feature]]:
         """Return the partitioning polygons at `from_time` and their corresponding features.
 
         - The polygons must be valid at both `from_time` and `to_time`.
@@ -2525,8 +2685,8 @@ class Raster(object):
             if f.is_valid_at_time(from_time) and f.is_valid_at_time(to_time)
         ]
 
-        partitioning_polygons: list[pygplates.PolygonOnSphere] = []
-        associated_features: list[pygplates.Feature] = []
+        partitioning_polygons: list[_PolygonOnSphere] = []
+        associated_features: list[_Feature] = []
         if from_time > 0.0:
             # Reconstruct the valid partitioning polygons to the `from_time` using the rotation model in this object.
             rfgs = []
@@ -2539,14 +2699,14 @@ class Raster(object):
             )
             for rfg in rfgs:
                 geom = rfg.get_reconstructed_geometry()
-                if geom is not None and isinstance(geom, pygplates.PolygonOnSphere):
+                if geom is not None and isinstance(geom, _PolygonOnSphere):
                     partitioning_polygons.append(geom)
                     associated_features.append(rfg.get_feature())
         else:
             # If from_time is 0, we don't need to reconstruct the partitioning polygons, just use the polygons from the valid partitioning features directly.
             for f in valid_partitioning_features:
                 for geom in f.get_all_geometries():
-                    if geom is not None and isinstance(geom, pygplates.PolygonOnSphere):
+                    if geom is not None and isinstance(geom, _PolygonOnSphere):
                         partitioning_polygons.append(geom)
                         associated_features.append(f)
 
@@ -2556,29 +2716,29 @@ class Raster(object):
 
         # Otherwise, define the rectangular extent polygon to cut the partitioning polygons
         left, right, bottom, top = self.extent
-        extent_polygon = pygplates.PolygonOnSphere((lat, lon) for lon, lat in [(left, bottom), (left, top), (right, top), (right, bottom)])  # type: ignore
-        extent_feature = pygplates.Feature()  # type: ignore
-        extent_feature.set_geometry(extent_polygon)  # type: ignore
-        partitioner = pygplates.PlatePartitioner(  # type: ignore
-            pygplates.FeatureCollection([extent_feature]),
-            pygplates.RotationModel([]),
+        extent_polygon = _PolygonOnSphere((lat, lon) for lon, lat in [(left, bottom), (left, top), (right, top), (right, bottom)])  # type: ignore
+        extent_feature = _Feature()
+        extent_feature.set_geometry(extent_polygon)
+        partitioner = (
+            pygplates.PlatePartitioner(  # pyright: ignore[reportAttributeAccessIssue]
+                _FeatureCollection([extent_feature]),
+                _RotationModel([]),
+            )
         )
 
         # cut the partitioning polygons with the extent polygon and return the new polygons and their corresponding features
         inside_geometries = []
         outside_geometries = []
-        polygons_within_extent: list[pygplates.PolygonOnSphere] = []
-        polygons_within_extent_features: list[pygplates.Feature] = []
+        polygons_within_extent: list[_PolygonOnSphere] = []
+        polygons_within_extent_features: list[_Feature] = []
         for polygon, feature in zip(partitioning_polygons, associated_features):
             partitioner.partition_geometry(polygon, inside_geometries, outside_geometries)  # type: ignore
             for inside_geom in inside_geometries:
-                if isinstance(inside_geom, pygplates.PolygonOnSphere):
+                if isinstance(inside_geom, _PolygonOnSphere):
                     polygons_within_extent.append(inside_geom)
                 else:
                     # The PlatePartitioner may cut a polygon into polylines. Convert the polylines into polygons by connecting the endpoints of the polylines to form a closed polygon.
-                    polygons_within_extent.append(
-                        pygplates.PolygonOnSphere(inside_geom)
-                    )
+                    polygons_within_extent.append(_PolygonOnSphere(inside_geom))
                 polygons_within_extent_features.append(feature)
         assert len(polygons_within_extent) == len(polygons_within_extent_features)
         return polygons_within_extent, polygons_within_extent_features
@@ -2672,7 +2832,9 @@ class Raster(object):
         distance_upper_bound = np.inf
         if np.isfinite(region_of_interest):
             distance_upper_bound = 2 * math.sin(
-                region_of_interest / pygplates.Earth.mean_radius_in_kms / 2.0
+                region_of_interest
+                / pygplates.Earth.mean_radius_in_kms  # pyright: ignore[reportAttributeAccessIssue]
+                / 2.0
             )
 
         _, indices = self._spatial_cKDTree.query(
@@ -2698,7 +2860,7 @@ class Raster(object):
 
     def _get_rotation_model_with_a_different_default_anchor_plate_id(
         self, anchor_plate_id: int
-    ) -> Union[pygplates.RotationModel, None]:
+    ) -> Union[_RotationModel, None]:
         """Check if the specified anchor plate id is different from the default anchor plate id in the current rotation model.
         If they are different, create and return a new rotation model with the specified default anchor plate id.
         Otherwise, return None."""
@@ -2709,7 +2871,7 @@ class Raster(object):
             anchor_plate_id
             != self.plate_reconstruction.rotation_model.get_default_anchor_plate_id()
         ):
-            return pygplates.RotationModel(
+            return _RotationModel(
                 self.plate_reconstruction.rotation_model,
                 default_anchor_plate_id=anchor_plate_id,
             )
@@ -2791,12 +2953,22 @@ class Raster(object):
             )
 
         method_l = str(method).lower()
-        fill_option_map = {
-            "nearest": {"neighborfill": True},
-            "linear": {"splinefill": True},
-            "cubic": {"splinefill": True},
-            "spline": {"splinefill": True},
-        }
+        from packaging.version import parse as _parse_version
+
+        if _parse_version(pygmt.__version__) < _parse_version("0.16.0"):
+            fill_option_map = {
+                "nearest": {"neighborfill": True},
+                "linear": {"splinefill": True},
+                "cubic": {"splinefill": True},
+                "spline": {"splinefill": True},
+            }
+        else:
+            fill_option_map = {
+                "nearest": {"neighbor_fill": True},
+                "linear": {"spline_fill": True},
+                "cubic": {"spline_fill": True},
+                "spline": {"spline_fill": True},
+            }
         fill_kwargs = fill_option_map.get(method_l)
         if fill_kwargs is None:
             raise ValueError(
@@ -2942,18 +3114,16 @@ class Raster(object):
                 f"Invalid reconstruction time: {new_time}. Must be a float number greater than 0."
             )
 
-    def _copy_constructor(self, other, plate_reconstruction):
-        self._data = other._data.copy()  # type: ignore
-        # Use specified plate reconstruction (if specified),
-        # otherwise use the plate reconstruction from 'data'.
-        if plate_reconstruction is not None:
-            self.plate_reconstruction = plate_reconstruction
-        else:
-            self.plate_reconstruction = copy.deepcopy(other.plate_reconstruction)
-        self._lons = other._lons.copy()
-        self._lats = other._lats.copy()
-        self._time = other._time
-        self._filename = other._filename
+    def _copy_from_other(self, other: "Raster"):
+        _other_dict = other.__dict__.copy()
+        _other_dict.pop("_plate_reconstruction", None)
+
+        self.__dict__.update(_other_dict)
+
+        self.data = other.data.copy()
+        self.lons = other.lons.copy()
+        self.lats = other.lats.copy()
+        self._plate_reconstruction = copy.copy(other.plate_reconstruction)
 
     def _load_data_from_file(self, filename):
         """Load raster data from a file, such as a NetCDF file or an image file.
@@ -3100,26 +3270,37 @@ class Raster(object):
         ]
 
     def _parse_fill_value(self, fill_value):
-        """Normalize ``fill_value`` to match this raster's data layout.
+        """Normalize ``fill_value`` to match raster dimensionality and dtype.
+
+        Rules
+        -----
+        - 2D rasters return a scalar.
+        - 3D rasters return a tuple with one value per channel.
+        - ``None`` chooses a dtype-aware default:
+          - 2D integer: dtype minimum (signed) or maximum (unsigned)
+          - 2D float/complex: ``np.nan``
+          - 3D integer: all zeros
+          - 3D float/complex: all zeros as float
+        - Color strings (for example ``"black"`` or ``"#ff0000"``) are
+          supported for 3D rasters only and converted through RGBA.
+        - For RGBA rasters, RGB input is accepted and an opaque alpha is appended.
+        - For 3D rasters, scalar numeric input is broadcast to all channels.
 
         Parameters
         ----------
-        fill_value : float, int, str, sequence, or None
+        fill_value : scalar, str, sequence, or None
             Fill value provided by caller.
-            - ``None`` chooses a dtype-aware default.
-            - Color strings (for example ``"black"`` or ``"#ff0000"``) are
-              accepted for multiband rasters only.
 
         Returns
         -------
-        float, int, or tuple
-            A scalar value for 2D rasters, or a tuple with one value per band
-            for 3D rasters.
+        scalar or tuple
+            Scalar for 2D rasters, tuple for 3D rasters.
 
         Raises
         ------
         ValueError
-            If the raster dimensionality or ``fill_value`` shape is invalid.
+            If dimensionality is unsupported, the value shape is invalid,
+            or conversion to target dtype is impossible.
         TypeError
             If a color string is supplied for a 2D raster.
         """
@@ -3132,24 +3313,44 @@ class Raster(object):
             )
 
         expected_size = 1 if grid.ndim == 2 else int(grid.shape[2])
+        dtype_kind = dtype.kind
+
+        def _coerce_scalar(value):
+            if dtype_kind == "b":
+                return bool(value)
+            if dtype_kind in ("i", "u"):
+                if isinstance(value, numbers.Real) and not np.isfinite(value):
+                    raise ValueError(
+                        f"Non-finite fill_value {value} is not allowed for integer dtype {dtype}."
+                    )
+                info = np.iinfo(dtype)
+                ivalue = int(np.rint(float(value)))
+                return int(np.clip(ivalue, info.min, info.max))
+            if dtype_kind == "f":
+                return float(value)
+            if dtype_kind == "c":
+                raise ValueError(
+                    "Complex raster dtypes are not supported for fill_value normalization."
+                )
+            raise ValueError(f"Unsupported dtype for fill_value normalization: {dtype}")
 
         if fill_value is None:
             if grid.ndim == 2:
-                if dtype.kind == "i":
+                if dtype_kind == "i":
                     fill_value = np.iinfo(dtype).min
-                elif dtype.kind == "u":
+                elif dtype_kind == "u":
                     fill_value = np.iinfo(dtype).max
                 else:
                     fill_value = np.nan
             else:
-                if dtype.kind in ("i", "u"):
-                    fill_value = tuple([0] * expected_size)
-                else:
-                    fill_value = tuple([0.0] * expected_size)
+                base = 0 if dtype_kind in ("i", "u", "b") else 0.0
+                fill_value = tuple([base] * expected_size)
+            return fill_value
 
         if isinstance(fill_value, str):
             if grid.ndim == 2:
                 raise TypeError(f"Invalid fill_value for 2D grid: {fill_value}")
+
             import matplotlib.colors
 
             try:
@@ -3157,35 +3358,44 @@ class Raster(object):
             except ValueError as exc:
                 raise ValueError(f"Invalid color specification: {fill_value}") from exc
 
-            if dtype.kind in ("i", "u"):
+            if dtype_kind in ("i", "u"):
                 max_value = np.iinfo(dtype).max
                 rgba = np.rint(rgba * max_value)
-                rgba = np.clip(rgba, 0, max_value).astype(dtype)
+            elif dtype_kind == "b":
+                rgba = rgba >= 0.5
 
-            fill_value = tuple(rgba[:expected_size])
+            return tuple(rgba[:expected_size])
 
-        # For RGBA rasters, allow RGB input and append full alpha.
-        if (
-            grid.ndim == 3
-            and expected_size == 4
-            and hasattr(fill_value, "__len__")
-            and len(fill_value) == 3  # type: ignore[arg-type]
-        ):
-            fill_alpha = np.iinfo(dtype).max if dtype.kind in ("i", "u") else 1.0
-            fill_value = (*fill_value, fill_alpha)  # type: ignore[misc]
+        if grid.ndim == 2:
+            if hasattr(fill_value, "__len__") and not isinstance(
+                fill_value, (str, bytes)
+            ):
+                fill_array = np.asarray(fill_value)
+                if fill_array.size != 1:
+                    raise ValueError(
+                        f"Shape mismatch: fill_value size: {fill_array.size}, expected: 1, grid shape: {np.shape(grid)}"
+                    )
+                fill_value = fill_array.reshape(-1)[0]
+            return _coerce_scalar(fill_value)
 
-        if np.size(fill_value) != expected_size:
-            raise ValueError(
-                f"Shape mismatch: fill_value size: {np.size(fill_value)}, expected: {expected_size}, grid shape: {np.shape(grid)}"
-            )
+        # From here on: 3D raster handling.
+        if np.isscalar(fill_value):
+            fill_items = [fill_value] * expected_size
+        else:
+            fill_array = np.asarray(fill_value).ravel()
+            if expected_size == 4 and fill_array.size == 3:
+                alpha_default = np.iinfo(dtype).max if dtype_kind in ("i", "u") else 1.0
+                fill_array = np.append(fill_array, alpha_default)
+            elif fill_array.size == 1:
+                fill_array = np.repeat(fill_array, expected_size)
 
-        # Keep scalar for 2D and tuple for 3D for downstream compatibility.
-        if grid.ndim == 2 and hasattr(fill_value, "__len__"):
-            fill_array = np.asarray(fill_value)
-            if fill_array.size == 1:
-                return fill_array.item()
+            if fill_array.size != expected_size:
+                raise ValueError(
+                    f"Shape mismatch: fill_value size: {fill_array.size}, expected: {expected_size}, grid shape: {np.shape(grid)}"
+                )
+            fill_items = fill_array.tolist()
 
-        return fill_value
+        return tuple(_coerce_scalar(v) for v in fill_items)
 
     def _validate_data(self):
         _data = self.data
@@ -3293,6 +3503,41 @@ class Raster(object):
         lats = np.linspace(min_lat, max_lat, self.data.shape[0])
 
         return lats, lons
+
+    @staticmethod
+    def _replace_values(values: np.ndarray, search_value, replace_value):
+        """Replace all occurrences of `search_value` in `values` with `replace_value`.
+
+        Parameters
+        ----------
+        values : numpy.ndarray
+            The array in which to search and replace values.
+        search_value : scalar or array-like
+            The value(s) to search for in `values`. Can be a scalar or an array of the same shape as `values`.
+        replace_value : scalar or array-like
+            The value(s) to replace `search_value` with. Can be a scalar or an array of the same shape as `values`.
+        """
+        if values.ndim == 1:
+            # for a np array of scalar values.
+            if np.isscalar(search_value) and np.isnan(search_value):
+                search_mask = np.isnan(values)
+            else:
+                search_mask = values == search_value
+            values[search_mask] = replace_value
+        else:
+            # for a np array of multiple values.
+            search_arr = np.asarray(search_value)
+            if search_arr.ndim == 0:
+                search_mask = np.all(values == search_arr.item(), axis=1)
+            else:
+                search_mask = np.all(values == search_arr.reshape((1, -1)), axis=1)
+
+            target_fill_arr = np.asarray(replace_value)
+            if target_fill_arr.ndim == 0:
+                values[search_mask, :] = target_fill_arr.item()
+            else:
+                values[search_mask, :] = target_fill_arr.reshape((1, -1))
+        return
 
     def __array__(self):
         return np.array(self.data)
