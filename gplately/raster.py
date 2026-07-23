@@ -176,7 +176,9 @@ class Raster(object):
         # We also allow the user to override the plate reconstruction of the other Raster object by
         # providing a new plate reconstruction object.
         if isinstance(data, self.__class__):
-            self._copy_constructor(data, plate_reconstruction)
+            self._copy_from_other(data)
+            if plate_reconstruction is not None:
+                self.plate_reconstruction = plate_reconstruction
             return
 
         self.plate_reconstruction = plate_reconstruction
@@ -484,8 +486,9 @@ class Raster(object):
                 new_plate_recon_obj = PlateReconstruction(new_plate_recon_obj)
         self._plate_reconstruction = new_plate_recon_obj
 
-    @staticmethod
+    @classmethod
     def from_points(
+        cls,
         lon,
         lat,
         values,
@@ -496,7 +499,7 @@ class Raster(object):
         **surface_kwargs,
     ) -> "Raster":
         """
-        Static method to create a :class:`Raster` object from scattered geographic points.
+        Class method to create a :class:`Raster` object from scattered geographic points.
         Interpolate scattered geographic points onto a regular grid using
         PyGMT's `surface` (Green's-function-based minimum-curvature gridding),
         with optional block-averaging preprocessing to avoid duplicate/
@@ -575,7 +578,7 @@ class Raster(object):
         assert (
             grid is not None
         ), "PyGMT surface gridding returned None. Maybe `outgrid` is set (grid output will be stored in file set by `outgrid`)"
-        return Raster(grid)
+        return cls(grid)
 
     def to_data_array(self, name=""):
         """Convert the raster to an xarray DataArray with spatial coordinates.
@@ -909,13 +912,8 @@ class Raster(object):
 
     def copy(self) -> "Raster":
         """Return a copy of the :class:`Raster` object."""
-        new_obj = Raster(
-            self.data.copy(),
-            copy.copy(self.plate_reconstruction),
-            self.extent,
-            time=self.time,
-        )
-        new_obj.fill_value = copy.copy(self.fill_value)
+        new_obj = self.__class__.__new__(self.__class__)
+        new_obj._copy_from_other(self)
         return new_obj
 
     def is_global(self) -> bool:
@@ -1149,10 +1147,16 @@ class Raster(object):
         if data is None:
             data = self.to_data_array()
 
+        assert data is not None and isinstance(
+            data, xr.DataArray
+        ), "The `data` variable must be an xarray DataArray"
+
         orig_dtype = data.dtype
 
         if "lat" not in data.dims or "lon" not in data.dims:
-            raise ValueError(f"data must have 'lat' and 'lon' dims, got {data.dims}")
+            raise ValueError(
+                f"The `data` variable must have 'lat' and 'lon' dimensions, got {data.dims}"
+            )
 
         if pointwise:
             if lons.shape != lats.shape:
@@ -2950,12 +2954,22 @@ class Raster(object):
             )
 
         method_l = str(method).lower()
-        fill_option_map = {
-            "nearest": {"neighbor_fill": True},
-            "linear": {"spline_fill": True},
-            "cubic": {"spline_fill": True},
-            "spline": {"spline_fill": True},
-        }
+        from packaging.version import parse as _parse_version
+
+        if _parse_version(pygmt.__version__) < _parse_version("0.16.0"):
+            fill_option_map = {
+                "nearest": {"neighborfill": True},
+                "linear": {"splinefill": True},
+                "cubic": {"splinefill": True},
+                "spline": {"splinefill": True},
+            }
+        else:
+            fill_option_map = {
+                "nearest": {"neighbor_fill": True},
+                "linear": {"spline_fill": True},
+                "cubic": {"spline_fill": True},
+                "spline": {"spline_fill": True},
+            }
         fill_kwargs = fill_option_map.get(method_l)
         if fill_kwargs is None:
             raise ValueError(
@@ -3101,19 +3115,20 @@ class Raster(object):
                 f"Invalid reconstruction time: {new_time}. Must be a float number greater than 0."
             )
 
-    def _copy_constructor(self, other, plate_reconstruction):
-        self._data = other._data.copy()  # type: ignore
-        # Use specified plate reconstruction (if specified),
-        # otherwise use the plate reconstruction from 'data'.
-        if plate_reconstruction is not None:
-            self.plate_reconstruction = plate_reconstruction
-        else:
-            self.plate_reconstruction = copy.copy(other.plate_reconstruction)
-        self._lons = other._lons.copy()
-        self._lats = other._lats.copy()
-        self._time = other._time
+    def _copy_from_other(self, other: "Raster"):
+        self._data = other.data.copy()
+        self._plate_reconstruction = copy.copy(other.plate_reconstruction)
+        self._time = other.time
+        self._grid_registration = other._grid_registration
+        self._lon_name = other._lon_name
+        self._lat_name = other._lat_name
+        self._data_var_name = other._data_var_name
+        self._lons = other.lons.copy()
+        self._lats = other.lats.copy()
         self._fill_value = copy.copy(other._fill_value)
         self._filename = other._filename
+        self._data_masked = None
+        self._invalidate_spatial_cache()
 
     def _load_data_from_file(self, filename):
         """Load raster data from a file, such as a NetCDF file or an image file.
