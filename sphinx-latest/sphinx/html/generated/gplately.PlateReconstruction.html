@@ -60,6 +60,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#gplately.PlateReconstruction"><code class="docutils literal notranslate"><span class="pre">PlateReconstruction</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#gplately.PlateReconstruction.__init__"><code class="docutils literal notranslate"><span class="pre">PlateReconstruction.__init__()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#gplately.PlateReconstruction.anchor_plate_id"><code class="docutils literal notranslate"><span class="pre">PlateReconstruction.anchor_plate_id</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gplately.PlateReconstruction.copy"><code class="docutils literal notranslate"><span class="pre">PlateReconstruction.copy()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#gplately.PlateReconstruction.create_flowline"><code class="docutils literal notranslate"><span class="pre">PlateReconstruction.create_flowline()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#gplately.PlateReconstruction.create_motion_path"><code class="docutils literal notranslate"><span class="pre">PlateReconstruction.create_motion_path()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#gplately.PlateReconstruction.crustal_production_destruction_rate"><code class="docutils literal notranslate"><span class="pre">PlateReconstruction.crustal_production_destruction_rate()</span></code></a></li>
@@ -162,46 +163,49 @@ If not specified then uses the default anchor plate of <a class="reference inter
 <tr class="row-odd"><td><p><a class="reference internal" href="#gplately.PlateReconstruction.__init__" title="gplately.PlateReconstruction.__init__"><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code></a>(rotation_model[, ...])</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#gplately.PlateReconstruction.create_flowline" title="gplately.PlateReconstruction.create_flowline"><code class="xref py py-obj docutils literal notranslate"><span class="pre">create_flowline</span></code></a>(lons, lats, time_array, ...)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#gplately.PlateReconstruction.copy" title="gplately.PlateReconstruction.copy"><code class="xref py py-obj docutils literal notranslate"><span class="pre">copy</span></code></a>()</p></td>
+<td><p>Return a copy of the <a class="reference internal" href="#gplately.PlateReconstruction" title="gplately.PlateReconstruction"><code class="xref py py-class docutils literal notranslate"><span class="pre">PlateReconstruction</span></code></a> object.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#gplately.PlateReconstruction.create_flowline" title="gplately.PlateReconstruction.create_flowline"><code class="xref py py-obj docutils literal notranslate"><span class="pre">create_flowline</span></code></a>(lons, lats, time_array, ...)</p></td>
 <td><p>Create a path of points to track plate motion away from spreading ridges over time using half-stage rotations.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#gplately.PlateReconstruction.create_motion_path" title="gplately.PlateReconstruction.create_motion_path"><code class="xref py py-obj docutils literal notranslate"><span class="pre">create_motion_path</span></code></a>(lons, lats, time_array, *)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#gplately.PlateReconstruction.create_motion_path" title="gplately.PlateReconstruction.create_motion_path"><code class="xref py py-obj docutils literal notranslate"><span class="pre">create_motion_path</span></code></a>(lons, lats, time_array, *)</p></td>
 <td><p>Create a path of points to mark the trajectory of a plate's motion through geological time.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#gplately.PlateReconstruction.crustal_production_destruction_rate" title="gplately.PlateReconstruction.crustal_production_destruction_rate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crustal_production_destruction_rate</span></code></a>(time[, ...])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#gplately.PlateReconstruction.crustal_production_destruction_rate" title="gplately.PlateReconstruction.crustal_production_destruction_rate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crustal_production_destruction_rate</span></code></a>(time[, ...])</p></td>
 <td><p>Calculates the total crustal production and destruction rates (in km<sup>2</sup>/yr) of divergent and convergent plate boundaries at the specified geological time (Ma).</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#gplately.PlateReconstruction.divergent_convergent_plate_boundaries" title="gplately.PlateReconstruction.divergent_convergent_plate_boundaries"><code class="xref py py-obj docutils literal notranslate"><span class="pre">divergent_convergent_plate_boundaries</span></code></a>(time)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#gplately.PlateReconstruction.divergent_convergent_plate_boundaries" title="gplately.PlateReconstruction.divergent_convergent_plate_boundaries"><code class="xref py py-obj docutils literal notranslate"><span class="pre">divergent_convergent_plate_boundaries</span></code></a>(time)</p></td>
 <td><p>Samples points uniformly along plate boundaries and calculates statistics at diverging/converging locations at a particular geological time.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#gplately.PlateReconstruction.get_point_velocities" title="gplately.PlateReconstruction.get_point_velocities"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_point_velocities</span></code></a>(lons, lats, time[, ...])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#gplately.PlateReconstruction.get_point_velocities" title="gplately.PlateReconstruction.get_point_velocities"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_point_velocities</span></code></a>(lons, lats, time[, ...])</p></td>
 <td><p>Calculates the north and east components of the velocity vector (in kms/myr) for each specified point (from <code class="docutils literal notranslate"><span class="pre">lons</span></code> and <code class="docutils literal notranslate"><span class="pre">lats</span></code>) at a particular geological <code class="docutils literal notranslate"><span class="pre">time</span></code>.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#gplately.PlateReconstruction.reconstruct" title="gplately.PlateReconstruction.reconstruct"><code class="xref py py-obj docutils literal notranslate"><span class="pre">reconstruct</span></code></a>(feature, to_time[, from_time, ...])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#gplately.PlateReconstruction.reconstruct" title="gplately.PlateReconstruction.reconstruct"><code class="xref py py-obj docutils literal notranslate"><span class="pre">reconstruct</span></code></a>(feature, to_time[, from_time, ...])</p></td>
 <td><p>Reconstructs regular geological features, motion paths or flowlines to a specific geological time.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#gplately.PlateReconstruction.reconstruct_snapshot" title="gplately.PlateReconstruction.reconstruct_snapshot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">reconstruct_snapshot</span></code></a>(...[, anchor_plate_id, ...])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#gplately.PlateReconstruction.reconstruct_snapshot" title="gplately.PlateReconstruction.reconstruct_snapshot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">reconstruct_snapshot</span></code></a>(...[, anchor_plate_id, ...])</p></td>
 <td><p>Create a snapshot of reconstructed regular features (including motion paths and flowlines) at a specific geological time.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#gplately.PlateReconstruction.static_polygons_snapshot" title="gplately.PlateReconstruction.static_polygons_snapshot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">static_polygons_snapshot</span></code></a>(time, *[, ...])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#gplately.PlateReconstruction.static_polygons_snapshot" title="gplately.PlateReconstruction.static_polygons_snapshot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">static_polygons_snapshot</span></code></a>(time, *[, ...])</p></td>
 <td><p>Create a reconstructed snapshot of the static polygons at the specified reconstruction time.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#gplately.PlateReconstruction.tessellate_mid_ocean_ridges" title="gplately.PlateReconstruction.tessellate_mid_ocean_ridges"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tessellate_mid_ocean_ridges</span></code></a>(time[, ...])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#gplately.PlateReconstruction.tessellate_mid_ocean_ridges" title="gplately.PlateReconstruction.tessellate_mid_ocean_ridges"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tessellate_mid_ocean_ridges</span></code></a>(time[, ...])</p></td>
 <td><p>Samples points along resolved spreading features (e.g. mid-ocean ridges) and calculates spreading rates and lengths of ridge segments at a particular geological time.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#gplately.PlateReconstruction.tessellate_subduction_zones" title="gplately.PlateReconstruction.tessellate_subduction_zones"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tessellate_subduction_zones</span></code></a>(time[, ...])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#gplately.PlateReconstruction.tessellate_subduction_zones" title="gplately.PlateReconstruction.tessellate_subduction_zones"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tessellate_subduction_zones</span></code></a>(time[, ...])</p></td>
 <td><p>Samples points along subduction zone trenches and obtains subduction data at a particular geological time.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#gplately.PlateReconstruction.topological_snapshot" title="gplately.PlateReconstruction.topological_snapshot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">topological_snapshot</span></code></a>(time, *[, ...])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#gplately.PlateReconstruction.topological_snapshot" title="gplately.PlateReconstruction.topological_snapshot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">topological_snapshot</span></code></a>(time, *[, ...])</p></td>
 <td><p>Create a snapshot of resolved topologies at the specified reconstruction time.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#gplately.PlateReconstruction.total_continental_arc_length" title="gplately.PlateReconstruction.total_continental_arc_length"><code class="xref py py-obj docutils literal notranslate"><span class="pre">total_continental_arc_length</span></code></a>(time, ...[, ...])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#gplately.PlateReconstruction.total_continental_arc_length" title="gplately.PlateReconstruction.total_continental_arc_length"><code class="xref py py-obj docutils literal notranslate"><span class="pre">total_continental_arc_length</span></code></a>(time, ...[, ...])</p></td>
 <td><p>Calculates the total length of all global continental arcs (km) at the specified geological time (Ma).</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#gplately.PlateReconstruction.total_ridge_length" title="gplately.PlateReconstruction.total_ridge_length"><code class="xref py py-obj docutils literal notranslate"><span class="pre">total_ridge_length</span></code></a>(time[, use_ptt, ...])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#gplately.PlateReconstruction.total_ridge_length" title="gplately.PlateReconstruction.total_ridge_length"><code class="xref py py-obj docutils literal notranslate"><span class="pre">total_ridge_length</span></code></a>(time[, use_ptt, ...])</p></td>
 <td><p>Calculates the total length of all resolved spreading features (e.g. mid-ocean ridges) at the specified geological time (Ma).</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#gplately.PlateReconstruction.total_subduction_zone_length" title="gplately.PlateReconstruction.total_subduction_zone_length"><code class="xref py py-obj docutils literal notranslate"><span class="pre">total_subduction_zone_length</span></code></a>(time[, ...])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#gplately.PlateReconstruction.total_subduction_zone_length" title="gplately.PlateReconstruction.total_subduction_zone_length"><code class="xref py py-obj docutils literal notranslate"><span class="pre">total_subduction_zone_length</span></code></a>(time[, ...])</p></td>
 <td><p>Calculates the total length of all subduction zones (km) at the specified geological time (Ma).</p></td>
 </tr>
 </tbody>
@@ -230,6 +234,16 @@ If not specified then uses the default anchor plate of <a class="reference inter
 <dt class="sig sig-object py" id="gplately.PlateReconstruction.anchor_plate_id">
 <span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">anchor_plate_id</span></span><a class="headerlink" href="#gplately.PlateReconstruction.anchor_plate_id" title="Link to this definition"></a></dt>
 <dd><p>Default anchor plate ID for reconstruction. Must be an integer &gt;= 0.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gplately.PlateReconstruction.copy">
+<span class="sig-name descname"><span class="pre">copy</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/reconstruction.html#PlateReconstruction.copy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PlateReconstruction.copy" title="Link to this definition"></a></dt>
+<dd><p>Return a copy of the <a class="reference internal" href="#gplately.PlateReconstruction" title="gplately.PlateReconstruction"><code class="xref py py-class docutils literal notranslate"><span class="pre">PlateReconstruction</span></code></a> object.
+This is a pure shallow copy, so the copy shares the same underlying data as the original.
+For example, if you modify the rotation model of the copy, it will also modify the rotation model of the original.
+However, if you assign a new rotation model to the copy, it will not affect the original.
+I need this function for a less expensive way to create a copy of the PlateReconstruction object.</p>
 </dd></dl>
 
 <dl class="py method">

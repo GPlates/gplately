@@ -103,20 +103,31 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">copy</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">math</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numbers</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">time</span><span class="w"> </span><span class="kn">import</span> <span class="n">perf_counter</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">multiprocessing</span><span class="w"> </span><span class="kn">import</span> <span class="n">cpu_count</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">cast</span><span class="p">,</span> <span class="n">overload</span><span class="p">,</span> <span class="n">Literal</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pygmt</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">xarray.core.types</span><span class="w"> </span><span class="kn">import</span> <span class="n">InterpOptions</span>
 
 <span class="c1"># pyright: reportMissingImports=false</span>
 <span class="c1"># pyright: reportMissingModuleSource=false</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">xarray</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">xr</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pygplates</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pygplates</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">RotationModel</span> <span class="k">as</span> <span class="n">_RotationModel</span><span class="p">,</span>  <span class="c1"># pyright: ignore[reportAttributeAccessIssue]</span>
+    <span class="n">PolygonOnSphere</span> <span class="k">as</span> <span class="n">_PolygonOnSphere</span><span class="p">,</span>  <span class="c1"># pyright: ignore[reportAttributeAccessIssue]</span>
+    <span class="n">FeatureCollection</span> <span class="k">as</span> <span class="n">_FeatureCollection</span><span class="p">,</span>  <span class="c1"># pyright: ignore[reportAttributeAccessIssue]</span>
+    <span class="n">Feature</span> <span class="k">as</span> <span class="n">_Feature</span><span class="p">,</span>  <span class="c1"># pyright: ignore[reportAttributeAccessIssue]</span>
+    <span class="n">FiniteRotation</span> <span class="k">as</span> <span class="n">_FiniteRotation</span><span class="p">,</span>  <span class="c1"># pyright: ignore[reportAttributeAccessIssue]</span>
+    <span class="n">MultiPointOnSphere</span> <span class="k">as</span> <span class="n">_MultiPointOnSphere</span><span class="p">,</span>  <span class="c1"># pyright: ignore[reportAttributeAccessIssue]</span>
+<span class="p">)</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">cartopy.crs</span><span class="w"> </span><span class="kn">import</span> <span class="n">PlateCarree</span> <span class="k">as</span> <span class="n">_PlateCarree</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">cartopy.mpl.geoaxes</span><span class="w"> </span><span class="kn">import</span> <span class="n">GeoAxes</span> <span class="k">as</span> <span class="n">_GeoAxes</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">rasterio.enums</span><span class="w"> </span><span class="kn">import</span> <span class="n">MergeAlg</span>
@@ -236,7 +247,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_data_var_name</span> <span class="o">=</span> <span class="n">data_variable_name</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_lons</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_lats</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_default_value</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_fill_value</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_filename</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_data_mask</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_spatial_cKDTree</span> <span class="o">=</span> <span class="kc">None</span>
@@ -255,7 +266,9 @@
         <span class="c1"># We also allow the user to override the plate reconstruction of the other Raster object by</span>
         <span class="c1"># providing a new plate reconstruction object.</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_copy_constructor</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">plate_reconstruction</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_copy_from_other</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">plate_reconstruction</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">plate_reconstruction</span> <span class="o">=</span> <span class="n">plate_reconstruction</span>
             <span class="k">return</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">plate_reconstruction</span> <span class="o">=</span> <span class="n">plate_reconstruction</span>
@@ -365,19 +378,34 @@
             <span class="p">)</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">default_value</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;The default value used for the raster data.&quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_default_value</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">dtype</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">dtype</span>
-            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">issubdtype</span><span class="p">(</span><span class="n">dtype</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">):</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_default_value</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
-            <span class="k">elif</span> <span class="n">np</span><span class="o">.</span><span class="n">issubdtype</span><span class="p">(</span><span class="n">dtype</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">signedinteger</span><span class="p">):</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_default_value</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">iinfo</span><span class="p">(</span><span class="n">dtype</span><span class="p">)</span><span class="o">.</span><span class="n">min</span>
-            <span class="k">elif</span> <span class="n">np</span><span class="o">.</span><span class="n">issubdtype</span><span class="p">(</span><span class="n">dtype</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">unsignedinteger</span><span class="p">):</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_default_value</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">iinfo</span><span class="p">(</span><span class="n">dtype</span><span class="p">)</span><span class="o">.</span><span class="n">max</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_default_value</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_default_value</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">fill_value</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The fill value used for the raster data.</span>
+
+<span class="sd">        This property is being set when this Raster object is being created with Raster reconstruction.</span>
+<span class="sd">        The `fill_value` means there is no valid data at the corresponding location.</span>
+
+<span class="sd">        The value of this property could be:</span>
+
+<span class="sd">            - None, which means this raster data was never created by reconstruction.</span>
+<span class="sd">            - a single number for 2D scalar rasters, such as np.nan, minimum value for signed integer, and the</span>
+<span class="sd">                maximum value for unsigned interger.</span>
+<span class="sd">            - a 3-tuple RGB colour code, such as black (0.0, 0.0, 0.0) or (0, 0, 0).</span>
+<span class="sd">            - a 4-tuple RGBA colour code, such as transparent black (0.0, 0.0, 0.0, 0.0) or (0, 0, 0, 0).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fill_value</span>
+
+    <span class="nd">@fill_value</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">fill_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="k">assert</span> <span class="n">value</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span>
+            <span class="n">value</span><span class="p">,</span> <span class="p">(</span><span class="n">numbers</span><span class="o">.</span><span class="n">Number</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)</span>
+        <span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;fill_value must be None, a number, or a tuple. Got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2">.&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
+            <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="ow">in</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span> <span class="s2">&quot;fill_value tuple must be of length 3 or 4.&quot;</span>
+            <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">value</span><span class="p">:</span>
+                <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span>
+                    <span class="n">v</span><span class="p">,</span> <span class="n">numbers</span><span class="o">.</span><span class="n">Number</span>
+                <span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;fill_value tuple must contain only numbers. Got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2">.&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_fill_value</span> <span class="o">=</span> <span class="n">value</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">data</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
@@ -555,6 +583,103 @@
                 <span class="n">new_plate_recon_obj</span> <span class="o">=</span> <span class="n">PlateReconstruction</span><span class="p">(</span><span class="n">new_plate_recon_obj</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_plate_reconstruction</span> <span class="o">=</span> <span class="n">new_plate_recon_obj</span>
 
+<div class="viewcode-block" id="Raster.from_points">
+<a class="viewcode-back" href="../../generated/gplately.Raster.html#gplately.Raster.from_points">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_points</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">lon</span><span class="p">,</span>
+        <span class="n">lat</span><span class="p">,</span>
+        <span class="n">values</span><span class="p">,</span>
+        <span class="n">region</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">spacing</span><span class="o">=</span><span class="s2">&quot;0.1d&quot;</span><span class="p">,</span>
+        <span class="n">tension</span><span class="o">=</span><span class="mf">0.35</span><span class="p">,</span>
+        <span class="n">preprocess</span><span class="o">=</span><span class="s2">&quot;blockmean&quot;</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">surface_kwargs</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Raster&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Class method to create a :class:`Raster` object from scattered geographic points.</span>
+<span class="sd">        Interpolate scattered geographic points onto a regular grid using</span>
+<span class="sd">        PyGMT&#39;s `surface` (Green&#39;s-function-based minimum-curvature gridding),</span>
+<span class="sd">        with optional block-averaging preprocessing to avoid duplicate/</span>
+<span class="sd">        near-duplicate point errors.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        lon, lat, values : array-like</span>
+<span class="sd">            1D arrays (or lists) of equal length giving the longitude,</span>
+<span class="sd">            latitude, and data value of each scattered point.</span>
+<span class="sd">        region : str or list, optional</span>
+<span class="sd">            GMT-style region specification [xmin, xmax, ymin, ymax].</span>
+<span class="sd">            If None, it is inferred from the data extent (with no padding).</span>
+<span class="sd">        spacing : str or float, optional</span>
+<span class="sd">            Grid spacing passed to `surface`/`blockmean` (e.g. &quot;0.1d&quot; for</span>
+<span class="sd">            0.1 degree, or &quot;10k&quot; for 10 km). Default &quot;0.1d&quot;.</span>
+<span class="sd">        tension : float, optional</span>
+<span class="sd">            Tension factor for `surface`, between 0 (minimum curvature,</span>
+<span class="sd">            can overshoot) and 1 (harmonic, no overshoot). Default 0.35.</span>
+<span class="sd">        preprocess : {&quot;blockmean&quot;, &quot;blockmedian&quot;, None}, optional</span>
+<span class="sd">            Whether to pre-bin the scattered points onto the target grid</span>
+<span class="sd">            spacing before running `surface`. `surface` requires at most</span>
+<span class="sd">            one point per grid cell, so this is standard practice for</span>
+<span class="sd">            real-world (noisy / clustered / duplicate) data. Set to None</span>
+<span class="sd">            to skip and pass points to `surface` directly. Default</span>
+<span class="sd">            &quot;blockmean&quot;.</span>
+<span class="sd">        **surface_kwargs :</span>
+<span class="sd">            Any additional keyword arguments forwarded to `pygmt.surface`</span>
+<span class="sd">            (e.g. `maxradius`, `convergence`, etc.).</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        Raster</span>
+<span class="sd">            A Raster object containing the gridded surface.</span>
+
+<span class="sd">        Example</span>
+<span class="sd">        -------</span>
+<span class="sd">        &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">        &gt;&gt;&gt; lon = np.random.uniform(120, 130, 500)</span>
+<span class="sd">        &gt;&gt;&gt; lat = np.random.uniform(30, 40, 500)</span>
+<span class="sd">        &gt;&gt;&gt; val = np.random.uniform(0, 100, 500)</span>
+<span class="sd">        &gt;&gt;&gt; raster = Raster.from_points(lon, lat, val, spacing=&quot;0.05d&quot;)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">lon</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">lon</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+        <span class="n">lat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">lat</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+        <span class="n">values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">values</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">lon</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">lat</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">values</span><span class="p">)):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;lon, lat, and values must have the same length&quot;</span><span class="p">)</span>
+
+        <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s2">&quot;x&quot;</span><span class="p">:</span> <span class="n">lon</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">:</span> <span class="n">lat</span><span class="p">,</span> <span class="s2">&quot;z&quot;</span><span class="p">:</span> <span class="n">values</span><span class="p">})</span>
+
+        <span class="k">if</span> <span class="n">region</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># Snap bounding box outward to an integer multiple of `spacing`</span>
+            <span class="n">region</span> <span class="o">=</span> <span class="n">pygmt</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">df</span><span class="p">[[</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">]],</span> <span class="n">spacing</span><span class="o">=</span><span class="n">spacing</span><span class="p">)</span>
+
+        <span class="n">region</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">region</span><span class="p">)</span>  <span class="c1"># Ensure region is a tuple for PyGMT</span>
+
+        <span class="k">if</span> <span class="n">preprocess</span> <span class="o">==</span> <span class="s2">&quot;blockmean&quot;</span><span class="p">:</span>
+            <span class="n">df</span> <span class="o">=</span> <span class="n">pygmt</span><span class="o">.</span><span class="n">blockmean</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">df</span><span class="p">,</span> <span class="n">region</span><span class="o">=</span><span class="n">region</span><span class="p">,</span> <span class="n">spacing</span><span class="o">=</span><span class="n">spacing</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">preprocess</span> <span class="o">==</span> <span class="s2">&quot;blockmedian&quot;</span><span class="p">:</span>
+            <span class="n">df</span> <span class="o">=</span> <span class="n">pygmt</span><span class="o">.</span><span class="n">blockmedian</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">df</span><span class="p">,</span> <span class="n">region</span><span class="o">=</span><span class="n">region</span><span class="p">,</span> <span class="n">spacing</span><span class="o">=</span><span class="n">spacing</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">preprocess</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;preprocess must be one of &#39;blockmean&#39;, &#39;blockmedian&#39;, or None&quot;</span>
+            <span class="p">)</span>
+        <span class="k">with</span> <span class="n">pygmt</span><span class="o">.</span><span class="n">config</span><span class="p">(</span><span class="n">GMT_VERBOSE</span><span class="o">=</span><span class="s2">&quot;q&quot;</span><span class="p">):</span>
+            <span class="n">grid</span> <span class="o">=</span> <span class="n">pygmt</span><span class="o">.</span><span class="n">surface</span><span class="p">(</span>
+                <span class="n">data</span><span class="o">=</span><span class="n">df</span><span class="p">,</span>
+                <span class="n">region</span><span class="o">=</span><span class="n">region</span><span class="p">,</span>
+                <span class="n">spacing</span><span class="o">=</span><span class="n">spacing</span><span class="p">,</span>
+                <span class="n">tension</span><span class="o">=</span><span class="n">tension</span><span class="p">,</span>
+                <span class="o">**</span><span class="n">surface_kwargs</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="k">assert</span> <span class="p">(</span>
+            <span class="n">grid</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="p">),</span> <span class="s2">&quot;PyGMT surface gridding returned None. Maybe `outgrid` is set (grid output will be stored in file set by `outgrid`)&quot;</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">grid</span><span class="p">)</span></div>
+
+
 <div class="viewcode-block" id="Raster.to_data_array">
 <a class="viewcode-back" href="../../generated/gplately.Raster.html#gplately.Raster.to_data_array">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">to_data_array</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">):</span>
@@ -633,6 +758,8 @@
         <span class="n">anchor_plate_id</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
         <span class="n">return_array</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="kc">False</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">use_spatial_tree</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">use_old_implementation</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Raster&quot;</span><span class="p">:</span> <span class="o">...</span>
 
     <span class="nd">@overload</span>
@@ -646,6 +773,8 @@
         <span class="n">anchor_plate_id</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
         <span class="n">return_array</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="kc">True</span><span class="p">],</span>
+        <span class="n">use_spatial_tree</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">use_old_implementation</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span> <span class="o">...</span>
 
 <div class="viewcode-block" id="Raster.reconstruct">
@@ -660,7 +789,8 @@
         <span class="n">anchor_plate_id</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
         <span class="n">return_array</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-        <span class="n">use_spatial_tree</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">use_spatial_tree</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">use_old_implementation</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="s2">&quot;Raster&quot;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Reconstruct the raster from its current time to a new time.</span>
 
@@ -729,7 +859,6 @@
 
         <span class="c1"># Flag to roll back to the old implementation quickly if needed.</span>
         <span class="c1"># Keep this flag here for a while until the dust settles. -- MC 2026-07-20</span>
-        <span class="n">use_old_implementation</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">use_old_implementation</span><span class="p">:</span>
             <span class="n">rotation_model</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># if this is None, the default rotation model in self.plate_reconstruction.rotation_model will be used</span>
             <span class="k">if</span> <span class="n">anchor_plate_id</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -740,7 +869,8 @@
                         <span class="n">anchor_plate_id</span>
                     <span class="p">)</span>
                 <span class="p">)</span>
-
+            <span class="n">_parsed_fill_value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parse_fill_value</span><span class="p">(</span><span class="n">fill_value</span><span class="p">)</span>
+            <span class="c1"># Raster normalization is expensive. Normalize your raster beforehand if you need to call reconstruct() repeatedly.</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_normalized</span><span class="p">():</span>
                 <span class="c1"># If the raster is in 0-360 convention, we need to convert it to -180/180 convention for reconstruction,</span>
                 <span class="c1"># and then convert it back to 0-360 convention after reconstruction.</span>
@@ -756,7 +886,7 @@
                     <span class="n">rotation_model</span><span class="o">=</span><span class="n">rotation_model</span><span class="p">,</span>
                     <span class="n">partitioning_features</span><span class="o">=</span><span class="n">partitioning_features</span><span class="p">,</span>
                     <span class="n">threads</span><span class="o">=</span><span class="n">threads</span><span class="p">,</span>
-                    <span class="n">fill_value</span><span class="o">=</span><span class="n">fill_value</span><span class="p">,</span>
+                    <span class="n">fill_value</span><span class="o">=</span><span class="n">_parsed_fill_value</span><span class="p">,</span>
                     <span class="n">use_spatial_tree</span><span class="o">=</span><span class="n">use_spatial_tree</span><span class="p">,</span>
                 <span class="p">)</span>
 
@@ -774,13 +904,14 @@
                     <span class="n">rotation_model</span><span class="o">=</span><span class="n">rotation_model</span><span class="p">,</span>
                     <span class="n">partitioning_features</span><span class="o">=</span><span class="n">partitioning_features</span><span class="p">,</span>
                     <span class="n">threads</span><span class="o">=</span><span class="n">threads</span><span class="p">,</span>
-                    <span class="n">fill_value</span><span class="o">=</span><span class="n">fill_value</span><span class="p">,</span>
+                    <span class="n">fill_value</span><span class="o">=</span><span class="n">_parsed_fill_value</span><span class="p">,</span>
                     <span class="n">use_spatial_tree</span><span class="o">=</span><span class="n">use_spatial_tree</span><span class="p">,</span>
                 <span class="p">)</span>
 
             <span class="k">if</span> <span class="n">inplace</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">_reconstructed_raster</span><span class="o">.</span><span class="n">data</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_time</span> <span class="o">=</span> <span class="n">to_time_f</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">fill_value</span> <span class="o">=</span> <span class="n">_parsed_fill_value</span>
                 <span class="k">if</span> <span class="n">rotation_model</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">plate_reconstruction</span><span class="o">.</span><span class="n">rotation_model</span> <span class="o">=</span> <span class="n">rotation_model</span>
                 <span class="k">if</span> <span class="n">return_array</span><span class="p">:</span>
@@ -827,7 +958,7 @@
             <span class="k">if</span> <span class="ow">not</span> <span class="n">return_array</span><span class="p">:</span>
                 <span class="n">_result</span> <span class="o">=</span> <span class="n">Raster</span><span class="p">(</span>
                     <span class="n">data</span><span class="o">=</span><span class="n">_result</span><span class="p">,</span>
-                    <span class="n">plate_reconstruction</span><span class="o">=</span><span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">plate_reconstruction</span><span class="p">),</span>
+                    <span class="n">plate_reconstruction</span><span class="o">=</span><span class="n">copy</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">plate_reconstruction</span><span class="p">),</span>
                     <span class="n">extent</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">extent</span><span class="p">,</span>
                     <span class="n">time</span><span class="o">=</span><span class="n">to_time_f</span><span class="p">,</span>
                     <span class="n">origin</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">origin</span><span class="p">,</span>
@@ -892,12 +1023,9 @@
 <a class="viewcode-back" href="../../generated/gplately.Raster.html#gplately.Raster.copy">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Raster&quot;</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Return a copy of the :class:`Raster` object.&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">Raster</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span>
-            <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">plate_reconstruction</span><span class="p">),</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">extent</span><span class="p">,</span>
-            <span class="n">time</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">time</span><span class="p">,</span>
-        <span class="p">)</span></div>
+        <span class="n">new_obj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="fm">__new__</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">)</span>
+        <span class="n">new_obj</span><span class="o">.</span><span class="n">_copy_from_other</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">new_obj</span></div>
 
 
 <div class="viewcode-block" id="Raster.is_global">
@@ -967,12 +1095,16 @@
             <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">origin</span> <span class="o">==</span> <span class="s2">&quot;lower&quot;</span>
         <span class="p">):</span>
             <span class="k">return</span> <span class="bp">self</span>
-        <span class="k">else</span><span class="p">:</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">longitude_convention</span> <span class="o">!=</span> <span class="n">LongitudeConvention</span><span class="o">.</span><span class="n">SIGNED_180</span><span class="p">:</span>
             <span class="n">_normalized_raster</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">to_longitude_signed_180</span><span class="p">()</span>
-            <span class="k">if</span> <span class="n">_normalized_raster</span><span class="o">.</span><span class="n">origin</span> <span class="o">==</span> <span class="s2">&quot;upper&quot;</span><span class="p">:</span>
-                <span class="n">_normalized_raster</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">flipud</span><span class="p">(</span><span class="n">_normalized_raster</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
-                <span class="n">_normalized_raster</span><span class="o">.</span><span class="n">lats</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">flip</span><span class="p">(</span><span class="n">_normalized_raster</span><span class="o">.</span><span class="n">lats</span><span class="p">)</span>
-            <span class="k">return</span> <span class="n">_normalized_raster</span></div>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">_normalized_raster</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">_normalized_raster</span><span class="o">.</span><span class="n">origin</span> <span class="o">==</span> <span class="s2">&quot;upper&quot;</span><span class="p">:</span>
+            <span class="n">_normalized_raster</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">flipud</span><span class="p">(</span><span class="n">_normalized_raster</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+            <span class="n">_normalized_raster</span><span class="o">.</span><span class="n">lats</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">flip</span><span class="p">(</span><span class="n">_normalized_raster</span><span class="o">.</span><span class="n">lats</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">_normalized_raster</span></div>
 
 
 <div class="viewcode-block" id="Raster.fill_gaps">
@@ -1147,10 +1279,16 @@
         <span class="k">if</span> <span class="n">data</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">to_data_array</span><span class="p">()</span>
 
+        <span class="k">assert</span> <span class="n">data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span>
+            <span class="n">data</span><span class="p">,</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span>
+        <span class="p">),</span> <span class="s2">&quot;The `data` variable must be an xarray DataArray&quot;</span>
+
         <span class="n">orig_dtype</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">dtype</span>
 
         <span class="k">if</span> <span class="s2">&quot;lat&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">dims</span> <span class="ow">or</span> <span class="s2">&quot;lon&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">dims</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;data must have &#39;lat&#39; and &#39;lon&#39; dims, got </span><span class="si">{</span><span class="n">data</span><span class="o">.</span><span class="n">dims</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;The `data` variable must have &#39;lat&#39; and &#39;lon&#39; dimensions, got </span><span class="si">{</span><span class="n">data</span><span class="o">.</span><span class="n">dims</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
 
         <span class="k">if</span> <span class="n">pointwise</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">lons</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="n">lats</span><span class="o">.</span><span class="n">shape</span><span class="p">:</span>
@@ -1581,8 +1719,8 @@
 
         <span class="c1"># Create the pygplates.FiniteRotation that rotates</span>
         <span class="c1"># between the two reference frames.</span>
-        <span class="n">from_rotation_model</span> <span class="o">=</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">RotationModel</span><span class="p">(</span><span class="n">from_rotation_features_or_model</span><span class="p">)</span>
-        <span class="n">to_rotation_model</span> <span class="o">=</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">RotationModel</span><span class="p">(</span><span class="n">to_rotation_features_or_model</span><span class="p">)</span>
+        <span class="n">from_rotation_model</span> <span class="o">=</span> <span class="n">_RotationModel</span><span class="p">(</span><span class="n">from_rotation_features_or_model</span><span class="p">)</span>
+        <span class="n">to_rotation_model</span> <span class="o">=</span> <span class="n">_RotationModel</span><span class="p">(</span><span class="n">to_rotation_features_or_model</span><span class="p">)</span>
         <span class="n">from_rotation</span> <span class="o">=</span> <span class="n">from_rotation_model</span><span class="o">.</span><span class="n">get_rotation</span><span class="p">(</span>
             <span class="n">reconstruction_time</span><span class="p">,</span>
             <span class="n">non_reference_plate</span><span class="p">,</span>
@@ -1606,9 +1744,7 @@
         <span class="n">llats</span> <span class="o">=</span> <span class="n">llats</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
 
         <span class="c1"># Convert lon-lat points of Raster grid to pyGPlates points</span>
-        <span class="n">input_points</span> <span class="o">=</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">MultiPointOnSphere</span><span class="p">(</span>
-            <span class="p">(</span><span class="n">lat</span><span class="p">,</span> <span class="n">lon</span><span class="p">)</span> <span class="k">for</span> <span class="n">lon</span><span class="p">,</span> <span class="n">lat</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">llons</span><span class="p">,</span> <span class="n">llats</span><span class="p">)</span>
-        <span class="p">)</span>
+        <span class="n">input_points</span> <span class="o">=</span> <span class="n">_MultiPointOnSphere</span><span class="p">((</span><span class="n">lat</span><span class="p">,</span> <span class="n">lon</span><span class="p">)</span> <span class="k">for</span> <span class="n">lon</span><span class="p">,</span> <span class="n">lat</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">llons</span><span class="p">,</span> <span class="n">llats</span><span class="p">))</span>
         <span class="c1"># Get grid values of the resized Raster object</span>
         <span class="n">values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">resized_input_grid</span><span class="o">.</span><span class="n">data</span><span class="p">)</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
 
@@ -1856,7 +1992,7 @@
 
 <div class="viewcode-block" id="Raster.clip_by_polygons">
 <a class="viewcode-back" href="../../generated/gplately.Raster.html#gplately.Raster.clip_by_polygons">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">clip_by_polygons</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">polygons</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">pygplates</span><span class="o">.</span><span class="n">PolygonOnSphere</span><span class="p">]):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">clip_by_polygons</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">polygons</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">_PolygonOnSphere</span><span class="p">]):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;TODO:&quot;&quot;&quot;</span>
         <span class="k">pass</span></div>
 
@@ -1888,6 +2024,11 @@
 <a class="viewcode-back" href="../../generated/gplately.Raster.html#gplately.Raster.to_longitude_signed_180">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">to_longitude_signed_180</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert a grid&#39;s longitude coordinates to the [-180, 180] convention.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">longitude_convention</span> <span class="o">==</span> <span class="n">LongitudeConvention</span><span class="o">.</span><span class="n">SIGNED_180</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                <span class="s2">&quot;The raster is already in the [-180, 180] longitude convention. No conversion is performed. Returning the original raster object.&quot;</span>
+            <span class="p">)</span>
+            <span class="k">return</span> <span class="bp">self</span>
         <span class="n">_grid_data</span><span class="p">,</span> <span class="n">_lons</span> <span class="o">=</span> <span class="n">_convert_longitude</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">lons</span><span class="p">,</span>
@@ -1958,9 +2099,10 @@
     <span class="k">def</span><span class="w"> </span><span class="nf">_reconstruct_impl</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">to_time</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
-        <span class="n">rotation_model</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">pygplates</span><span class="o">.</span><span class="n">RotationModel</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">partitioning_features</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">pygplates</span><span class="o">.</span><span class="n">FeatureCollection</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">fill_value</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">rotation_model</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">_RotationModel</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">partitioning_features</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">_FeatureCollection</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">fill_value</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">],</span>
         <span class="n">threads</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">use_spatial_tree</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Raster&quot;</span><span class="p">:</span>
@@ -2001,9 +2143,9 @@
 <span class="sd">        partitioning_features : Union[pygplates.FeatureCollection, None], default None</span>
 <span class="sd">            The features used to partition the raster grid and assign plate IDs, such as static polygons.</span>
 <span class="sd">            If None is provided, the `self.plate_reconstruction.static_polygons` will be used.</span>
-<span class="sd">        fill_value : Union[float, int, str, tuple, None], default None</span>
+<span class="sd">        fill_value : Union[float, int, str, tuple]</span>
 <span class="sd">            The value to be used for regions outside of the static polygons at ``to_time``.</span>
-<span class="sd">            By default (``fill_value=None``), this value will be determined based on the input.</span>
+<span class="sd">            The fill value must have been parsed, see :meth:`_parse_fill_value`.</span>
 <span class="sd">        threads : int, default 1</span>
 <span class="sd">            Number of threads to use for certain computationally heavy routines.</span>
 <span class="sd">        use_spatial_tree : bool, default False</span>
@@ -2110,6 +2252,19 @@
                 <span class="n">method</span><span class="o">=</span><span class="n">InterpMethod</span><span class="o">.</span><span class="n">NEAREST</span><span class="p">,</span>
             <span class="p">)</span>
 
+            <span class="c1"># The interpolated values may contain a few old fill value, which is a tiny problem by itself(just a small number near the polgyon boundaries).</span>
+            <span class="c1"># However, the issue will be amplified when use the method `Raster.fill_gaps()` to fill the gaps in the raster, which will propagate the old fill value to a much larger area.</span>
+            <span class="c1"># We need to replace the old fill value with the new fill value.</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">fill_value</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">fill_value</span> <span class="o">!=</span> <span class="n">fill_value</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Replacing fill value </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">fill_value</span><span class="si">}</span><span class="s2"> with new fill value </span><span class="si">{</span><span class="n">fill_value</span><span class="si">}</span><span class="s2">.&quot;</span>
+                <span class="p">)</span>
+                <span class="n">Raster</span><span class="o">.</span><span class="n">_replace_values</span><span class="p">(</span>
+                    <span class="n">values</span><span class="p">,</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">fill_value</span><span class="p">,</span>
+                    <span class="n">fill_value</span><span class="p">,</span>
+                <span class="p">)</span>
+
             <span class="n">output_raster</span><span class="p">[</span>
                 <span class="n">output_sample_points_row_col_indices</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span>
                 <span class="n">output_sample_points_row_col_indices</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span>
@@ -2204,19 +2359,21 @@
                 <span class="n">extent</span><span class="o">=</span><span class="n">output_raster_extent</span><span class="p">,</span>
                 <span class="n">time</span><span class="o">=</span><span class="n">to_time</span><span class="p">,</span>
             <span class="p">)</span>
-        <span class="n">ret_raster_obj</span><span class="o">.</span><span class="n">plate_reconstruction</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">plate_reconstruction</span><span class="p">)</span>
         <span class="k">assert</span> <span class="p">(</span>
-            <span class="n">ret_raster_obj</span><span class="o">.</span><span class="n">plate_reconstruction</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
-        <span class="p">),</span> <span class="s2">&quot;Plate reconstruction should not be None.&quot;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">plate_reconstruction</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="p">),</span> <span class="s2">&quot;The PlateReconstruction object in this Raster object should not be None.&quot;</span>
+        <span class="n">ret_raster_obj</span><span class="o">.</span><span class="n">plate_reconstruction</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">plate_reconstruction</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">rotation_model</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">ret_raster_obj</span><span class="o">.</span><span class="n">plate_reconstruction</span><span class="o">.</span><span class="n">rotation_model</span> <span class="o">=</span> <span class="n">rotation_model</span>
+        <span class="n">ret_raster_obj</span><span class="o">.</span><span class="n">fill_value</span> <span class="o">=</span> <span class="n">fill_value</span>
         <span class="k">return</span> <span class="n">ret_raster_obj</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_get_output_raster_and_sample_points</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">partitioning_polygons_at_to_time</span><span class="p">,</span>
         <span class="n">features_of_partitioning_polygons_at_to_time</span><span class="p">,</span>
-        <span class="n">fill_value</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">fill_value</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the output raster and the sample points that are inside the partitioning polygons at `to_time`.</span>
 
@@ -2224,9 +2381,11 @@
 <span class="sd">        ----------</span>
 <span class="sd">        partitioning_polygons_at_to_time : list[pygplates.PolygonOnSphere]</span>
 <span class="sd">            A list of partitioning polygons at the `to_time`.</span>
-<span class="sd">        fill_value : float, int, str, or tuple, optional</span>
+<span class="sd">        features_of_partitioning_polygons_at_to_time : list[pygplates.Feature]</span>
+<span class="sd">            A list of features corresponding to the partitioning polygons at the `to_time`.</span>
+<span class="sd">        fill_value : float, int, str, or tuple</span>
 <span class="sd">            The value to be used for regions outside of the partitioning polygons at ``to_time``.</span>
-<span class="sd">            If None, the default value will be determined based on the input raster data type.</span>
+<span class="sd">            The fill value must have been parsed, see :meth:`_parse_fill_value`.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
@@ -2279,7 +2438,7 @@
             <span class="n">output_shape</span> <span class="o">=</span> <span class="n">output_shape</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">:]</span>
         <span class="n">output_raster</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span>
             <span class="n">output_shape</span><span class="p">,</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_parse_fill_value</span><span class="p">(</span><span class="n">fill_value</span><span class="p">),</span>
+            <span class="n">fill_value</span><span class="p">,</span>
             <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span>
         <span class="p">)</span>
 
@@ -2333,19 +2492,19 @@
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_get_partitioning_polygons_at_to_time</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">partitioning_polygons_at_from_time</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">pygplates</span><span class="o">.</span><span class="n">PolygonOnSphere</span><span class="p">],</span>
-        <span class="n">features_of_partitioning_polygons_at_from_time</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">pygplates</span><span class="o">.</span><span class="n">Feature</span><span class="p">],</span>
+        <span class="n">partitioning_polygons_at_from_time</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">_PolygonOnSphere</span><span class="p">],</span>
+        <span class="n">features_of_partitioning_polygons_at_from_time</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">_Feature</span><span class="p">],</span>
         <span class="n">from_time</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
         <span class="n">to_time</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
-        <span class="n">rotation_model</span><span class="p">:</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">RotationModel</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="n">pygplates</span><span class="o">.</span><span class="n">PolygonOnSphere</span><span class="p">],</span> <span class="nb">list</span><span class="p">[</span><span class="n">pygplates</span><span class="o">.</span><span class="n">Feature</span><span class="p">]]:</span>
+        <span class="n">rotation_model</span><span class="p">:</span> <span class="n">_RotationModel</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="n">_PolygonOnSphere</span><span class="p">],</span> <span class="nb">list</span><span class="p">[</span><span class="n">_Feature</span><span class="p">]]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the partitioning polygons at the `to_time` by reconstructing the partitioning polygons at the `from_time`.&quot;&quot;&quot;</span>
-        <span class="n">polygon_feature_collection</span> <span class="o">=</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">FeatureCollection</span><span class="p">()</span>
+        <span class="n">polygon_feature_collection</span> <span class="o">=</span> <span class="n">_FeatureCollection</span><span class="p">()</span>
         <span class="k">for</span> <span class="n">p</span><span class="p">,</span> <span class="n">f</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span>
             <span class="n">partitioning_polygons_at_from_time</span><span class="p">,</span>
             <span class="n">features_of_partitioning_polygons_at_from_time</span><span class="p">,</span>
         <span class="p">):</span>
-            <span class="n">feature</span> <span class="o">=</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">Feature</span><span class="p">()</span>  <span class="c1"># type: ignore</span>
+            <span class="n">feature</span> <span class="o">=</span> <span class="n">_Feature</span><span class="p">()</span>
             <span class="n">feature</span><span class="o">.</span><span class="n">set_reconstruction_plate_id</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">get_reconstruction_plate_id</span><span class="p">())</span>  <span class="c1"># type: ignore</span>
             <span class="n">feature</span><span class="o">.</span><span class="n">set_geometry</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
             <span class="n">polygon_feature_collection</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">feature</span><span class="p">)</span>
@@ -2369,7 +2528,7 @@
         <span class="n">features_of_partitioning_polygons</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">rfg</span> <span class="ow">in</span> <span class="n">rfgs</span><span class="p">:</span>
             <span class="n">geom</span> <span class="o">=</span> <span class="n">rfg</span><span class="o">.</span><span class="n">get_reconstructed_geometry</span><span class="p">()</span>
-            <span class="k">if</span> <span class="n">geom</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">geom</span><span class="p">,</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">PolygonOnSphere</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">geom</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">geom</span><span class="p">,</span> <span class="n">_PolygonOnSphere</span><span class="p">):</span>
                 <span class="n">polygons_at_to_time</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">geom</span><span class="p">)</span>
                 <span class="n">features_of_partitioning_polygons</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">rfg</span><span class="o">.</span><span class="n">get_feature</span><span class="p">())</span>
         <span class="k">return</span> <span class="n">polygons_at_to_time</span><span class="p">,</span> <span class="n">features_of_partitioning_polygons</span>
@@ -2378,8 +2537,8 @@
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">lon_mesh</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
         <span class="n">lat_mesh</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
-        <span class="n">partitioning_polygons</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">pygplates</span><span class="o">.</span><span class="n">PolygonOnSphere</span><span class="p">],</span>
-        <span class="n">features_of_partitioning_polygons</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">pygplates</span><span class="o">.</span><span class="n">Feature</span><span class="p">],</span>
+        <span class="n">partitioning_polygons</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">_PolygonOnSphere</span><span class="p">],</span>
+        <span class="n">features_of_partitioning_polygons</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">_Feature</span><span class="p">],</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the plate ID grid for the raster data points based on the partitioning polygons and their corresponding features.</span>
 
@@ -2442,7 +2601,7 @@
         <span class="n">lons</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
         <span class="n">lats</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
         <span class="n">plate_ids</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
-        <span class="n">rotation_model</span><span class="p">:</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">RotationModel</span><span class="p">,</span>
+        <span class="n">rotation_model</span><span class="p">:</span> <span class="n">_RotationModel</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Reverse reconstruct the raster data points from `to_time` to `from_time` using the given rotation model and plate IDs.&quot;&quot;&quot;</span>
         <span class="k">assert</span> <span class="p">(</span>
@@ -2450,6 +2609,9 @@
         <span class="p">),</span> <span class="s2">&quot;Input arrays must have the same shape.&quot;</span>
 
         <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">plate_ids</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">),</span> <span class="s2">&quot;All plate IDs must be positive integers.&quot;</span>
+        <span class="k">assert</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">plate_reconstruction</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="p">),</span> <span class="s2">&quot;A valid PlateReconstruction object is required!&quot;</span>
 
         <span class="k">if</span> <span class="n">rotation_model</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">rotation_model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">plate_reconstruction</span><span class="o">.</span><span class="n">rotation_model</span>
@@ -2490,7 +2652,7 @@
                     <span class="n">moving_plate_id</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">plate_id</span><span class="p">),</span>
                 <span class="p">)</span>
 
-            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">rotation</span><span class="p">,</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">FiniteRotation</span><span class="p">):</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">rotation</span><span class="p">,</span> <span class="n">_FiniteRotation</span><span class="p">):</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;No rotation found for plate ID: </span><span class="si">{</span><span class="n">plate_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
             <span class="n">lat</span><span class="p">,</span> <span class="n">lon</span><span class="p">,</span> <span class="n">angle</span> <span class="o">=</span> <span class="n">rotation</span><span class="o">.</span><span class="n">get_lat_lon_euler_pole_and_angle_degrees</span><span class="p">()</span>
@@ -2525,7 +2687,7 @@
         <span class="n">m_lons</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
         <span class="n">m_lats</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
         <span class="n">plate_id_grid</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
-        <span class="n">rotation_model</span><span class="p">:</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">RotationModel</span><span class="p">,</span>
+        <span class="n">rotation_model</span><span class="p">:</span> <span class="n">_RotationModel</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Reconstruct the raster data points from `from_time` to `to_time` using the given rotation model and plate IDs.</span>
 
@@ -2562,6 +2724,9 @@
         <span class="p">),</span> <span class="s2">&quot;Input arrays must have the same shape.&quot;</span>
 
         <span class="k">if</span> <span class="n">rotation_model</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">plate_reconstruction</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+            <span class="p">),</span> <span class="s2">&quot;A valid PlateReconstruction object is required!&quot;</span>
             <span class="n">rotation_model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">plate_reconstruction</span><span class="o">.</span><span class="n">rotation_model</span>
         <span class="k">assert</span> <span class="n">rotation_model</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;A valid RotationModel object is required!&quot;</span>
 
@@ -2609,7 +2774,7 @@
                     <span class="n">moving_plate_id</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">plate_id</span><span class="p">),</span>
                 <span class="p">)</span>
 
-            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">rotation</span><span class="p">,</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">FiniteRotation</span><span class="p">):</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">rotation</span><span class="p">,</span> <span class="n">_FiniteRotation</span><span class="p">):</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;No rotation found for plate ID: </span><span class="si">{</span><span class="n">plate_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
             <span class="n">lat</span><span class="p">,</span> <span class="n">lon</span><span class="p">,</span> <span class="n">angle</span> <span class="o">=</span> <span class="n">rotation</span><span class="o">.</span><span class="n">get_lat_lon_euler_pole_and_angle_degrees</span><span class="p">()</span>
@@ -2645,7 +2810,7 @@
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">lon_mesh</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
         <span class="n">lat_mesh</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
-        <span class="n">polygons</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">pygplates</span><span class="o">.</span><span class="n">PolygonOnSphere</span><span class="p">],</span>
+        <span class="n">polygons</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">_PolygonOnSphere</span><span class="p">],</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Find which partitioning polygon each point in the lat_lon mesh belongs to.</span>
 <span class="sd">        Return a 2D array of the same shape as the input lat_lon mesh.</span>
@@ -2667,13 +2832,11 @@
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_get_partitioning_polygons_at_from_time</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">partitioning_features</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span>
-            <span class="n">pygplates</span><span class="o">.</span><span class="n">FeatureCollection</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">pygplates</span><span class="o">.</span><span class="n">Feature</span><span class="p">]</span>
-        <span class="p">],</span>
+        <span class="n">partitioning_features</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">_FeatureCollection</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">_Feature</span><span class="p">]],</span>
         <span class="o">*</span><span class="p">,</span>
         <span class="n">from_time</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
         <span class="n">to_time</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">pygplates</span><span class="o">.</span><span class="n">PolygonOnSphere</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="n">pygplates</span><span class="o">.</span><span class="n">Feature</span><span class="p">]]:</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">_PolygonOnSphere</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="n">_Feature</span><span class="p">]]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the partitioning polygons at `from_time` and their corresponding features.</span>
 
 <span class="sd">        - The polygons must be valid at both `from_time` and `to_time`.</span>
@@ -2687,8 +2850,8 @@
             <span class="k">if</span> <span class="n">f</span><span class="o">.</span><span class="n">is_valid_at_time</span><span class="p">(</span><span class="n">from_time</span><span class="p">)</span> <span class="ow">and</span> <span class="n">f</span><span class="o">.</span><span class="n">is_valid_at_time</span><span class="p">(</span><span class="n">to_time</span><span class="p">)</span>
         <span class="p">]</span>
 
-        <span class="n">partitioning_polygons</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">pygplates</span><span class="o">.</span><span class="n">PolygonOnSphere</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="n">associated_features</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">pygplates</span><span class="o">.</span><span class="n">Feature</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">partitioning_polygons</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">_PolygonOnSphere</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">associated_features</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">_Feature</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">if</span> <span class="n">from_time</span> <span class="o">&gt;</span> <span class="mf">0.0</span><span class="p">:</span>
             <span class="c1"># Reconstruct the valid partitioning polygons to the `from_time` using the rotation model in this object.</span>
             <span class="n">rfgs</span> <span class="o">=</span> <span class="p">[]</span>
@@ -2701,14 +2864,14 @@
             <span class="p">)</span>
             <span class="k">for</span> <span class="n">rfg</span> <span class="ow">in</span> <span class="n">rfgs</span><span class="p">:</span>
                 <span class="n">geom</span> <span class="o">=</span> <span class="n">rfg</span><span class="o">.</span><span class="n">get_reconstructed_geometry</span><span class="p">()</span>
-                <span class="k">if</span> <span class="n">geom</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">geom</span><span class="p">,</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">PolygonOnSphere</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">geom</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">geom</span><span class="p">,</span> <span class="n">_PolygonOnSphere</span><span class="p">):</span>
                     <span class="n">partitioning_polygons</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">geom</span><span class="p">)</span>
                     <span class="n">associated_features</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">rfg</span><span class="o">.</span><span class="n">get_feature</span><span class="p">())</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="c1"># If from_time is 0, we don&#39;t need to reconstruct the partitioning polygons, just use the polygons from the valid partitioning features directly.</span>
             <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">valid_partitioning_features</span><span class="p">:</span>
                 <span class="k">for</span> <span class="n">geom</span> <span class="ow">in</span> <span class="n">f</span><span class="o">.</span><span class="n">get_all_geometries</span><span class="p">():</span>
-                    <span class="k">if</span> <span class="n">geom</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">geom</span><span class="p">,</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">PolygonOnSphere</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="n">geom</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">geom</span><span class="p">,</span> <span class="n">_PolygonOnSphere</span><span class="p">):</span>
                         <span class="n">partitioning_polygons</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">geom</span><span class="p">)</span>
                         <span class="n">associated_features</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
 
@@ -2718,29 +2881,29 @@
 
         <span class="c1"># Otherwise, define the rectangular extent polygon to cut the partitioning polygons</span>
         <span class="n">left</span><span class="p">,</span> <span class="n">right</span><span class="p">,</span> <span class="n">bottom</span><span class="p">,</span> <span class="n">top</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">extent</span>
-        <span class="n">extent_polygon</span> <span class="o">=</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">PolygonOnSphere</span><span class="p">((</span><span class="n">lat</span><span class="p">,</span> <span class="n">lon</span><span class="p">)</span> <span class="k">for</span> <span class="n">lon</span><span class="p">,</span> <span class="n">lat</span> <span class="ow">in</span> <span class="p">[(</span><span class="n">left</span><span class="p">,</span> <span class="n">bottom</span><span class="p">),</span> <span class="p">(</span><span class="n">left</span><span class="p">,</span> <span class="n">top</span><span class="p">),</span> <span class="p">(</span><span class="n">right</span><span class="p">,</span> <span class="n">top</span><span class="p">),</span> <span class="p">(</span><span class="n">right</span><span class="p">,</span> <span class="n">bottom</span><span class="p">)])</span>  <span class="c1"># type: ignore</span>
-        <span class="n">extent_feature</span> <span class="o">=</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">Feature</span><span class="p">()</span>  <span class="c1"># type: ignore</span>
-        <span class="n">extent_feature</span><span class="o">.</span><span class="n">set_geometry</span><span class="p">(</span><span class="n">extent_polygon</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
-        <span class="n">partitioner</span> <span class="o">=</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">PlatePartitioner</span><span class="p">(</span>  <span class="c1"># type: ignore</span>
-            <span class="n">pygplates</span><span class="o">.</span><span class="n">FeatureCollection</span><span class="p">([</span><span class="n">extent_feature</span><span class="p">]),</span>
-            <span class="n">pygplates</span><span class="o">.</span><span class="n">RotationModel</span><span class="p">([]),</span>
+        <span class="n">extent_polygon</span> <span class="o">=</span> <span class="n">_PolygonOnSphere</span><span class="p">((</span><span class="n">lat</span><span class="p">,</span> <span class="n">lon</span><span class="p">)</span> <span class="k">for</span> <span class="n">lon</span><span class="p">,</span> <span class="n">lat</span> <span class="ow">in</span> <span class="p">[(</span><span class="n">left</span><span class="p">,</span> <span class="n">bottom</span><span class="p">),</span> <span class="p">(</span><span class="n">left</span><span class="p">,</span> <span class="n">top</span><span class="p">),</span> <span class="p">(</span><span class="n">right</span><span class="p">,</span> <span class="n">top</span><span class="p">),</span> <span class="p">(</span><span class="n">right</span><span class="p">,</span> <span class="n">bottom</span><span class="p">)])</span>  <span class="c1"># type: ignore</span>
+        <span class="n">extent_feature</span> <span class="o">=</span> <span class="n">_Feature</span><span class="p">()</span>
+        <span class="n">extent_feature</span><span class="o">.</span><span class="n">set_geometry</span><span class="p">(</span><span class="n">extent_polygon</span><span class="p">)</span>
+        <span class="n">partitioner</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">pygplates</span><span class="o">.</span><span class="n">PlatePartitioner</span><span class="p">(</span>  <span class="c1"># pyright: ignore[reportAttributeAccessIssue]</span>
+                <span class="n">_FeatureCollection</span><span class="p">([</span><span class="n">extent_feature</span><span class="p">]),</span>
+                <span class="n">_RotationModel</span><span class="p">([]),</span>
+            <span class="p">)</span>
         <span class="p">)</span>
 
         <span class="c1"># cut the partitioning polygons with the extent polygon and return the new polygons and their corresponding features</span>
         <span class="n">inside_geometries</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">outside_geometries</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="n">polygons_within_extent</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">pygplates</span><span class="o">.</span><span class="n">PolygonOnSphere</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="n">polygons_within_extent_features</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">pygplates</span><span class="o">.</span><span class="n">Feature</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">polygons_within_extent</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">_PolygonOnSphere</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">polygons_within_extent_features</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">_Feature</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">polygon</span><span class="p">,</span> <span class="n">feature</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">partitioning_polygons</span><span class="p">,</span> <span class="n">associated_features</span><span class="p">):</span>
             <span class="n">partitioner</span><span class="o">.</span><span class="n">partition_geometry</span><span class="p">(</span><span class="n">polygon</span><span class="p">,</span> <span class="n">inside_geometries</span><span class="p">,</span> <span class="n">outside_geometries</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
             <span class="k">for</span> <span class="n">inside_geom</span> <span class="ow">in</span> <span class="n">inside_geometries</span><span class="p">:</span>
-                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">inside_geom</span><span class="p">,</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">PolygonOnSphere</span><span class="p">):</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">inside_geom</span><span class="p">,</span> <span class="n">_PolygonOnSphere</span><span class="p">):</span>
                     <span class="n">polygons_within_extent</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">inside_geom</span><span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="c1"># The PlatePartitioner may cut a polygon into polylines. Convert the polylines into polygons by connecting the endpoints of the polylines to form a closed polygon.</span>
-                    <span class="n">polygons_within_extent</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                        <span class="n">pygplates</span><span class="o">.</span><span class="n">PolygonOnSphere</span><span class="p">(</span><span class="n">inside_geom</span><span class="p">)</span>
-                    <span class="p">)</span>
+                    <span class="n">polygons_within_extent</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">_PolygonOnSphere</span><span class="p">(</span><span class="n">inside_geom</span><span class="p">))</span>
                 <span class="n">polygons_within_extent_features</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">feature</span><span class="p">)</span>
         <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">polygons_within_extent</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">polygons_within_extent_features</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">polygons_within_extent</span><span class="p">,</span> <span class="n">polygons_within_extent_features</span>
@@ -2834,7 +2997,9 @@
         <span class="n">distance_upper_bound</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span>
         <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">region_of_interest</span><span class="p">):</span>
             <span class="n">distance_upper_bound</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span>
-                <span class="n">region_of_interest</span> <span class="o">/</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">Earth</span><span class="o">.</span><span class="n">mean_radius_in_kms</span> <span class="o">/</span> <span class="mf">2.0</span>
+                <span class="n">region_of_interest</span>
+                <span class="o">/</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">Earth</span><span class="o">.</span><span class="n">mean_radius_in_kms</span>  <span class="c1"># pyright: ignore[reportAttributeAccessIssue]</span>
+                <span class="o">/</span> <span class="mf">2.0</span>
             <span class="p">)</span>
 
         <span class="n">_</span><span class="p">,</span> <span class="n">indices</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_spatial_cKDTree</span><span class="o">.</span><span class="n">query</span><span class="p">(</span>
@@ -2860,7 +3025,7 @@
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_get_rotation_model_with_a_different_default_anchor_plate_id</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">anchor_plate_id</span><span class="p">:</span> <span class="nb">int</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">pygplates</span><span class="o">.</span><span class="n">RotationModel</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">_RotationModel</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Check if the specified anchor plate id is different from the default anchor plate id in the current rotation model.</span>
 <span class="sd">        If they are different, create and return a new rotation model with the specified default anchor plate id.</span>
 <span class="sd">        Otherwise, return None.&quot;&quot;&quot;</span>
@@ -2871,7 +3036,7 @@
             <span class="n">anchor_plate_id</span>
             <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">plate_reconstruction</span><span class="o">.</span><span class="n">rotation_model</span><span class="o">.</span><span class="n">get_default_anchor_plate_id</span><span class="p">()</span>
         <span class="p">):</span>
-            <span class="k">return</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">RotationModel</span><span class="p">(</span>
+            <span class="k">return</span> <span class="n">_RotationModel</span><span class="p">(</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">plate_reconstruction</span><span class="o">.</span><span class="n">rotation_model</span><span class="p">,</span>
                 <span class="n">default_anchor_plate_id</span><span class="o">=</span><span class="n">anchor_plate_id</span><span class="p">,</span>
             <span class="p">)</span>
@@ -2953,12 +3118,22 @@
             <span class="p">)</span>
 
         <span class="n">method_l</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">method</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
-        <span class="n">fill_option_map</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="s2">&quot;nearest&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;neighborfill&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">},</span>
-            <span class="s2">&quot;linear&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;splinefill&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">},</span>
-            <span class="s2">&quot;cubic&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;splinefill&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">},</span>
-            <span class="s2">&quot;spline&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;splinefill&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">},</span>
-        <span class="p">}</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">packaging.version</span><span class="w"> </span><span class="kn">import</span> <span class="n">parse</span> <span class="k">as</span> <span class="n">_parse_version</span>
+
+        <span class="k">if</span> <span class="n">_parse_version</span><span class="p">(</span><span class="n">pygmt</span><span class="o">.</span><span class="n">__version__</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">_parse_version</span><span class="p">(</span><span class="s2">&quot;0.16.0&quot;</span><span class="p">):</span>
+            <span class="n">fill_option_map</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s2">&quot;nearest&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;neighborfill&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">},</span>
+                <span class="s2">&quot;linear&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;splinefill&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">},</span>
+                <span class="s2">&quot;cubic&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;splinefill&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">},</span>
+                <span class="s2">&quot;spline&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;splinefill&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">},</span>
+            <span class="p">}</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">fill_option_map</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s2">&quot;nearest&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;neighbor_fill&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">},</span>
+                <span class="s2">&quot;linear&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;spline_fill&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">},</span>
+                <span class="s2">&quot;cubic&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;spline_fill&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">},</span>
+                <span class="s2">&quot;spline&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;spline_fill&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">},</span>
+            <span class="p">}</span>
         <span class="n">fill_kwargs</span> <span class="o">=</span> <span class="n">fill_option_map</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">method_l</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">fill_kwargs</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
@@ -3104,18 +3279,16 @@
                 <span class="sa">f</span><span class="s2">&quot;Invalid reconstruction time: </span><span class="si">{</span><span class="n">new_time</span><span class="si">}</span><span class="s2">. Must be a float number greater than 0.&quot;</span>
             <span class="p">)</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">_copy_constructor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">,</span> <span class="n">plate_reconstruction</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="n">other</span><span class="o">.</span><span class="n">_data</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>  <span class="c1"># type: ignore</span>
-        <span class="c1"># Use specified plate reconstruction (if specified),</span>
-        <span class="c1"># otherwise use the plate reconstruction from &#39;data&#39;.</span>
-        <span class="k">if</span> <span class="n">plate_reconstruction</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">plate_reconstruction</span> <span class="o">=</span> <span class="n">plate_reconstruction</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">plate_reconstruction</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">other</span><span class="o">.</span><span class="n">plate_reconstruction</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_lons</span> <span class="o">=</span> <span class="n">other</span><span class="o">.</span><span class="n">_lons</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_lats</span> <span class="o">=</span> <span class="n">other</span><span class="o">.</span><span class="n">_lats</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_time</span> <span class="o">=</span> <span class="n">other</span><span class="o">.</span><span class="n">_time</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_filename</span> <span class="o">=</span> <span class="n">other</span><span class="o">.</span><span class="n">_filename</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_copy_from_other</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="s2">&quot;Raster&quot;</span><span class="p">):</span>
+        <span class="n">_other_dict</span> <span class="o">=</span> <span class="n">other</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">_other_dict</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;_plate_reconstruction&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">_other_dict</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">other</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lons</span> <span class="o">=</span> <span class="n">other</span><span class="o">.</span><span class="n">lons</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lats</span> <span class="o">=</span> <span class="n">other</span><span class="o">.</span><span class="n">lats</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_plate_reconstruction</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">other</span><span class="o">.</span><span class="n">plate_reconstruction</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_load_data_from_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Load raster data from a file, such as a NetCDF file or an image file.</span>
@@ -3262,26 +3435,37 @@
         <span class="p">]</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_parse_fill_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fill_value</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Normalize ``fill_value`` to match this raster&#39;s data layout.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Normalize ``fill_value`` to match raster dimensionality and dtype.</span>
+
+<span class="sd">        Rules</span>
+<span class="sd">        -----</span>
+<span class="sd">        - 2D rasters return a scalar.</span>
+<span class="sd">        - 3D rasters return a tuple with one value per channel.</span>
+<span class="sd">        - ``None`` chooses a dtype-aware default:</span>
+<span class="sd">          - 2D integer: dtype minimum (signed) or maximum (unsigned)</span>
+<span class="sd">          - 2D float/complex: ``np.nan``</span>
+<span class="sd">          - 3D integer: all zeros</span>
+<span class="sd">          - 3D float/complex: all zeros as float</span>
+<span class="sd">        - Color strings (for example ``&quot;black&quot;`` or ``&quot;#ff0000&quot;``) are</span>
+<span class="sd">          supported for 3D rasters only and converted through RGBA.</span>
+<span class="sd">        - For RGBA rasters, RGB input is accepted and an opaque alpha is appended.</span>
+<span class="sd">        - For 3D rasters, scalar numeric input is broadcast to all channels.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        fill_value : float, int, str, sequence, or None</span>
+<span class="sd">        fill_value : scalar, str, sequence, or None</span>
 <span class="sd">            Fill value provided by caller.</span>
-<span class="sd">            - ``None`` chooses a dtype-aware default.</span>
-<span class="sd">            - Color strings (for example ``&quot;black&quot;`` or ``&quot;#ff0000&quot;``) are</span>
-<span class="sd">              accepted for multiband rasters only.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        float, int, or tuple</span>
-<span class="sd">            A scalar value for 2D rasters, or a tuple with one value per band</span>
-<span class="sd">            for 3D rasters.</span>
+<span class="sd">        scalar or tuple</span>
+<span class="sd">            Scalar for 2D rasters, tuple for 3D rasters.</span>
 
 <span class="sd">        Raises</span>
 <span class="sd">        ------</span>
 <span class="sd">        ValueError</span>
-<span class="sd">            If the raster dimensionality or ``fill_value`` shape is invalid.</span>
+<span class="sd">            If dimensionality is unsupported, the value shape is invalid,</span>
+<span class="sd">            or conversion to target dtype is impossible.</span>
 <span class="sd">        TypeError</span>
 <span class="sd">            If a color string is supplied for a 2D raster.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -3294,24 +3478,44 @@
             <span class="p">)</span>
 
         <span class="n">expected_size</span> <span class="o">=</span> <span class="mi">1</span> <span class="k">if</span> <span class="n">grid</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">2</span> <span class="k">else</span> <span class="nb">int</span><span class="p">(</span><span class="n">grid</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+        <span class="n">dtype_kind</span> <span class="o">=</span> <span class="n">dtype</span><span class="o">.</span><span class="n">kind</span>
+
+        <span class="k">def</span><span class="w"> </span><span class="nf">_coerce_scalar</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">dtype_kind</span> <span class="o">==</span> <span class="s2">&quot;b&quot;</span><span class="p">:</span>
+                <span class="k">return</span> <span class="nb">bool</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">dtype_kind</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;i&quot;</span><span class="p">,</span> <span class="s2">&quot;u&quot;</span><span class="p">):</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">numbers</span><span class="o">.</span><span class="n">Real</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;Non-finite fill_value </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2"> is not allowed for integer dtype </span><span class="si">{</span><span class="n">dtype</span><span class="si">}</span><span class="s2">.&quot;</span>
+                    <span class="p">)</span>
+                <span class="n">info</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">iinfo</span><span class="p">(</span><span class="n">dtype</span><span class="p">)</span>
+                <span class="n">ivalue</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">rint</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">value</span><span class="p">)))</span>
+                <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">ivalue</span><span class="p">,</span> <span class="n">info</span><span class="o">.</span><span class="n">min</span><span class="p">,</span> <span class="n">info</span><span class="o">.</span><span class="n">max</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">dtype_kind</span> <span class="o">==</span> <span class="s2">&quot;f&quot;</span><span class="p">:</span>
+                <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">dtype_kind</span> <span class="o">==</span> <span class="s2">&quot;c&quot;</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="s2">&quot;Complex raster dtypes are not supported for fill_value normalization.&quot;</span>
+                <span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unsupported dtype for fill_value normalization: </span><span class="si">{</span><span class="n">dtype</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">fill_value</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">grid</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
-                <span class="k">if</span> <span class="n">dtype</span><span class="o">.</span><span class="n">kind</span> <span class="o">==</span> <span class="s2">&quot;i&quot;</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">dtype_kind</span> <span class="o">==</span> <span class="s2">&quot;i&quot;</span><span class="p">:</span>
                     <span class="n">fill_value</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">iinfo</span><span class="p">(</span><span class="n">dtype</span><span class="p">)</span><span class="o">.</span><span class="n">min</span>
-                <span class="k">elif</span> <span class="n">dtype</span><span class="o">.</span><span class="n">kind</span> <span class="o">==</span> <span class="s2">&quot;u&quot;</span><span class="p">:</span>
+                <span class="k">elif</span> <span class="n">dtype_kind</span> <span class="o">==</span> <span class="s2">&quot;u&quot;</span><span class="p">:</span>
                     <span class="n">fill_value</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">iinfo</span><span class="p">(</span><span class="n">dtype</span><span class="p">)</span><span class="o">.</span><span class="n">max</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="n">fill_value</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="k">if</span> <span class="n">dtype</span><span class="o">.</span><span class="n">kind</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;i&quot;</span><span class="p">,</span> <span class="s2">&quot;u&quot;</span><span class="p">):</span>
-                    <span class="n">fill_value</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">([</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">expected_size</span><span class="p">)</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="n">fill_value</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">([</span><span class="mf">0.0</span><span class="p">]</span> <span class="o">*</span> <span class="n">expected_size</span><span class="p">)</span>
+                <span class="n">base</span> <span class="o">=</span> <span class="mi">0</span> <span class="k">if</span> <span class="n">dtype_kind</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;i&quot;</span><span class="p">,</span> <span class="s2">&quot;u&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">)</span> <span class="k">else</span> <span class="mf">0.0</span>
+                <span class="n">fill_value</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">([</span><span class="n">base</span><span class="p">]</span> <span class="o">*</span> <span class="n">expected_size</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">fill_value</span>
 
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">fill_value</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
             <span class="k">if</span> <span class="n">grid</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid fill_value for 2D grid: </span><span class="si">{</span><span class="n">fill_value</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
             <span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.colors</span>
 
             <span class="k">try</span><span class="p">:</span>
@@ -3319,35 +3523,44 @@
             <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid color specification: </span><span class="si">{</span><span class="n">fill_value</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">exc</span>
 
-            <span class="k">if</span> <span class="n">dtype</span><span class="o">.</span><span class="n">kind</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;i&quot;</span><span class="p">,</span> <span class="s2">&quot;u&quot;</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">dtype_kind</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;i&quot;</span><span class="p">,</span> <span class="s2">&quot;u&quot;</span><span class="p">):</span>
                 <span class="n">max_value</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">iinfo</span><span class="p">(</span><span class="n">dtype</span><span class="p">)</span><span class="o">.</span><span class="n">max</span>
                 <span class="n">rgba</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">rint</span><span class="p">(</span><span class="n">rgba</span> <span class="o">*</span> <span class="n">max_value</span><span class="p">)</span>
-                <span class="n">rgba</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">rgba</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">max_value</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">dtype</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">dtype_kind</span> <span class="o">==</span> <span class="s2">&quot;b&quot;</span><span class="p">:</span>
+                <span class="n">rgba</span> <span class="o">=</span> <span class="n">rgba</span> <span class="o">&gt;=</span> <span class="mf">0.5</span>
 
-            <span class="n">fill_value</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">rgba</span><span class="p">[:</span><span class="n">expected_size</span><span class="p">])</span>
+            <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">rgba</span><span class="p">[:</span><span class="n">expected_size</span><span class="p">])</span>
 
-        <span class="c1"># For RGBA rasters, allow RGB input and append full alpha.</span>
-        <span class="k">if</span> <span class="p">(</span>
-            <span class="n">grid</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">3</span>
-            <span class="ow">and</span> <span class="n">expected_size</span> <span class="o">==</span> <span class="mi">4</span>
-            <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">fill_value</span><span class="p">,</span> <span class="s2">&quot;__len__&quot;</span><span class="p">)</span>
-            <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">fill_value</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span>  <span class="c1"># type: ignore[arg-type]</span>
-        <span class="p">):</span>
-            <span class="n">fill_alpha</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">iinfo</span><span class="p">(</span><span class="n">dtype</span><span class="p">)</span><span class="o">.</span><span class="n">max</span> <span class="k">if</span> <span class="n">dtype</span><span class="o">.</span><span class="n">kind</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;i&quot;</span><span class="p">,</span> <span class="s2">&quot;u&quot;</span><span class="p">)</span> <span class="k">else</span> <span class="mf">1.0</span>
-            <span class="n">fill_value</span> <span class="o">=</span> <span class="p">(</span><span class="o">*</span><span class="n">fill_value</span><span class="p">,</span> <span class="n">fill_alpha</span><span class="p">)</span>  <span class="c1"># type: ignore[misc]</span>
+        <span class="k">if</span> <span class="n">grid</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">fill_value</span><span class="p">,</span> <span class="s2">&quot;__len__&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span>
+                <span class="n">fill_value</span><span class="p">,</span> <span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">)</span>
+            <span class="p">):</span>
+                <span class="n">fill_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">fill_value</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">fill_array</span><span class="o">.</span><span class="n">size</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;Shape mismatch: fill_value size: </span><span class="si">{</span><span class="n">fill_array</span><span class="o">.</span><span class="n">size</span><span class="si">}</span><span class="s2">, expected: 1, grid shape: </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">grid</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+                    <span class="p">)</span>
+                <span class="n">fill_value</span> <span class="o">=</span> <span class="n">fill_array</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">return</span> <span class="n">_coerce_scalar</span><span class="p">(</span><span class="n">fill_value</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="n">fill_value</span><span class="p">)</span> <span class="o">!=</span> <span class="n">expected_size</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;Shape mismatch: fill_value size: </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="n">fill_value</span><span class="p">)</span><span class="si">}</span><span class="s2">, expected: </span><span class="si">{</span><span class="n">expected_size</span><span class="si">}</span><span class="s2">, grid shape: </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">grid</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
-            <span class="p">)</span>
+        <span class="c1"># From here on: 3D raster handling.</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isscalar</span><span class="p">(</span><span class="n">fill_value</span><span class="p">):</span>
+            <span class="n">fill_items</span> <span class="o">=</span> <span class="p">[</span><span class="n">fill_value</span><span class="p">]</span> <span class="o">*</span> <span class="n">expected_size</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">fill_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">fill_value</span><span class="p">)</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">expected_size</span> <span class="o">==</span> <span class="mi">4</span> <span class="ow">and</span> <span class="n">fill_array</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+                <span class="n">alpha_default</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">iinfo</span><span class="p">(</span><span class="n">dtype</span><span class="p">)</span><span class="o">.</span><span class="n">max</span> <span class="k">if</span> <span class="n">dtype_kind</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;i&quot;</span><span class="p">,</span> <span class="s2">&quot;u&quot;</span><span class="p">)</span> <span class="k">else</span> <span class="mf">1.0</span>
+                <span class="n">fill_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fill_array</span><span class="p">,</span> <span class="n">alpha_default</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">fill_array</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">fill_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">fill_array</span><span class="p">,</span> <span class="n">expected_size</span><span class="p">)</span>
 
-        <span class="c1"># Keep scalar for 2D and tuple for 3D for downstream compatibility.</span>
-        <span class="k">if</span> <span class="n">grid</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">2</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">fill_value</span><span class="p">,</span> <span class="s2">&quot;__len__&quot;</span><span class="p">):</span>
-            <span class="n">fill_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">fill_value</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">fill_array</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-                <span class="k">return</span> <span class="n">fill_array</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">fill_array</span><span class="o">.</span><span class="n">size</span> <span class="o">!=</span> <span class="n">expected_size</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Shape mismatch: fill_value size: </span><span class="si">{</span><span class="n">fill_array</span><span class="o">.</span><span class="n">size</span><span class="si">}</span><span class="s2">, expected: </span><span class="si">{</span><span class="n">expected_size</span><span class="si">}</span><span class="s2">, grid shape: </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">grid</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="p">)</span>
+            <span class="n">fill_items</span> <span class="o">=</span> <span class="n">fill_array</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
 
-        <span class="k">return</span> <span class="n">fill_value</span>
+        <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">_coerce_scalar</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">fill_items</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_validate_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span>
@@ -3455,6 +3668,41 @@
         <span class="n">lats</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">min_lat</span><span class="p">,</span> <span class="n">max_lat</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 
         <span class="k">return</span> <span class="n">lats</span><span class="p">,</span> <span class="n">lons</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_replace_values</span><span class="p">(</span><span class="n">values</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">search_value</span><span class="p">,</span> <span class="n">replace_value</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Replace all occurrences of `search_value` in `values` with `replace_value`.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        values : numpy.ndarray</span>
+<span class="sd">            The array in which to search and replace values.</span>
+<span class="sd">        search_value : scalar or array-like</span>
+<span class="sd">            The value(s) to search for in `values`. Can be a scalar or an array of the same shape as `values`.</span>
+<span class="sd">        replace_value : scalar or array-like</span>
+<span class="sd">            The value(s) to replace `search_value` with. Can be a scalar or an array of the same shape as `values`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">values</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="c1"># for a np array of scalar values.</span>
+            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isscalar</span><span class="p">(</span><span class="n">search_value</span><span class="p">)</span> <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">search_value</span><span class="p">):</span>
+                <span class="n">search_mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">values</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">search_mask</span> <span class="o">=</span> <span class="n">values</span> <span class="o">==</span> <span class="n">search_value</span>
+            <span class="n">values</span><span class="p">[</span><span class="n">search_mask</span><span class="p">]</span> <span class="o">=</span> <span class="n">replace_value</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># for a np array of multiple values.</span>
+            <span class="n">search_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">search_value</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">search_arr</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">search_mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">values</span> <span class="o">==</span> <span class="n">search_arr</span><span class="o">.</span><span class="n">item</span><span class="p">(),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">search_mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">values</span> <span class="o">==</span> <span class="n">search_arr</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+            <span class="n">target_fill_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">replace_value</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">target_fill_arr</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">values</span><span class="p">[</span><span class="n">search_mask</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">target_fill_arr</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">values</span><span class="p">[</span><span class="n">search_mask</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">target_fill_arr</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+        <span class="k">return</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">__array__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>

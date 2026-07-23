@@ -84,7 +84,7 @@
              
   <h1>Source code for gplately.auxiliary</h1><div class="highlight"><pre>
 <span></span><span class="c1">#</span>
-<span class="c1">#    Copyright (C) 2024-2025 The University of Sydney, Australia</span>
+<span class="c1">#    Copyright (C) 2024-2026 The University of Sydney, Australia</span>
 <span class="c1">#</span>
 <span class="c1">#    This program is free software; you can redistribute it and/or modify it under</span>
 <span class="c1">#    the terms of the GNU General Public License, version 2, as published by</span>
@@ -109,7 +109,6 @@
 <span class="c1"># pyright: reportMissingImports=false</span>
 <span class="c1"># pyright: reportMissingModuleSource=false</span>
 
-<span class="kn">import</span><span class="w"> </span><span class="nn">pygplates</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">&quot;gplately&quot;</span><span class="p">)</span>
 <span class="k">try</span><span class="p">:</span>
@@ -206,10 +205,8 @@
         <span class="n">static_polygons</span> <span class="o">=</span> <span class="n">plate_model</span><span class="o">.</span><span class="n">get_layer</span><span class="p">(</span><span class="s2">&quot;StaticPolygons&quot;</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">PlateReconstruction</span><span class="p">(</span>
-        <span class="n">pygplates</span><span class="o">.</span><span class="n">RotationModel</span><span class="p">(</span>
-            <span class="n">plate_model</span><span class="o">.</span><span class="n">get_rotation_model</span><span class="p">(),</span>
-            <span class="n">default_anchor_plate_id</span><span class="o">=</span><span class="n">default_anchor_plate_id</span><span class="p">,</span>
-        <span class="p">),</span>
+        <span class="n">plate_model</span><span class="o">.</span><span class="n">get_rotation_model</span><span class="p">(),</span>
+        <span class="n">anchor_plate_id</span><span class="o">=</span><span class="n">default_anchor_plate_id</span><span class="p">,</span>
         <span class="n">topology_features</span><span class="o">=</span><span class="n">topology_features</span><span class="p">,</span>
         <span class="n">static_polygons</span><span class="o">=</span><span class="n">static_polygons</span><span class="p">,</span>
         <span class="n">plate_model</span><span class="o">=</span><span class="n">plate_model</span><span class="p">,</span>
@@ -282,7 +279,7 @@
 <div class="viewcode-block" id="get_pygmt_basemap_figure">
 <a class="viewcode-back" href="../../generated/gplately.auxiliary.html#gplately.auxiliary.get_pygmt_basemap_figure">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_pygmt_basemap_figure</span><span class="p">(</span>
-    <span class="n">projection</span><span class="o">=</span><span class="s2">&quot;N180/10c&quot;</span><span class="p">,</span> <span class="n">region</span><span class="o">=</span><span class="s2">&quot;d&quot;</span><span class="p">,</span> <span class="n">frame</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;lrtb&quot;</span>
+    <span class="n">projection</span><span class="o">=</span><span class="s2">&quot;N180/10c&quot;</span><span class="p">,</span> <span class="n">region</span><span class="o">=</span><span class="s2">&quot;d&quot;</span><span class="p">,</span> <span class="n">frame</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;lrtb&quot;</span><span class="p">,</span> <span class="n">title</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;A helper function to return a ``pygmt.Figure()`` object</span>
 
@@ -305,8 +302,18 @@
     <span class="k">assert</span> <span class="p">(</span>
         <span class="n">pygmt</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
     <span class="p">),</span> <span class="s2">&quot;PyGMT is not available. Please install PyGMT to use this function.&quot;</span>
+
     <span class="n">fig</span> <span class="o">=</span> <span class="n">pygmt</span><span class="o">.</span><span class="n">Figure</span><span class="p">()</span>
     <span class="n">fig</span><span class="o">.</span><span class="n">basemap</span><span class="p">(</span><span class="n">region</span><span class="o">=</span><span class="n">region</span><span class="p">,</span> <span class="n">projection</span><span class="o">=</span><span class="n">projection</span><span class="p">,</span> <span class="n">frame</span><span class="o">=</span><span class="n">frame</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">title</span><span class="p">:</span>
+        <span class="n">fig</span><span class="o">.</span><span class="n">text</span><span class="p">(</span>
+            <span class="n">x</span><span class="o">=</span><span class="mi">180</span><span class="p">,</span>
+            <span class="n">y</span><span class="o">=</span><span class="mi">90</span><span class="p">,</span>
+            <span class="n">text</span><span class="o">=</span><span class="n">title</span><span class="p">,</span>
+            <span class="n">font</span><span class="o">=</span><span class="s2">&quot;10p,Helvetica-Bold,black&quot;</span><span class="p">,</span>
+            <span class="n">offset</span><span class="o">=</span><span class="s2">&quot;0.c/0.3c&quot;</span><span class="p">,</span>
+            <span class="n">no_clip</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="p">)</span>
     <span class="k">return</span> <span class="n">fig</span></div>
 
 

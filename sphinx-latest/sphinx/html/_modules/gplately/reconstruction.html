@@ -313,6 +313,32 @@
         <span class="c1"># Note: PyGPlates features and features collections (and rotation models) can be pickled though.</span>
         <span class="c1">#</span>
 
+<div class="viewcode-block" id="PlateReconstruction.copy">
+<a class="viewcode-back" href="../../generated/gplately.PlateReconstruction.html#gplately.PlateReconstruction.copy">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return a copy of the :py:class:`PlateReconstruction` object.</span>
+<span class="sd">        This is a pure shallow copy, so the copy shares the same underlying data as the original.</span>
+<span class="sd">        For example, if you modify the rotation model of the copy, it will also modify the rotation model of the original.</span>
+<span class="sd">        However, if you assign a new rotation model to the copy, it will not affect the original.</span>
+<span class="sd">        I need this function for a less expensive way to create a copy of the PlateReconstruction object.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">cls</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="n">new_obj</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="fm">__new__</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span>
+
+        <span class="c1"># copy __dict__-based attributes, if present</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;__dict__&quot;</span><span class="p">):</span>
+            <span class="n">new_obj</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">)</span>
+
+        <span class="c1"># copy __slots__-based attributes, if present (walk the MRO in case</span>
+        <span class="c1"># slots are defined across multiple base classes)</span>
+        <span class="k">for</span> <span class="n">klass</span> <span class="ow">in</span> <span class="bp">cls</span><span class="o">.</span><span class="vm">__mro__</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">slot</span> <span class="ow">in</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">klass</span><span class="p">,</span> <span class="s2">&quot;__slots__&quot;</span><span class="p">,</span> <span class="p">()):</span>
+                <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">slot</span><span class="p">):</span>
+                    <span class="nb">setattr</span><span class="p">(</span><span class="n">new_obj</span><span class="p">,</span> <span class="n">slot</span><span class="p">,</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">slot</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">new_obj</span></div>
+
+
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">anchor_plate_id</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Default anchor plate ID for reconstruction. Must be an integer &gt;= 0.&quot;&quot;&quot;</span>
@@ -872,7 +898,10 @@
         <span class="c1"># This is just an optimisation to avoid unnecessarily sampling all plate boundaries.</span>
         <span class="k">def</span><span class="w"> </span><span class="nf">_boundary_section_filter_function</span><span class="p">(</span><span class="n">resolved_topological_section</span><span class="p">):</span>
             <span class="n">feature</span> <span class="o">=</span> <span class="n">resolved_topological_section</span><span class="o">.</span><span class="n">get_feature</span><span class="p">()</span>
-            <span class="k">if</span> <span class="n">feature</span><span class="o">.</span><span class="n">get_enumeration</span><span class="p">(</span><span class="n">pygplates</span><span class="o">.</span><span class="n">PropertyName</span><span class="o">.</span><span class="n">gpml_subduction_polarity</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="p">(</span>
+                <span class="n">feature</span><span class="o">.</span><span class="n">get_enumeration</span><span class="p">(</span><span class="n">pygplates</span><span class="o">.</span><span class="n">PropertyName</span><span class="o">.</span><span class="n">gpml_subduction_polarity</span><span class="p">)</span>
+                <span class="ow">is</span> <span class="kc">None</span>
+            <span class="p">):</span>
                 <span class="k">return</span> <span class="kc">False</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">include_all_subducting_boundary_types</span><span class="p">:</span>
                 <span class="k">return</span> <span class="p">(</span>

@@ -19,6 +19,7 @@
       ~Raster.copy
       ~Raster.fill_NaNs
       ~Raster.fill_gaps
+      ~Raster.from_points
       ~Raster.imshow
       ~Raster.interp
       ~Raster.interpolate
@@ -48,10 +49,10 @@
    .. autosummary::
    
       ~Raster.data
-      ~Raster.default_value
       ~Raster.dtype
       ~Raster.extent
       ~Raster.filename
+      ~Raster.fill_value
       ~Raster.lats
       ~Raster.longitude_convention
       ~Raster.lons
