@@ -183,7 +183,7 @@ def get_gplot(
 
 
 def get_pygmt_basemap_figure(
-    projection="N180/10c", region="d", frame: Union[str, list] = "lrtb"
+    projection="N180/10c", region="d", frame: Union[str, list] = "lrtb", title: str = ""
 ):
     """A helper function to return a ``pygmt.Figure()`` object
 
@@ -206,8 +206,18 @@ def get_pygmt_basemap_figure(
     assert (
         pygmt is not None
     ), "PyGMT is not available. Please install PyGMT to use this function."
+
     fig = pygmt.Figure()
     fig.basemap(region=region, projection=projection, frame=frame)
+    if title:
+        fig.text(
+            x=180,
+            y=90,
+            text=title,
+            font="10p,Helvetica-Bold,black",
+            offset="0.c/0.3c",
+            no_clip=True,
+        )
     return fig
 
 

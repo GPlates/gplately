@@ -18,6 +18,7 @@
 import copy
 import logging
 import math
+import numbers
 from pathlib import Path
 from time import perf_counter
 import warnings
@@ -290,25 +291,31 @@ class Raster(object):
     def fill_value(self):
         """The fill value used for the raster data.
 
-        For two-dimensional grids, ``fill_value`` should be a single
-        number. The default value will be ``np.nan`` for float or
-        complex types, the minimum value for integer types, and the
-        maximum value for unsigned types.
-        For RGB image grids, ``fill_value`` should be a 3-tuple RGB
-        colour code or a matplotlib colour string. The default value
-        will be black (0.0, 0.0, 0.0) or (0, 0, 0).
-        For RGBA image grids, ``fill_value`` should be a 4-tuple RGBA
-        colour code or a matplotlib colour string. The default fill
-        value will be transparent black (0.0, 0.0, 0.0, 0.0) or
-        (0, 0, 0, 0).
+        This property is being set when this Raster object is being created with Raster reconstruction.
+        The `fill_value` means there is no valid data at the corresponding location.
+
+        The value of this property could be:
+
+            - None, which means this raster data was never created by reconstruction.
+            - a single number for 2D scalar rasters, such as np.nan, minimum value for signed integer, and the
+                maximum value for unsigned interger.
+            - a 3-tuple RGB colour code, such as black (0.0, 0.0, 0.0) or (0, 0, 0).
+            - a 4-tuple RGBA colour code, such as transparent black (0.0, 0.0, 0.0, 0.0) or (0, 0, 0, 0).
         """
-        if self._fill_value is None:
-            self._fill_value = self._parse_fill_value(None)
         return self._fill_value
 
     @fill_value.setter
     def fill_value(self, value):
-        self._fill_value = self._parse_fill_value(value)
+        assert value is None or isinstance(
+            value, (numbers.Number, tuple)
+        ), f"fill_value must be None, a number, or a tuple. Got {type(value)}: {value}."
+        if isinstance(value, tuple):
+            assert len(value) in (3, 4), "fill_value tuple must be of length 3 or 4."
+            for v in value:
+                assert isinstance(
+                    v, numbers.Number
+                ), f"fill_value tuple must contain only numbers. Got {type(value)}: {value}."
+        self._fill_value = value
 
     @property
     def data(self) -> np.ndarray:
@@ -1929,7 +1936,8 @@ class Raster(object):
         to_time: float,
         rotation_model: Union[_RotationModel, None] = None,
         partitioning_features: Union[_FeatureCollection, None] = None,
-        fill_value: Union[float, int, str, tuple, None] = None,
+        *,
+        fill_value: Union[float, int, str, tuple],
         threads: Union[int, None] = None,
         use_spatial_tree: bool = False,
     ) -> "Raster":
@@ -1970,9 +1978,9 @@ class Raster(object):
         partitioning_features : Union[pygplates.FeatureCollection, None], default None
             The features used to partition the raster grid and assign plate IDs, such as static polygons.
             If None is provided, the `self.plate_reconstruction.static_polygons` will be used.
-        fill_value : Union[float, int, str, tuple, None], default None
+        fill_value : Union[float, int, str, tuple]
             The value to be used for regions outside of the static polygons at ``to_time``.
-            By default (``fill_value=None``), this value will be determined based on the input.
+            The fill value must have been parsed, see :meth:`_parse_fill_value`.
         threads : int, default 1
             Number of threads to use for certain computationally heavy routines.
         use_spatial_tree : bool, default False
@@ -2079,30 +2087,18 @@ class Raster(object):
                 method=InterpMethod.NEAREST,
             )
 
-            source_fill_value = self.fill_value
-            target_fill_value = self._parse_fill_value(fill_value)
-            if values.ndim == 1:
-                # Scalar raster samples: replace source nodata/fill values with requested output fill value.
-                if np.isscalar(source_fill_value) and np.isnan(source_fill_value):
-                    source_fill_mask = np.isnan(values)
-                else:
-                    source_fill_mask = values == source_fill_value
-                values[source_fill_mask] = target_fill_value
-            else:
-                # Multiband samples: match full pixel tuples, not individual channel elements.
-                source_fill_arr = np.asarray(source_fill_value)
-                if source_fill_arr.ndim == 0:
-                    source_fill_mask = np.all(values == source_fill_arr.item(), axis=1)
-                else:
-                    source_fill_mask = np.all(
-                        values == source_fill_arr.reshape((1, -1)), axis=1
-                    )
-
-                target_fill_arr = np.asarray(target_fill_value)
-                if target_fill_arr.ndim == 0:
-                    values[source_fill_mask, :] = target_fill_arr.item()
-                else:
-                    values[source_fill_mask, :] = target_fill_arr.reshape((1, -1))
+            # The interpolated values may contain a few old fill value, which is a tiny problem by itself(just a small number near the polgyon boundaries).
+            # However, the issue will be amplified when use the method `Raster.fill_gaps()` to fill the gaps in the raster, which will propagate the old fill value to a much larger area.
+            # We need to replace the old fill value with the new fill value.
+            if self.fill_value is not None and self.fill_value != fill_value:
+                logger.debug(
+                    f"Replacing fill value {self.fill_value} with new fill value {fill_value}."
+                )
+                Raster._replace_values(
+                    values,
+                    self.fill_value,
+                    fill_value,
+                )
 
             output_raster[
                 output_sample_points_row_col_indices[:, 0],
@@ -2211,7 +2207,8 @@ class Raster(object):
         self,
         partitioning_polygons_at_to_time,
         features_of_partitioning_polygons_at_to_time,
-        fill_value=None,
+        *,
+        fill_value,
     ) -> Tuple[np.ndarray, tuple, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
         """Get the output raster and the sample points that are inside the partitioning polygons at `to_time`.
 
@@ -2219,9 +2216,11 @@ class Raster(object):
         ----------
         partitioning_polygons_at_to_time : list[pygplates.PolygonOnSphere]
             A list of partitioning polygons at the `to_time`.
-        fill_value : float, int, str, or tuple, optional
+        features_of_partitioning_polygons_at_to_time : list[pygplates.Feature]
+            A list of features corresponding to the partitioning polygons at the `to_time`.
+        fill_value : float, int, str, or tuple
             The value to be used for regions outside of the partitioning polygons at ``to_time``.
-            If None, the default value will be determined based on the input raster data type.
+            The fill value must have been parsed, see :meth:`_parse_fill_value`.
 
         Returns
         -------
@@ -2274,7 +2273,7 @@ class Raster(object):
             output_shape = output_shape + self.data.shape[2:]
         output_raster = np.full(
             output_shape,
-            self._parse_fill_value(fill_value),
+            fill_value,
             dtype=self.data.dtype,
         )
 
@@ -3116,19 +3115,15 @@ class Raster(object):
             )
 
     def _copy_from_other(self, other: "Raster"):
-        self._data = other.data.copy()
+        _other_dict = other.__dict__.copy()
+        _other_dict.pop("_plate_reconstruction", None)
+
+        self.__dict__.update(_other_dict)
+
+        self.data = other.data.copy()
+        self.lons = other.lons.copy()
+        self.lats = other.lats.copy()
         self._plate_reconstruction = copy.copy(other.plate_reconstruction)
-        self._time = other.time
-        self._grid_registration = other._grid_registration
-        self._lon_name = other._lon_name
-        self._lat_name = other._lat_name
-        self._data_var_name = other._data_var_name
-        self._lons = other.lons.copy()
-        self._lats = other.lats.copy()
-        self._fill_value = copy.copy(other._fill_value)
-        self._filename = other._filename
-        self._data_masked = None
-        self._invalidate_spatial_cache()
 
     def _load_data_from_file(self, filename):
         """Load raster data from a file, such as a NetCDF file or an image file.
@@ -3275,26 +3270,37 @@ class Raster(object):
         ]
 
     def _parse_fill_value(self, fill_value):
-        """Normalize ``fill_value`` to match this raster's data layout.
+        """Normalize ``fill_value`` to match raster dimensionality and dtype.
+
+        Rules
+        -----
+        - 2D rasters return a scalar.
+        - 3D rasters return a tuple with one value per channel.
+        - ``None`` chooses a dtype-aware default:
+          - 2D integer: dtype minimum (signed) or maximum (unsigned)
+          - 2D float/complex: ``np.nan``
+          - 3D integer: all zeros
+          - 3D float/complex: all zeros as float
+        - Color strings (for example ``"black"`` or ``"#ff0000"``) are
+          supported for 3D rasters only and converted through RGBA.
+        - For RGBA rasters, RGB input is accepted and an opaque alpha is appended.
+        - For 3D rasters, scalar numeric input is broadcast to all channels.
 
         Parameters
         ----------
-        fill_value : float, int, str, sequence, or None
+        fill_value : scalar, str, sequence, or None
             Fill value provided by caller.
-            - ``None`` chooses a dtype-aware default.
-            - Color strings (for example ``"black"`` or ``"#ff0000"``) are
-              accepted for multiband rasters only.
 
         Returns
         -------
-        float, int, or tuple
-            A scalar value for 2D rasters, or a tuple with one value per band
-            for 3D rasters.
+        scalar or tuple
+            Scalar for 2D rasters, tuple for 3D rasters.
 
         Raises
         ------
         ValueError
-            If the raster dimensionality or ``fill_value`` shape is invalid.
+            If dimensionality is unsupported, the value shape is invalid,
+            or conversion to target dtype is impossible.
         TypeError
             If a color string is supplied for a 2D raster.
         """
@@ -3307,24 +3313,44 @@ class Raster(object):
             )
 
         expected_size = 1 if grid.ndim == 2 else int(grid.shape[2])
+        dtype_kind = dtype.kind
+
+        def _coerce_scalar(value):
+            if dtype_kind == "b":
+                return bool(value)
+            if dtype_kind in ("i", "u"):
+                if isinstance(value, numbers.Real) and not np.isfinite(value):
+                    raise ValueError(
+                        f"Non-finite fill_value {value} is not allowed for integer dtype {dtype}."
+                    )
+                info = np.iinfo(dtype)
+                ivalue = int(np.rint(float(value)))
+                return int(np.clip(ivalue, info.min, info.max))
+            if dtype_kind == "f":
+                return float(value)
+            if dtype_kind == "c":
+                raise ValueError(
+                    "Complex raster dtypes are not supported for fill_value normalization."
+                )
+            raise ValueError(f"Unsupported dtype for fill_value normalization: {dtype}")
 
         if fill_value is None:
             if grid.ndim == 2:
-                if dtype.kind == "i":
+                if dtype_kind == "i":
                     fill_value = np.iinfo(dtype).min
-                elif dtype.kind == "u":
+                elif dtype_kind == "u":
                     fill_value = np.iinfo(dtype).max
                 else:
                     fill_value = np.nan
             else:
-                if dtype.kind in ("i", "u"):
-                    fill_value = tuple([0] * expected_size)
-                else:
-                    fill_value = tuple([0.0] * expected_size)
+                base = 0 if dtype_kind in ("i", "u", "b") else 0.0
+                fill_value = tuple([base] * expected_size)
+            return fill_value
 
         if isinstance(fill_value, str):
             if grid.ndim == 2:
                 raise TypeError(f"Invalid fill_value for 2D grid: {fill_value}")
+
             import matplotlib.colors
 
             try:
@@ -3332,35 +3358,44 @@ class Raster(object):
             except ValueError as exc:
                 raise ValueError(f"Invalid color specification: {fill_value}") from exc
 
-            if dtype.kind in ("i", "u"):
+            if dtype_kind in ("i", "u"):
                 max_value = np.iinfo(dtype).max
                 rgba = np.rint(rgba * max_value)
-                rgba = np.clip(rgba, 0, max_value).astype(dtype)
+            elif dtype_kind == "b":
+                rgba = rgba >= 0.5
 
-            fill_value = tuple(rgba[:expected_size])
+            return tuple(rgba[:expected_size])
 
-        # For RGBA rasters, allow RGB input and append full alpha.
-        if (
-            grid.ndim == 3
-            and expected_size == 4
-            and hasattr(fill_value, "__len__")
-            and len(fill_value) == 3  # type: ignore[arg-type]
-        ):
-            fill_alpha = np.iinfo(dtype).max if dtype.kind in ("i", "u") else 1.0
-            fill_value = (*fill_value, fill_alpha)  # type: ignore[misc]
+        if grid.ndim == 2:
+            if hasattr(fill_value, "__len__") and not isinstance(
+                fill_value, (str, bytes)
+            ):
+                fill_array = np.asarray(fill_value)
+                if fill_array.size != 1:
+                    raise ValueError(
+                        f"Shape mismatch: fill_value size: {fill_array.size}, expected: 1, grid shape: {np.shape(grid)}"
+                    )
+                fill_value = fill_array.reshape(-1)[0]
+            return _coerce_scalar(fill_value)
 
-        if np.size(fill_value) != expected_size:
-            raise ValueError(
-                f"Shape mismatch: fill_value size: {np.size(fill_value)}, expected: {expected_size}, grid shape: {np.shape(grid)}"
-            )
+        # From here on: 3D raster handling.
+        if np.isscalar(fill_value):
+            fill_items = [fill_value] * expected_size
+        else:
+            fill_array = np.asarray(fill_value).ravel()
+            if expected_size == 4 and fill_array.size == 3:
+                alpha_default = np.iinfo(dtype).max if dtype_kind in ("i", "u") else 1.0
+                fill_array = np.append(fill_array, alpha_default)
+            elif fill_array.size == 1:
+                fill_array = np.repeat(fill_array, expected_size)
 
-        # Keep scalar for 2D and tuple for 3D for downstream compatibility.
-        if grid.ndim == 2 and hasattr(fill_value, "__len__"):
-            fill_array = np.asarray(fill_value)
-            if fill_array.size == 1:
-                return fill_array.item()
+            if fill_array.size != expected_size:
+                raise ValueError(
+                    f"Shape mismatch: fill_value size: {fill_array.size}, expected: {expected_size}, grid shape: {np.shape(grid)}"
+                )
+            fill_items = fill_array.tolist()
 
-        return fill_value
+        return tuple(_coerce_scalar(v) for v in fill_items)
 
     def _validate_data(self):
         _data = self.data
@@ -3468,6 +3503,41 @@ class Raster(object):
         lats = np.linspace(min_lat, max_lat, self.data.shape[0])
 
         return lats, lons
+
+    @staticmethod
+    def _replace_values(values: np.ndarray, search_value, replace_value):
+        """Replace all occurrences of `search_value` in `values` with `replace_value`.
+
+        Parameters
+        ----------
+        values : numpy.ndarray
+            The array in which to search and replace values.
+        search_value : scalar or array-like
+            The value(s) to search for in `values`. Can be a scalar or an array of the same shape as `values`.
+        replace_value : scalar or array-like
+            The value(s) to replace `search_value` with. Can be a scalar or an array of the same shape as `values`.
+        """
+        if values.ndim == 1:
+            # for a np array of scalar values.
+            if np.isscalar(search_value) and np.isnan(search_value):
+                search_mask = np.isnan(values)
+            else:
+                search_mask = values == search_value
+            values[search_mask] = replace_value
+        else:
+            # for a np array of multiple values.
+            search_arr = np.asarray(search_value)
+            if search_arr.ndim == 0:
+                search_mask = np.all(values == search_arr.item(), axis=1)
+            else:
+                search_mask = np.all(values == search_arr.reshape((1, -1)), axis=1)
+
+            target_fill_arr = np.asarray(replace_value)
+            if target_fill_arr.ndim == 0:
+                values[search_mask, :] = target_fill_arr.item()
+            else:
+                values[search_mask, :] = target_fill_arr.reshape((1, -1))
+        return
 
     def __array__(self):
         return np.array(self.data)

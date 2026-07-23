@@ -1,16 +1,12 @@
 import os
 
-import pygmt
-
-from gplately import raster
-
 os.environ["DISABLE_GPLATELY_DEV_WARNING"] = "true"
-import cartopy.crs as ccrs
-import matplotlib.pyplot as plt
-import numpy as np
+import cartopy.crs as ccrs  # pyright: ignore[reportMissingImports]
+import matplotlib.pyplot as plt  # pyright: ignore[reportMissingModuleSource]
+import numpy as np  # pyright: ignore[reportMissingImports]
 from common import MODEL_REPO_DIR, save_fig
 from plate_model_manager import PlateModelManager
-from matplotlib import image
+from matplotlib import image  # pyright: ignore[reportMissingModuleSource]
 from plate_model_manager import PresentDayRasterManager
 
 import gplately
@@ -217,7 +213,7 @@ def test_raster_reconstruction(
 
 
 def test_create_raster_from_points():
-    import pygmt
+    import pygmt  # pyright: ignore[reportMissingImports]
 
     relief = pygmt.datasets.load_earth_relief(
         resolution="10m", region=[-180, 180, -80, 80]
