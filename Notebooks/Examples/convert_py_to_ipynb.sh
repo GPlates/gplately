@@ -14,7 +14,6 @@ fi
 
 files=(
 	hello_world
-	PNG_reconstruction_copper_deposits
 	icosahedron_mesh
 	reconstruct_files
 	introducing_plate_model_manager
@@ -23,6 +22,7 @@ files=(
 	use_auxiliary_functions
 	plot_map_with_pygmt
 	use_your_own_plate_model
+    working_with_plate_model_manager
 )
 
 for base in "${files[@]}"; do

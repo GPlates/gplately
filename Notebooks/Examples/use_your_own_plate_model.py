@@ -1,15 +1,17 @@
-#!/usr/bin/env python
-# coding: utf-8
+# %% [markdown]
+# ### This example demonstrates how to use your own plate model and reconstruct points.
 
-# This example demonstrates how to use your own plate model and reconstruct points.
-
-# **Step 0: Download the test files for this example.**
-# 
+# %% [markdown]
+# ⚠️ This notebook is generated from use_your_own_plate_model.py using the command
+# `jupytext --to notebook Notebooks/Examples/use_your_own_plate_model.py -o Notebooks/Examples/use_your_own_plate_model.ipynb`.
+# If you need to commit changes to this notebook to the GPlately repository, make your edits in use_your_own_plate_model.py and a GitHub workflow will regenerate this Jupyter Notebook file automatically.
+# The reason that a .py file is used is to allow for easier version control and collaboration. And it is also more Copilot and code auto-formatting friendly.
+# %% [markdown]
+# #### Step 0: Download the test files for this example.**
+#
 # Don't worry about the `FileDownloader`. If you'd like, you may download the zip file manually.
 
-# In[ ]:
-
-
+# %%
 import cartopy.crs as ccrs
 import matplotlib.pyplot as plt
 import pygplates
@@ -32,11 +34,11 @@ if downloader.check_if_file_need_update():
 else:
     print(f"The local files are still good. No need to download again!")
 
-# **Step 1: Create `PlateReconstruction` and `PlotTopologies` objects with your own plate model**
+# %% [markdown]
+# #### Step 1: Create `PlateReconstruction` and `PlotTopologies` objects with your own plate model
 
-# In[ ]:
 
-
+# %%
 model = gplately.PlateReconstruction(
     rotation_model=f"{data_dir}/test_model/test_rotations.rot",
     topology_features=f"{data_dir}/test_model/test_topology.gpmlz",
@@ -50,11 +52,11 @@ gplot = gplately.PlotTopologies(
     time=time,
 )
 
-# **Step 2: Reconstruct points in shapefile**
+# %% [markdown]
+# #### Step 2: Reconstruct points in shapefile
 
-# In[ ]:
 
-
+# %%
 points = [
     p.get_geometry().to_lat_lon()
     for p in pygplates.FeatureCollection(f"{data_dir}/test_model/Australia_Points.shp")
@@ -65,24 +67,23 @@ g_points = gplately.Points(
 )
 reconstructed_points = g_points.reconstruct(time=time, return_array=True)
 
-# **Step 3: Plot the map**
+# %% [markdown]
+# #### Step 3: Plot the map
 
-# In[ ]:
 
-
+# %%
 ax = plt.figure(figsize=(8, 6)).add_subplot(
     111, projection=ccrs.Robinson(central_longitude=180)
 )
 
 ax.scatter(
-    reconstructed_points[0],
-    reconstructed_points[1],
+    reconstructed_points[0],  # type: ignore
+    reconstructed_points[1],  # type: ignore
     transform=ccrs.PlateCarree(),
     marker="o",
     color="blue",
 )
 gplot.plot_coastlines(ax, color="grey")
-ax.set_global()
+ax.set_global()  # type: ignore
 plt.title(f"{time} Ma")
 plt.show()
-
