@@ -1,9 +1,7 @@
-hello_world.ipynb
-icosahedron_mesh.ipynb
-reconstruct_files.ipynb
-introducing_plate_model_manager.ipynb
-save_reconstructed_data.ipynb
-plot_map_with_cartopy.ipynb
-use_auxiliary_functions.ipynb
-plot_map_with_pygmt.ipynb
-use_your_own_plate_model.ipynb
+*.png
+*.pdf
+*.zip
+icosahedron_mesh.gmt
+agegrid.cpt
+plate-model-repo/
+present-day-rasters/

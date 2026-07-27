@@ -1,5 +1,6 @@
 # %% [markdown]
-# This notebook demonstrates how to use the PyGMT plotting maps in GPlately.
+# ### This notebook demonstrates how to use the PyGMT plotting maps in GPlately.
+
 # The PyGMT integration is still in early stage, and we are working on adding more features to it.
 # Please open GitHub issues and let us know how we could enhance the PyGMT integration.
 # We are grateful for your feedbacks. Thank you.
@@ -13,15 +14,18 @@
 
 # %%
 # pyright: reportMissingImports=false
-import os
 import pygmt
 from gplately.auxiliary import get_gplot, get_pygmt_basemap_figure
 from gplately.mapping.pygmt_plot import PygmtPlotEngine
 from gplately import Raster
 from plate_model_manager import PresentDayRasterManager
+import warnings, os
+
+warnings.filterwarnings("ignore", category=UserWarning, module="gplately")
 
 # %%
 reconstruction_time = 55
+data_dir = "./gplately-example-data"
 # tell PlotTopologies object to use the PygmtPlotEngine
 gplot = get_gplot(
     model="Muller2025",
@@ -32,7 +36,6 @@ gplot = get_gplot(
 
 # reconstruct the topography grid for the specified reconstruction time,
 # and use it to create an illumination grid for shading
-data_dir = "./unittest-data"
 topo_file = PresentDayRasterManager(data_dir=data_dir).get_raster("topography")
 topo_grid = Raster(
     data=topo_file, plate_reconstruction=gplot.plate_reconstruction
@@ -103,8 +106,8 @@ fig.text(
 with pygmt.config(FONT_ANNOT_PRIMARY=4):
     fig.legend(position="jBL+o-1.0/0", box="+gwhite+p0.25p")
 
-fig.show(width=1200, crop="+m0.4c")
+out_f = f"{data_dir}/test-pygmt-plot.pdf"
+fig.savefig(out_f, crop="+m0.4c")  # pyright: ignore[reportArgumentType]
+print(f"The map has been saved to {out_f}.")
 
-# out_f = "test-pygmt-plot.pdf"
-# fig.savefig(out_f, crop="+m0.4c")  # pyright: ignore[reportArgumentType]
-# print(f"The map has been saved to {out_f}.")
+fig.show(width=1200, crop="+m0.4c")

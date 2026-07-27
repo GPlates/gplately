@@ -1,5 +1,5 @@
 # %% [markdown]
-# This is a minimal working example of GPlately to demonstrate how easy it is to create a paleo-map using GPlately.
+# ### This is a minimal working example of GPlately to demonstrate how easy it is to create a paleo-map using GPlately.
 # %% [markdown]
 # ⚠️ This notebook is generated from hello_world.py using the command
 # `jupytext --to notebook Notebooks/Examples/hello_world.py -o Notebooks/Examples/hello_world.ipynb`.
@@ -24,8 +24,8 @@ gplot.plot_coastlines(ax, color="lightblue", facecolor="0.8")
 # add title for the map
 plt.title(f"Paleo-coastlines at {int(gplot.time)} Ma")  # pyright: ignore
 
+# save the map to a .png file
+plt.gcf().savefig("gplately-hello-world.png")
+
 # display the map
 plt.show()
-
-# save the map to a .png file
-# plt.gcf().savefig("gplately-hello-world.png")
