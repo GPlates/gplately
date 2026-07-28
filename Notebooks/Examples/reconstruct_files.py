@@ -2,7 +2,9 @@
 # ### This notebook demonstrates how to use GPlately to reconstruct shapefiles.
 
 # %% [markdown]
-# ⚠️ This notebook is generated from reconstruct_files.py using the command
+# **⚠️🚫 Don't commit changes to this notebook directly into GitHub repository. 🚫⚠️**
+
+# This notebook is generated from reconstruct_files.py using the command
 # `jupytext --to notebook Notebooks/Examples/reconstruct_files.py -o Notebooks/Examples/reconstruct_files.ipynb`.
 # If you need to commit changes to this notebook to the GPlately repository, make your edits in reconstruct_files.py and a GitHub workflow will regenerate this Jupyter Notebook file automatically.
 # The reason that a .py file is used is to allow for easier version control and collaboration. And it is also more Copilot and code auto-formatting friendly.

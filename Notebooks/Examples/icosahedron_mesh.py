@@ -1,7 +1,9 @@
 # %% [markdown]
 # ### This example demonstrates how to generate an Icosahedron mesh and plot it with [plot_trisurf](https://matplotlib.org/stable/api/_as_gen/mpl_toolkits.mplot3d.axes3d.Axes3D.plot_trisurf.html).
 # %% [markdown]
-# ⚠️ This notebook is generated from icosahedron_mesh.py using the command
+# **⚠️🚫 Don't commit changes to this notebook directly into GitHub repository. 🚫⚠️**
+
+# This notebook is generated from icosahedron_mesh.py using the command
 # `jupytext --to notebook Notebooks/Examples/icosahedron_mesh.py -o Notebooks/Examples/icosahedron_mesh.ipynb`.
 # If you need to commit changes to this notebook to the GPlately repository, make your edits in icosahedron_mesh.py and a GitHub workflow will regenerate this Jupyter Notebook file automatically.
 # The reason that a .py file is used is to allow for easier version control and collaboration. And it is also more Copilot and code auto-formatting friendly.

@@ -4,7 +4,9 @@
 # The "get_" methods of PlotTopologies class return GeoDataFrame objects whose `to_file()` method can be used to save the data to other file formats, check out the [GeoDataFrame doc](https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.to_file.html).
 
 # %% [markdown]
-# ⚠️ This notebook is generated from save_reconstructed_data.py using the command
+# **⚠️🚫 Don't commit changes to this notebook directly into GitHub repository. 🚫⚠️**
+
+# This notebook is generated from save_reconstructed_data.py using the command
 # `jupytext --to notebook Notebooks/Examples/save_reconstructed_data.py -o Notebooks/Examples/save_reconstructed_data.ipynb`.
 # If you need to commit changes to this notebook to the GPlately repository, make your edits in save_reconstructed_data.py and a GitHub workflow will regenerate this Jupyter Notebook file automatically.
 # The reason that a .py file is used is to allow for easier version control and collaboration. And it is also more Copilot and code auto-formatting friendly.

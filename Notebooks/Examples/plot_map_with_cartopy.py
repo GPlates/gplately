@@ -1,7 +1,9 @@
 # %% [markdown]
 # ### This notebook demonstrate how to create a more interesting paleo-map using GPlately.
 # %% [markdown]
-# ⚠️ This notebook is generated from plot_map_with_cartopy.py using the command
+# **⚠️🚫 Don't commit changes to this notebook directly into GitHub repository. 🚫⚠️**
+
+# This notebook is generated from plot_map_with_cartopy.py using the command
 # `jupytext --to notebook Notebooks/Examples/plot_map_with_cartopy.py -o Notebooks/Examples/plot_map_with_cartopy.ipynb`.
 # If you need to commit changes to this notebook to the GPlately repository, make your edits in plot_map_with_cartopy.py and a GitHub workflow will regenerate this Jupyter Notebook file automatically.
 # The reason that a .py file is used is to allow for easier version control and collaboration. And it is also more Copilot and code auto-formatting friendly.
