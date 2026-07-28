@@ -2,6 +2,8 @@ name: Generate Notebooks
 
 on:
   push:
+    branches-ignore:
+      - master
     paths:
       - Notebooks/14-RuleBasedGPMLProcessingPipeline.py
       - Notebooks/Examples/hello_world.py
