@@ -3319,7 +3319,7 @@ class Raster(object):
             if dtype_kind == "b":
                 return bool(value)
             if dtype_kind in ("i", "u"):
-                if isinstance(value, numbers.Real) and not np.isfinite(value):
+                if isinstance(value, numbers.Real) and not math.isfinite(value):
                     raise ValueError(
                         f"Non-finite fill_value {value} is not allowed for integer dtype {dtype}."
                     )

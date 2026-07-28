@@ -1,0 +1,200 @@
+name: Protect Generated Notebooks
+
+# This workflow prevents humans from directly editing generated notebooks.
+# Only github-actions[bot] is permitted to commit changes to these files.
+# These notebooks are generated from .py files by using the command
+# `jupytext --to notebook abc.py -o abc.ipynb`.
+# If you need to commit changes to these notebooks to the GPlately repository, 
+# make your edits in the corresponding .py files and a GitHub workflow will 
+#regenerate the .ipynb files automatically.
+# The reason that a .py file is used is to allow for easier version control and collaboration. 
+# And it is also more Copilot and code auto-formatting friendly.
+
+
+on:
+  pull_request:
+    paths: &notebook_paths
+      - Notebooks/14-RuleBasedGPMLProcessingPipeline.ipynb
+      - Notebooks/Examples/hello_world.ipynb
+      - Notebooks/Examples/icosahedron_mesh.ipynb
+      - Notebooks/Examples/introducing_plate_model_manager.ipynb
+      - Notebooks/Examples/plot_map_with_cartopy.ipynb
+      - Notebooks/Examples/plot_map_with_pygmt.ipynb
+      - Notebooks/Examples/reconstruct_files.ipynb
+      - Notebooks/Examples/save_reconstructed_data.ipynb
+      - Notebooks/Examples/use_auxiliary_functions.ipynb
+      - Notebooks/Examples/use_your_own_plate_model.ipynb
+  push:
+    paths: *notebook_paths
+
+permissions:
+  contents: read
+
+jobs:
+  verify-notebook-updates-pr:
+    name: Verify Notebook Updates Come From Bot (PR)
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: List protected-notebook commits in range
+        id: commits
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+
+          protected_notebooks=(
+            Notebooks/14-RuleBasedGPMLProcessingPipeline.ipynb
+            Notebooks/Examples/hello_world.ipynb
+            Notebooks/Examples/icosahedron_mesh.ipynb
+            Notebooks/Examples/introducing_plate_model_manager.ipynb
+            Notebooks/Examples/plot_map_with_cartopy.ipynb
+            Notebooks/Examples/plot_map_with_pygmt.ipynb
+            Notebooks/Examples/reconstruct_files.ipynb
+            Notebooks/Examples/save_reconstructed_data.ipynb
+            Notebooks/Examples/use_auxiliary_functions.ipynb
+            Notebooks/Examples/use_your_own_plate_model.ipynb
+          )
+
+          # Use the actual merge-base rather than base.sha directly, so a
+          # base branch that has advanced during PR review doesn't pull in
+          # unrelated commits via a stale double-dot range.
+          merge_base=$(git merge-base "${BASE_SHA}" "${HEAD_SHA}")
+
+          commits=$(git log --format='%H' "${merge_base}..${HEAD_SHA}" -- "${protected_notebooks[@]}" | sort -u)
+
+          {
+            echo "shas<<EOF"
+            echo "${commits}"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Verify each commit is bot-authored via GitHub API
+        if: steps.commits.outputs.shas != ''
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const shas = `${{ steps.commits.outputs.shas }}`.split('\n').filter(Boolean);
+            const violations = [];
+
+            for (const sha of shas) {
+              const { data: commit } = await github.rest.repos.getCommit({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                ref: sha,
+              });
+
+              const authorLogin = commit.author && commit.author.login;
+              const committerLogin = commit.committer && commit.committer.login;
+              const verified = commit.commit.verification && commit.commit.verification.verified;
+
+              if (authorLogin !== 'github-actions[bot]' || committerLogin !== 'github-actions[bot]' || !verified) {
+                violations.push(
+                  `${sha}: author=${authorLogin ?? 'unlinked'} committer=${committerLogin ?? 'unlinked'} verified=${verified}`
+                );
+              }
+            }
+
+            if (violations.length > 0) {
+              core.setFailed(
+                'Protected notebooks were modified by non-bot commits:\n' +
+                violations.map(v => ` - ${v}`).join('\n') +
+                '\n\nOnly github-actions[bot] may author and commit updates to these notebooks.\n' +
+                'Update the source .py files and let the notebook-generation workflow commit the .ipynb changes.'
+              );
+            } else {
+              core.info('All protected notebook updates were authored and committed by github-actions[bot].');
+            }
+
+  verify-notebook-updates-master-push:
+    name: Verify Notebook Updates Come From Bot (Master Push)
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: List protected-notebook commits in range
+        id: commits
+        env:
+          BASE_SHA: ${{ github.event.before }}
+          HEAD_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+
+          protected_notebooks=(
+            Notebooks/14-RuleBasedGPMLProcessingPipeline.ipynb
+            Notebooks/Examples/hello_world.ipynb
+            Notebooks/Examples/icosahedron_mesh.ipynb
+            Notebooks/Examples/introducing_plate_model_manager.ipynb
+            Notebooks/Examples/plot_map_with_cartopy.ipynb
+            Notebooks/Examples/plot_map_with_pygmt.ipynb
+            Notebooks/Examples/reconstruct_files.ipynb
+            Notebooks/Examples/save_reconstructed_data.ipynb
+            Notebooks/Examples/use_auxiliary_functions.ipynb
+            Notebooks/Examples/use_your_own_plate_model.ipynb
+          )
+
+          if [ "${BASE_SHA}" = "0000000000000000000000000000000000000000" ]; then
+            range="${HEAD_SHA}^..${HEAD_SHA}"
+          else
+            range="${BASE_SHA}..${HEAD_SHA}"
+          fi
+
+          commits=$(git log --format='%H' "${range}" -- "${protected_notebooks[@]}" | sort -u)
+
+          {
+            echo "shas<<EOF"
+            echo "${commits}"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Verify each commit is bot-authored via GitHub API
+        if: steps.commits.outputs.shas != ''
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const shas = `${{ steps.commits.outputs.shas }}`.split('\n').filter(Boolean);
+            const violations = [];
+
+            for (const sha of shas) {
+              const { data: commit } = await github.rest.repos.getCommit({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                ref: sha,
+              });
+
+              const authorLogin = commit.author && commit.author.login;
+              const committerLogin = commit.committer && commit.committer.login;
+              const verified = commit.commit.verification && commit.commit.verification.verified;
+
+              if (authorLogin !== 'github-actions[bot]' || committerLogin !== 'github-actions[bot]' || !verified) {
+                violations.push(
+                  `${sha}: author=${authorLogin ?? 'unlinked'} committer=${committerLogin ?? 'unlinked'} verified=${verified}`
+                );
+              }
+            }
+
+            if (violations.length > 0) {
+              core.setFailed(
+                'Protected notebooks were modified by non-bot commits on master:\n' +
+                violations.map(v => ` - ${v}`).join('\n') +
+                '\n\nOnly github-actions[bot] may author and commit updates to these notebooks.\n' +
+                'NOTE: if this repo uses squash/rebase merge, the squashed commit will always ' +
+                'fail this check even for legitimate PRs, since GitHub reassigns authorship ' +
+                'on squash. Restrict merges to "Create a merge commit" to preserve bot authorship, ' +
+                'or treat the PR check as the sole gate and disable this job.'
+              );
+            } else {
+              core.info('All protected notebook updates on master were authored and committed by github-actions[bot].');
+            }
