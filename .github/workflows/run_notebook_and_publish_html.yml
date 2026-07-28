@@ -3,18 +3,106 @@ name: Run notebook and publish HTML
 on:
   workflow_dispatch:
     inputs:
+      notebook_all:
+        description: "all"
+        type: boolean
+        default: false
+      notebook_01_getting_started:
+        description: "01-GettingStarted"
+        type: boolean
+        default: false
+      notebook_02_plate_reconstructions:
+        description: "02-PlateReconstructions"
+        type: boolean
+        default: false
+      notebook_03_working_with_points:
+        description: "03-WorkingWithPoints"
+        type: boolean
+        default: false
+      notebook_04_velocity_basics:
+        description: "04-VelocityBasics"
+        type: boolean
+        default: false
+      notebook_05_working_with_feature_geometries:
+        description: "05-WorkingWithFeatureGeometries"
+        type: boolean
+        default: false
+      notebook_06_rasters:
+        description: "06-Rasters"
+        type: boolean
+        default: false
+      notebook_07_working_with_plate_tectonic_stats:
+        description: "07-WorkingWithPlateTectonicStats"
+        type: boolean
+        default: false
+      notebook_08_predicting_slab_flux:
+        description: "08-PredictingSlabFlux"
+        type: boolean
+        default: false
+      notebook_09_creating_motion_paths_and_flowlines:
+        description: "09-CreatingMotionPathsAndFlowlines"
+        type: boolean
+        default: false
+      notebook_10_seafloor_grids:
+        description: "10-SeafloorGrids"
+        type: boolean
+        default: false
+      notebook_11_andes_fluxes:
+        description: "11-AndesFluxes"
+        type: boolean
+        default: false
+      notebook_12_mutschler_world_porphyry_copper_deposits_regional_plots:
+        description: "12-MutschlerWorldPorphyryCopperDepositsRegionalPlots"
+        type: boolean
+        default: false
+      notebook_13_reconstructing_zircon_data:
+        description: "13-ReconstructingZirconData"
+        type: boolean
+        default: false
       notebook_14:
         description: "14-RuleBasedGPMLProcessingPipeline"
         type: boolean
-        default: true
+        default: false
       notebook_15:
         description: "15-ConvertGridReferenceFrame"
         type: boolean
-        default: true
+        default: false
+      notebook_examples_hello_world:
+        description: "Examples/hello_world"
+        type: boolean
+        default: false
+      notebook_examples_icosahedron_mesh:
+        description: "Examples/icosahedron_mesh"
+        type: boolean
+        default: false
+      notebook_examples_introducing_plate_model_manager:
+        description: "Examples/introducing_plate_model_manager"
+        type: boolean
+        default: false
+      notebook_examples_plot_map_with_cartopy:
+        description: "Examples/plot_map_with_cartopy"
+        type: boolean
+        default: false
       notebook_plot_map_with_pygmt:
         description: "Examples/plot_map_with_pygmt"
         type: boolean
-        default: true
+        default: false
+      notebook_examples_reconstruct_files:
+        description: "Examples/reconstruct_files"
+        type: boolean
+        default: false
+      notebook_examples_save_reconstructed_data:
+        description: "Examples/save_reconstructed_data"
+        type: boolean
+        default: false
+      notebook_examples_use_auxiliary_functions:
+        description: "Examples/use_auxiliary_functions"
+        type: boolean
+        default: false
+      notebook_examples_use_your_own_plate_model:
+        description: "Examples/use_your_own_plate_model"
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -46,9 +134,57 @@ jobs:
       - name: Execute notebooks
         run: |
           notebooks=()
-          ${{ inputs.notebook_14 }} && notebooks+=(14-RuleBasedGPMLProcessingPipeline)
-          ${{ inputs.notebook_15 }} && notebooks+=(15-ConvertGridReferenceFrame)
-          ${{ inputs.notebook_plot_map_with_pygmt }} && notebooks+=(Examples/plot_map_with_pygmt)
+          if ${{ inputs.notebook_all }}; then
+            notebooks+=(01-GettingStarted)
+            notebooks+=(02-PlateReconstructions)
+            notebooks+=(03-WorkingWithPoints)
+            notebooks+=(04-VelocityBasics)
+            notebooks+=(05-WorkingWithFeatureGeometries)
+            notebooks+=(06-Rasters)
+            notebooks+=(07-WorkingWithPlateTectonicStats)
+            notebooks+=(08-PredictingSlabFlux)
+            notebooks+=(09-CreatingMotionPathsAndFlowlines)
+            notebooks+=(10-SeafloorGrids)
+            notebooks+=(11-AndesFluxes)
+            notebooks+=(12-MutschlerWorldPorphyryCopperDepositsRegionalPlots)
+            notebooks+=(13-ReconstructingZirconData)
+            notebooks+=(14-RuleBasedGPMLProcessingPipeline)
+            notebooks+=(15-ConvertGridReferenceFrame)
+            notebooks+=(Examples/hello_world)
+            notebooks+=(Examples/icosahedron_mesh)
+            notebooks+=(Examples/introducing_plate_model_manager)
+            notebooks+=(Examples/plot_map_with_cartopy)
+            notebooks+=(Examples/plot_map_with_pygmt)
+            notebooks+=(Examples/reconstruct_files)
+            notebooks+=(Examples/save_reconstructed_data)
+            notebooks+=(Examples/use_auxiliary_functions)
+            notebooks+=(Examples/use_your_own_plate_model)
+          else
+            ${{ inputs.notebook_01_getting_started }} && notebooks+=(01-GettingStarted)
+            ${{ inputs.notebook_02_plate_reconstructions }} && notebooks+=(02-PlateReconstructions)
+            ${{ inputs.notebook_03_working_with_points }} && notebooks+=(03-WorkingWithPoints)
+            ${{ inputs.notebook_04_velocity_basics }} && notebooks+=(04-VelocityBasics)
+            ${{ inputs.notebook_05_working_with_feature_geometries }} && notebooks+=(05-WorkingWithFeatureGeometries)
+            ${{ inputs.notebook_06_rasters }} && notebooks+=(06-Rasters)
+            ${{ inputs.notebook_07_working_with_plate_tectonic_stats }} && notebooks+=(07-WorkingWithPlateTectonicStats)
+            ${{ inputs.notebook_08_predicting_slab_flux }} && notebooks+=(08-PredictingSlabFlux)
+            ${{ inputs.notebook_09_creating_motion_paths_and_flowlines }} && notebooks+=(09-CreatingMotionPathsAndFlowlines)
+            ${{ inputs.notebook_10_seafloor_grids }} && notebooks+=(10-SeafloorGrids)
+            ${{ inputs.notebook_11_andes_fluxes }} && notebooks+=(11-AndesFluxes)
+            ${{ inputs.notebook_12_mutschler_world_porphyry_copper_deposits_regional_plots }} && notebooks+=(12-MutschlerWorldPorphyryCopperDepositsRegionalPlots)
+            ${{ inputs.notebook_13_reconstructing_zircon_data }} && notebooks+=(13-ReconstructingZirconData)
+            ${{ inputs.notebook_14 }} && notebooks+=(14-RuleBasedGPMLProcessingPipeline)
+            ${{ inputs.notebook_15 }} && notebooks+=(15-ConvertGridReferenceFrame)
+            ${{ inputs.notebook_examples_hello_world }} && notebooks+=(Examples/hello_world)
+            ${{ inputs.notebook_examples_icosahedron_mesh }} && notebooks+=(Examples/icosahedron_mesh)
+            ${{ inputs.notebook_examples_introducing_plate_model_manager }} && notebooks+=(Examples/introducing_plate_model_manager)
+            ${{ inputs.notebook_examples_plot_map_with_cartopy }} && notebooks+=(Examples/plot_map_with_cartopy)
+            ${{ inputs.notebook_plot_map_with_pygmt }} && notebooks+=(Examples/plot_map_with_pygmt)
+            ${{ inputs.notebook_examples_reconstruct_files }} && notebooks+=(Examples/reconstruct_files)
+            ${{ inputs.notebook_examples_save_reconstructed_data }} && notebooks+=(Examples/save_reconstructed_data)
+            ${{ inputs.notebook_examples_use_auxiliary_functions }} && notebooks+=(Examples/use_auxiliary_functions)
+            ${{ inputs.notebook_examples_use_your_own_plate_model }} && notebooks+=(Examples/use_your_own_plate_model)
+          fi
 
           if [ ${#notebooks[@]} -eq 0 ]; then
             echo "No notebooks selected. Skipping execution."
@@ -57,10 +193,11 @@ jobs:
 
           for notebook in "${notebooks[@]}"; do
             mkdir -p "/tmp/notebook-run/${notebook}"
+            notebook_file="$(basename "${notebook}").ipynb"
             jupyter nbconvert \
               --to notebook \
               --execute \
-              --output executed-notebook.ipynb \
+              --output "${notebook_file}" \
               --output-dir "/tmp/notebook-run/${notebook}" \
               "Notebooks/${notebook}.ipynb"
 
@@ -69,7 +206,7 @@ jobs:
               --to html \
               --output "${notebook}.html" \
               --output-dir notebook-html \
-              "/tmp/notebook-run/${notebook}/executed-notebook.ipynb"
+              "/tmp/notebook-run/${notebook}/${notebook_file}"
           done
 
       - name: Deploy HTML to gh-pages

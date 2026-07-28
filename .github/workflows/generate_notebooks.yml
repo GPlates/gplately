@@ -2,9 +2,19 @@ name: Generate Notebooks
 
 on:
   push:
+    branches-ignore:
+      - master
     paths:
       - Notebooks/14-RuleBasedGPMLProcessingPipeline.py
+      - Notebooks/Examples/hello_world.py
+      - Notebooks/Examples/icosahedron_mesh.py
+      - Notebooks/Examples/introducing_plate_model_manager.py
+      - Notebooks/Examples/plot_map_with_cartopy.py
       - Notebooks/Examples/plot_map_with_pygmt.py
+      - Notebooks/Examples/reconstruct_files.py
+      - Notebooks/Examples/save_reconstructed_data.py
+      - Notebooks/Examples/use_auxiliary_functions.py
+      - Notebooks/Examples/use_your_own_plate_model.py
   workflow_dispatch:
 
 permissions:
@@ -29,18 +39,48 @@ jobs:
 
       - name: Generate notebooks
         run: |
-          jupytext --to notebook \
-            Notebooks/14-RuleBasedGPMLProcessingPipeline.py \
-            -o Notebooks/14-RuleBasedGPMLProcessingPipeline.ipynb
-          jupytext --to notebook \
-            Notebooks/Examples/plot_map_with_pygmt.py \
-            -o Notebooks/Examples/plot_map_with_pygmt.ipynb
+          notebooks=(
+            Notebooks/14-RuleBasedGPMLProcessingPipeline.ipynb
+            Notebooks/Examples/hello_world.ipynb
+            Notebooks/Examples/icosahedron_mesh.ipynb
+            Notebooks/Examples/introducing_plate_model_manager.ipynb
+            Notebooks/Examples/plot_map_with_cartopy.ipynb
+            Notebooks/Examples/plot_map_with_pygmt.ipynb
+            Notebooks/Examples/reconstruct_files.ipynb
+            Notebooks/Examples/save_reconstructed_data.ipynb
+            Notebooks/Examples/use_auxiliary_functions.ipynb
+            Notebooks/Examples/use_your_own_plate_model.ipynb
+          )
+
+          for notebook in "${notebooks[@]}"; do
+            script_file="${notebook%.ipynb}.py"
+            if [ -f "${script_file}" ]; then
+              jupytext --to notebook "${script_file}" -o "${notebook}"
+            else
+              echo "Skipping ${notebook}: missing source script ${script_file}"
+            fi
+          done
 
       - name: Commit updated notebooks
         run: |
+          notebooks=(
+            Notebooks/14-RuleBasedGPMLProcessingPipeline.ipynb
+            Notebooks/Examples/hello_world.ipynb
+            Notebooks/Examples/icosahedron_mesh.ipynb
+            Notebooks/Examples/introducing_plate_model_manager.ipynb
+            Notebooks/Examples/plot_map_with_cartopy.ipynb
+            Notebooks/Examples/plot_map_with_pygmt.ipynb
+            Notebooks/Examples/reconstruct_files.ipynb
+            Notebooks/Examples/save_reconstructed_data.ipynb
+            Notebooks/Examples/use_auxiliary_functions.ipynb
+            Notebooks/Examples/use_your_own_plate_model.ipynb
+          )
+
           changed=()
-          git diff --quiet -- Notebooks/14-RuleBasedGPMLProcessingPipeline.ipynb || changed+=(Notebooks/14-RuleBasedGPMLProcessingPipeline.ipynb)
-          git diff --quiet -- Notebooks/Examples/plot_map_with_pygmt.ipynb || changed+=(Notebooks/Examples/plot_map_with_pygmt.ipynb)
+          for notebook in "${notebooks[@]}"; do
+            [ -f "${notebook}" ] || continue
+            git diff --quiet -- "${notebook}" || changed+=("${notebook}")
+          done
 
           if [ ${#changed[@]} -eq 0 ]; then
             echo "No notebook changes detected."

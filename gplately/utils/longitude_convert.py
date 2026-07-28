@@ -14,7 +14,11 @@
 #    with this program; if not, write to Free Software Foundation, Inc.,
 #    51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
-import numpy as np
+import logging
+
+import numpy as np  # pyright: ignore[reportMissingImports]
+
+logger = logging.getLogger("gplately")
 
 
 def _convert_longitude(grid_data, lons, map_fn, valid_max, seam_name, tol=1e-6):
@@ -62,10 +66,19 @@ def _convert_longitude(grid_data, lons, map_fn, valid_max, seam_name, tol=1e-6):
     # array into a genuinely monotonically increasing sequence.
     lons = np.unwrap(lons, period=360)
 
-    if not np.all(np.diff(lons) > 0):
+    diffs = np.diff(lons)
+    if not np.all(diffs > 0):
+        bad_idx = np.where(diffs <= 0)[0]
+        logger.error(
+            "Non-monotonic longitude steps at indices %s: "
+            "lons[i]=%s, lons[i+1]=%s, diff=%s",
+            bad_idx.tolist(),
+            lons[bad_idx],
+            lons[bad_idx + 1],
+            diffs[bad_idx],
+        )
         raise ValueError(
-            "lons must be monotonically increasing (accounting for "
-            "antimeridian wraparound)."
+            "The `lons` must be monotonically increasing (accounting for antimeridian wraparound)."
         )
 
     # Strip a redundant closing column (e.g. lons[0] and lons[-1] are the
