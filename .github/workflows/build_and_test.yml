@@ -1,7 +1,4 @@
-# This workflow will install Python dependencies, run tests and lint with a single version of Python
-# For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
-
-name: Test GPlately
+name: Test GPlately on Various Platforms
 
 on:
   push:
@@ -16,7 +13,7 @@ on:
       - gplately/**
 
 jobs:
-  build:
+  test-gplately-on-various-platforms:
     name: Test Python ${{ matrix.python-version }} on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
