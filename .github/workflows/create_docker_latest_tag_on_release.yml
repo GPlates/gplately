@@ -1,4 +1,7 @@
-name: create docker latest tag on publishing release
+# This workflow is triggered when a release is published. It creates the "latest" tag for the Docker images 
+# on Docker Hub and GitHub Container Registry (ghcr.io) for both amd64 and arm64 architectures.
+
+name: Create Docker Latest Tag on Publishing Release
 
 on:
   release:
@@ -12,15 +15,15 @@ jobs:
         name: Checkout
         uses: actions/checkout@v4
       -
-        name: Decide the docker image version number
+        name: Decide the Docker Image Version Number
         run: |
             echo "DOCKER_IMAGE_TAG=${{ github.ref_name }}" >> $GITHUB_ENV
             echo ${{ env.DOCKER_IMAGE_TAG }}
       -
-        name: Set up QEMU
+        name: Setup QEMU
         uses: docker/setup-qemu-action@v3
       -
-        name: Set up Docker Buildx
+        name: Setup Docker Buildx
         uses: docker/setup-buildx-action@v3
       -
         name: Login to Docker Hub
@@ -36,7 +39,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       -     
-        name: Create the latest tags
+        name: Create the Latest Tags
         run: |
           docker buildx imagetools create -t gplates/gplately:latest gplates/gplately:amd64-${{ env.DOCKER_IMAGE_TAG }} gplates/gplately:arm64-${{ env.DOCKER_IMAGE_TAG }}
           docker buildx imagetools create -t ghcr.io/gplates/gplately:latest ghcr.io/gplates/gplately:amd64-${{ env.DOCKER_IMAGE_TAG }} ghcr.io/gplates/gplately:arm64-${{ env.DOCKER_IMAGE_TAG }} 

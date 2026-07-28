@@ -1,3 +1,5 @@
+# This workflow generates Jupyter notebooks from Python scripts using jupytext.
+
 name: Generate Notebooks
 
 on:
@@ -15,6 +17,7 @@ on:
       - Notebooks/Examples/save_reconstructed_data.py
       - Notebooks/Examples/use_auxiliary_functions.py
       - Notebooks/Examples/use_your_own_plate_model.py
+      - Notebooks/Examples/working_with_plate_model_manager.py
   workflow_dispatch:
 
 permissions:
@@ -50,6 +53,7 @@ jobs:
             Notebooks/Examples/save_reconstructed_data.ipynb
             Notebooks/Examples/use_auxiliary_functions.ipynb
             Notebooks/Examples/use_your_own_plate_model.ipynb
+            Notebooks/Examples/working_with_plate_model_manager.ipynb
           )
 
           for notebook in "${notebooks[@]}"; do

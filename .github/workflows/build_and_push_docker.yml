@@ -1,4 +1,7 @@
-name: build and push docker
+# This workflow builds and pushes Docker images for GPlately on both amd64 and arm64 architectures. 
+# It can be triggered manually or automatically on tag pushes.
+
+name: Build and Push Docker Images
 
 on:
   workflow_dispatch:
@@ -31,7 +34,7 @@ jobs:
         with:
           ref: ${{ github.event_name == 'workflow_dispatch' && inputs.git_ref || github.ref }}
       -
-        name: Decide the docker image version number
+        name: Decide the Docker Image Version Number
         run: |
             if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
               echo "DOCKER_IMAGE_TAG=${{ inputs.docker_image_tag }}" >> $GITHUB_ENV
@@ -40,10 +43,10 @@ jobs:
             fi
             echo ${{ env.DOCKER_IMAGE_TAG }}
       -
-        name: Set up QEMU
+        name: Setup QEMU
         uses: docker/setup-qemu-action@v3
       -
-        name: Set up Docker Buildx
+        name: Setup Docker Buildx
         uses: docker/setup-buildx-action@v3
       -
         name: Login to Docker Hub
@@ -59,7 +62,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       -
-        name: Build and push gplately amd64
+        name: Build and Push GPlately amd64
         uses: docker/build-push-action@v5
         with:
           context: .
@@ -71,7 +74,7 @@ jobs:
             gplates/gplately:amd64-${{ env.DOCKER_IMAGE_TAG }}
             ghcr.io/gplates/gplately:amd64-${{ env.DOCKER_IMAGE_TAG }} 
       -
-        name: Build and push gplately arm64
+        name: Build and Push GPlately arm64
         uses: docker/build-push-action@v5
         with:
           context: .
@@ -83,12 +86,12 @@ jobs:
             gplates/gplately:arm64-${{ env.DOCKER_IMAGE_TAG }}
             ghcr.io/gplates/gplately:arm64-${{ env.DOCKER_IMAGE_TAG }}
       -
-        name: Create cross-platform images
+        name: Create Cross-platform Images
         run: |
             docker buildx imagetools create -t gplates/gplately:${{ env.DOCKER_IMAGE_TAG }} gplates/gplately:amd64-${{ env.DOCKER_IMAGE_TAG }} gplates/gplately:arm64-${{ env.DOCKER_IMAGE_TAG }}
             docker buildx imagetools create -t ghcr.io/gplates/gplately:${{ env.DOCKER_IMAGE_TAG }} ghcr.io/gplates/gplately:amd64-${{ env.DOCKER_IMAGE_TAG }} ghcr.io/gplates/gplately:arm64-${{ env.DOCKER_IMAGE_TAG }}
       -     
-        name: Create the latest tags
+        name: Create the Latest Tags
         if: ${{ inputs.create_latest_tags }}
         run: |
             docker buildx imagetools create -t gplates/gplately:latest gplates/gplately:amd64-${{ env.DOCKER_IMAGE_TAG }} gplates/gplately:arm64-${{ env.DOCKER_IMAGE_TAG }}

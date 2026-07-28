@@ -1,3 +1,5 @@
+# This workflow tests GPlately on various platforms and Python versions.
+
 name: Test GPlately on Various Platforms
 
 on:
