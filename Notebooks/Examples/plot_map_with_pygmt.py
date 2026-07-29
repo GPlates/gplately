@@ -106,7 +106,10 @@ fig.text(
     offset="j0/-0.5c",
 )
 with pygmt.config(FONT_ANNOT_PRIMARY=4):
-    fig.legend(position="jBL+o-1.0/0", box="+gwhite+p0.25p")
+    fig.legend(
+        position="jBL+o-1.0/0",
+        box="+gwhite+p0.25p",  # pyright: ignore[reportArgumentType]
+    )
 
 out_f = f"{data_dir}/test-pygmt-plot.pdf"
 fig.savefig(out_f, crop="+m0.4c")  # pyright: ignore[reportArgumentType]

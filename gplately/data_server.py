@@ -19,7 +19,7 @@
 
 import logging
 from pathlib import Path
-from typing import Union
+from typing import List, Union
 
 from .grids import Raster
 from .gpml import (
@@ -29,25 +29,22 @@ from .gpml import (
 # pyright: reportMissingImports=false
 # pyright: reportMissingModuleSource=false
 import pygplates
+from pygplates import (
+    RotationModel as _RotationModel,  # pyright: ignore[reportAttributeAccessIssue]
+    FiniteRotation as _FiniteRotation,  # pyright: ignore[reportAttributeAccessIssue]
+    Feature as _Feature,  # pyright: ignore[reportAttributeAccessIssue]
+    FeaturesFunctionArgument as _FeaturesFunctionArgument,  # pyright: ignore[reportAttributeAccessIssue]
+    FeatureCollection as _FeatureCollection,  # pyright: ignore[reportAttributeAccessIssue]
+)
 from matplotlib import image
 from plate_model_manager import PlateModelManager, PresentDayRasterManager
 from plate_model_manager.utils.download import FileDownloader
 
-try:
-    from plate_model_manager import ReferenceFrame, GenerationMethod
-except ImportError:
-    # temporarily keep this for backward compatibility with older versions of plate_model_manager
-    # that do not have ReferenceFrame and GenerationMethod enums
-    # the code below should be remove once we update the minimum required version of plate_model_manager
-    from enum import Enum
 
-    class ReferenceFrame(Enum):
-        PmagReferenceFrame = "PMAG"
-        MantleReferenceFrame = "MantleFrame"
-
-    class GenerationMethod(Enum):
-        Isochrons = "UsingIsochrons"
-        Topologies = "UsingTopologies"
+from plate_model_manager import (
+    ReferenceFrame,  # pyright: ignore[reportAttributeAccessIssue]
+    GenerationMethod,  # pyright: ignore[reportAttributeAccessIssue]
+)
 
 
 import pooch
@@ -188,13 +185,11 @@ class DataServer(object):
                     rot_files, anchor_pid = self.pmm.get_rotation_model(
                         reference_frame=reference_frame
                     )
-                    self._rotation_model = pygplates.RotationModel(
+                    self._rotation_model = _RotationModel(
                         rot_files, default_anchor_plate_id=anchor_pid
                     )
                 else:
-                    self._rotation_model = pygplates.RotationModel(
-                        self.pmm.get_rotation_model()
-                    )
+                    self._rotation_model = _RotationModel(self.pmm.get_rotation_model())
                 self._rotation_model.reconstruction_identifier = self._model_name
                 # Setting an attribute on a pyGPlates object produces the following error in version 1.0 of pyGPlates:
                 #   RuntimeError: Incomplete pickle support (__getstate_manages_dict__ not set)
@@ -221,7 +216,7 @@ class DataServer(object):
                     self.pmm.get_topologies()
                 )
             else:
-                self._topology_features = pygplates.FeatureCollection()
+                self._topology_features = _FeatureCollection()
         return self._topology_features
 
     @property
@@ -233,7 +228,7 @@ class DataServer(object):
                     self.pmm.get_static_polygons()
                 )
             else:
-                self._static_polygons = pygplates.FeatureCollection()
+                self._static_polygons = _FeatureCollection()
         return self._static_polygons
 
     @property
@@ -245,7 +240,7 @@ class DataServer(object):
                     self.pmm.get_coastlines()
                 )
             else:
-                self._coastlines = pygplates.FeatureCollection()
+                self._coastlines = _FeatureCollection()
         return self._coastlines
 
     @property
@@ -257,7 +252,7 @@ class DataServer(object):
                     self.pmm.get_continental_polygons()
                 )
             else:
-                self._continents = pygplates.FeatureCollection()
+                self._continents = _FeatureCollection()
         return self._continents
 
     @property
@@ -267,7 +262,7 @@ class DataServer(object):
             if "COBs" in self._available_layers:
                 self._COBs = load_feature_collection_from_files(self.pmm.get_COBs())
             else:
-                self._COBs = pygplates.FeatureCollection()
+                self._COBs = _FeatureCollection()
         return self._COBs
 
     @property
@@ -398,7 +393,7 @@ class DataServer(object):
     def _get_time_dependent_rasters(
         self,
         name: str,
-        times: Union[int, list[int]],
+        times: Union[int, List[int | float]],
         reference_frame: Union[ReferenceFrame, None] = None,
         generated_from: Union[GenerationMethod, None] = None,
     ):
@@ -454,7 +449,7 @@ class DataServer(object):
 
     def get_age_grid(
         self,
-        times: Union[int, list[int]],
+        times: Union[int, List[int | float]],
         reference_frame: Union[ReferenceFrame, None] = None,
         generated_from: Union[GenerationMethod, None] = None,
     ):
@@ -787,9 +782,9 @@ class DataServer(object):
                 f"No files matching the pattern '{file_pattern}' were found in the downloaded data for '{feature_data_id_string}'."
             )
         elif len(feature_files) == 1:
-            return pygplates.FeatureCollection(str(feature_files[0]))
+            return _FeatureCollection(str(feature_files[0]))
         else:
             fcs = []
             for f in feature_files:
-                fcs.append(pygplates.FeatureCollection(str(f)))
+                fcs.append(_FeatureCollection(str(f)))
             return fcs

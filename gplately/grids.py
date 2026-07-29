@@ -31,6 +31,13 @@ import matplotlib.colors
 import netCDF4
 import numpy as np
 import pygplates
+from pygplates import (
+    RotationModel as _RotationModel,  # pyright: ignore[reportAttributeAccessIssue]
+    FiniteRotation as _FiniteRotation,  # pyright: ignore[reportAttributeAccessIssue]
+    Feature as _Feature,  # pyright: ignore[reportAttributeAccessIssue]
+    FeaturesFunctionArgument as _FeaturesFunctionArgument,  # pyright: ignore[reportAttributeAccessIssue]
+    FeatureCollection as _FeatureCollection,  # pyright: ignore[reportAttributeAccessIssue]
+)
 from rasterio.enums import MergeAlg
 from rasterio.features import rasterize as _rasterize
 from rasterio.transform import from_bounds as _from_bounds
@@ -1079,17 +1086,15 @@ def reconstruct_grid(
     xmin, xmax, ymin, ymax = extent
     ny, nx = grid.shape[:2]
 
-    if isinstance(partitioning_features, pygplates.FeaturesFunctionArgument):
-        partitioning_features = pygplates.FeatureCollection(
-            partitioning_features.get_features()
-        )
-    elif not isinstance(partitioning_features, pygplates.FeatureCollection):
-        partitioning_features = pygplates.FeatureCollection(
-            pygplates.FeaturesFunctionArgument(partitioning_features).get_features()
+    if isinstance(partitioning_features, _FeaturesFunctionArgument):
+        partitioning_features = _FeatureCollection(partitioning_features.get_features())
+    elif not isinstance(partitioning_features, _FeatureCollection):
+        partitioning_features = _FeatureCollection(
+            _FeaturesFunctionArgument(partitioning_features).get_features()
         )
 
-    if not isinstance(rotation_model, pygplates.RotationModel):
-        rotation_model = pygplates.RotationModel(rotation_model)
+    if not isinstance(rotation_model, _RotationModel):
+        rotation_model = _RotationModel(rotation_model)
 
     lons = np.linspace(xmin, xmax, nx)
     lats = np.linspace(ymin, ymax, ny)
@@ -1157,7 +1162,7 @@ def reconstruct_grid(
             moving_plate_id=int(plate),
             anchor_plate_id=anchor_plate_id,  # if None then uses default anchor plate of 'rotation_model'
         )
-        if not isinstance(rot, pygplates.FiniteRotation):
+        if not isinstance(rot, _FiniteRotation):
             raise ValueError(f"No rotation found for plate ID: {plate}")
         lat, lon, angle = rot.get_lat_lon_euler_pole_and_angle_degrees()
         angle = np.deg2rad(angle)
@@ -1318,7 +1323,7 @@ def rasterise(
     ny = lats.size
 
     try:
-        features = pygplates.FeaturesFunctionArgument(features).get_features()
+        features = _FeaturesFunctionArgument(features).get_features()
         geometries = None
     except Exception as err:
         if not str(err).startswith("Python argument types in"):
@@ -1336,9 +1341,9 @@ def rasterise(
                 raise TypeError(
                     "Rotation model must be provided if `time` is not `None`"
                 )
-            rotation_model = pygplates.RotationModel(pygplates.Feature())
+            rotation_model = _RotationModel(_Feature())
             time = 0.0
-        features = pygplates.FeaturesFunctionArgument(features).get_features()
+        features = _FeaturesFunctionArgument(features).get_features()
         if time is None:
             time = 0.0
         time = float(time)

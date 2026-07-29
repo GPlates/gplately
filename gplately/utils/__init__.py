@@ -17,7 +17,7 @@
 
 from .feature_utils import shapelify_features
 from .io_utils import get_geometries, get_valid_geometries
-from .plot_utils import plot_subduction_teeth
+from ..plot.utils import plot_subduction_teeth
 from .seafloor_grid_utils import create_icosahedral_mesh
 
 __all__ = [
@@ -28,16 +28,4 @@ __all__ = [
     "create_icosahedral_mesh",
 ]
 
-__pdoc__ = {
-    "check_pmm": False,
-    "dev_warning": False,
-    "feature_utils": False,
-    "io_utils": False,
-    "log_utils": False,
-    "plot_utils": False,
-    "seafloor_grid_utils": False,
-    "version": False,
-    "get_geometries": False,
-    "get_valid_geometries": False,
-    # "crustal_production": False,
-}
+

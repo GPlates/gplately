@@ -902,7 +902,7 @@ class Raster(object):
                 ax_or_fig = ax
             return self.imshow(ax=ax_or_fig, projection=projection, **kwargs)
         else:
-            from .mapping.pygmt_plot import PygmtPlotEngine
+            from .plot.pygmt_plot import PygmtPlotEngine
 
             fig = kwargs.pop("fig", None)
             if ax_or_fig and fig:

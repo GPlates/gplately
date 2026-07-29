@@ -61,7 +61,9 @@ gplot = gplately.PlotTopologies(
 # %%
 points = [
     p.get_geometry().to_lat_lon()
-    for p in pygplates.FeatureCollection(f"{data_dir}/test_model/Australia_Points.shp")
+    for p in pygplates.FeatureCollection(  # pyright: ignore[reportAttributeAccessIssue]
+        f"{data_dir}/test_model/Australia_Points.shp"
+    )
 ]
 
 g_points = gplately.Points(

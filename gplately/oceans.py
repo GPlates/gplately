@@ -358,7 +358,7 @@ class SeafloorGrid(object):
         """Determine which percentage to use to scale the continent mask resolution at max time."""
         maskY, maskX = grids.read_netcdf_grid(
             continent_mask_filename.format(self._max_time)
-        ).shape
+        ).shape  # pyright: ignore[reportAttributeAccessIssue]
 
         mask_deg = (self.extent[1] - self.extent[0]) / (maskX - 1)  # extent / spacing
 
@@ -837,6 +837,7 @@ class SeafloorGrid(object):
             extent=self.extent,
             origin="lower",
         )
+        assert final_grid is not None
         final_grid[np.isnan(final_grid)] = 0.0
 
         grids.write_netcdf_grid(
@@ -1381,7 +1382,7 @@ class SeafloorGrid(object):
         default_collision = _DefaultCollision(
             feature_specific_collision_parameters=[
                 (
-                    pygplates.FeatureType.gpml_subduction_zone,
+                    pygplates.FeatureType.gpml_subduction_zone,  # type: ignore
                     self.subduction_collision_parameters,
                 )
             ]
@@ -1601,7 +1602,10 @@ class SeafloorGrid(object):
                 self.SEAFLOOR_AGE_KEY: all_active_seafloor_ages_at_time,
                 self.SPREADING_RATE_KEY: all_active_spreading_rates_at_time,
             }
-            np.savez_compressed(gridding_input_filename, **gridding_input_dict)
+            np.savez_compressed(
+                gridding_input_filename,
+                **gridding_input_dict,  # pyright: ignore[reportArgumentType]
+            )
 
     def _generate_debug_files_containing_reconstructed_ocean_seed_point_data(
         self,
@@ -1965,7 +1969,7 @@ def _lat_lon_z_to_netCDF_time(
     masked_fill_value = grids.default_netcdf_fill_value(Z, significant_digits)
 
     # Use the continental mask to mask out continents
-    Z[cont_mask.astype(bool)] = masked_fill_value
+    Z[cont_mask.astype(bool)] = masked_fill_value  # type: ignore
 
     grids.write_netcdf_grid(
         grid_output,

@@ -1,5 +1,5 @@
 #
-#    Copyright (C) 2024-2025 The University of Sydney, Australia
+#    Copyright (C) 2024-2026 The University of Sydney, Australia
 #
 #    This program is free software; you can redistribute it and/or modify it under
 #    the terms of the GNU General Public License, version 2, as published by
@@ -40,7 +40,7 @@ from plate_model_manager import PlateModel, PlateModelManager, PresentDayRasterM
 
 from . import auxiliary, ptt
 from .download import DataServer
-from .raster import Raster, GridRegistration
+from .raster import Raster
 from .grids import (
     read_netcdf_grid,
     write_netcdf_grid,
@@ -53,10 +53,10 @@ from .lib.reconstruct import (
     reverse_reconstruct_points,
     reverse_reconstruct_points_impl,
 )
-from .mapping.cartopy_plot import CartopyPlotEngine
-from .mapping.plot_engine import PlotEngine
-from .mapping.pygmt_plot import PygmtPlotEngine
-from .mapping.hillshade import get_topo_cmap
+from .plot.cartopy_plot import CartopyPlotEngine
+from .plot.plot_engine import PlotEngine
+from .plot.pygmt_plot import PygmtPlotEngine
+from .plot.hillshade import get_topo_cmap
 from .oceans import SeafloorGrid
 from .plot import PlotTopologies
 from .points import Points
@@ -70,6 +70,15 @@ from .ptt.ridge_spreading_rate import spreading_rates as ridge_spreading_rate
 from .ptt.subduction_convergence import subduction_convergence
 from .reconstruction import PlateReconstruction
 from .tools import EARTH_RADIUS
+
+# To make the `gplately.mapping` module available for backward compatibility, we import the `plot` module 
+# and assign it to `sys.modules["gplately.mapping"]`. This allows users to access the plotting functionalities through 
+# the `gplately.mapping` namespace, even though the actual implementation resides in the `plot` module.
+import sys
+from . import plot as _plot
+sys.modules["gplately.mapping"] = _plot
+del _plot  # Clean up the namespace by deleting the temporary reference to the plot module
+del sys  # Clean up the namespace by deleting the temporary reference to the sys module
 
 __all__ = [
     # modules
