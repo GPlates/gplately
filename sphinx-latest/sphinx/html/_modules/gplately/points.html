@@ -104,6 +104,17 @@
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pygplates</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pygplates</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">RotationModel</span> <span class="k">as</span> <span class="n">_RotationModel</span><span class="p">,</span>  <span class="c1"># pyright: ignore[reportAttributeAccessIssue]</span>
+    <span class="n">Feature</span> <span class="k">as</span> <span class="n">_Feature</span><span class="p">,</span>  <span class="c1"># pyright: ignore[reportAttributeAccessIssue]</span>
+    <span class="n">FeaturesFunctionArgument</span> <span class="k">as</span> <span class="n">_FeaturesFunctionArgument</span><span class="p">,</span>  <span class="c1"># pyright: ignore[reportAttributeAccessIssue]</span>
+    <span class="n">FeatureCollection</span> <span class="k">as</span> <span class="n">_FeatureCollection</span><span class="p">,</span>  <span class="c1"># pyright: ignore[reportAttributeAccessIssue]</span>
+    <span class="n">PointOnSphere</span> <span class="k">as</span> <span class="n">_PointOnSphere</span><span class="p">,</span>  <span class="c1"># pyright: ignore[reportAttributeAccessIssue]</span>
+    <span class="n">MultiPointOnSphere</span> <span class="k">as</span> <span class="n">_MultiPointOnSphere</span><span class="p">,</span>  <span class="c1"># pyright: ignore[reportAttributeAccessIssue]</span>
+    <span class="n">VelocityDeltaTimeType</span> <span class="k">as</span> <span class="n">_VelocityDeltaTimeType</span><span class="p">,</span>  <span class="c1"># pyright: ignore[reportAttributeAccessIssue]</span>
+    <span class="n">VelocityUnits</span> <span class="k">as</span> <span class="n">_VelocityUnits</span><span class="p">,</span>  <span class="c1"># pyright: ignore[reportAttributeAccessIssue]</span>
+    <span class="n">Earth</span> <span class="k">as</span> <span class="n">_Earth</span><span class="p">,</span>  <span class="c1"># pyright: ignore[reportAttributeAccessIssue]</span>
+<span class="p">)</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">tools</span> <span class="k">as</span> <span class="n">_tools</span>
 
@@ -301,7 +312,7 @@
                     <span class="p">)</span>
 
         <span class="c1"># Create pygplates points.</span>
-        <span class="n">points</span> <span class="o">=</span> <span class="p">[</span><span class="n">pygplates</span><span class="o">.</span><span class="n">PointOnSphere</span><span class="p">(</span><span class="n">lat</span><span class="p">,</span> <span class="n">lon</span><span class="p">)</span> <span class="k">for</span> <span class="n">lon</span><span class="p">,</span> <span class="n">lat</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">lons</span><span class="p">,</span> <span class="n">lats</span><span class="p">)]</span>
+        <span class="n">points</span> <span class="o">=</span> <span class="p">[</span><span class="n">_PointOnSphere</span><span class="p">(</span><span class="n">lat</span><span class="p">,</span> <span class="n">lon</span><span class="p">)</span> <span class="k">for</span> <span class="n">lon</span><span class="p">,</span> <span class="n">lat</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">lons</span><span class="p">,</span> <span class="n">lats</span><span class="p">)]</span>
 
         <span class="c1"># If plate IDs and/or ages are automatically assigned using reconstructed static polygons then</span>
         <span class="c1"># some points might be outside all reconstructed static polygons, and hence not reconstructable.</span>
@@ -333,9 +344,11 @@
                     <span class="n">time_points</span> <span class="o">=</span> <span class="p">[</span><span class="n">points</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">time_point_indices</span><span class="p">]</span>
 
                 <span class="c1"># Assign a plate ID to each point based on which reconstructed static polygon it&#39;s inside.</span>
-                <span class="n">static_polygons_snapshot</span> <span class="o">=</span> <span class="n">plate_reconstruction</span><span class="o">.</span><span class="n">static_polygons_snapshot</span><span class="p">(</span>
-                    <span class="n">lookup_time</span><span class="p">,</span>
-                    <span class="n">anchor_plate_id</span><span class="o">=</span><span class="n">anchor_plate_id</span><span class="p">,</span>
+                <span class="n">static_polygons_snapshot</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="n">plate_reconstruction</span><span class="o">.</span><span class="n">static_polygons_snapshot</span><span class="p">(</span>
+                        <span class="n">lookup_time</span><span class="p">,</span>
+                        <span class="n">anchor_plate_id</span><span class="o">=</span><span class="n">anchor_plate_id</span><span class="p">,</span>
+                    <span class="p">)</span>
                 <span class="p">)</span>
                 <span class="n">reconstructed_static_polygons_containing_points</span> <span class="o">=</span> <span class="p">(</span>
                     <span class="n">static_polygons_snapshot</span><span class="o">.</span><span class="n">get_point_locations</span><span class="p">(</span><span class="n">time_points</span><span class="p">)</span>
@@ -380,7 +393,7 @@
         <span class="c1"># This comparison works element-wise whether &#39;time&#39; is a scalar or a numpy array.</span>
         <span class="k">if</span> <span class="n">age</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="c1"># Any point with an age younger than its own &#39;time&#39; did not exist at &#39;time&#39; and hence is not reconstructable.</span>
-            <span class="n">points_are_reconstructable</span><span class="p">[</span><span class="n">point_ages</span> <span class="o">&lt;</span> <span class="n">time</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="n">points_are_reconstructable</span><span class="p">[</span><span class="n">point_ages</span> <span class="o">&lt;</span> <span class="n">time</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>  <span class="c1"># type: ignore</span>
 
         <span class="c1"># If requested, remove any unreconstructable points.</span>
         <span class="k">if</span> <span class="n">remove_unreconstructable_points</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">points_are_reconstructable</span><span class="o">.</span><span class="n">all</span><span class="p">():</span>
@@ -392,7 +405,7 @@
             <span class="n">lons</span> <span class="o">=</span> <span class="n">lons</span><span class="p">[</span><span class="n">points_are_reconstructable</span><span class="p">]</span>
             <span class="n">lats</span> <span class="o">=</span> <span class="n">lats</span><span class="p">[</span><span class="n">points_are_reconstructable</span><span class="p">]</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isscalar</span><span class="p">(</span><span class="n">time</span><span class="p">):</span>
-                <span class="n">time</span> <span class="o">=</span> <span class="n">time</span><span class="p">[</span><span class="n">points_are_reconstructable</span><span class="p">]</span>
+                <span class="n">time</span> <span class="o">=</span> <span class="n">time</span><span class="p">[</span><span class="n">points_are_reconstructable</span><span class="p">]</span>  <span class="c1"># type: ignore</span>
             <span class="n">point_plate_ids</span> <span class="o">=</span> <span class="n">point_plate_ids</span><span class="p">[</span><span class="n">points_are_reconstructable</span><span class="p">]</span>
             <span class="n">point_ages</span> <span class="o">=</span> <span class="n">point_ages</span><span class="p">[</span><span class="n">points_are_reconstructable</span><span class="p">]</span>
             <span class="n">points</span> <span class="o">=</span> <span class="p">[</span>
@@ -461,7 +474,7 @@
             <span class="n">time</span><span class="p">,</span>
             <span class="n">anchor_plate_id</span><span class="p">,</span>
         <span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">feature_collection</span> <span class="o">=</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">FeatureCollection</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">features</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">feature_collection</span> <span class="o">=</span> <span class="n">_FeatureCollection</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">features</span><span class="p">)</span></div>
 
 
     <span class="nd">@staticmethod</span>
@@ -475,7 +488,7 @@
         <span class="c1"># Note: The valid time range always includes present day.</span>
         <span class="n">point_features</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">point_index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">points</span><span class="p">)):</span>
-            <span class="n">point_feature</span> <span class="o">=</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">Feature</span><span class="p">()</span>
+            <span class="n">point_feature</span> <span class="o">=</span> <span class="n">_Feature</span><span class="p">()</span>
             <span class="c1"># Set the geometry.</span>
             <span class="n">point_feature</span><span class="o">.</span><span class="n">set_geometry</span><span class="p">(</span><span class="n">points</span><span class="p">[</span><span class="n">point_index</span><span class="p">])</span>
             <span class="c1"># Set the plate ID.</span>
@@ -541,7 +554,7 @@
         <span class="c1">#</span>
         <span class="c1"># Create pygplates points.</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">points</span> <span class="o">=</span> <span class="p">[</span>
-            <span class="n">pygplates</span><span class="o">.</span><span class="n">PointOnSphere</span><span class="p">(</span><span class="n">lat</span><span class="p">,</span> <span class="n">lon</span><span class="p">)</span> <span class="k">for</span> <span class="n">lon</span><span class="p">,</span> <span class="n">lat</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lons</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lats</span><span class="p">)</span>
+            <span class="n">_PointOnSphere</span><span class="p">(</span><span class="n">lat</span><span class="p">,</span> <span class="n">lon</span><span class="p">)</span> <span class="k">for</span> <span class="n">lon</span><span class="p">,</span> <span class="n">lat</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lons</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lats</span><span class="p">)</span>
         <span class="p">]</span>
         <span class="c1"># Create a feature for each point.</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">features</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_point_features</span><span class="p">(</span>
@@ -553,7 +566,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">anchor_plate_id</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="c1"># Create a collection of the point features.</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">feature_collection</span> <span class="o">=</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">FeatureCollection</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">features</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">feature_collection</span> <span class="o">=</span> <span class="n">_FeatureCollection</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">features</span><span class="p">)</span>
 
         <span class="c1"># Restore the unpicklable entries.</span>
         <span class="c1">#</span>
@@ -666,12 +679,12 @@
 <span class="sd">        Points</span>
 <span class="sd">            A copy of the current :py:class:`Points` object</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">time_copy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">time</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isscalar</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">time</span><span class="p">)</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">time</span>
+        <span class="n">time_copy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">time</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isscalar</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">time</span><span class="p">)</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">time</span>  <span class="c1"># type: ignore</span>
         <span class="n">gpts</span> <span class="o">=</span> <span class="n">Points</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">plate_reconstruction</span><span class="p">,</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">lons</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">lats</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span>
-            <span class="n">time_copy</span><span class="p">,</span>
+            <span class="n">time_copy</span><span class="p">,</span>  <span class="c1"># type: ignore</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">plate_id</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">age</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span>
             <span class="n">anchor_plate_id</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">anchor_plate_id</span><span class="p">,</span>
@@ -828,7 +841,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isscalar</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_time</span><span class="p">):</span>
             <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">point_indices</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">_time</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_time</span><span class="p">[</span><span class="n">point_indices</span><span class="p">]</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_time</span><span class="p">[</span><span class="n">point_indices</span><span class="p">]</span>  <span class="c1"># type: ignore</span>
 
 <div class="viewcode-block" id="Points.reconstruct">
 <a class="viewcode-back" href="../../generated/gplately.Points.html#gplately.Points.reconstruct">[docs]</a>
@@ -918,7 +931,7 @@
                 <span class="n">sub_indices</span> <span class="o">=</span> <span class="n">point_indices_with_plate_id</span><span class="p">[</span><span class="n">sub_mask</span><span class="p">]</span>
 
                 <span class="c1"># Get the points at &#39;init_t&#39; for the current plate ID and initial time.</span>
-                <span class="n">reconstructed_points_sub</span> <span class="o">=</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">MultiPointOnSphere</span><span class="p">(</span>
+                <span class="n">reconstructed_points_sub</span> <span class="o">=</span> <span class="n">_MultiPointOnSphere</span><span class="p">(</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">points</span><span class="p">[</span><span class="n">point_index</span><span class="p">]</span> <span class="k">for</span> <span class="n">point_index</span> <span class="ow">in</span> <span class="n">sub_indices</span>
                 <span class="p">)</span>
 
@@ -1108,9 +1121,8 @@
                     <span class="p">]</span>
 
                     <span class="c1"># Get the points at &#39;init_t&#39; for the current plate ID and reconstruct age.</span>
-                    <span class="n">reconstructed_points_sub</span> <span class="o">=</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">MultiPointOnSphere</span><span class="p">(</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">points</span><span class="p">[</span><span class="n">point_index</span><span class="p">]</span>
-                        <span class="k">for</span> <span class="n">point_index</span> <span class="ow">in</span> <span class="n">point_indices_sub</span>
+                    <span class="n">reconstructed_points_sub</span> <span class="o">=</span> <span class="n">_MultiPointOnSphere</span><span class="p">(</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">points</span><span class="p">[</span><span class="n">point_index</span><span class="p">]</span> <span class="k">for</span> <span class="n">point_index</span> <span class="ow">in</span> <span class="n">point_indices_sub</span>
                     <span class="p">)</span>
 
                     <span class="c1"># First reconstruct the internal points from the initial time (&#39;init_t&#39;) to present day using</span>
@@ -1134,8 +1146,7 @@
 
                     <span class="c1"># Write the reconstructed points.</span>
                     <span class="n">lat_lon_points</span><span class="p">[</span><span class="n">point_indices_sub</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span>
-                        <span class="n">rpoint</span><span class="o">.</span><span class="n">to_lat_lon</span><span class="p">()</span>
-                        <span class="k">for</span> <span class="n">rpoint</span> <span class="ow">in</span> <span class="n">reconstructed_points_sub</span>
+                        <span class="n">rpoint</span><span class="o">.</span><span class="n">to_lat_lon</span><span class="p">()</span> <span class="k">for</span> <span class="n">rpoint</span> <span class="ow">in</span> <span class="n">reconstructed_points_sub</span>
                     <span class="p">]</span>
 
         <span class="n">rlonslats</span> <span class="o">=</span> <span class="n">lat_lon_points</span><span class="p">[</span><span class="n">valid_mask</span><span class="p">]</span>  <span class="c1"># remove invalid points</span>
@@ -1159,9 +1170,9 @@
         <span class="n">time</span><span class="p">,</span>
         <span class="n">delta_time</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
         <span class="o">*</span><span class="p">,</span>
-        <span class="n">velocity_delta_time_type</span><span class="o">=</span><span class="n">pygplates</span><span class="o">.</span><span class="n">VelocityDeltaTimeType</span><span class="o">.</span><span class="n">t_plus_delta_t_to_t</span><span class="p">,</span>
-        <span class="n">velocity_units</span><span class="o">=</span><span class="n">pygplates</span><span class="o">.</span><span class="n">VelocityUnits</span><span class="o">.</span><span class="n">cms_per_yr</span><span class="p">,</span>
-        <span class="n">earth_radius_in_kms</span><span class="o">=</span><span class="n">pygplates</span><span class="o">.</span><span class="n">Earth</span><span class="o">.</span><span class="n">mean_radius_in_kms</span><span class="p">,</span>
+        <span class="n">velocity_delta_time_type</span><span class="o">=</span><span class="n">_VelocityDeltaTimeType</span><span class="o">.</span><span class="n">t_plus_delta_t_to_t</span><span class="p">,</span>
+        <span class="n">velocity_units</span><span class="o">=</span><span class="n">_VelocityUnits</span><span class="o">.</span><span class="n">cms_per_yr</span><span class="p">,</span>
+        <span class="n">earth_radius_in_kms</span><span class="o">=</span><span class="n">_Earth</span><span class="o">.</span><span class="n">mean_radius_in_kms</span><span class="p">,</span>
         <span class="n">anchor_plate_id</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">return_reconstructed_points</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
         <span class="n">return_point_indices</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
@@ -1247,21 +1258,14 @@
             <span class="n">lat_lon_points</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([])</span>
 
         <span class="c1"># Determine time interval for velocity calculation.</span>
-        <span class="k">if</span> <span class="p">(</span>
-            <span class="n">velocity_delta_time_type</span>
-            <span class="o">==</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">VelocityDeltaTimeType</span><span class="o">.</span><span class="n">t_plus_delta_t_to_t</span>
-        <span class="p">):</span>
+        <span class="k">if</span> <span class="n">velocity_delta_time_type</span> <span class="o">==</span> <span class="n">_VelocityDeltaTimeType</span><span class="o">.</span><span class="n">t_plus_delta_t_to_t</span><span class="p">:</span>
             <span class="n">from_time</span> <span class="o">=</span> <span class="n">time</span> <span class="o">+</span> <span class="n">delta_time</span>
             <span class="n">to_time</span> <span class="o">=</span> <span class="n">time</span>
-        <span class="k">elif</span> <span class="p">(</span>
-            <span class="n">velocity_delta_time_type</span>
-            <span class="o">==</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">VelocityDeltaTimeType</span><span class="o">.</span><span class="n">t_to_t_minus_delta_t</span>
-        <span class="p">):</span>
+        <span class="k">elif</span> <span class="n">velocity_delta_time_type</span> <span class="o">==</span> <span class="n">_VelocityDeltaTimeType</span><span class="o">.</span><span class="n">t_to_t_minus_delta_t</span><span class="p">:</span>
             <span class="n">from_time</span> <span class="o">=</span> <span class="n">time</span>
             <span class="n">to_time</span> <span class="o">=</span> <span class="n">time</span> <span class="o">-</span> <span class="n">delta_time</span>
         <span class="k">elif</span> <span class="p">(</span>
-            <span class="n">velocity_delta_time_type</span>
-            <span class="o">==</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">VelocityDeltaTimeType</span><span class="o">.</span><span class="n">t_plus_minus_half_delta_t</span>
+            <span class="n">velocity_delta_time_type</span> <span class="o">==</span> <span class="n">_VelocityDeltaTimeType</span><span class="o">.</span><span class="n">t_plus_minus_half_delta_t</span>
         <span class="p">):</span>
             <span class="n">from_time</span> <span class="o">=</span> <span class="n">time</span> <span class="o">+</span> <span class="n">delta_time</span> <span class="o">/</span> <span class="mi">2</span>
             <span class="n">to_time</span> <span class="o">=</span> <span class="n">time</span> <span class="o">-</span> <span class="n">delta_time</span> <span class="o">/</span> <span class="mi">2</span>
@@ -1323,7 +1327,7 @@
                 <span class="n">sub_indices</span> <span class="o">=</span> <span class="n">point_indices_with_plate_id</span><span class="p">[</span><span class="n">sub_mask</span><span class="p">]</span>
 
                 <span class="c1"># Get the points at &#39;init_t&#39; for the current plate ID.</span>
-                <span class="n">reconstructed_points_sub</span> <span class="o">=</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">MultiPointOnSphere</span><span class="p">(</span>
+                <span class="n">reconstructed_points_sub</span> <span class="o">=</span> <span class="n">_MultiPointOnSphere</span><span class="p">(</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">points</span><span class="p">[</span><span class="n">point_index</span><span class="p">]</span> <span class="k">for</span> <span class="n">point_index</span> <span class="ow">in</span> <span class="n">sub_indices</span>
                 <span class="p">)</span>
 
@@ -1354,10 +1358,8 @@
                     <span class="n">earth_radius_in_kms</span><span class="o">=</span><span class="n">earth_radius_in_kms</span><span class="p">,</span>
                 <span class="p">)</span>
 
-                <span class="n">north_east_down_velocities_sub</span> <span class="o">=</span> <span class="p">(</span>
-                    <span class="n">pygplates</span><span class="o">.</span><span class="n">LocalCartesian</span><span class="o">.</span><span class="n">convert_from_geocentric_to_north_east_down</span><span class="p">(</span>
-                        <span class="n">reconstructed_points_sub</span><span class="p">,</span> <span class="n">velocity_vectors_sub</span>
-                    <span class="p">)</span>
+                <span class="n">north_east_down_velocities_sub</span> <span class="o">=</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">LocalCartesian</span><span class="o">.</span><span class="n">convert_from_geocentric_to_north_east_down</span><span class="p">(</span>  <span class="c1"># type: ignore</span>
+                    <span class="n">reconstructed_points_sub</span><span class="p">,</span> <span class="n">velocity_vectors_sub</span>
                 <span class="p">)</span>
 
                 <span class="c1"># Write velocities of points as (north, east) components.</span>
@@ -1438,16 +1440,16 @@
                 <span class="n">rtimes</span> <span class="o">=</span> <span class="n">rtimes_group</span>
                 <span class="k">if</span> <span class="n">return_rate_of_motion</span><span class="p">:</span>
                     <span class="n">out_rate</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span>
-                        <span class="p">(</span><span class="n">num_reconstructable_points</span><span class="p">,</span> <span class="n">rate_group</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+                        <span class="p">(</span><span class="n">num_reconstructable_points</span><span class="p">,</span> <span class="n">rate_group</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>  <span class="c1"># type: ignore</span>
                     <span class="p">)</span>
 
             <span class="c1"># Scatter this group&#39;s rows back into the original point order.</span>
             <span class="k">for</span> <span class="n">out_array</span><span class="p">,</span> <span class="n">position_array</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">out_positions</span><span class="p">,</span> <span class="n">position_arrays</span><span class="p">):</span>
                 <span class="n">out_array</span><span class="p">[</span><span class="n">group_indices</span><span class="p">]</span> <span class="o">=</span> <span class="n">position_array</span>
             <span class="k">if</span> <span class="n">return_rate_of_motion</span><span class="p">:</span>
-                <span class="n">out_rate</span><span class="p">[</span><span class="n">group_indices</span><span class="p">]</span> <span class="o">=</span> <span class="n">rate_group</span>
+                <span class="n">out_rate</span><span class="p">[</span><span class="n">group_indices</span><span class="p">]</span> <span class="o">=</span> <span class="n">rate_group</span>  <span class="c1"># type: ignore</span>
 
-        <span class="n">return_tuple</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">out_positions</span><span class="p">)</span>
+        <span class="n">return_tuple</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">out_positions</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
         <span class="k">if</span> <span class="n">return_times</span><span class="p">:</span>
             <span class="n">return_tuple</span> <span class="o">+=</span> <span class="p">(</span><span class="n">rtimes</span><span class="p">,)</span>
         <span class="k">if</span> <span class="n">return_rate_of_motion</span><span class="p">:</span>
@@ -1590,7 +1592,7 @@
         <span class="n">rec_lons</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lons</span><span class="p">[</span><span class="n">reconstructable</span><span class="p">]</span>
         <span class="n">rec_lats</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lats</span><span class="p">[</span><span class="n">reconstructable</span><span class="p">]</span>
         <span class="n">rec_plate_ids</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">plate_id</span><span class="p">[</span><span class="n">reconstructable</span><span class="p">]</span>
-        <span class="n">rec_times</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_time</span><span class="p">[</span><span class="n">reconstructable</span><span class="p">]</span>
+        <span class="n">rec_times</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_time</span><span class="p">[</span><span class="n">reconstructable</span><span class="p">]</span>  <span class="c1"># type: ignore</span>
 
         <span class="c1"># No reconstructable points: delegate a single call (with a scalar &#39;from_time&#39;) so the</span>
         <span class="c1"># empty-output shape matches the scalar code path.</span>
@@ -1784,7 +1786,7 @@
         <span class="c1"># Note: &#39;self._time&#39; is masked (alongside lons/lats) so it stays aligned.</span>
         <span class="n">rec_lons</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lons</span><span class="p">[</span><span class="n">reconstructable</span><span class="p">]</span>
         <span class="n">rec_lats</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lats</span><span class="p">[</span><span class="n">reconstructable</span><span class="p">]</span>
-        <span class="n">rec_times</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_time</span><span class="p">[</span><span class="n">reconstructable</span><span class="p">]</span>
+        <span class="n">rec_times</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_time</span><span class="p">[</span><span class="n">reconstructable</span><span class="p">]</span>  <span class="c1"># type: ignore</span>
 
         <span class="c1"># No reconstructable points: delegate a single call (with a scalar &#39;from_time&#39;) so the</span>
         <span class="c1"># empty-output shape matches the scalar code path.</span>
@@ -1938,8 +1940,8 @@
 
         <span class="c1"># Create the pygplates.FiniteRotation that rotates</span>
         <span class="c1"># between the two reference frames.</span>
-        <span class="n">from_rotation_model</span> <span class="o">=</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">RotationModel</span><span class="p">(</span><span class="n">from_rotation_features_or_model</span><span class="p">)</span>
-        <span class="n">to_rotation_model</span> <span class="o">=</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">RotationModel</span><span class="p">(</span><span class="n">to_rotation_features_or_model</span><span class="p">)</span>
+        <span class="n">from_rotation_model</span> <span class="o">=</span> <span class="n">_RotationModel</span><span class="p">(</span><span class="n">from_rotation_features_or_model</span><span class="p">)</span>
+        <span class="n">to_rotation_model</span> <span class="o">=</span> <span class="n">_RotationModel</span><span class="p">(</span><span class="n">to_rotation_features_or_model</span><span class="p">)</span>
         <span class="n">from_rotation</span> <span class="o">=</span> <span class="n">from_rotation_model</span><span class="o">.</span><span class="n">get_rotation</span><span class="p">(</span>
             <span class="n">reconstruction_time</span><span class="p">,</span>
             <span class="n">non_reference_plate</span><span class="p">,</span>
@@ -1960,7 +1962,7 @@
         <span class="p">)</span>  <span class="c1"># type: ignore</span>
 
         <span class="c1"># convert FeatureCollection to MultiPointOnSphere</span>
-        <span class="n">input_points</span> <span class="o">=</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">MultiPointOnSphere</span><span class="p">(</span>
+        <span class="n">input_points</span> <span class="o">=</span> <span class="n">_MultiPointOnSphere</span><span class="p">(</span>
             <span class="p">(</span><span class="n">lat</span><span class="p">,</span> <span class="n">lon</span><span class="p">)</span> <span class="k">for</span> <span class="n">lon</span><span class="p">,</span> <span class="n">lat</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">lons</span><span class="p">,</span> <span class="n">lats</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
         <span class="p">)</span>
 

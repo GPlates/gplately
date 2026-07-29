@@ -1003,7 +1003,7 @@
                 <span class="n">ax_or_fig</span> <span class="o">=</span> <span class="n">ax</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">ax_or_fig</span><span class="p">,</span> <span class="n">projection</span><span class="o">=</span><span class="n">projection</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="kn">from</span><span class="w"> </span><span class="nn">.mapping.pygmt_plot</span><span class="w"> </span><span class="kn">import</span> <span class="n">PygmtPlotEngine</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">.plot.pygmt_plot</span><span class="w"> </span><span class="kn">import</span> <span class="n">PygmtPlotEngine</span>
 
             <span class="n">fig</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;fig&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">ax_or_fig</span> <span class="ow">and</span> <span class="n">fig</span><span class="p">:</span>
