@@ -5,6 +5,12 @@ name: Upload GPlately Python Package to PyPI
 on:
   release:
     types: [published]
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: Git tag to build and upload, usually matching the published release
+        required: true
+        type: string
 
 permissions:
   contents: read
@@ -13,10 +19,43 @@ jobs:
   upload-to-pypi:
     name: Upload GPlately Python Package to PyPI
     runs-on: ubuntu-latest
+    env:
+      RELEASE_TAG: ${{ github.event_name == 'release' && github.event.release.tag_name || inputs.release_tag }}
 
     steps:
+      - name: Validate release tag
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const releaseTag = process.env.RELEASE_TAG?.trim();
+
+            if (!releaseTag) {
+              core.setFailed('A release tag is required to publish to PyPI.');
+              return;
+            }
+
+            if (!/^[A-Za-z0-9._/-]+$/.test(releaseTag)) {
+              core.setFailed(`Invalid release tag "${releaseTag}". Use only letters, numbers, dot, underscore, slash, and hyphen.`);
+              return;
+            }
+
+            try {
+              await github.rest.git.getRef({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                ref: `tags/${releaseTag}`,
+              });
+            } catch (error) {
+              core.setFailed(`Release tag "${releaseTag}" does not exist in this repository.`);
+              return;
+            }
+
+            core.info(`Validated release tag ${releaseTag}.`);
+
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          ref: ${{ env.RELEASE_TAG }}
       - name: Publish package
         run: |
           chmod +x ./scripts/pypi-publish.sh

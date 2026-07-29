@@ -2,6 +2,56 @@
 
 name: Test GPlately on Various Platforms
 
+x-supported-os-list: &supported_os_list
+  - ubuntu-latest
+  - macos-latest
+  - windows-latest
+
+x-supported-python-versions: &supported_python_versions
+  # Conda-forge currently supports Python >=3.10 ...
+  - "3.10"
+  - "3.11"
+  - "3.12"
+  - "3.13"
+  - "3.14"
+
+x-test-steps: &test_steps
+  - name: Get current date
+    id: date
+    run: echo "date=$(date +%Y-%m-%d)" >> "${GITHUB_OUTPUT}"
+
+  - uses: actions/checkout@v4
+  - uses: mamba-org/setup-micromamba@v1
+    with:
+      micromamba-version: "1.5.8-0"
+      environment-file: tests-dir/test-env.yml
+      create-args: >-
+        python=${{ env.TEST_PYTHON_VERSION }}
+      init-shell: >-
+        bash
+        powershell
+      cache-environment: true
+      # Cache only on the same day.
+      # See https://github.com/mamba-org/setup-micromamba?tab=readme-ov-file#caching
+      cache-environment-key: environment-${{ steps.date.outputs.date }}
+      post-cleanup: "all"
+
+  - name: Install current gplately
+    run: |
+      pip install . --no-binary :all: --no-cache-dir --no-dependencies
+
+  - name: Set SSL cert path (Windows workaround)
+    # This is a workaround for SSL certificate issues on Windows runners.
+    if: runner.os == 'Windows'
+    shell: pwsh
+    run: |
+      $certPath = python -c "import certifi; print(certifi.where())"
+      echo "SSL_CERT_FILE=$certPath" >> $env:GITHUB_ENV
+
+  - name: Test with pytest
+    run: |
+      python -m pytest -vv tests-dir/pytestcases
+
 on:
   push:
     branches:
@@ -13,58 +63,49 @@ on:
       - master
     paths:
       - gplately/**
+  workflow_dispatch:
+    inputs:
+      runner_os:
+        description: Operating system to run the tests on
+        required: true
+        type: choice
+        options: *supported_os_list
+        default: ubuntu-latest
+      python_version:
+        description: Python version to test with
+        required: true
+        type: choice
+        options: *supported_python_versions
+        default: "3.11"
 
 jobs:
-  test-gplately-on-various-platforms:
+  test-gplately-automatic:
     name: Test Python ${{ matrix.python-version }} on ${{ matrix.os }}
+    if: github.event_name != 'workflow_dispatch' && (github.event_name != 'pull_request' || github.event.pull_request.draft == false)
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
-        # Conda-forge currently supports Python >=3.10 ...
-        python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
+        os: *supported_os_list
+        python-version: *supported_python_versions
 
     defaults:
       run:
         shell: bash -el {0}
-        
-    if: github.event.pull_request.draft == false
-    steps:
-      # Used with 'cache-environment-key'.
-      # See https://github.com/mamba-org/setup-micromamba?tab=readme-ov-file#caching
-      - name: Get current date
-        id: date
-        run: echo "date=$(date +%Y-%m-%d)" >> "${GITHUB_OUTPUT}"
-      
-      - uses: actions/checkout@v4
-      - uses: mamba-org/setup-micromamba@v1
-        with:
-          micromamba-version: "1.5.8-0"
-          environment-file: tests-dir/test-env.yml
-          create-args: >-
-            python=${{ matrix.python-version }}
-          init-shell: >-
-            bash
-            powershell
-          cache-environment: true
-          # Cache only on the same day.
-          # See https://github.com/mamba-org/setup-micromamba?tab=readme-ov-file#caching
-          cache-environment-key: environment-${{ steps.date.outputs.date }}
-          post-cleanup: "all"
+    env:
+      TEST_PYTHON_VERSION: ${{ matrix.python-version }}
+    steps: *test_steps
 
-      - name: Install current gplately
-        run: |
-          pip install . --no-binary :all: --no-cache-dir --no-dependencies
+  test-gplately-manual:
+    name: Test Python ${{ inputs.python_version }} on ${{ inputs.runner_os }}
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ${{ inputs.runner_os }}
 
-      - name: Set SSL cert path (Windows workaround)
-        # This is a workaround for SSL certificate issues on Windows runners.
-        if: runner.os == 'Windows'
-        shell: pwsh
-        run: |
-          $certPath = python -c "import certifi; print(certifi.where())"
-          echo "SSL_CERT_FILE=$certPath" >> $env:GITHUB_ENV
+    defaults:
+      run:
+        shell: bash -el {0}
 
-      - name: Test with pytest
-        run: |
-          python -m pytest -vv tests-dir/pytestcases
+    env:
+      TEST_PYTHON_VERSION: ${{ inputs.python_version }}
+
+    steps: *test_steps
