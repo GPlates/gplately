@@ -25,7 +25,8 @@ on:
     tags:
       - 'v*.*.*'
 jobs:
-  docker:
+  build-and-push-docker-images:
+    name: Build and Push Docker Images
     runs-on: ubuntu-latest
     steps:
       -

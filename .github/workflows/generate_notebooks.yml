@@ -24,7 +24,8 @@ permissions:
   contents: write
 
 jobs:
-  generate-notebook:
+  generate-notebooks:
+    name: Generate Notebooks from Python Scripts
     if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
 

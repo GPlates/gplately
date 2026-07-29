@@ -1,6 +1,6 @@
-# This workflow will upload a Python Package using Twine when a release is published.
+# This workflow will upload GPlately Python Package using Twine when a release is published.
 
-name: Upload Python Package to PyPI
+name: Upload GPlately Python Package to PyPI
 
 on:
   release:
@@ -10,7 +10,8 @@ permissions:
   contents: read
 
 jobs:
-  deploy:
+  upload-to-pypi:
+    name: Upload GPlately Python Package to PyPI
     runs-on: ubuntu-latest
 
     steps:

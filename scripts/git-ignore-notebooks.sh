@@ -10,3 +10,6 @@ git update-index --skip-worktree Notebooks/Examples/save_reconstructed_data.ipyn
 git update-index --skip-worktree Notebooks/Examples/use_auxiliary_functions.ipynb
 git update-index --skip-worktree Notebooks/Examples/use_your_own_plate_model.ipynb
 git update-index --skip-worktree Notebooks/Examples/working_with_plate_model_manager.ipynb
+
+# If you need to unskip a file, you can run the following command:
+# git update-index --no-skip-worktree Notebooks/14-RuleBasedGPMLProcessingPipeline.ipynb
