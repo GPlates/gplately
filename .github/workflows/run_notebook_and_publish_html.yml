@@ -112,7 +112,7 @@ permissions:
 
 jobs:
   execute-and-publish:
-  name: Execute Notebooks and Publish HTML
+    name: Execute Notebooks and Publish HTML
     runs-on: ubuntu-latest
     defaults:
       run:
