@@ -19,6 +19,7 @@
 #
 
 import math
+from typing import Tuple
 
 import numpy as np
 
@@ -210,7 +211,7 @@ def bisect(vertices, faces, level=3):
     return bisect(new_vertices, new_faces, level - 1)
 
 
-def get_mesh(level=5, use_stripy_icosahedron=False):
+def get_mesh(level=5, use_stripy_icosahedron=False) -> Tuple[np.ndarray, np.ndarray]:
     """Return the Icospheres mesh."""
     if use_stripy_icosahedron:
         vertices, faces = _get_vertices_and_faces_stripy()

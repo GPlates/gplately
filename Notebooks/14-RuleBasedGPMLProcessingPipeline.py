@@ -15,7 +15,7 @@
 
 # **⚠️🚫 Don't commit changes to this notebook directly into GitHub repository. 🚫⚠️**
 
-# This notebook is generated from 14-RuleBasedGPMLProcessingPipeline.py using the command 
+# This notebook is generated from 14-RuleBasedGPMLProcessingPipeline.py using the command
 # `jupytext --to notebook Notebooks/14-RuleBasedGPMLProcessingPipeline.py -o Notebooks/14-RuleBasedGPMLProcessingPipeline.ipynb`.
 # If you need to commit changes to this notebook to the GPlately repository, make your edits in 14-RuleBasedGPMLProcessingPipeline.py and a GitHub workflow will regenerate this Jupyter Notebook file automatically.
 # The reason that a .py file is used is to allow for easier version control and collaboration. And it is also more Copilot and code auto-formatting friendly.
@@ -47,7 +47,7 @@ from gplately.utils.feature_filter import (
     TopologicalReferenceFilter,
     filter_feature_collection,
 )
-from gplately.mapping import cartopy_plot
+from gplately.plot import cartopy_plot
 
 from gplately.gpml import (
     FeatureCollectionProcessor,
@@ -392,7 +392,7 @@ updated_feature_collection = FeatureCollectionProcessor(
     filters=[ZeroEndTimeFilter()],
     transformers=[
         SetValidTimeTransformer(
-            end_time=pygplates.GeoTimeInstant.create_distant_future()
+            end_time=pygplates.GeoTimeInstant.create_distant_future()  # pyright: ignore[reportAttributeAccessIssue]
         )
     ],
 ).process(topology_feature_collection)

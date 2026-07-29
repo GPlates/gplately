@@ -34,8 +34,8 @@ except:
 from plate_model_manager import PlateModel, PlateModelManager
 
 from .data_server import DataServer
-from .mapping.cartopy_plot import CartopyPlotEngine
-from .mapping.plot_engine import PlotEngine
+from .plot.cartopy_plot import CartopyPlotEngine
+from .plot.plot_engine import PlotEngine
 from .plot import PlotTopologies
 from .reconstruction import PlateReconstruction
 

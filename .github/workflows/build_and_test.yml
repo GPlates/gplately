@@ -1,6 +1,6 @@
 # This workflow tests GPlately on various platforms and Python versions.
 
-name: Test GPlately on Various Platforms
+name: GPlately Tests 
 
 on:
   push:
@@ -39,7 +39,7 @@ on:
 
 jobs:
   test-gplately-automatic:
-    name: Test Python ${{ matrix.python-version }} on ${{ matrix.os }}
+    name: Test with Python ${{ matrix.python-version }} on ${{ matrix.os }}
     if: github.event_name != 'workflow_dispatch' && (github.event_name != 'pull_request' || github.event.pull_request.draft == false)
     runs-on: ${{ matrix.os }}
     strategy:
@@ -91,7 +91,7 @@ jobs:
           python -m pytest -vv tests-dir/pytestcases
 
   test-gplately-manual:
-    name: Test Python ${{ inputs.python_version }} on ${{ inputs.runner_os }}
+    name: Test with Python ${{ inputs.python_version }} on ${{ inputs.runner_os }}
     if: github.event_name == 'workflow_dispatch'
     runs-on: ${{ inputs.runner_os }}
 

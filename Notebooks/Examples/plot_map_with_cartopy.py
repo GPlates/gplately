@@ -15,9 +15,11 @@ import cartopy.crs as ccrs
 import matplotlib.pyplot as plt
 
 from gplately import PlateModelManager, Raster, auxiliary
-from gplately.mapping.gmt_cpt import get_cmap_from_gmt_cpt
+from gplately.plot.gmt_cpt import get_cmap_from_gmt_cpt 
 
 data_dir = "./gplately-example-data"
+if not os.path.exists(data_dir):
+    os.makedirs(data_dir)
 # download age grid CPT file from https://raw.githubusercontent.com/GPlates/gplately/refs/heads/master/tests-dir/unittest/create-age-grids-video/agegrid.cpt
 cpt_file = f"{data_dir}/agegrid.cpt"
 if not os.path.isfile(cpt_file):
@@ -81,7 +83,7 @@ plt.title(f"{int(gplot.time)} Ma")
 # save the map as a .png file
 output_file = f"{data_dir}/plot_map_with_cartopy.png"
 fig.savefig(output_file, dpi=120, bbox_inches="tight")  # transparent=True)
-print(f"Done! The {output_file} has been saved.")
+print(f"Done! The {output_file} has been saved successfully.")
 
 plt.show()
 plt.close(fig)

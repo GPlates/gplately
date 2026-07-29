@@ -28,7 +28,7 @@ from shapely.geometry import Point, Polygon
 from shapely.geometry.base import BaseGeometry, BaseMultipartGeometry
 from shapely.ops import linemerge
 
-from .io_utils import get_geometries as _get_geometries
+from ..utils.io_utils import get_geometries as _get_geometries
 
 logger = logging.getLogger("gplately")
 
@@ -455,7 +455,7 @@ def plot_subduction_teeth(
 
     if projection == "auto":
         try:
-            projection = ax.projection
+            projection = ax.projection  # type: ignore
         except AttributeError:
             projection = None
     elif isinstance(projection, str):
@@ -500,7 +500,7 @@ def plot_subduction_teeth(
         triangles = [domain.intersection(i) for i in triangles]
 
     if hasattr(ax, "add_geometries") and projection is not None:
-        ax.add_geometries(triangles, crs=projection, **kwargs)
+        ax.add_geometries(triangles, crs=projection, **kwargs)  # type: ignore
     else:
         for triangle in triangles:
             ax.fill(*triangle.exterior.xy, **kwargs)

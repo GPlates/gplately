@@ -13,6 +13,7 @@ if ! git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
 fi
 
 files=(
+	Notebooks/14-RuleBasedGPMLProcessingPipeline
 	Notebooks/Examples/hello_world
 	Notebooks/Examples/icosahedron_mesh
 	Notebooks/Examples/reconstruct_files

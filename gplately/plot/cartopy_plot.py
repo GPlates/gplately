@@ -21,7 +21,7 @@ import warnings
 # pyright: reportMissingImports=false
 # pyright: reportMissingModuleSource=false
 import pygplates
-
+from pygplates import Feature as _Feature  # pyright: ignore[reportAttributeAccessIssue]
 import cartopy.crs as ccrs
 from geopandas.geodataframe import GeoDataFrame
 import matplotlib.pyplot as plt
@@ -29,7 +29,7 @@ import xarray as xr
 from ..grids import Raster
 
 from ..tools import EARTH_RADIUS
-from ..utils.plot_utils import plot_subduction_teeth
+from .utils import plot_subduction_teeth
 from .plot_engine import PlotEngine
 from .hillshade import set_shade
 from ..geometry import geographic_circle
@@ -99,7 +99,7 @@ class CartopyPlotEngine(PlotEngine):
         """
         from gplately.geometry import pygplates_to_shapely
 
-        if isinstance(features, pygplates.Feature):
+        if isinstance(features, _Feature):
             features = [features]
 
         edgecolor = kwargs.pop("edgecolor", "blue")

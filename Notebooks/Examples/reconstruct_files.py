@@ -17,7 +17,9 @@
 # %%
 import cartopy.crs as ccrs
 import matplotlib.pyplot as plt
-import pygplates
+from pygplates import (
+    FeatureCollection as _FeatureCollection,  # pyright: ignore[reportAttributeAccessIssue]
+)
 from plate_model_manager.utils import download
 
 import gplately
@@ -41,12 +43,10 @@ else:
 # #### Step 1: Load files
 
 # %%
-landmass_fc = pygplates.FeatureCollection(f"{data_dir}/Global_Cao_etal/lm_402_2.shp")
-mountain_fc = pygplates.FeatureCollection(f"{data_dir}/Global_Cao_etal/m_402_2.shp")
-icesheet_fc = pygplates.FeatureCollection(f"{data_dir}/Global_Cao_etal/i_402_2.shp")
-sallow_marine_fc = pygplates.FeatureCollection(
-    f"{data_dir}/Global_Cao_etal/sm_402_2.shp"
-)
+landmass_fc = _FeatureCollection(f"{data_dir}/Global_Cao_etal/lm_402_2.shp")
+mountain_fc = _FeatureCollection(f"{data_dir}/Global_Cao_etal/m_402_2.shp")
+icesheet_fc = _FeatureCollection(f"{data_dir}/Global_Cao_etal/i_402_2.shp")
+sallow_marine_fc = _FeatureCollection(f"{data_dir}/Global_Cao_etal/sm_402_2.shp")
 
 # %% [markdown]
 # #### Step 2: Reconstruct files

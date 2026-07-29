@@ -19,6 +19,17 @@ from typing import Union
 
 import numpy as np
 import pygplates
+from pygplates import (
+    RotationModel as _RotationModel,  # pyright: ignore[reportAttributeAccessIssue]
+    Feature as _Feature,  # pyright: ignore[reportAttributeAccessIssue]
+    FeaturesFunctionArgument as _FeaturesFunctionArgument,  # pyright: ignore[reportAttributeAccessIssue]
+    FeatureCollection as _FeatureCollection,  # pyright: ignore[reportAttributeAccessIssue]
+    PointOnSphere as _PointOnSphere,  # pyright: ignore[reportAttributeAccessIssue]
+    MultiPointOnSphere as _MultiPointOnSphere,  # pyright: ignore[reportAttributeAccessIssue]
+    VelocityDeltaTimeType as _VelocityDeltaTimeType,  # pyright: ignore[reportAttributeAccessIssue]
+    VelocityUnits as _VelocityUnits,  # pyright: ignore[reportAttributeAccessIssue]
+    Earth as _Earth,  # pyright: ignore[reportAttributeAccessIssue]
+)
 
 from . import tools as _tools
 
@@ -212,7 +223,7 @@ class Points(object):
                     )
 
         # Create pygplates points.
-        points = [pygplates.PointOnSphere(lat, lon) for lon, lat in zip(lons, lats)]
+        points = [_PointOnSphere(lat, lon) for lon, lat in zip(lons, lats)]
 
         # If plate IDs and/or ages are automatically assigned using reconstructed static polygons then
         # some points might be outside all reconstructed static polygons, and hence not reconstructable.
@@ -244,9 +255,11 @@ class Points(object):
                     time_points = [points[i] for i in time_point_indices]
 
                 # Assign a plate ID to each point based on which reconstructed static polygon it's inside.
-                static_polygons_snapshot = plate_reconstruction.static_polygons_snapshot(
-                    lookup_time,
-                    anchor_plate_id=anchor_plate_id,
+                static_polygons_snapshot = (
+                    plate_reconstruction.static_polygons_snapshot(
+                        lookup_time,
+                        anchor_plate_id=anchor_plate_id,
+                    )
                 )
                 reconstructed_static_polygons_containing_points = (
                     static_polygons_snapshot.get_point_locations(time_points)
@@ -291,7 +304,7 @@ class Points(object):
         # This comparison works element-wise whether 'time' is a scalar or a numpy array.
         if age is not None:
             # Any point with an age younger than its own 'time' did not exist at 'time' and hence is not reconstructable.
-            points_are_reconstructable[point_ages < time] = False
+            points_are_reconstructable[point_ages < time] = False  # type: ignore
 
         # If requested, remove any unreconstructable points.
         if remove_unreconstructable_points and not points_are_reconstructable.all():
@@ -303,7 +316,7 @@ class Points(object):
             lons = lons[points_are_reconstructable]
             lats = lats[points_are_reconstructable]
             if not np.isscalar(time):
-                time = time[points_are_reconstructable]
+                time = time[points_are_reconstructable]  # type: ignore
             point_plate_ids = point_plate_ids[points_are_reconstructable]
             point_ages = point_ages[points_are_reconstructable]
             points = [
@@ -372,7 +385,7 @@ class Points(object):
             time,
             anchor_plate_id,
         )
-        self.feature_collection = pygplates.FeatureCollection(self.features)
+        self.feature_collection = _FeatureCollection(self.features)
 
     @staticmethod
     def _create_point_features(
@@ -385,7 +398,7 @@ class Points(object):
         # Note: The valid time range always includes present day.
         point_features = []
         for point_index in range(len(points)):
-            point_feature = pygplates.Feature()
+            point_feature = _Feature()
             # Set the geometry.
             point_feature.set_geometry(points[point_index])
             # Set the plate ID.
@@ -451,7 +464,7 @@ class Points(object):
         #
         # Create pygplates points.
         self.points = [
-            pygplates.PointOnSphere(lat, lon) for lon, lat in zip(self.lons, self.lats)
+            _PointOnSphere(lat, lon) for lon, lat in zip(self.lons, self.lats)
         ]
         # Create a feature for each point.
         self.features = self._create_point_features(
@@ -463,7 +476,7 @@ class Points(object):
             self.anchor_plate_id,
         )
         # Create a collection of the point features.
-        self.feature_collection = pygplates.FeatureCollection(self.features)
+        self.feature_collection = _FeatureCollection(self.features)
 
         # Restore the unpicklable entries.
         #
@@ -574,12 +587,12 @@ class Points(object):
         Points
             A copy of the current :py:class:`Points` object
         """
-        time_copy = self.time.copy() if not np.isscalar(self.time) else self.time
+        time_copy = self.time.copy() if not np.isscalar(self.time) else self.time  # type: ignore
         gpts = Points(
             self.plate_reconstruction,
             self.lons.copy(),
             self.lats.copy(),
-            time_copy,
+            time_copy,  # type: ignore
             self.plate_id.copy(),
             self.age.copy(),
             anchor_plate_id=self.anchor_plate_id,
@@ -726,7 +739,7 @@ class Points(object):
         """
         if np.isscalar(self._time):
             return np.full(len(point_indices), self._time)
-        return self._time[point_indices]
+        return self._time[point_indices]  # type: ignore
 
     def reconstruct(
         self, time, anchor_plate_id=None, return_array=False, return_point_indices=False
@@ -814,7 +827,7 @@ class Points(object):
                 sub_indices = point_indices_with_plate_id[sub_mask]
 
                 # Get the points at 'init_t' for the current plate ID and initial time.
-                reconstructed_points_sub = pygplates.MultiPointOnSphere(
+                reconstructed_points_sub = _MultiPointOnSphere(
                     self.points[point_index] for point_index in sub_indices
                 )
 
@@ -1001,9 +1014,8 @@ class Points(object):
                     ]
 
                     # Get the points at 'init_t' for the current plate ID and reconstruct age.
-                    reconstructed_points_sub = pygplates.MultiPointOnSphere(
-                        self.points[point_index]
-                        for point_index in point_indices_sub
+                    reconstructed_points_sub = _MultiPointOnSphere(
+                        self.points[point_index] for point_index in point_indices_sub
                     )
 
                     # First reconstruct the internal points from the initial time ('init_t') to present day using
@@ -1027,8 +1039,7 @@ class Points(object):
 
                     # Write the reconstructed points.
                     lat_lon_points[point_indices_sub] = [
-                        rpoint.to_lat_lon()
-                        for rpoint in reconstructed_points_sub
+                        rpoint.to_lat_lon() for rpoint in reconstructed_points_sub
                     ]
 
         rlonslats = lat_lon_points[valid_mask]  # remove invalid points
@@ -1049,9 +1060,9 @@ class Points(object):
         time,
         delta_time=1.0,
         *,
-        velocity_delta_time_type=pygplates.VelocityDeltaTimeType.t_plus_delta_t_to_t,
-        velocity_units=pygplates.VelocityUnits.cms_per_yr,
-        earth_radius_in_kms=pygplates.Earth.mean_radius_in_kms,
+        velocity_delta_time_type=_VelocityDeltaTimeType.t_plus_delta_t_to_t,
+        velocity_units=_VelocityUnits.cms_per_yr,
+        earth_radius_in_kms=_Earth.mean_radius_in_kms,
         anchor_plate_id=None,
         return_reconstructed_points=False,
         return_point_indices=False,
@@ -1137,21 +1148,14 @@ class Points(object):
             lat_lon_points = np.array([])
 
         # Determine time interval for velocity calculation.
-        if (
-            velocity_delta_time_type
-            == pygplates.VelocityDeltaTimeType.t_plus_delta_t_to_t
-        ):
+        if velocity_delta_time_type == _VelocityDeltaTimeType.t_plus_delta_t_to_t:
             from_time = time + delta_time
             to_time = time
-        elif (
-            velocity_delta_time_type
-            == pygplates.VelocityDeltaTimeType.t_to_t_minus_delta_t
-        ):
+        elif velocity_delta_time_type == _VelocityDeltaTimeType.t_to_t_minus_delta_t:
             from_time = time
             to_time = time - delta_time
         elif (
-            velocity_delta_time_type
-            == pygplates.VelocityDeltaTimeType.t_plus_minus_half_delta_t
+            velocity_delta_time_type == _VelocityDeltaTimeType.t_plus_minus_half_delta_t
         ):
             from_time = time + delta_time / 2
             to_time = time - delta_time / 2
@@ -1213,7 +1217,7 @@ class Points(object):
                 sub_indices = point_indices_with_plate_id[sub_mask]
 
                 # Get the points at 'init_t' for the current plate ID.
-                reconstructed_points_sub = pygplates.MultiPointOnSphere(
+                reconstructed_points_sub = _MultiPointOnSphere(
                     self.points[point_index] for point_index in sub_indices
                 )
 
@@ -1244,10 +1248,8 @@ class Points(object):
                     earth_radius_in_kms=earth_radius_in_kms,
                 )
 
-                north_east_down_velocities_sub = (
-                    pygplates.LocalCartesian.convert_from_geocentric_to_north_east_down(
-                        reconstructed_points_sub, velocity_vectors_sub
-                    )
+                north_east_down_velocities_sub = pygplates.LocalCartesian.convert_from_geocentric_to_north_east_down(  # type: ignore
+                    reconstructed_points_sub, velocity_vectors_sub
                 )
 
                 # Write velocities of points as (north, east) components.
@@ -1327,16 +1329,16 @@ class Points(object):
                 rtimes = rtimes_group
                 if return_rate_of_motion:
                     out_rate = np.empty(
-                        (num_reconstructable_points, rate_group.shape[1])
+                        (num_reconstructable_points, rate_group.shape[1])  # type: ignore
                     )
 
             # Scatter this group's rows back into the original point order.
             for out_array, position_array in zip(out_positions, position_arrays):
                 out_array[group_indices] = position_array
             if return_rate_of_motion:
-                out_rate[group_indices] = rate_group
+                out_rate[group_indices] = rate_group  # type: ignore
 
-        return_tuple = tuple(out_positions)
+        return_tuple = tuple(out_positions)  # type: ignore
         if return_times:
             return_tuple += (rtimes,)
         if return_rate_of_motion:
@@ -1477,7 +1479,7 @@ class Points(object):
         rec_lons = self.lons[reconstructable]
         rec_lats = self.lats[reconstructable]
         rec_plate_ids = self.plate_id[reconstructable]
-        rec_times = self._time[reconstructable]
+        rec_times = self._time[reconstructable]  # type: ignore
 
         # No reconstructable points: delegate a single call (with a scalar 'from_time') so the
         # empty-output shape matches the scalar code path.
@@ -1668,7 +1670,7 @@ class Points(object):
         # Note: 'self._time' is masked (alongside lons/lats) so it stays aligned.
         rec_lons = self.lons[reconstructable]
         rec_lats = self.lats[reconstructable]
-        rec_times = self._time[reconstructable]
+        rec_times = self._time[reconstructable]  # type: ignore
 
         # No reconstructable points: delegate a single call (with a scalar 'from_time') so the
         # empty-output shape matches the scalar code path.
@@ -1816,8 +1818,8 @@ class Points(object):
 
         # Create the pygplates.FiniteRotation that rotates
         # between the two reference frames.
-        from_rotation_model = pygplates.RotationModel(from_rotation_features_or_model)
-        to_rotation_model = pygplates.RotationModel(to_rotation_features_or_model)
+        from_rotation_model = _RotationModel(from_rotation_features_or_model)
+        to_rotation_model = _RotationModel(to_rotation_features_or_model)
         from_rotation = from_rotation_model.get_rotation(
             reconstruction_time,
             non_reference_plate,
@@ -1838,7 +1840,7 @@ class Points(object):
         )  # type: ignore
 
         # convert FeatureCollection to MultiPointOnSphere
-        input_points = pygplates.MultiPointOnSphere(
+        input_points = _MultiPointOnSphere(
             (lat, lon) for lon, lat in zip(lons, lats)  # type: ignore
         )
 

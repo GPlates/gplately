@@ -18,6 +18,7 @@
 """This sub-module contains tools for efficiently executing routines by parallelizing them across multiple threads,
 utilizing multiple processing units."
 """
+
 from multiprocessing import Pool, Process, Queue, cpu_count
 
 
@@ -68,7 +69,7 @@ class Parallel(object):
         elif self.nprocs > 1:
             # more than one processor - game on
 
-            results = [[] for i in range(n)]
+            results = [[] for i in range(self.nprocs)]
             processes = []
             q_in = Queue(1)
             q_out = Queue()
@@ -86,8 +87,8 @@ class Parallel(object):
                 p.start()
 
             # put items in the queue
-            sent = [q_in.put((i,)) for i in range(n)]
-            [q_in.put((None,)) for _ in range(nprocs)]
+            sent = [q_in.put((i,)) for i in range(self.nprocs)]
+            [q_in.put((None,)) for _ in range(self.nprocs)]
 
             # get the results
             results = []

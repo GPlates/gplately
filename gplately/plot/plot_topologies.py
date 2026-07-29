@@ -15,9 +15,7 @@
 #    51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 
-"""
-This sub-module contains tools for reconstructing and plotting geological features and feature data through time.
-"""
+"""A class to read, reconstruct and plot topology features at specific reconstruction times."""
 
 import logging
 import math
@@ -32,29 +30,30 @@ from typing import Union
 import geopandas as gpd
 import numpy as np
 import pygplates
+from pygplates import (
+    VelocityUnits as _VelocityUnits,  # pyright: ignore[reportAttributeAccessIssue]
+)
+from pygplates import (
+    ResolveTopologyType as _ResolveTopologyType,  # pyright: ignore[reportAttributeAccessIssue]
+)
 from shapely.geometry.base import BaseGeometry, BaseMultipartGeometry
 from shapely.ops import linemerge
 
-from . import ptt
-from .lib.decorators import (
+from .. import ptt
+from ..lib.decorators import (
     append_docstring,
     validate_reconstruction_time,
     validate_topology_availability,
 )
-from .gpml import _load_FeatureCollection
-from .grids import Raster
-from .mapping.cartopy_plot import DEFAULT_CARTOPY_PROJECTION, CartopyPlotEngine
-from .mapping.plot_engine import PlotEngine
-from .utils.plot_utils import _meridian_from_ax, PLOT_DOCSTRING, GET_DATE_DOCSTRING
+from ..gpml import _load_FeatureCollection
+from ..raster import Raster
+from .cartopy_plot import DEFAULT_CARTOPY_PROJECTION, CartopyPlotEngine
+from .plot_engine import PlotEngine
+from .utils import _meridian_from_ax, PLOT_DOCSTRING, GET_DATE_DOCSTRING
 
-from .utils import deprecated
-from .utils.io_utils import to_geographic_data_array, load_data_array_from_netcdf
-
-# re-export. do not remove.
-from .utils.plot_utils import plot_subduction_teeth as plot_subduction_teeth
-from .utils.feature_utils import shapelify_features as shapelify_features
-from .utils.feature_utils import shapelify_features as shapelify_feature_lines
-from .utils.feature_utils import shapelify_features as shapelify_feature_polygons
+from ..utils import deprecated
+from ..utils.io_utils import to_geographic_data_array, load_data_array_from_netcdf
+from ..utils.feature_utils import shapelify_features as _shapelify_features
 
 logger = logging.getLogger("gplately")
 
@@ -482,8 +481,8 @@ class PlotTopologies(object):
         self._topologies = [
             t.get_resolved_feature()
             for t in topological_snapshot.get_resolved_topologies(
-                resolve_topology_types=pygplates.ResolveTopologyType.boundary
-                | pygplates.ResolveTopologyType.network
+                resolve_topology_types=_ResolveTopologyType.boundary
+                | _ResolveTopologyType.network
             )
         ]
 
@@ -500,7 +499,7 @@ class PlotTopologies(object):
             topological_snapshot,
             # use ResolveTopologyType.boundary parameter to resolve rigid plate boundary only
             # because the Mid-ocean ridges(and transforms) should not contain lines from topological networks
-            resolve_topology_types=pygplates.ResolveTopologyType.boundary,  # type: ignore
+            resolve_topology_types=_ResolveTopologyType.boundary,
         )
 
         for topol in self.other:
@@ -632,7 +631,7 @@ class PlotTopologies(object):
             logger.debug(
                 "The 'validate_reconstruction_time' parameter is set to False. The reconstruction time is not validated."
             )
-        shp = shapelify_features(
+        shp = _shapelify_features(
             feature,
             central_meridian=central_meridian,
             tessellate_degrees=tessellate_degrees,
@@ -909,12 +908,12 @@ class PlotTopologies(object):
                 "No subduction zone/trench data is found. Make sure the plate model has topology feature."
             )
 
-        trench_left_features = shapelify_feature_lines(
+        trench_left_features = _shapelify_features(
             self.trench_left,
             tessellate_degrees=tessellate_degrees,
             central_meridian=central_meridian,
         )
-        trench_right_features = shapelify_feature_lines(
+        trench_right_features = _shapelify_features(
             self.trench_right,
             tessellate_degrees=tessellate_degrees,
             central_meridian=central_meridian,
@@ -1192,7 +1191,7 @@ class PlotTopologies(object):
             self.time,
             delta_time=delta_time,
             # Match previous implementation that used ptt.velocity_tools.get_plate_velocities()...
-            velocity_units=pygplates.VelocityUnits.kms_per_my,
+            velocity_units=_VelocityUnits.kms_per_my,
             return_east_north_arrays=True,
         )
 
@@ -1658,7 +1657,7 @@ class PlotTopologies(object):
         all_topologies = []
 
         if self.topologies:
-            all_topologies = shapelify_features(
+            all_topologies = _shapelify_features(
                 self.topologies,
                 central_meridian=central_meridian,
                 tessellate_degrees=tessellate_degrees,
@@ -1729,7 +1728,7 @@ class PlotTopologies(object):
             *self.transforms,
             *self.other,
         ]:
-            converted = shapelify_features(
+            converted = _shapelify_features(
                 topo,
                 central_meridian=central_meridian,
                 tessellate_degrees=tessellate_degrees,

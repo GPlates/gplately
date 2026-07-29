@@ -11,4 +11,4 @@ api/
 sphinx-doc/source/generated/
 Notebooks/source_data/
 notebook-html/
-.vscode/
+.vscode/settings.json
