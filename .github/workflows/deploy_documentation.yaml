@@ -1,17 +1,17 @@
-name: Build docs and deploy to GitHub Pages
+# This workflow builds and deploys the documentation for GPlately to GitHub Pages.
+
+name: Build and Deploy Documentation to GitHub Pages
 
 on: 
   push:
     branches: 
       - master
-    paths-ignore:
-      - Notebooks/14-RuleBasedGPMLProcessingPipeline.ipynb
-  pull_request:
-    branches: 
-      - master
-
+    paths:
+      - gplately/**
+  
 jobs:
-  build-and-deploy:
+  build-and-deploy-documentation:
+    name: Build and Deploy Documentation to GitHub Pages
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -29,46 +29,21 @@ jobs:
           cache-environment: true
           post-cleanup: "all"
 
-      - name: Install current gplately
+      - name: Install current GPlately
         run: |
           pip install . --no-binary :all: --no-cache-dir --no-dependencies
 
-      - name: test pygmt
-        run: python -c "import pygmt"
-        shell: bash -el {0}
-
-      - name: test jupyter-nbconvert
-        run: jupyter-nbconvert --version
-        shell: bash -el {0}
-
-      #- name: test pdoc
-      #  run: pdoc --version
-      #  shell: bash -el {0}
-
-      #- name: Generate documentation with pdoc3
-      #  run: pdoc --config latex_math=True --template-dir .pdoc_template --html -o api --force gplately
-      #  shell: bash -el {0}
-      
-      #- name: Convert jupyter notebooks to html
-      #  run: jupyter-nbconvert --to=html --output-dir=api/gplately/ Notebooks/*.ipynb
-      #  shell: bash -el {0}
-
-      - name: Build doc with sphinx
+      - name: Build doc with Sphinx
         run : |
           sphinx-autogen -o generated sphinx-doc/source/*.rst
           cd sphinx-doc
           make html
 
-      - name: Deploy to gh-pages
+      - name: Deploy to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@v4.2.2
         with:
           branch: gh-pages
           folder: sphinx-doc/build/
           target-folder: latest/sphinx/
 
-      #- name: Deploy to gh-pages
-      #  uses: JamesIves/github-pages-deploy-action@v4.2.2
-      #  with:
-      #    branch: gh-pages
-      #    folder: api/gplately/
-      #    target-folder: dev-doc/
+      

@@ -1,5 +1,3 @@
-name: Protect Generated Notebooks
-
 # This workflow detects humans directly editing generated notebooks.
 # Only github-actions[bot] is permitted to commit changes to these files.
 # These notebooks are generated from .py files by using the command
@@ -10,6 +8,7 @@ name: Protect Generated Notebooks
 # The reason that a .py file is used is to allow for easier version control and collaboration. 
 # And it is also more Copilot and code auto-formatting friendly.
 
+name: Protect Generated Notebooks
 
 on:
   pull_request:
@@ -24,6 +23,7 @@ on:
       - Notebooks/Examples/save_reconstructed_data.ipynb
       - Notebooks/Examples/use_auxiliary_functions.ipynb
       - Notebooks/Examples/use_your_own_plate_model.ipynb
+      - Notebooks/Examples/working_with_plate_model_manager.ipynb
 
 permissions:
   contents: read
@@ -59,6 +59,7 @@ jobs:
             Notebooks/Examples/save_reconstructed_data.ipynb
             Notebooks/Examples/use_auxiliary_functions.ipynb
             Notebooks/Examples/use_your_own_plate_model.ipynb
+            Notebooks/Examples/working_with_plate_model_manager.ipynb
           )
 
           # Use the actual merge-base rather than base.sha directly, so a

@@ -1,4 +1,7 @@
-name: Run notebook and publish HTML
+# This workflow runs selected Jupyter notebooks, converts them to HTML, 
+# and publishes the HTML files to the gh-pages branch.
+
+name: Run Notebooks and Publish HTML
 
 on:
   workflow_dispatch:
@@ -109,6 +112,7 @@ permissions:
 
 jobs:
   execute-and-publish:
+    name: Execute Notebooks and Publish HTML
     runs-on: ubuntu-latest
     defaults:
       run:

@@ -13,16 +13,16 @@ if ! git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
 fi
 
 files=(
-	hello_world
-	icosahedron_mesh
-	reconstruct_files
-	introducing_plate_model_manager
-	save_reconstructed_data
-	plot_map_with_cartopy
-	use_auxiliary_functions
-	plot_map_with_pygmt
-	use_your_own_plate_model
-    working_with_plate_model_manager
+	Notebooks/Examples/hello_world
+	Notebooks/Examples/icosahedron_mesh
+	Notebooks/Examples/reconstruct_files
+	Notebooks/Examples/introducing_plate_model_manager
+	Notebooks/Examples/save_reconstructed_data
+	Notebooks/Examples/plot_map_with_cartopy
+	Notebooks/Examples/use_auxiliary_functions
+	Notebooks/Examples/plot_map_with_pygmt
+	Notebooks/Examples/use_your_own_plate_model
+    Notebooks/Examples/working_with_plate_model_manager
 )
 
 for base in "${files[@]}"; do

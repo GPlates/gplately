@@ -1,7 +1,6 @@
-# This workflow will install Python dependencies, run tests and lint with a single version of Python
-# For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
+# This workflow tests GPlately on various platforms and Python versions.
 
-name: Test GPlately
+name: Test GPlately on Various Platforms
 
 on:
   push:
@@ -14,37 +13,58 @@ on:
       - master
     paths:
       - gplately/**
+  workflow_dispatch:
+    inputs:
+      runner_os:
+        description: Operating system to run the tests on
+        required: true
+        type: choice
+        options: &supported_os_list
+          - ubuntu-latest
+          - macos-latest
+          - windows-latest
+        default: ubuntu-latest
+      python_version:
+        description: Python version to test with
+        required: true
+        type: choice
+        options: &supported_python_versions
+          # Conda-forge currently supports Python >=3.10 ...
+          - "3.10"
+          - "3.11"
+          - "3.12"
+          - "3.13"
+          - "3.14"
+        default: "3.11"
 
 jobs:
-  build:
+  test-gplately-automatic:
     name: Test Python ${{ matrix.python-version }} on ${{ matrix.os }}
+    if: github.event_name != 'workflow_dispatch' && (github.event_name != 'pull_request' || github.event.pull_request.draft == false)
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
-        # Conda-forge currently supports Python >=3.10 ...
-        python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
+        os: *supported_os_list
+        python-version: *supported_python_versions
 
     defaults:
       run:
         shell: bash -el {0}
-        
-    if: github.event.pull_request.draft == false
-    steps:
-      # Used with 'cache-environment-key'.
-      # See https://github.com/mamba-org/setup-micromamba?tab=readme-ov-file#caching
+    env:
+      TEST_PYTHON_VERSION: ${{ matrix.python-version }}
+    steps: &test_steps
       - name: Get current date
         id: date
         run: echo "date=$(date +%Y-%m-%d)" >> "${GITHUB_OUTPUT}"
-      
+
       - uses: actions/checkout@v4
       - uses: mamba-org/setup-micromamba@v1
         with:
           micromamba-version: "1.5.8-0"
           environment-file: tests-dir/test-env.yml
           create-args: >-
-            python=${{ matrix.python-version }}
+            python=${{ env.TEST_PYTHON_VERSION }}
           init-shell: >-
             bash
             powershell
@@ -69,3 +89,17 @@ jobs:
       - name: Test with pytest
         run: |
           python -m pytest -vv tests-dir/pytestcases
+
+  test-gplately-manual:
+    name: Test Python ${{ inputs.python_version }} on ${{ inputs.runner_os }}
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ${{ inputs.runner_os }}
+
+    defaults:
+      run:
+        shell: bash -el {0}
+
+    env:
+      TEST_PYTHON_VERSION: ${{ inputs.python_version }}
+
+    steps: *test_steps

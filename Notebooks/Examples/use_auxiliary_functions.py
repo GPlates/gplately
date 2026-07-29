@@ -2,7 +2,9 @@
 # ### This example demonstrates how to use the auxiliary functions to create the `PlateReconstruction` and `PlotTopologies` objects quickly.
 
 # %% [markdown]
-# ⚠️ This notebook is generated from use_auxiliary_functions.py using the command
+# **⚠️🚫 Don't commit changes to this notebook directly into GitHub repository. 🚫⚠️**
+
+# This notebook is generated from use_auxiliary_functions.py using the command
 # `jupytext --to notebook Notebooks/Examples/use_auxiliary_functions.py -o Notebooks/Examples/use_auxiliary_functions.ipynb`.
 # If you need to commit changes to this notebook to the GPlately repository, make your edits in use_auxiliary_functions.py and a GitHub workflow will regenerate this Jupyter Notebook file automatically.
 # The reason that a .py file is used is to allow for easier version control and collaboration. And it is also more Copilot and code auto-formatting friendly.

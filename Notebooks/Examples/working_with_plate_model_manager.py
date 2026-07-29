@@ -2,7 +2,9 @@
 # ### This example demonstrates how to use the `PlateModelManager` with GPlately.
 
 # %% [markdown]
-# ⚠️ This notebook is generated from working_with_plate_model_manager.py using the command
+# **⚠️🚫 Don't commit changes to this notebook directly into GitHub repository. 🚫⚠️**
+
+# This notebook is generated from working_with_plate_model_manager.py using the command
 # `jupytext --to notebook Notebooks/Examples/working_with_plate_model_manager.py -o Notebooks/Examples/working_with_plate_model_manager.ipynb`.
 # If you need to commit changes to this notebook to the GPlately repository, make your edits in working_with_plate_model_manager.py and a GitHub workflow will regenerate this Jupyter Notebook file automatically.
 # The reason that a .py file is used is to allow for easier version control and collaboration. And it is also more Copilot and code auto-formatting friendly.
