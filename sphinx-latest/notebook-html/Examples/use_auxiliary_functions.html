@@ -3,7 +3,7 @@
 <html lang="en">
 <head><meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>introducing_plate_model_manager</title><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"></script>
+<title>use_auxiliary_functions</title><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"></script>
 <style type="text/css">
     pre { line-height: 125%; }
 td.linenos .normal { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; }
@@ -7796,32 +7796,32 @@ a.anchor-link {
 <!-- End of mermaid configuration --></head>
 <body class="jp-Notebook" data-jp-theme-light="true" data-jp-theme-name="JupyterLab Light">
 <main>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=cb8e5413">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=a569453b">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h3 id="This-notebook-demonstrate-how-to-use-the-PlateModelManager-to-access-plate-model-files.">This notebook demonstrate how to use the PlateModelManager to access plate model files.<a class="anchor-link" href="#This-notebook-demonstrate-how-to-use-the-PlateModelManager-to-access-plate-model-files.">¶</a></h3>
+<h3 id="This-example-demonstrates-how-to-use-the-auxiliary-functions-to-create-the-PlateReconstruction-and-PlotTopologies-objects-quickly.">This example demonstrates how to use the auxiliary functions to create the <code>PlateReconstruction</code> and <code>PlotTopologies</code> objects quickly.<a class="anchor-link" href="#This-example-demonstrates-how-to-use-the-auxiliary-functions-to-create-the-PlateReconstruction-and-PlotTopologies-objects-quickly.">¶</a></h3>
 </div>
 </div>
 </div>
 </div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=5d6d853f">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=17d35d5d">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
 <p><strong>⚠️🚫 Don't commit changes to this notebook directly into GitHub repository. 🚫⚠️</strong></p>
-<p>This notebook is generated from introducing_plate_model_manager.py using the command
-<code>jupytext --to notebook Notebooks/Examples/introducing_plate_model_manager.py -o Notebooks/Examples/introducing_plate_model_manager.ipynb</code>.
-If you need to commit changes to this notebook to the GPlately repository, make your edits in introducing_plate_model_manager.py and a GitHub workflow will regenerate this Jupyter Notebook file automatically.
+<p>This notebook is generated from use_auxiliary_functions.py using the command
+<code>jupytext --to notebook Notebooks/Examples/use_auxiliary_functions.py -o Notebooks/Examples/use_auxiliary_functions.ipynb</code>.
+If you need to commit changes to this notebook to the GPlately repository, make your edits in use_auxiliary_functions.py and a GitHub workflow will regenerate this Jupyter Notebook file automatically.
 The reason that a .py file is used is to allow for easier version control and collaboration. And it is also more Copilot and code auto-formatting friendly.</p>
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=95ea5865">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=1f332798">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -7829,29 +7829,54 @@ The reason that a .py file is used is to allow for easier version control and co
 <div class="jp-InputPrompt jp-InputArea-prompt">In [1]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-ipython3"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<div class="highlight hl-ipython3"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">gplately.auxiliary</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_gplot</span><span class="p">,</span> <span class="n">get_plate_reconstruction</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">gplately</span><span class="w"> </span><span class="kn">import</span> <span class="n">PlateModelManager</span><span class="p">,</span> <span class="n">PresentDayRasterManager</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">gplately.commands.list_models</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_model_names</span>
+<span class="c1"># use the auxiliary function to create a PlateReconstruction object</span>
+<span class="n">plate_reconstruction_obj</span> <span class="o">=</span> <span class="n">get_plate_reconstruction</span><span class="p">(</span><span class="s2">"Muller2019"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">plate_reconstruction_obj</span><span class="p">)</span>
 
-<span class="n">pm_manager</span> <span class="o">=</span> <span class="n">PlateModelManager</span><span class="p">()</span>
+<span class="c1"># use the auxiliary function to create a PlotTopologies object</span>
+<span class="n">plot_topologies_obj</span> <span class="o">=</span> <span class="n">get_gplot</span><span class="p">(</span><span class="s2">"Muller2019"</span><span class="p">,</span> <span class="n">time</span><span class="o">=</span><span class="mi">140</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">plot_topologies_obj</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 </div>
 </div>
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
 </div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=3f124a4f">
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
+<pre>&lt;gplately.reconstruction.PlateReconstruction object at 0x7f5aec702510&gt;
+</pre>
+</div>
+</div>
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
+<pre>&lt;gplately.plot.plot_topologies.PlotTopologies object at 0x7f5aec702f90&gt;
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=7a23648f">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h4 id="Get-the-names-of-all-available-models-in-the-PlateModelManager">Get the names of all available models in the PlateModelManager<a class="anchor-link" href="#Get-the-names-of-all-available-models-in-the-PlateModelManager">¶</a></h4>
+<p>There is a <code>PlateReconstruction</code> object inside the <code>PlotTopologies</code> object.
+So, in most cases, a single get_gplot() call is enough.
+You can retrieve the <code>PlateReconstruction</code> object from the <code>PlotTopologies</code> object later.</p>
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=60b9eb00">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=7f5c814b">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -7859,13 +7884,10 @@ The reason that a .py file is used is to allow for easier version control and co
 <div class="jp-InputPrompt jp-InputArea-prompt">In [2]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-ipython3"><pre><span></span><span class="n">gplately_model_names</span> <span class="o">=</span> <span class="n">get_model_names</span><span class="p">()</span>
-<span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">pm_manager</span><span class="o">.</span><span class="n">get_available_model_names</span><span class="p">():</span>
-    <span class="c1"># the pm_manager.get_available_model_names() returns a superset of GPlately models.</span>
-    <span class="c1"># we need to check the the model name agaist a list of GPlately officially supported models.</span>
-    <span class="c1"># https://gplates.github.io/gplately/latest/sphinx/html/plate_models.html</span>
-    <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">gplately_model_names</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+<div class="highlight hl-ipython3"><pre><span></span><span class="n">plate_reconstruction_obj_within_plot_topologies_obj</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">plot_topologies_obj</span><span class="o">.</span><span class="n">plate_reconstruction</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">plate_reconstruction_obj_within_plot_topologies_obj</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -7878,475 +7900,7 @@ The reason that a .py file is used is to allow for easier version control and co
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>shirmard2025
-alfonso2024
-cao2024
-muller2022
-zahirovic2022
-merdith2021
-clennett2020
-clennett2020_m2019
-clennett2020_s2013
-muller2019
-young2018
-torsvikcocks2017
-matthews2016
-matthews2016_pmag_ref
-muller2016
-scotese2016
-zahirovic2016
-gibbons2015
-zahirovic2014
-shephard2013
-gurnis2012
-seton2012
-muller2008
-</pre>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=6c599230">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h4 id="Download-model-%22Muller2019%22-and-put-the-files-in-folder-%22plate-model-repo%22">Download model "Muller2019" and put the files in folder "plate-model-repo"<a class="anchor-link" href="#Download-model-%22Muller2019%22-and-put-the-files-in-folder-%22plate-model-repo%22">¶</a></h4>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=338cc1ca">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [3]:</div>
-<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-ipython3"><pre><span></span><span class="n">model</span> <span class="o">=</span> <span class="n">pm_manager</span><span class="o">.</span><span class="n">get_model</span><span class="p">(</span><span class="s2">"Muller2019"</span><span class="p">)</span>
-<span class="k">assert</span> <span class="n">model</span>
-<span class="n">model</span><span class="o">.</span><span class="n">set_data_dir</span><span class="p">(</span><span class="s2">"plate-model-repo"</span><span class="p">)</span>
-<span class="k">for</span> <span class="n">layer</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">get_avail_layers</span><span class="p">():</span>
-    <span class="n">model</span><span class="o">.</span><span class="n">get_layer</span><span class="p">(</span><span class="n">layer</span><span class="p">)</span>
-
-<span class="c1"># now let's see what are inside the "plate-model-repo/muller2019" folder</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="s2">"plate-model-repo/muller2019"</span><span class="p">))</span>
-</pre></div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell-outputWrapper">
-<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
-</div>
-<div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>['Coastlines', 'StaticPolygons', 'Hotspots', 'Johansson2018LIPs', 'ContinentalPolygons', 'COBs', 'readme.txt', 'SeafloorFabric', 'Whittaker2015LIPs', '.metadata.json', 'Topologies']
-</pre>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=ffd950de">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h4 id="List-all-vailable-layers-in-model-Muller2019">List all vailable layers in model Muller2019<a class="anchor-link" href="#List-all-vailable-layers-in-model-Muller2019">¶</a></h4>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=e98a847b">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [4]:</div>
-<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-ipython3"><pre><span></span><span class="k">for</span> <span class="n">layer</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">get_avail_layers</span><span class="p">():</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">layer</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell-outputWrapper">
-<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
-</div>
-<div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>Coastlines
-StaticPolygons
-ContinentalPolygons
-Topologies
-COBs
-Hotspots
-SeafloorFabric
-Whittaker2015LIPs
-Johansson2018LIPs
-</pre>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=d7a9e557">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h4 id="Download-rotation-files">Download rotation files<a class="anchor-link" href="#Download-rotation-files">¶</a></h4>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=d3a215f9">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [5]:</div>
-<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-ipython3"><pre><span></span><span class="n">rotation_files</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">get_rotation_model</span><span class="p">()</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">rotation_files</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell-outputWrapper">
-<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
-</div>
-<div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>['plate-model-repo/muller2019/Rotations/Muller_etal_2019_CombinedRotations.rot']
-</pre>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=bd2e3125">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h4 id="Download-static-polygons">Download static polygons<a class="anchor-link" href="#Download-static-polygons">¶</a></h4>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=a7f642ec">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [6]:</div>
-<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-ipython3"><pre><span></span><span class="n">static_polygon_files</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">get_layer</span><span class="p">(</span><span class="s2">"StaticPolygons"</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">static_polygon_files</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell-outputWrapper">
-<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
-</div>
-<div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>['plate-model-repo/muller2019/StaticPolygons/Muller_etal_2019_Global_StaticPlatePolygons.gpmlz']
-</pre>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=dd371f71">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h4 id="Download-Coastlines">Download Coastlines<a class="anchor-link" href="#Download-Coastlines">¶</a></h4>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=5925328d">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [7]:</div>
-<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-ipython3"><pre><span></span><span class="n">coasts_files</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">get_layer</span><span class="p">(</span><span class="s2">"Coastlines"</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">coasts_files</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell-outputWrapper">
-<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
-</div>
-<div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>['plate-model-repo/muller2019/Coastlines/Muller_etal_2019_Global_Coastlines.gpmlz']
-</pre>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=b3ff7a23">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h4 id="Download-all-layers">Download all layers<a class="anchor-link" href="#Download-all-layers">¶</a></h4>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=a2b764f0">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [8]:</div>
-<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-ipython3"><pre><span></span><span class="k">for</span> <span class="n">layer</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">get_avail_layers</span><span class="p">():</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">get_layer</span><span class="p">(</span><span class="n">layer</span><span class="p">))</span>
-</pre></div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell-outputWrapper">
-<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
-</div>
-<div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>['plate-model-repo/muller2019/Coastlines/Muller_etal_2019_Global_Coastlines.gpmlz']
-['plate-model-repo/muller2019/StaticPolygons/Muller_etal_2019_Global_StaticPlatePolygons.gpmlz']
-['plate-model-repo/muller2019/ContinentalPolygons/Global_PresentDay_ContPolygons_2019_v1.shp']
-['plate-model-repo/muller2019/Topologies/Muller_etal_2019_PlateBoundaries_DeformingNetworks.gpmlz']
-['plate-model-repo/muller2019/COBs/Global_COBLineSegments_2019_v1.gpmlz']
-['plate-model-repo/muller2019/Hotspots/Hotspots_Compilation_Whittaker_etal.gpmlz']
-['plate-model-repo/muller2019/SeafloorFabric/FZ_cookiecut.gpmlz', 'plate-model-repo/muller2019/SeafloorFabric/FZLC_cookiecut.gpmlz', 'plate-model-repo/muller2019/SeafloorFabric/ExtinctRidges_cookiecut.gpmlz', 'plate-model-repo/muller2019/SeafloorFabric/UNCV_cookiecut.gpmlz', 'plate-model-repo/muller2019/SeafloorFabric/DZ_cookiecut.gpmlz', 'plate-model-repo/muller2019/SeafloorFabric/VANOM_cookiecut.gpmlz']
-['plate-model-repo/muller2019/Whittaker2015LIPs/Whittaker_etal_2015_LIPs.gpmlz']
-['plate-model-repo/muller2019/Johansson2018LIPs/Johansson_etal_2018_VolcanicProvinces_v2.gpmlz']
-</pre>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=b0428757">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h4 id="Get-a-list-of-time-dependent-rasters">Get a list of time dependent rasters<a class="anchor-link" href="#Get-a-list-of-time-dependent-rasters">¶</a></h4>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=364ac170">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [9]:</div>
-<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-ipython3"><pre><span></span><span class="k">for</span> <span class="n">raster</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">get_avail_time_dependent_raster_names</span><span class="p">():</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">raster</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell-outputWrapper">
-<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
-</div>
-<div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>AgeGrids
-SedimentThickness
-</pre>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=04f47361">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h4 id="Download-AgeGrids-rasters">Download AgeGrids rasters<a class="anchor-link" href="#Download-AgeGrids-rasters">¶</a></h4>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=c3a55604">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [10]:</div>
-<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-ipython3"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
-
-<span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s2">"ignore"</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">get_rasters</span><span class="p">(</span><span class="s2">"AgeGrids"</span><span class="p">,</span> <span class="n">times</span><span class="o">=</span><span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">30</span><span class="p">]))</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">get_raster</span><span class="p">(</span><span class="s2">"AgeGrids"</span><span class="p">,</span> <span class="n">time</span><span class="o">=</span><span class="mi">100</span><span class="p">))</span>
-</pre></div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell-outputWrapper">
-<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
-</div>
-<div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>['plate-model-repo/muller2019/Rasters/AgeGrids/Muller_etal_2019_Tectonics_v2.0_AgeGrid-10.nc', 'plate-model-repo/muller2019/Rasters/AgeGrids/Muller_etal_2019_Tectonics_v2.0_AgeGrid-20.nc', 'plate-model-repo/muller2019/Rasters/AgeGrids/Muller_etal_2019_Tectonics_v2.0_AgeGrid-30.nc']
-</pre>
-</div>
-</div>
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>plate-model-repo/muller2019/Rasters/AgeGrids/Muller_etal_2019_Tectonics_v2.0_AgeGrid-100.nc
-</pre>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=ff678bed">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h4 id="Download-AgeGrids-rasters-for-all-available-times">Download AgeGrids rasters for all available times<a class="anchor-link" href="#Download-AgeGrids-rasters-for-all-available-times">¶</a></h4><p>This function will take a while to finish and download a large volume data. Uncomment the code in the code cell below to try it.</p>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=df8295f7">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [11]:</div>
-<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-ipython3"><pre><span></span><span class="c1"># model.download_time_dependent_rasters("AgeGrids")</span>
-</pre></div>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=0fa4fcd3">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h4 id="List-the-names-of-all-present-day-rasters">List the names of all present-day rasters<a class="anchor-link" href="#List-the-names-of-all-present-day-rasters">¶</a></h4>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=40dc3bfc">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [12]:</div>
-<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-ipython3"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">PresentDayRasterManager</span><span class="p">()</span><span class="o">.</span><span class="n">list_present_day_rasters</span><span class="p">())</span>
-</pre></div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell-outputWrapper">
-<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
-</div>
-<div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>['etopo1_grd', 'etopo1_tif', 'topography', 'agegrid', 'vgg']
-</pre>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=1ffc9151">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h4 id="Get-%22topography%22-present-day-raster">Get "topography" present-day raster<a class="anchor-link" href="#Get-%22topography%22-present-day-raster">¶</a></h4>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=2b554ad7">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [13]:</div>
-<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-ipython3"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">PresentDayRasterManager</span><span class="p">()</span><span class="o">.</span><span class="n">get_raster</span><span class="p">(</span><span class="s2">"topography"</span><span class="p">))</span>
-</pre></div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell-outputWrapper">
-<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
-</div>
-<div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>present-day-rasters/topography/topo15-3601x1801.nc
+<pre>&lt;gplately.reconstruction.PlateReconstruction object at 0x7f5aec5c47d0&gt;
 </pre>
 </div>
 </div>
