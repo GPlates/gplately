@@ -38,10 +38,8 @@ import urllib.request as _request
 
 import numpy as _np
 
-# pyright: reportMissingImports=false
-# pyright: reportMissingModuleSource=false
+
 import pooch as _pooch
-import pygplates
 import requests as _requests
 from pooch import Decompress as _Decompress
 from pooch import HTTPDownloader as _HTTPDownloader
@@ -49,8 +47,8 @@ from pooch import Unzip as _Unzip
 from pooch import os_cache as _os_cache
 from pooch import retrieve as _retrieve
 
-from .data import _feature_data, _rasters
-from .grids import Raster
+from .data import _rasters
+from ..raster import Raster
 
 
 class DownloadWarning(RuntimeWarning):
@@ -267,7 +265,7 @@ def _first_time_download_from_web(url, model_name=None, verbose=True):
                 fnames = _retrieve(
                     url=url,
                     known_hash=None,
-                    downloader=_HTTPDownloader(progressbar=verbose),
+                    downloader=_HTTPDownloader(progressbar=verbose),  # type: ignore
                     fname=used_fname,
                     path=_os_cache("gplately"),
                     processor=processor_to_use,
@@ -280,7 +278,7 @@ def _first_time_download_from_web(url, model_name=None, verbose=True):
                 fnames = _retrieve(
                     url=url,
                     known_hash=None,
-                    downloader=_HTTPDownloader(progressbar=verbose),
+                    downloader=_HTTPDownloader(progressbar=verbose),  # type: ignore
                     fname=used_fname,
                     path=_os_cache("gplately"),
                     processor=processor_to_use,
@@ -295,7 +293,7 @@ def _first_time_download_from_web(url, model_name=None, verbose=True):
                 fnames = _retrieve(
                     url=url,
                     known_hash=None,
-                    downloader=_HTTPDownloader(progressbar=verbose),
+                    downloader=_HTTPDownloader(progressbar=verbose),  # type: ignore
                     fname=used_fname,
                     path=_os_cache("gplately"),
                     processor=processor_to_use,
@@ -306,7 +304,7 @@ def _first_time_download_from_web(url, model_name=None, verbose=True):
                 fnames = _retrieve(
                     url=url,
                     known_hash=None,
-                    downloader=_HTTPDownloader(progressbar=verbose),
+                    downloader=_HTTPDownloader(progressbar=verbose),  # type: ignore
                     fname=used_fname,
                     path=_os_cache("gplately"),
                     processor=processor_to_use,
@@ -936,6 +934,6 @@ def get_raster(raster_id_string=None, verbose=True):
 
 # for backwards compatibility with old imports
 # don't remove the code below, even if it seems redundant.
-from .data_server import DataServer
+from ..data_server import DataServer
 
 get_feature_data = DataServer.get_feature_data

@@ -33,6 +33,7 @@ def is_pmm_version_good_enough(installed_version, required_version):
     """return True if the version of installed pmm is good enough, otherwise False.
     assume the version string something like 1.2.0
     """
+    # TODO: consider using packaging.version.parse instead of this manual comparison
     installed_version_numbers = installed_version.split(".")
     required_version_numbers = required_version.split(".")
     if int(installed_version_numbers[0]) > int(required_version_numbers[0]):

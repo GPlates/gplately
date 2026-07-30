@@ -15,7 +15,7 @@
 #    51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 
-"""DataServer class for downloading plate-model assets and rasters."""
+"""DataServer class for downloading plate model files and rasters."""
 
 import logging
 from pathlib import Path
@@ -26,25 +26,18 @@ from .gpml import (
     load_feature_collection_from_files,
 )
 
-# pyright: reportMissingImports=false
-# pyright: reportMissingModuleSource=false
-import pygplates
 from pygplates import (
-    RotationModel as _RotationModel,  # pyright: ignore[reportAttributeAccessIssue]
-    FiniteRotation as _FiniteRotation,  # pyright: ignore[reportAttributeAccessIssue]
-    Feature as _Feature,  # pyright: ignore[reportAttributeAccessIssue]
-    FeaturesFunctionArgument as _FeaturesFunctionArgument,  # pyright: ignore[reportAttributeAccessIssue]
-    FeatureCollection as _FeatureCollection,  # pyright: ignore[reportAttributeAccessIssue]
+    RotationModel as _RotationModel,
+    FeatureCollection as _FeatureCollection,
 )
 from matplotlib import image
-from plate_model_manager import PlateModelManager, PresentDayRasterManager
-from plate_model_manager.utils.download import FileDownloader
-
-
 from plate_model_manager import (
-    ReferenceFrame,  # pyright: ignore[reportAttributeAccessIssue]
-    GenerationMethod,  # pyright: ignore[reportAttributeAccessIssue]
+    PlateModelManager,
+    PresentDayRasterManager,
+    ReferenceFrame,
+    GenerationMethod,
 )
+from plate_model_manager.utils.download import FileDownloader
 
 
 import pooch

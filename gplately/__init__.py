@@ -39,7 +39,7 @@ del ensure_plate_model_manager_compatible
 from plate_model_manager import PlateModel, PlateModelManager, PresentDayRasterManager
 
 from . import auxiliary, ptt
-from .download import DataServer
+from .data_server import DataServer
 from .raster import Raster
 from .grids import (
     read_netcdf_grid,
@@ -71,14 +71,31 @@ from .ptt.subduction_convergence import subduction_convergence
 from .reconstruction import PlateReconstruction
 from .tools import EARTH_RADIUS
 
-# To make the `gplately.mapping` module available for backward compatibility, we import the `plot` module 
-# and assign it to `sys.modules["gplately.mapping"]`. This allows users to access the plotting functionalities through 
+# To make the `gplately.mapping` module available for backward compatibility, we import the `plot` module
+# and assign it to `sys.modules["gplately.mapping"]`. This allows users to access the plotting functionalities through
 # the `gplately.mapping` namespace, even though the actual implementation resides in the `plot` module.
+# And also do the same thing for deprecated modules for backward compatibility.
 import sys
 from . import plot as _plot
+
+# Import the deprecated modules for backward compatibility
+from .deprecated import (
+    pygplates as _pygplates,
+    download as _download,
+    data as _data,
+)
+
 sys.modules["gplately.mapping"] = _plot
-del _plot  # Clean up the namespace by deleting the temporary reference to the plot module
-del sys  # Clean up the namespace by deleting the temporary reference to the sys module
+sys.modules["gplately.pygplates"] = _pygplates
+sys.modules["gplately.download"] = _download
+sys.modules["gplately.data"] = _data
+
+# Clean up namespace
+del _download
+del _data
+del _pygplates
+del _plot
+del sys
 
 __all__ = [
     # modules
