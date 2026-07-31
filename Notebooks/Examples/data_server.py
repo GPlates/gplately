@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from gplately.download import DataServer
+from gplately import DataServer
 
 # the DataServer class has been superseded by a newer module https://pypi.org/project/plate-model-manager/.
 # although we will keep the DataServer interface indefinitely,

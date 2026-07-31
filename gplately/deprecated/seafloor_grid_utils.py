@@ -48,6 +48,6 @@ def create_icosahedral_mesh(refinement_levels):
     # Create the ocean basin mesh (icosahedral spherical mesh)
     vertices, _ = get_mesh(refinement_levels, use_stripy_icosahedron=True)
     # return the mesh as MultiPointOnSphere
-    return pygplates.MultiPointOnSphere(  # type:ignore
+    return pygplates.MultiPointOnSphere(
         [tuple(reversed(xyz2lonlat(v[0], v[1], v[2]))) for v in vertices]
     )

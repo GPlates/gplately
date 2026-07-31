@@ -6,6 +6,7 @@
   },
   "git.ignoreLimitWarning": true,
   "python.analysis.typeCheckingMode": "standard",
+  "python.analysis.stubPath": "typings",
   "python-envs.defaultPackageManager": "ms-python.python:pip",
   "python.terminal.activateEnvironment": false,
   "python-envs.defaultEnvManager": "ms-python.python:system"

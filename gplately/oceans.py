@@ -1,5 +1,5 @@
 #
-#    Copyright (C) 2024-2025 The University of Sydney, Australia
+#    Copyright (C) 2024-2026 The University of Sydney, Australia
 #
 #    This program is free software; you can redistribute it and/or modify it under
 #    the terms of the GNU General Public License, version 2, as published by
@@ -20,9 +20,9 @@ import math
 import os
 import warnings
 from functools import partial, wraps
-from multiprocessing import Pool, Process
+from multiprocessing import Pool, Process, cpu_count
 from pathlib import Path
-from typing import Any, List, Tuple, Union
+from typing import Any, Tuple, Union
 
 import numpy as np
 import pandas as pd
@@ -36,22 +36,13 @@ from .lib.reconstruct_by_topologies import (
     _ReconstructByTopologicalModelImpl,
 )
 from .lib.reconstruct_continents import ReconstructContinents
-from .parallel import get_num_cpus
+from .lib.icosahedron import get_mesh, xyz2lonlat
 from .ptt import continent_contours
 from .ptt.utils import points_in_polygons, points_spatial_tree
 from .tools import _deg2pixels
-from .utils import seafloor_grid_utils
 from .utils.log_utils import get_debug_level
 
 logger = logging.getLogger("gplately")
-
-
-# JUST FOR PYDOC TO GENERATE THE SAME DOC AS BEFORE
-def create_icosahedral_mesh(refinement_levels):
-    return seafloor_grid_utils.create_icosahedral_mesh(refinement_levels)
-
-
-create_icosahedral_mesh.__doc__ = seafloor_grid_utils.create_icosahedral_mesh.__doc__
 
 
 class SeafloorGrid(object):
@@ -304,7 +295,7 @@ class SeafloorGrid(object):
         """
 
         # Determine number of CPUs to use.
-        self.num_cpus = get_num_cpus(nprocs)
+        self.num_cpus = _get_num_cpus(nprocs)
 
         self.plate_reconstruction = plate_reconstruction
 
@@ -702,7 +693,7 @@ class SeafloorGrid(object):
             )
         else:
             # A uniform distribution of points across the globe.
-            icosahedral_multi_point = create_icosahedral_mesh(self.refinement_levels)
+            icosahedral_multi_point = _create_icosahedral_mesh(self.refinement_levels)
 
             # Generate the initial ocean points from the continental mask at 'max_time'.
             if self.use_continent_contouring:
@@ -1804,7 +1795,7 @@ class SeafloorGrid(object):
             num_cpus = self.num_cpus
         else:
             # Determine number of CPUs to use.
-            num_cpus = get_num_cpus(nprocs)
+            num_cpus = _get_num_cpus(nprocs)
 
         if num_cpus > 1:
             with Pool(num_cpus) as pool:
@@ -2022,3 +2013,73 @@ def _build_and_reconstruct_ocean_seed_points_parallel(
     seafloor_grid._build_and_reconstruct_ocean_seed_points(
         time, use_topological_model=use_topological_model
     )
+
+
+def _create_icosahedral_mesh(refinement_levels):
+    """Return an icosahedral mesh as a `pygplates.MultiPointOnSphere` object.
+
+    This global mesh will later be masked with a set of continental or COB terrane
+    polygons to define the ocean basin at a given reconstruction time.
+    The `refinement_levels` integer is proportional to the resolution of the
+    mesh and the ocean/continent boundary.
+
+    Parameters
+    ----------
+    refinement_levels : int
+        Refine the number of points in the triangulation. The larger the
+        refinement level, the sharper the ocean basin resolution.
+
+    Returns
+    -------
+    multi_point : `pygplates.MultiPointOnSphere`
+        The longitues and latitudes that make up the icosahedral ocean mesh
+        collated into a `pygplates.MultiPointOnSphere` object.
+    """
+
+    # Create the ocean basin mesh (icosahedral spherical mesh)
+    vertices, _ = get_mesh(refinement_levels, use_stripy_icosahedron=True)
+    return pygplates.MultiPointOnSphere(
+        [tuple(reversed(xyz2lonlat(v[0], v[1], v[2]))) for v in vertices]
+    )
+
+
+def _get_num_cpus(nprocs):
+    """Return the number of CPUs to use. The multiprocessing.Pool doesn't support negative numbers like joblib does,
+    so we need this function to convert negative numbers to positive numbers.
+
+    Parameters
+    ----------
+    nprocs : int
+        The number of CPUs to use for parts of the code that are parallelized.
+        Must be an integer or convertible to an integer (eg, float is rounded towards zero).
+        If positive then uses that many CPUs.
+        If ``1`` then executes in serial (ie, is not parallelized).
+        If ``0`` then a ``ValueError`` is raised.
+        If ``-1`` then all available CPUs are used.
+        If ``-2`` then all available CPUs except one are used, etc.
+    """
+
+    try:
+        nprocs = int(nprocs)
+    except ValueError:
+        raise TypeError('"nprocs" should be an integer, or convertible to integer')
+
+    if nprocs == 0:
+        raise ValueError('"nprocs" should not be zero')
+
+    if nprocs > 0:
+        # A positive integer specifying the number of CPUs to use.
+        num_cpus = nprocs
+    else:  # nprocs < 0
+        #
+        # A negative integer specifying the number of CPUs to NOT use.
+        # '-1' means use all CPUs. '-2' means use all CPUs but one. Etc.
+        try:
+            num_cpus = cpu_count() + 1 + nprocs
+            # If specified more CPUs to NOT use than there are CPUs available.
+            if num_cpus < 1:
+                num_cpus = 1
+        except NotImplementedError:
+            num_cpus = 1
+
+    return num_cpus
