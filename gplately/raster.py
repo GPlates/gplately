@@ -20,7 +20,6 @@ import logging
 import math
 import numbers
 from pathlib import Path
-from time import perf_counter
 import warnings
 from multiprocessing import cpu_count
 from typing import List, Tuple, Union, cast, overload, Literal
@@ -36,12 +35,12 @@ import numpy as np
 import xarray as xr
 import pygplates
 from pygplates import (
-    RotationModel as _RotationModel,  # pyright: ignore[reportAttributeAccessIssue]
-    PolygonOnSphere as _PolygonOnSphere,  # pyright: ignore[reportAttributeAccessIssue]
-    FeatureCollection as _FeatureCollection,  # pyright: ignore[reportAttributeAccessIssue]
-    Feature as _Feature,  # pyright: ignore[reportAttributeAccessIssue]
-    FiniteRotation as _FiniteRotation,  # pyright: ignore[reportAttributeAccessIssue]
-    MultiPointOnSphere as _MultiPointOnSphere,  # pyright: ignore[reportAttributeAccessIssue]
+    RotationModel as _RotationModel,
+    PolygonOnSphere as _PolygonOnSphere,
+    FeatureCollection as _FeatureCollection,
+    Feature as _Feature,
+    FiniteRotation as _FiniteRotation,
+    MultiPointOnSphere as _MultiPointOnSphere,
 )
 from cartopy.crs import PlateCarree as _PlateCarree
 from cartopy.mpl.geoaxes import GeoAxes as _GeoAxes

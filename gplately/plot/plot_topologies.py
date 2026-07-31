@@ -51,7 +51,7 @@ from .cartopy_plot import DEFAULT_CARTOPY_PROJECTION, CartopyPlotEngine
 from .plot_engine import PlotEngine
 from .utils import _meridian_from_ax, PLOT_DOCSTRING, GET_DATE_DOCSTRING
 
-from ..utils import deprecated
+from ..deprecated import deprecated_functions as _deprecated_funs
 from ..utils.io_utils import to_geographic_data_array, load_data_array_from_netcdf
 from ..utils.feature_utils import shapelify_features as _shapelify_features
 
@@ -1912,39 +1912,41 @@ class PlotTopologies(object):
     # Please do not use them in new code and check your workflow if you are using them in existing code.
     #
     @property
-    @append_docstring(deprecated._ridge_transforms_impl.__doc__ or "")
+    @append_docstring(_deprecated_funs._ridge_transforms_impl.__doc__ or "")
     def ridge_transforms(self):
-        return deprecated._ridge_transforms_impl(self)
+        return _deprecated_funs._ridge_transforms_impl(self)
 
     @property
-    @append_docstring(deprecated._plot_misc_transforms_impl.__doc__ or "")
+    @append_docstring(_deprecated_funs._plot_misc_transforms_impl.__doc__ or "")
     def misc_transforms(self):
-        return deprecated._misc_transforms_impl(self)
+        return _deprecated_funs._misc_transforms_impl(self)
 
-    @append_docstring(deprecated._plot_misc_transforms_impl.__doc__ or "")
+    @append_docstring(_deprecated_funs._plot_misc_transforms_impl.__doc__ or "")
     def plot_misc_transforms(self, ax, color="black", **kwargs):
-        return deprecated._plot_misc_transforms_impl(self, ax, color=color, **kwargs)
+        return _deprecated_funs._plot_misc_transforms_impl(
+            self, ax, color=color, **kwargs
+        )
 
-    @append_docstring(deprecated._get_misc_transforms_impl.__doc__ or "")
+    @append_docstring(_deprecated_funs._get_misc_transforms_impl.__doc__ or "")
     def get_misc_transforms(self, central_meridian=0.0, tessellate_degrees=None): # fmt: skip
-        return deprecated._get_misc_transforms_impl(self, central_meridian=central_meridian, tessellate_degrees=tessellate_degrees) # fmt: skip
+        return _deprecated_funs._get_misc_transforms_impl(self, central_meridian=central_meridian, tessellate_degrees=tessellate_degrees) # fmt: skip
 
-    @append_docstring(deprecated._plot_ridges_and_transforms_impl.__doc__ or "")
+    @append_docstring(_deprecated_funs._plot_ridges_and_transforms_impl.__doc__ or "")
     def plot_ridges_and_transforms(self, ax, color="black", **kwargs):
-        return deprecated._plot_ridges_and_transforms_impl(self, ax, color=color, **kwargs) # fmt: skip
+        return _deprecated_funs._plot_ridges_and_transforms_impl(self, ax, color=color, **kwargs) # fmt: skip
 
-    @append_docstring(deprecated._plot_plate_id_impl.__doc__ or "")
+    @append_docstring(_deprecated_funs._plot_plate_id_impl.__doc__ or "")
     def plot_plate_id(self, *args, **kwargs):
-        return deprecated._plot_plate_id_impl(self, *args, **kwargs)
+        return _deprecated_funs._plot_plate_id_impl(self, *args, **kwargs)
 
-    @append_docstring(deprecated._get_ridges_and_transforms_impl.__doc__ or "")
+    @append_docstring(_deprecated_funs._get_ridges_and_transforms_impl.__doc__ or "")
     def get_ridges_and_transforms(self, central_meridian=0.0, tessellate_degrees=1):
-        return deprecated._get_ridges_and_transforms_impl(self, central_meridian=central_meridian, tessellate_degrees=tessellate_degrees )# fmt: skip
+        return _deprecated_funs._get_ridges_and_transforms_impl(self, central_meridian=central_meridian, tessellate_degrees=tessellate_degrees )# fmt: skip
 
-    @append_docstring(deprecated._plot_subduction_teeth_deprecated.__doc__ or "")
+    @append_docstring(_deprecated_funs._plot_subduction_teeth_deprecated.__doc__ or "")
     def _plot_subduction_teeth_deprecated(self, ax, spacing=0.1, size=2.0, aspect=1, color="black", **kwargs): # fmt: skip
-        return deprecated._plot_subduction_teeth_deprecated(self, ax, spacing=spacing, size=size, aspect=aspect, color=color, **kwargs) # fmt: skip
+        return _deprecated_funs._plot_subduction_teeth_deprecated(self, ax, spacing=spacing, size=size, aspect=aspect, color=color, **kwargs) # fmt: skip
 
-    @append_docstring(deprecated._tessellate_triangles_impl.__doc__ or "")
+    @append_docstring(_deprecated_funs._tessellate_triangles_impl.__doc__ or "")
     def _tessellate_triangles(self, features, tesselation_radians, triangle_base_length, triangle_aspect=1.0): # fmt: skip
-        return deprecated._tessellate_triangles_impl(self, features, tesselation_radians, triangle_base_length, triangle_aspect) # fmt: skip
+        return _deprecated_funs._tessellate_triangles_impl(self, features, tesselation_radians, triangle_base_length, triangle_aspect) # fmt: skip

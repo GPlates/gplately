@@ -16,17 +16,22 @@
 #
 
 from .utils import dev_warning
-from .utils.check_pmm import ensure_plate_model_manager_compatible
+from .utils.check_pmm import (
+    ensure_plate_model_manager_compatible,
+    get_required_pmm_version,
+)
 from .utils.log_utils import setup_logging
 from .utils.version import get_distribution_version
 
-REQUIRED_PMM_VERSION = "1.3.0"  # TODO: get this from package meta
 USING_DEV_VERSION = False  ## change this to False before official release
-
-__version__ = get_distribution_version()
 
 setup_logging()
 del setup_logging
+
+REQUIRED_PMM_VERSION = get_required_pmm_version()
+
+__version__ = get_distribution_version()
+
 
 if USING_DEV_VERSION:
     dev_warning.print_dev_warning(__version__)
@@ -35,6 +40,7 @@ del dev_warning
 
 ensure_plate_model_manager_compatible(REQUIRED_PMM_VERSION)
 del ensure_plate_model_manager_compatible
+del get_required_pmm_version
 
 from plate_model_manager import PlateModel, PlateModelManager, PresentDayRasterManager
 
