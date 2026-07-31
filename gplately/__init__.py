@@ -89,18 +89,21 @@ from .deprecated import (
     pygplates as _pygplates,
     download as _download,
     data as _data,
+    parallel as _parallel,
 )
 
 sys.modules["gplately.mapping"] = _plot
 sys.modules["gplately.pygplates"] = _pygplates
 sys.modules["gplately.download"] = _download
 sys.modules["gplately.data"] = _data
+sys.modules["gplately.parallel"] = _parallel
 
 # Clean up namespace
 del _download
 del _data
 del _pygplates
 del _plot
+del _parallel
 del sys
 
 __all__ = [

@@ -173,7 +173,7 @@ def normalize(v):
     return v / norm
 
 
-def bisect(vertices, faces, level=3):
+def bisect(vertices, faces, level=3) -> Tuple[np.ndarray, np.ndarray]:
     if level == 0:
         return vertices, faces
 

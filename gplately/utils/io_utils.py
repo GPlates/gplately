@@ -168,7 +168,7 @@ def _get_geometries_cartopy(filename, buffer=None):
 
 
 def load_data_array_from_netcdf(filename, var_name=None):
-    """Load a data array from a netCDF file.
+    """Load an xarray.DataArray object from a netCDF file.
 
     Parameters
     ----------

@@ -53,7 +53,7 @@ from .utils import _meridian_from_ax, PLOT_DOCSTRING, GET_DATE_DOCSTRING
 
 from ..deprecated import deprecated_functions as _deprecated_funs
 from ..utils.io_utils import to_geographic_data_array, load_data_array_from_netcdf
-from ..utils.feature_utils import shapelify_features as _shapelify_features
+from .utils import shapelify_features as _shapelify_features
 
 logger = logging.getLogger("gplately")
 

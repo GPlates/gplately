@@ -12,18 +12,8 @@ name: Protect Generated Notebooks
 
 on:
   pull_request:
-    paths: &notebook_paths
-      - Notebooks/14-RuleBasedGPMLProcessingPipeline.ipynb
-      - Notebooks/Examples/hello_world.ipynb
-      - Notebooks/Examples/icosahedron_mesh.ipynb
-      - Notebooks/Examples/introducing_plate_model_manager.ipynb
-      - Notebooks/Examples/plot_map_with_cartopy.ipynb
-      - Notebooks/Examples/plot_map_with_pygmt.ipynb
-      - Notebooks/Examples/reconstruct_files.ipynb
-      - Notebooks/Examples/save_reconstructed_data.ipynb
-      - Notebooks/Examples/use_auxiliary_functions.ipynb
-      - Notebooks/Examples/use_your_own_plate_model.ipynb
-      - Notebooks/Examples/working_with_plate_model_manager.ipynb
+     branches:
+      - master
 
 permissions:
   contents: read
