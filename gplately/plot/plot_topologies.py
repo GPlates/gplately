@@ -469,6 +469,20 @@ class PlotTopologies(object):
 
         Moreover, coastlines, continents and COBs are reconstructed to the new :attr:`gplately.PlotTopologies.time`.
         """
+        self._transforms = []
+        self.continental_rifts = []
+        self.faults = []
+        self.fracture_zones = []
+        self.inferred_paleo_boundaries = []
+        self.terrane_boundaries = []
+        self.transitional_crusts = []
+        self.orogenic_belts = []
+        self.sutures = []
+        self.continental_crusts = []
+        self.extended_continental_crusts = []
+        self.passive_continental_boundaries = []
+        self.slab_edges = []
+        self.unclassified_features = []
 
         # Get the topological snapshot (of resolved topologies) for the current time (and our anchor plate ID).
         topological_snapshot = self.plate_reconstruction.topological_snapshot(
@@ -503,59 +517,59 @@ class PlotTopologies(object):
         )
 
         for topol in self.other:
-            if topol.get_feature_type() == pygplates.FeatureType.gpml_continental_rift:  # type: ignore
+            if topol.get_feature_type() == pygplates.FeatureType.gpml_continental_rift:
                 self.continental_rifts.append(topol)
 
-            elif topol.get_feature_type() == pygplates.FeatureType.gpml_fault:  # type: ignore
+            elif topol.get_feature_type() == pygplates.FeatureType.gpml_fault:
                 self.faults.append(topol)
 
-            elif topol.get_feature_type() == pygplates.FeatureType.gpml_fracture_zone:  # type: ignore
+            elif topol.get_feature_type() == pygplates.FeatureType.gpml_fracture_zone:
                 self.fracture_zones.append(topol)
 
             elif (
                 topol.get_feature_type()
-                == pygplates.FeatureType.gpml_inferred_paleo_boundary  # type: ignore
+                == pygplates.FeatureType.gpml_inferred_paleo_boundary
             ):
                 self.inferred_paleo_boundaries.append(topol)
 
             elif (
-                topol.get_feature_type() == pygplates.FeatureType.gpml_terrane_boundary  # type: ignore
+                topol.get_feature_type() == pygplates.FeatureType.gpml_terrane_boundary
             ):
                 self.terrane_boundaries.append(topol)
 
             elif (
                 topol.get_feature_type()
-                == pygplates.FeatureType.gpml_transitional_crust  # type: ignore
+                == pygplates.FeatureType.gpml_transitional_crust
             ):
                 self.transitional_crusts.append(topol)
 
-            elif topol.get_feature_type() == pygplates.FeatureType.gpml_orogenic_belt:  # type: ignore
+            elif topol.get_feature_type() == pygplates.FeatureType.gpml_orogenic_belt:
                 self.orogenic_belts.append(topol)
 
-            elif topol.get_feature_type() == pygplates.FeatureType.gpml_suture:  # type: ignore
+            elif topol.get_feature_type() == pygplates.FeatureType.gpml_suture:
                 self.sutures.append(topol)
 
             elif (
-                topol.get_feature_type() == pygplates.FeatureType.gpml_continental_crust  # type: ignore
+                topol.get_feature_type() == pygplates.FeatureType.gpml_continental_crust
             ):
                 self.continental_crusts.append(topol)
 
             elif (
                 topol.get_feature_type()
-                == pygplates.FeatureType.gpml_extended_continental_crust  # type: ignore
+                == pygplates.FeatureType.gpml_extended_continental_crust
             ):
                 self.extended_continental_crusts.append(topol)
 
             elif (
                 topol.get_feature_type()
-                == pygplates.FeatureType.gpml_passive_continental_boundary  # type: ignore
+                == pygplates.FeatureType.gpml_passive_continental_boundary
             ):
                 self.passive_continental_boundaries.append(topol)
 
-            elif topol.get_feature_type() == pygplates.FeatureType.gpml_slab_edge:  # type: ignore
+            elif topol.get_feature_type() == pygplates.FeatureType.gpml_slab_edge:
                 self.slab_edges.append(topol)
 
-            elif topol.get_feature_type() == pygplates.FeatureType.gpml_transform:  # type: ignore
+            elif topol.get_feature_type() == pygplates.FeatureType.gpml_transform:
                 self._transforms.append(topol)
                 # remove transform features from 'other' since 'other' is supposed to contain features that
                 # are not subduction zones or mid-ocean ridges(ridge/transform)
@@ -563,7 +577,7 @@ class PlotTopologies(object):
 
             elif (
                 topol.get_feature_type()
-                == pygplates.FeatureType.gpml_unclassified_feature  # type: ignore
+                == pygplates.FeatureType.gpml_unclassified_feature
             ):
                 self.unclassified_features.append(topol)
 
