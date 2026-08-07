@@ -1715,9 +1715,9 @@ class Raster(object):
 
     def query(
         self,
-        *,
         lons: np.ndarray,
         lats: np.ndarray,
+        *,
         interpolation_method: str = "nearest",
         region_of_interest: Union[None, float] = None,
         pointwise: bool = True,
