@@ -7,7 +7,6 @@ on:
     branches-ignore:
       - master
     paths:
-      - Notebooks/14-RuleBasedGPMLProcessingPipeline.py
       - Notebooks/Examples/hello_world.py
       - Notebooks/Examples/icosahedron_mesh.py
       - Notebooks/Examples/introducing_plate_model_manager.py
@@ -44,7 +43,6 @@ jobs:
       - name: Generate notebooks
         run: |
           notebooks=(
-            Notebooks/14-RuleBasedGPMLProcessingPipeline.ipynb
             Notebooks/Examples/hello_world.ipynb
             Notebooks/Examples/icosahedron_mesh.ipynb
             Notebooks/Examples/introducing_plate_model_manager.ipynb
@@ -69,7 +67,6 @@ jobs:
       - name: Commit updated notebooks
         run: |
           notebooks=(
-            Notebooks/14-RuleBasedGPMLProcessingPipeline.ipynb
             Notebooks/Examples/hello_world.ipynb
             Notebooks/Examples/icosahedron_mesh.ipynb
             Notebooks/Examples/introducing_plate_model_manager.ipynb
