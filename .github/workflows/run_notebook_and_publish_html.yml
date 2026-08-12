@@ -195,23 +195,8 @@ jobs:
             exit 0
           fi
 
-          for notebook in "${notebooks[@]}"; do
-            mkdir -p "/tmp/notebook-run/${notebook}"
-            notebook_file="$(basename "${notebook}").ipynb"
-            jupyter nbconvert \
-              --to notebook \
-              --execute \
-              --output "${notebook_file}" \
-              --output-dir "/tmp/notebook-run/${notebook}" \
-              "Notebooks/${notebook}.ipynb"
-
-            mkdir -p "notebook-html/$(dirname "${notebook}")"
-            jupyter nbconvert \
-              --to html \
-              --output "${notebook}.html" \
-              --output-dir notebook-html \
-              "/tmp/notebook-run/${notebook}/${notebook_file}"
-          done
+          chmod +x scripts/run_notebooks.sh
+          ./scripts/run_notebooks.sh "${notebooks[@]}"
 
       - name: Deploy HTML to gh-pages
         uses: JamesIves/github-pages-deploy-action@v4.2.2
