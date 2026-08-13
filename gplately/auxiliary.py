@@ -15,21 +15,19 @@
 #    51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 
-"""A set of helper functions designed to streamline the use of GPlately’s functionalities,
+"""A set of helper functions designed to streamline the use of GPlately's functionalities,
 minimizing the coding effort required from users."""
 
 import logging
-from typing import Union
-
-# pyright: reportMissingImports=false
-# pyright: reportMissingModuleSource=false
-
+from typing import Optional, Union
 
 logger = logging.getLogger("gplately")
 try:
     import pygmt
-except:
-    logger.error("Failed to import PyGMT. PyGMT requires Python>=3.11.")
+except ImportError:
+    logger.error(
+        "Failed to import PyGMT. Make sure PyGMT is installed. PyGMT requires Python>=3.11."
+    )
     pygmt = None
 from plate_model_manager import PlateModel, PlateModelManager
 
@@ -49,9 +47,9 @@ def get_plate_model(
 
     Parameters
     ----------
-    model : str or PlateModel
+    model : `str` or `PlateModel`
         model name or a :class:`gplately.PlateModel` object
-    model_repo_dir: str, default="./"
+    model_repo_dir: `str`, default="./"
         the folder in which you would like to keep the model files
 
     Returns
@@ -65,11 +63,11 @@ def get_plate_model(
             plate_model = PlateModelManager().get_model(
                 model_name, data_dir=model_repo_dir
             )
-        except:
+        except Exception:
             plate_model = PlateModel(model_name, data_dir=model_repo_dir, readonly=True)
 
         if plate_model is None:
-            raise Exception(f"Unable to get model ({model_name})")
+            raise RuntimeError(f"Unable to get model ({model_name})")
     else:
         plate_model = model
 
@@ -85,11 +83,11 @@ def get_plate_reconstruction(
 
     Parameters
     ----------
-    model : str or PlateModel
+    model : `str` or `PlateModel`
         model name or a :class:`gplately.PlateModel` object
-    model_repo_dir: str, default="./"
+    model_repo_dir: `str`, default="./"
         the folder in which you would like to keep the model files
-    default_anchor_plate_id: int, default=0
+    default_anchor_plate_id: `int`, default=0
         the default anchor plate ID to use to create pygplates.RotationModel.
 
     Returns
@@ -100,7 +98,7 @@ def get_plate_reconstruction(
 
     .. seealso::
 
-        `usage example <https://github.com/GPlates/gplately/blob/master/Notebooks/Examples/use_auxiliary_functions.py>`__
+        `Usage example <https://gplates.github.io/gplately/latest/notebook-html/Examples/08-UseAuxiliaryFunctions.html>`__
     """
     plate_model = get_plate_model(model, model_repo_dir)
 
@@ -127,14 +125,14 @@ def get_gplot(
     model: Union[str, PlateModel],
     model_repo_dir: str = "./",
     time: Union[int, float] = 0,
-    plot_engine: PlotEngine = CartopyPlotEngine(),
+    plot_engine: Optional[PlotEngine] = None,
     default_anchor_plate_id: int = 0,
 ) -> PlotTopologies:
     """Return a :py:class:`gplately.PlotTopologies` object for a given model name or :class:`gplately.PlateModel` object.
 
     Parameters
     ----------
-    model : str or PlateModel
+    model : `str` or `PlateModel`
         model name or a :class:`gplately.PlateModel` object
     model_repo_dir: str, default="./"
         the folder in which you would like to keep the model files
@@ -153,8 +151,11 @@ def get_gplot(
 
     .. seealso::
 
-        `usage example <https://github.com/GPlates/gplately/blob/master/Notebooks/Examples/use_auxiliary_functions.py>`__
+        `Usage example. <https://gplates.github.io/gplately/latest/notebook-html/Examples/08-UseAuxiliaryFunctions.html>`__
     """
+    if plot_engine is None:
+        plot_engine = CartopyPlotEngine()
+
     plate_model = get_plate_model(model, model_repo_dir)
 
     m = get_plate_reconstruction(plate_model, model_repo_dir, default_anchor_plate_id)
@@ -203,9 +204,10 @@ def get_pygmt_basemap_figure(
        a ``pygmt.Figure()`` object for map plotting
 
     """
-    assert (
-        pygmt is not None
-    ), "PyGMT is not available. Please install PyGMT to use this function."
+    if pygmt is None:
+        raise ModuleNotFoundError(
+            "PyGMT is not available. Please install PyGMT to use this function."
+        )
 
     fig = pygmt.Figure()
     fig.basemap(region=region, projection=projection, frame=frame)
@@ -222,7 +224,7 @@ def get_pygmt_basemap_figure(
 
 
 def get_data_server_cache_path():
-    """Return the path to the :class:`gplately.DataServer` cache as a ``os.PathLike`` object.
+    """Return the path to the :class:`gplately.DataServer` cache as a `os.PathLike` object.
 
     .. seealso::
 
