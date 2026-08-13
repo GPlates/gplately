@@ -71,39 +71,39 @@ on:
         type: boolean
         default: false
       notebook_examples_hello_world:
-        description: "Examples/hello_world"
-        type: boolean
-        default: false
-      notebook_examples_icosahedron_mesh:
-        description: "Examples/icosahedron_mesh"
+        description: "Examples/01-HelloWorld"
         type: boolean
         default: false
       notebook_examples_introducing_plate_model_manager:
-        description: "Examples/introducing_plate_model_manager"
+        description: "Examples/02-PlateModelManager"
         type: boolean
         default: false
       notebook_examples_plot_map_with_cartopy:
-        description: "Examples/plot_map_with_cartopy"
+        description: "Examples/03-PlotWithCartopy"
         type: boolean
         default: false
       notebook_plot_map_with_pygmt:
-        description: "Examples/plot_map_with_pygmt"
+        description: "Examples/04-PlotWithPyGMT"
         type: boolean
         default: false
       notebook_examples_reconstruct_files:
-        description: "Examples/reconstruct_files"
-        type: boolean
-        default: false
-      notebook_examples_save_reconstructed_data:
-        description: "Examples/save_reconstructed_data"
-        type: boolean
-        default: false
-      notebook_examples_use_auxiliary_functions:
-        description: "Examples/use_auxiliary_functions"
+        description: "Examples/05-ReconstructFiles"
         type: boolean
         default: false
       notebook_examples_use_your_own_plate_model:
-        description: "Examples/use_your_own_plate_model"
+        description: "Examples/06-LoadPlateModelFromFiles"
+        type: boolean
+        default: false
+      notebook_examples_save_reconstructed_data:
+        description: "Examples/07-SaveReconstructedData"
+        type: boolean
+        default: false
+      notebook_examples_use_auxiliary_functions:
+        description: "Examples/08-UseAuxiliaryFunctions"
+        type: boolean
+        default: false
+      notebook_examples_icosahedron_mesh:
+        description: "Examples/09-IcosahedronMesh"
         type: boolean
         default: false
 
@@ -126,7 +126,7 @@ jobs:
         uses: mamba-org/setup-micromamba@v1
         with:
           micromamba-version: "1.5.8-0"
-          environment-file: conda/doc-env.yml
+          environment-file: docker/env.yaml
           init-shell: bash
           cache-environment: true
           post-cleanup: all
@@ -134,6 +134,34 @@ jobs:
       - name: Install current gplately
         run: |
           pip install . --no-binary :all: --no-cache-dir --no-dependencies
+
+      - uses: actions/cache@v4
+        id: cache-data
+        with:
+          path: Notebooks/12-GPlately-Regional-Plots-Source-Data
+          key: 12-GPlately-Regional-Plots-Source-Data
+
+      - name: Download data
+        if: ${{ (inputs.notebook_all || inputs.notebook_12_mutschler_world_porphyry_copper_deposits_regional_plots) && steps.cache-data.outputs.cache-hit != 'true' }}
+        run: |
+          set -euo pipefail
+
+          target_dir="Notebooks/12-GPlately-Regional-Plots-Source-Data"
+          tmp_dir="$(mktemp -d)"
+          zip_path="${tmp_dir}/12-GPlately-Regional-Plots-data.zip"
+
+          mkdir -p "${target_dir}"
+
+          curl -fL "https://repo.gplates.org/webdav/gplately/12-GPlately-Regional-Plots-data.zip" -o "${zip_path}"
+          unzip -q "${zip_path}" -d "${tmp_dir}/unzipped"
+
+          extracted_source_data_dir="$(find "${tmp_dir}/unzipped" -type d -name source_data | head -n 1)"
+          if [ -z "${extracted_source_data_dir}" ]; then
+            echo "Error: could not find source_data directory in downloaded archive." >&2
+            exit 1
+          fi
+
+          cp -a "${extracted_source_data_dir}/." "${target_dir}/"
 
       - name: Execute notebooks
         run: |
@@ -154,15 +182,15 @@ jobs:
             notebooks+=(13-ReconstructingZirconData)
             notebooks+=(14-RuleBasedGPMLProcessingPipeline)
             notebooks+=(15-ConvertGridReferenceFrame)
-            notebooks+=(Examples/hello_world)
-            notebooks+=(Examples/icosahedron_mesh)
-            notebooks+=(Examples/introducing_plate_model_manager)
-            notebooks+=(Examples/plot_map_with_cartopy)
-            notebooks+=(Examples/plot_map_with_pygmt)
-            notebooks+=(Examples/reconstruct_files)
-            notebooks+=(Examples/save_reconstructed_data)
-            notebooks+=(Examples/use_auxiliary_functions)
-            notebooks+=(Examples/use_your_own_plate_model)
+            notebooks+=(Examples/01-HelloWorld)
+            notebooks+=(Examples/02-PlateModelManager)
+            notebooks+=(Examples/03-PlotWithCartopy)
+            notebooks+=(Examples/04-PlotWithPyGMT)
+            notebooks+=(Examples/05-ReconstructFiles)
+            notebooks+=(Examples/06-LoadPlateModelFromFiles)
+            notebooks+=(Examples/07-SaveReconstructedData)
+            notebooks+=(Examples/08-UseAuxiliaryFunctions)
+            notebooks+=(Examples/09-IcosahedronMesh)
           else
             ${{ inputs.notebook_01_getting_started }} && notebooks+=(01-GettingStarted)
             ${{ inputs.notebook_02_plate_reconstructions }} && notebooks+=(02-PlateReconstructions)
@@ -179,15 +207,15 @@ jobs:
             ${{ inputs.notebook_13_reconstructing_zircon_data }} && notebooks+=(13-ReconstructingZirconData)
             ${{ inputs.notebook_14 }} && notebooks+=(14-RuleBasedGPMLProcessingPipeline)
             ${{ inputs.notebook_15 }} && notebooks+=(15-ConvertGridReferenceFrame)
-            ${{ inputs.notebook_examples_hello_world }} && notebooks+=(Examples/hello_world)
-            ${{ inputs.notebook_examples_icosahedron_mesh }} && notebooks+=(Examples/icosahedron_mesh)
-            ${{ inputs.notebook_examples_introducing_plate_model_manager }} && notebooks+=(Examples/introducing_plate_model_manager)
-            ${{ inputs.notebook_examples_plot_map_with_cartopy }} && notebooks+=(Examples/plot_map_with_cartopy)
-            ${{ inputs.notebook_plot_map_with_pygmt }} && notebooks+=(Examples/plot_map_with_pygmt)
-            ${{ inputs.notebook_examples_reconstruct_files }} && notebooks+=(Examples/reconstruct_files)
-            ${{ inputs.notebook_examples_save_reconstructed_data }} && notebooks+=(Examples/save_reconstructed_data)
-            ${{ inputs.notebook_examples_use_auxiliary_functions }} && notebooks+=(Examples/use_auxiliary_functions)
-            ${{ inputs.notebook_examples_use_your_own_plate_model }} && notebooks+=(Examples/use_your_own_plate_model)
+            ${{ inputs.notebook_examples_hello_world }} && notebooks+=(Examples/01-HelloWorld)
+            ${{ inputs.notebook_examples_introducing_plate_model_manager }} && notebooks+=(Examples/02-PlateModelManager)
+            ${{ inputs.notebook_examples_plot_map_with_cartopy }} && notebooks+=(Examples/03-PlotWithCartopy)
+            ${{ inputs.notebook_plot_map_with_pygmt }} && notebooks+=(Examples/04-PlotWithPyGMT)
+            ${{ inputs.notebook_examples_reconstruct_files }} && notebooks+=(Examples/05-ReconstructFiles)
+            ${{ inputs.notebook_examples_use_your_own_plate_model }} && notebooks+=(Examples/06-LoadPlateModelFromFiles)
+            ${{ inputs.notebook_examples_save_reconstructed_data }} && notebooks+=(Examples/07-SaveReconstructedData)
+            ${{ inputs.notebook_examples_use_auxiliary_functions }} && notebooks+=(Examples/08-UseAuxiliaryFunctions)
+            ${{ inputs.notebook_examples_icosahedron_mesh }} && notebooks+=(Examples/09-IcosahedronMesh)
           fi
 
           if [ ${#notebooks[@]} -eq 0 ]; then
@@ -195,23 +223,8 @@ jobs:
             exit 0
           fi
 
-          for notebook in "${notebooks[@]}"; do
-            mkdir -p "/tmp/notebook-run/${notebook}"
-            notebook_file="$(basename "${notebook}").ipynb"
-            jupyter nbconvert \
-              --to notebook \
-              --execute \
-              --output "${notebook_file}" \
-              --output-dir "/tmp/notebook-run/${notebook}" \
-              "Notebooks/${notebook}.ipynb"
-
-            mkdir -p "notebook-html/$(dirname "${notebook}")"
-            jupyter nbconvert \
-              --to html \
-              --output "${notebook}.html" \
-              --output-dir notebook-html \
-              "/tmp/notebook-run/${notebook}/${notebook_file}"
-          done
+          chmod +x scripts/run_notebooks.sh
+          ./scripts/run_notebooks.sh "${notebooks[@]}"
 
       - name: Deploy HTML to gh-pages
         uses: JamesIves/github-pages-deploy-action@v4.2.2

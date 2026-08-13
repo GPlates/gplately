@@ -7,57 +7,39 @@ import cartopy.crs as ccrs
 import matplotlib.pyplot as plt
 import numpy as np
 from common import MODEL_REPO_DIR, save_fig
-from plate_model_manager import PlateModelManager
 
 import gplately
+from gplately.auxiliary import get_gplot
 
 print(gplately.__file__)
 
 
 def main(show=True):
-    pm_manager = PlateModelManager()
-    muller2019_model = pm_manager.get_model("Muller2019", data_dir=MODEL_REPO_DIR)
-    assert muller2019_model
-    rotation_model = muller2019_model.get_rotation_model()
-    topology_features = muller2019_model.get_topologies()
-    static_polygons = muller2019_model.get_static_polygons()
+    gplot = get_gplot("Muller2019", time=0)
+    model = gplot.plate_reconstruction
 
-    model = gplately.PlateReconstruction(
-        rotation_model, topology_features, static_polygons
-    )
-
-    # Obtain features for the PlotTopologies object with PlateModelManager
-    coastlines = muller2019_model.get_layer("Coastlines")
-    continents = muller2019_model.get_layer("ContinentalPolygons")
-    COBs = muller2019_model.get_layer("COBs")
-
-    # Call the PlotTopologies object
-    gplot = gplately.plot.PlotTopologies(
-        model, coastlines=coastlines, continents=continents, COBs=COBs
-    )
-
-    pt_lons = np.array([140.0, 150.0, 160.0])
-    pt_lats = np.array([-30.0, -40.0, -50.0])
-
+    pt_lons = np.array([140.0, 47, 13, 78])
+    pt_lats = np.array([-30.0, 22, 42, 23])
     gpts = gplately.Points(model, pt_lons, pt_lats)
 
-    rlons = np.empty((21, pt_lons.size))
-    rlats = np.empty((21, pt_lons.size))
+    fig = plt.figure(figsize=(16, 8))
 
-    for time in range(0, 21):
-        rlons[time], rlats[time] = gpts.reconstruct(time, return_array=True)  # type: ignore
+    ax_1 = fig.add_subplot(121, projection=ccrs.Mollweide(0))
+    ax_1.set_global()  # type: ignore
+    gplot.plot_coastlines(ax_1, color="0.8")
+    ax_1.plot(pt_lons, pt_lats, "o", transform=ccrs.PlateCarree())
+    ax_1.set_title(f"{int(gplot.time)} Ma")  # type: ignore
 
-    gplot.time = 0  # present day
+    ax_2 = fig.add_subplot(122, projection=ccrs.Mollweide(0))
+    ax_2.set_global()  # type: ignore
+    r_time = 100
+    gplot.time = r_time
+    gplot.plot_coastlines(ax_2, color="0.8")
+    rlons, rlats = gpts.reconstruct(r_time, return_array=True)  # type: ignore
+    ax_2.plot(rlons, rlats, "o", transform=ccrs.PlateCarree())
+    ax_2.set_title(f"{r_time} Ma")
 
-    fig = plt.figure(figsize=(6, 8))
-    ax1 = fig.add_subplot(111, projection=ccrs.Mercator(190))
-    ax1.set_extent([130, 180, -60, -10])  # type: ignore
-
-    gplot.plot_coastlines(ax1, color="0.8")
-
-    for i in range(0, len(pt_lons)):
-        ax1.plot(rlons[:, i], rlats[:, i], "o", transform=ccrs.PlateCarree())
-
+    fig.tight_layout()
     if show:
         plt.show()
     else:

@@ -6,13 +6,9 @@ on:
   push:
     branches:
       - master
-    paths:
-      - gplately/**
   pull_request:
     branches:
       - master
-    paths:
-      - gplately/**
   workflow_dispatch:
     inputs:
       runner_os:
@@ -38,9 +34,78 @@ on:
         default: "3.11"
 
 jobs:
+  detect-relevant-changes:
+    name: Check relevant changes
+    runs-on: ubuntu-latest
+    outputs:
+      run_tests: ${{ steps.filter.outputs.run_tests }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Determine whether tests should run
+        id: filter
+        shell: bash
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            echo "run_tests=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          if [[ "${{ github.event_name }}" == "push" ]]; then
+            base="${{ github.event.before }}"
+            if [[ -z "$base" || "$base" == "0000000000000000000000000000000000000000" ]]; then
+              base="$(git rev-list --max-parents=0 HEAD)"
+            fi
+          else
+            base="${{ github.event.pull_request.base.sha }}"
+          fi
+
+          if git diff --name-only "$base" "${{ github.sha }}" -- 'gplately/**' | grep -q .; then
+            echo "run_tests=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "run_tests=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  required-status-check:
+    name: GPlately required check
+    needs: [detect-relevant-changes, test-gplately-automatic, test-gplately-manual]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Evaluate required check
+        shell: bash
+        run: |
+          if [[ "${{ needs.detect-relevant-changes.outputs.run_tests }}" != "true" ]]; then
+            echo "No relevant changes detected; passing status check without running expensive tests."
+            exit 0
+          fi
+
+          auto_result="${{ needs.test-gplately-automatic.result }}"
+          manual_result="${{ needs.test-gplately-manual.result }}"
+
+          if [[ "$auto_result" == "failure" || "$manual_result" == "failure" ]]; then
+            echo "Required tests failed."
+            exit 1
+          fi
+
+          if [[ "$auto_result" == "cancelled" || "$manual_result" == "cancelled" ]]; then
+            echo "Required tests were cancelled."
+            exit 1
+          fi
+
+          if [[ "$auto_result" == "skipped" && "$manual_result" == "skipped" ]]; then
+            echo "No required tests were run; this should not happen when relevant changes are present."
+            exit 1
+          fi
+
+          echo "Required tests passed."
+
   test-gplately-automatic:
     name: Test with Python ${{ matrix.python-version }} on ${{ matrix.os }}
-    if: github.event_name != 'workflow_dispatch' && (github.event_name != 'pull_request' || github.event.pull_request.draft == false)
+    needs: detect-relevant-changes
+    if: needs.detect-relevant-changes.outputs.run_tests == 'true' && github.event_name != 'workflow_dispatch' && (github.event_name != 'pull_request' || github.event.pull_request.draft == false)
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false

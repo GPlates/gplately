@@ -76,6 +76,7 @@ from .ptt.ridge_spreading_rate import spreading_rates as ridge_spreading_rate
 from .ptt.subduction_convergence import subduction_convergence
 from .reconstruction import PlateReconstruction
 from .tools import EARTH_RADIUS
+from .geometry import pygplates_to_shapely
 
 # To make the `gplately.mapping` module available for backward compatibility, we import the `plot` module
 # and assign it to `sys.modules["gplately.mapping"]`. This allows users to access the plotting functionalities through

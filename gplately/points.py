@@ -1,5 +1,5 @@
 #
-#    Copyright (C) 2024-2025 The University of Sydney, Australia
+#    Copyright (C) 2024-2026 The University of Sydney, Australia
 #
 #    This program is free software; you can redistribute it and/or modify it under
 #    the terms of the GNU General Public License, version 2, as published by
@@ -20,15 +20,14 @@ from typing import Union
 import numpy as np
 import pygplates
 from pygplates import (
-    RotationModel as _RotationModel,  # pyright: ignore[reportAttributeAccessIssue]
-    Feature as _Feature,  # pyright: ignore[reportAttributeAccessIssue]
-    FeaturesFunctionArgument as _FeaturesFunctionArgument,  # pyright: ignore[reportAttributeAccessIssue]
-    FeatureCollection as _FeatureCollection,  # pyright: ignore[reportAttributeAccessIssue]
-    PointOnSphere as _PointOnSphere,  # pyright: ignore[reportAttributeAccessIssue]
-    MultiPointOnSphere as _MultiPointOnSphere,  # pyright: ignore[reportAttributeAccessIssue]
-    VelocityDeltaTimeType as _VelocityDeltaTimeType,  # pyright: ignore[reportAttributeAccessIssue]
-    VelocityUnits as _VelocityUnits,  # pyright: ignore[reportAttributeAccessIssue]
-    Earth as _Earth,  # pyright: ignore[reportAttributeAccessIssue]
+    RotationModel as _RotationModel,
+    Feature as _Feature,
+    FeatureCollection as _FeatureCollection,
+    PointOnSphere as _PointOnSphere,
+    MultiPointOnSphere as _MultiPointOnSphere,
+    VelocityDeltaTimeType as _VelocityDeltaTimeType,
+    VelocityUnits as _VelocityUnits,
+    Earth as _Earth,
 )
 
 from . import tools as _tools
