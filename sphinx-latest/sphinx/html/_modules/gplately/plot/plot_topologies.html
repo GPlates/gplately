@@ -559,6 +559,20 @@
 
 <span class="sd">        Moreover, coastlines, continents and COBs are reconstructed to the new :attr:`gplately.PlotTopologies.time`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_transforms</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">continental_rifts</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">faults</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fracture_zones</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">inferred_paleo_boundaries</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">terrane_boundaries</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">transitional_crusts</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">orogenic_belts</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sutures</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">continental_crusts</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">extended_continental_crusts</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">passive_continental_boundaries</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">slab_edges</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">unclassified_features</span> <span class="o">=</span> <span class="p">[]</span>
 
         <span class="c1"># Get the topological snapshot (of resolved topologies) for the current time (and our anchor plate ID).</span>
         <span class="n">topological_snapshot</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">plate_reconstruction</span><span class="o">.</span><span class="n">topological_snapshot</span><span class="p">(</span>
@@ -593,59 +607,59 @@
         <span class="p">)</span>
 
         <span class="k">for</span> <span class="n">topol</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">other</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">topol</span><span class="o">.</span><span class="n">get_feature_type</span><span class="p">()</span> <span class="o">==</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">FeatureType</span><span class="o">.</span><span class="n">gpml_continental_rift</span><span class="p">:</span>  <span class="c1"># type: ignore</span>
+            <span class="k">if</span> <span class="n">topol</span><span class="o">.</span><span class="n">get_feature_type</span><span class="p">()</span> <span class="o">==</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">FeatureType</span><span class="o">.</span><span class="n">gpml_continental_rift</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">continental_rifts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">topol</span><span class="p">)</span>
 
-            <span class="k">elif</span> <span class="n">topol</span><span class="o">.</span><span class="n">get_feature_type</span><span class="p">()</span> <span class="o">==</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">FeatureType</span><span class="o">.</span><span class="n">gpml_fault</span><span class="p">:</span>  <span class="c1"># type: ignore</span>
+            <span class="k">elif</span> <span class="n">topol</span><span class="o">.</span><span class="n">get_feature_type</span><span class="p">()</span> <span class="o">==</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">FeatureType</span><span class="o">.</span><span class="n">gpml_fault</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">faults</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">topol</span><span class="p">)</span>
 
-            <span class="k">elif</span> <span class="n">topol</span><span class="o">.</span><span class="n">get_feature_type</span><span class="p">()</span> <span class="o">==</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">FeatureType</span><span class="o">.</span><span class="n">gpml_fracture_zone</span><span class="p">:</span>  <span class="c1"># type: ignore</span>
+            <span class="k">elif</span> <span class="n">topol</span><span class="o">.</span><span class="n">get_feature_type</span><span class="p">()</span> <span class="o">==</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">FeatureType</span><span class="o">.</span><span class="n">gpml_fracture_zone</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">fracture_zones</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">topol</span><span class="p">)</span>
 
             <span class="k">elif</span> <span class="p">(</span>
                 <span class="n">topol</span><span class="o">.</span><span class="n">get_feature_type</span><span class="p">()</span>
-                <span class="o">==</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">FeatureType</span><span class="o">.</span><span class="n">gpml_inferred_paleo_boundary</span>  <span class="c1"># type: ignore</span>
+                <span class="o">==</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">FeatureType</span><span class="o">.</span><span class="n">gpml_inferred_paleo_boundary</span>
             <span class="p">):</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">inferred_paleo_boundaries</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">topol</span><span class="p">)</span>
 
             <span class="k">elif</span> <span class="p">(</span>
-                <span class="n">topol</span><span class="o">.</span><span class="n">get_feature_type</span><span class="p">()</span> <span class="o">==</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">FeatureType</span><span class="o">.</span><span class="n">gpml_terrane_boundary</span>  <span class="c1"># type: ignore</span>
+                <span class="n">topol</span><span class="o">.</span><span class="n">get_feature_type</span><span class="p">()</span> <span class="o">==</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">FeatureType</span><span class="o">.</span><span class="n">gpml_terrane_boundary</span>
             <span class="p">):</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">terrane_boundaries</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">topol</span><span class="p">)</span>
 
             <span class="k">elif</span> <span class="p">(</span>
                 <span class="n">topol</span><span class="o">.</span><span class="n">get_feature_type</span><span class="p">()</span>
-                <span class="o">==</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">FeatureType</span><span class="o">.</span><span class="n">gpml_transitional_crust</span>  <span class="c1"># type: ignore</span>
+                <span class="o">==</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">FeatureType</span><span class="o">.</span><span class="n">gpml_transitional_crust</span>
             <span class="p">):</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">transitional_crusts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">topol</span><span class="p">)</span>
 
-            <span class="k">elif</span> <span class="n">topol</span><span class="o">.</span><span class="n">get_feature_type</span><span class="p">()</span> <span class="o">==</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">FeatureType</span><span class="o">.</span><span class="n">gpml_orogenic_belt</span><span class="p">:</span>  <span class="c1"># type: ignore</span>
+            <span class="k">elif</span> <span class="n">topol</span><span class="o">.</span><span class="n">get_feature_type</span><span class="p">()</span> <span class="o">==</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">FeatureType</span><span class="o">.</span><span class="n">gpml_orogenic_belt</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">orogenic_belts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">topol</span><span class="p">)</span>
 
-            <span class="k">elif</span> <span class="n">topol</span><span class="o">.</span><span class="n">get_feature_type</span><span class="p">()</span> <span class="o">==</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">FeatureType</span><span class="o">.</span><span class="n">gpml_suture</span><span class="p">:</span>  <span class="c1"># type: ignore</span>
+            <span class="k">elif</span> <span class="n">topol</span><span class="o">.</span><span class="n">get_feature_type</span><span class="p">()</span> <span class="o">==</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">FeatureType</span><span class="o">.</span><span class="n">gpml_suture</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">sutures</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">topol</span><span class="p">)</span>
 
             <span class="k">elif</span> <span class="p">(</span>
-                <span class="n">topol</span><span class="o">.</span><span class="n">get_feature_type</span><span class="p">()</span> <span class="o">==</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">FeatureType</span><span class="o">.</span><span class="n">gpml_continental_crust</span>  <span class="c1"># type: ignore</span>
+                <span class="n">topol</span><span class="o">.</span><span class="n">get_feature_type</span><span class="p">()</span> <span class="o">==</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">FeatureType</span><span class="o">.</span><span class="n">gpml_continental_crust</span>
             <span class="p">):</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">continental_crusts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">topol</span><span class="p">)</span>
 
             <span class="k">elif</span> <span class="p">(</span>
                 <span class="n">topol</span><span class="o">.</span><span class="n">get_feature_type</span><span class="p">()</span>
-                <span class="o">==</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">FeatureType</span><span class="o">.</span><span class="n">gpml_extended_continental_crust</span>  <span class="c1"># type: ignore</span>
+                <span class="o">==</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">FeatureType</span><span class="o">.</span><span class="n">gpml_extended_continental_crust</span>
             <span class="p">):</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">extended_continental_crusts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">topol</span><span class="p">)</span>
 
             <span class="k">elif</span> <span class="p">(</span>
                 <span class="n">topol</span><span class="o">.</span><span class="n">get_feature_type</span><span class="p">()</span>
-                <span class="o">==</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">FeatureType</span><span class="o">.</span><span class="n">gpml_passive_continental_boundary</span>  <span class="c1"># type: ignore</span>
+                <span class="o">==</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">FeatureType</span><span class="o">.</span><span class="n">gpml_passive_continental_boundary</span>
             <span class="p">):</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">passive_continental_boundaries</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">topol</span><span class="p">)</span>
 
-            <span class="k">elif</span> <span class="n">topol</span><span class="o">.</span><span class="n">get_feature_type</span><span class="p">()</span> <span class="o">==</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">FeatureType</span><span class="o">.</span><span class="n">gpml_slab_edge</span><span class="p">:</span>  <span class="c1"># type: ignore</span>
+            <span class="k">elif</span> <span class="n">topol</span><span class="o">.</span><span class="n">get_feature_type</span><span class="p">()</span> <span class="o">==</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">FeatureType</span><span class="o">.</span><span class="n">gpml_slab_edge</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">slab_edges</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">topol</span><span class="p">)</span>
 
-            <span class="k">elif</span> <span class="n">topol</span><span class="o">.</span><span class="n">get_feature_type</span><span class="p">()</span> <span class="o">==</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">FeatureType</span><span class="o">.</span><span class="n">gpml_transform</span><span class="p">:</span>  <span class="c1"># type: ignore</span>
+            <span class="k">elif</span> <span class="n">topol</span><span class="o">.</span><span class="n">get_feature_type</span><span class="p">()</span> <span class="o">==</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">FeatureType</span><span class="o">.</span><span class="n">gpml_transform</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_transforms</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">topol</span><span class="p">)</span>
                 <span class="c1"># remove transform features from &#39;other&#39; since &#39;other&#39; is supposed to contain features that</span>
                 <span class="c1"># are not subduction zones or mid-ocean ridges(ridge/transform)</span>
@@ -653,7 +667,7 @@
 
             <span class="k">elif</span> <span class="p">(</span>
                 <span class="n">topol</span><span class="o">.</span><span class="n">get_feature_type</span><span class="p">()</span>
-                <span class="o">==</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">FeatureType</span><span class="o">.</span><span class="n">gpml_unclassified_feature</span>  <span class="c1"># type: ignore</span>
+                <span class="o">==</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">FeatureType</span><span class="o">.</span><span class="n">gpml_unclassified_feature</span>
             <span class="p">):</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">unclassified_features</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">topol</span><span class="p">)</span>
 
