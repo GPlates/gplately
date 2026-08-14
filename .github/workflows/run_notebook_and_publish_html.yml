@@ -156,15 +156,8 @@ jobs:
           curl -fL "https://repo.gplates.org/webdav/gplately/12-GPlately-Regional-Plots-data.zip" -o "${zip_path}"
           unzip -q "${zip_path}" -d "${tmp_dir}/unzipped"
 
-          extracted_source_data_dir="$(
-            find "${tmp_dir}/unzipped" \
-              -type d \
-              -path '*/WorkflowData/12-GPlately-Regional-Plots/source_data' \
-              | head -n 1
-          )"
-          if [ -z "${extracted_source_data_dir}" ]; then
-            extracted_source_data_dir="$(find "${tmp_dir}/unzipped" -type d -name source_data | head -n 1)"
-          fi
+          extracted_source_data_dir="$(find "${tmp_dir}/unzipped" -type d -name source_data | head -n 1)"
+          
           if [ -z "${extracted_source_data_dir}" ]; then
             echo "Error: could not find source_data directory in downloaded archive." >&2
             exit 1
@@ -176,6 +169,8 @@ jobs:
             echo "Error: required deposits workbook was not found in ${extracted_source_data_dir}." >&2
             exit 1
           fi
+
+          echo "Data downloaded and extracted to ${target_dir}."
 
       - name: Execute notebooks
         run: |
