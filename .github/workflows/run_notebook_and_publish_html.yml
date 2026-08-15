@@ -75,47 +75,47 @@ on:
         description: "13-ReconstructingZirconData"
         type: boolean
         default: false
-      notebook_14:
+      notebook_14_rule_based_gpml_processing_pipeline:
         description: "14-RuleBasedGPMLProcessingPipeline"
         type: boolean
         default: false
-      notebook_15:
+      notebook_15_convert_grid_reference_frame:
         description: "15-ConvertGridReferenceFrame"
         type: boolean
         default: false
-      notebook_examples_hello_world:
+      notebook_examples_01_hello_world:
         description: "Examples/01-HelloWorld"
         type: boolean
         default: false
-      notebook_examples_introducing_plate_model_manager:
+      notebook_examples_02_plate_model_manager:
         description: "Examples/02-PlateModelManager"
         type: boolean
         default: false
-      notebook_examples_plot_map_with_cartopy:
+      notebook_examples_03_plot_with_cartopy:
         description: "Examples/03-PlotWithCartopy"
         type: boolean
         default: false
-      notebook_plot_map_with_pygmt:
+      notebook_examples_04_plot_with_pygmt:
         description: "Examples/04-PlotWithPyGMT"
         type: boolean
         default: false
-      notebook_examples_reconstruct_files:
+      notebook_examples_05_reconstruct_files:
         description: "Examples/05-ReconstructFiles"
         type: boolean
         default: false
-      notebook_examples_use_your_own_plate_model:
+      notebook_examples_06_load_plate_model_from_files:
         description: "Examples/06-LoadPlateModelFromFiles"
         type: boolean
         default: false
-      notebook_examples_save_reconstructed_data:
+      notebook_examples_07_save_reconstructed_data:
         description: "Examples/07-SaveReconstructedData"
         type: boolean
         default: false
-      notebook_examples_use_auxiliary_functions:
+      notebook_examples_08_use_auxiliary_functions:
         description: "Examples/08-UseAuxiliaryFunctions"
         type: boolean
         default: false
-      notebook_examples_icosahedron_mesh:
+      notebook_examples_09_icosahedron_mesh:
         description: "Examples/09-IcosahedronMesh"
         type: boolean
         default: false
@@ -154,17 +154,17 @@ jobs:
             [notebook_11_andes_fluxes]="11-AndesFluxes"
             [notebook_12_mutschler_world_porphyry_copper_deposits_regional_plots]="12-MutschlerWorldPorphyryCopperDepositsRegionalPlots"
             [notebook_13_reconstructing_zircon_data]="13-ReconstructingZirconData"
-            [notebook_14]="14-RuleBasedGPMLProcessingPipeline"
-            [notebook_15]="15-ConvertGridReferenceFrame"
-            [notebook_examples_hello_world]="Examples/01-HelloWorld"
-            [notebook_examples_introducing_plate_model_manager]="Examples/02-PlateModelManager"
-            [notebook_examples_plot_map_with_cartopy]="Examples/03-PlotWithCartopy"
-            [notebook_plot_map_with_pygmt]="Examples/04-PlotWithPyGMT"
-            [notebook_examples_reconstruct_files]="Examples/05-ReconstructFiles"
-            [notebook_examples_use_your_own_plate_model]="Examples/06-LoadPlateModelFromFiles"
-            [notebook_examples_save_reconstructed_data]="Examples/07-SaveReconstructedData"
-            [notebook_examples_use_auxiliary_functions]="Examples/08-UseAuxiliaryFunctions"
-            [notebook_examples_icosahedron_mesh]="Examples/09-IcosahedronMesh"
+            [notebook_14_rule_based_gpml_processing_pipeline]="14-RuleBasedGPMLProcessingPipeline"
+            [notebook_15_convert_grid_reference_frame]="15-ConvertGridReferenceFrame"
+            [notebook_examples_01_hello_world]="Examples/01-HelloWorld"
+            [notebook_examples_02_plate_model_manager]="Examples/02-PlateModelManager"
+            [notebook_examples_03_plot_with_cartopy]="Examples/03-PlotWithCartopy"
+            [notebook_examples_04_plot_with_pygmt]="Examples/04-PlotWithPyGMT"
+            [notebook_examples_05_reconstruct_files]="Examples/05-ReconstructFiles"
+            [notebook_examples_06_load_plate_model_from_files]="Examples/06-LoadPlateModelFromFiles"
+            [notebook_examples_07_save_reconstructed_data]="Examples/07-SaveReconstructedData"
+            [notebook_examples_08_use_auxiliary_functions]="Examples/08-UseAuxiliaryFunctions"
+            [notebook_examples_09_icosahedron_mesh]="Examples/09-IcosahedronMesh"
           )
 
           # Preserve a stable, human-friendly order (bash associative arrays
@@ -183,17 +183,17 @@ jobs:
             notebook_11_andes_fluxes
             notebook_12_mutschler_world_porphyry_copper_deposits_regional_plots
             notebook_13_reconstructing_zircon_data
-            notebook_14
-            notebook_15
-            notebook_examples_hello_world
-            notebook_examples_introducing_plate_model_manager
-            notebook_examples_plot_map_with_cartopy
-            notebook_plot_map_with_pygmt
-            notebook_examples_reconstruct_files
-            notebook_examples_use_your_own_plate_model
-            notebook_examples_save_reconstructed_data
-            notebook_examples_use_auxiliary_functions
-            notebook_examples_icosahedron_mesh
+            notebook_14_rule_based_gpml_processing_pipeline
+            notebook_15_convert_grid_reference_frame
+            notebook_examples_01_hello_world
+            notebook_examples_02_plate_model_manager
+            notebook_examples_03_plot_with_cartopy
+            notebook_examples_04_plot_with_pygmt
+            notebook_examples_05_reconstruct_files
+            notebook_examples_06_load_plate_model_from_files
+            notebook_examples_07_save_reconstructed_data
+            notebook_examples_08_use_auxiliary_functions
+            notebook_examples_09_icosahedron_mesh
           )
 
           all_selected=$(echo "$INPUTS_JSON" | jq -r '.notebook_all')
