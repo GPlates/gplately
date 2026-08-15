@@ -315,7 +315,7 @@ jobs:
   deploy:
     name: Publish HTML to gh-pages
     needs: execute
-    if: always() && needs.execute.result == 'success'
+    if: github.ref == 'refs/heads/master' && always() && needs.execute.result == 'success'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
