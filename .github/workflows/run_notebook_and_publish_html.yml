@@ -1,5 +1,18 @@
-# This workflow runs selected Jupyter notebooks, converts them to HTML, 
+# This workflow runs selected Jupyter notebooks, converts them to HTML,
 # and publishes the HTML files to the gh-pages branch.
+#
+# NOTE ON THE 6-HOUR JOB LIMIT:
+# GitHub Actions caps every individual JOB at 6 hours - this cannot be
+# configured or bypassed on GitHub-hosted runners. There is, however, no
+# limit on how many jobs a workflow can run, and independent jobs run in
+# parallel. So instead of running every selected notebook sequentially in
+# one long job (which could exceed 6h if e.g. 08 + 12 + 13 are all
+# selected), this workflow:
+#   1. "prepare"  - figures out which notebooks were selected
+#   2. "execute"  - runs each selected notebook in its OWN matrix job
+#                   (so each job only ever needs to finish ONE notebook)
+#   3. "deploy"   - collects the HTML output from every matrix job and
+#                   publishes it all to gh-pages in a single commit
 
 name: Run Notebooks and Publish HTML
 
@@ -62,47 +75,47 @@ on:
         description: "13-ReconstructingZirconData"
         type: boolean
         default: false
-      notebook_14:
+      notebook_14_rule_based_gpml_processing_pipeline:
         description: "14-RuleBasedGPMLProcessingPipeline"
         type: boolean
         default: false
-      notebook_15:
+      notebook_15_convert_grid_reference_frame:
         description: "15-ConvertGridReferenceFrame"
         type: boolean
         default: false
-      notebook_examples_hello_world:
+      notebook_examples_01_hello_world:
         description: "Examples/01-HelloWorld"
         type: boolean
         default: false
-      notebook_examples_introducing_plate_model_manager:
+      notebook_examples_02_plate_model_manager:
         description: "Examples/02-PlateModelManager"
         type: boolean
         default: false
-      notebook_examples_plot_map_with_cartopy:
+      notebook_examples_03_plot_with_cartopy:
         description: "Examples/03-PlotWithCartopy"
         type: boolean
         default: false
-      notebook_plot_map_with_pygmt:
+      notebook_examples_04_plot_with_pygmt:
         description: "Examples/04-PlotWithPyGMT"
         type: boolean
         default: false
-      notebook_examples_reconstruct_files:
+      notebook_examples_05_reconstruct_files:
         description: "Examples/05-ReconstructFiles"
         type: boolean
         default: false
-      notebook_examples_use_your_own_plate_model:
+      notebook_examples_06_load_plate_model_from_files:
         description: "Examples/06-LoadPlateModelFromFiles"
         type: boolean
         default: false
-      notebook_examples_save_reconstructed_data:
+      notebook_examples_07_save_reconstructed_data:
         description: "Examples/07-SaveReconstructedData"
         type: boolean
         default: false
-      notebook_examples_use_auxiliary_functions:
+      notebook_examples_08_use_auxiliary_functions:
         description: "Examples/08-UseAuxiliaryFunctions"
         type: boolean
         default: false
-      notebook_examples_icosahedron_mesh:
+      notebook_examples_09_icosahedron_mesh:
         description: "Examples/09-IcosahedronMesh"
         type: boolean
         default: false
@@ -111,9 +124,110 @@ permissions:
   contents: write
 
 jobs:
-  execute-and-publish:
-    name: Execute Notebooks and Publish HTML
+  # ---------------------------------------------------------------------
+  # 1. Work out which notebooks were selected and emit them as a JSON
+  #    array so the "execute" job can fan them out into a matrix.
+  # ---------------------------------------------------------------------
+  prepare:
+    name: Determine selected notebooks
     runs-on: ubuntu-latest
+    outputs:
+      notebooks: ${{ steps.set-notebooks.outputs.notebooks }}
+    steps:
+      - id: set-notebooks
+        env:
+          INPUTS_JSON: ${{ toJson(inputs) }}
+        run: |
+          set -euo pipefail
+
+          declare -A map=(
+            [notebook_01_getting_started]="01-GettingStarted"
+            [notebook_02_plate_reconstructions]="02-PlateReconstructions"
+            [notebook_03_working_with_points]="03-WorkingWithPoints"
+            [notebook_04_velocity_basics]="04-VelocityBasics"
+            [notebook_05_working_with_feature_geometries]="05-WorkingWithFeatureGeometries"
+            [notebook_06_rasters]="06-Rasters"
+            [notebook_07_working_with_plate_tectonic_stats]="07-WorkingWithPlateTectonicStats"
+            [notebook_08_predicting_slab_flux]="08-PredictingSlabFlux"
+            [notebook_09_creating_motion_paths_and_flowlines]="09-CreatingMotionPathsAndFlowlines"
+            [notebook_10_seafloor_grids]="10-SeafloorGrids"
+            [notebook_11_andes_fluxes]="11-AndesFluxes"
+            [notebook_12_mutschler_world_porphyry_copper_deposits_regional_plots]="12-MutschlerWorldPorphyryCopperDepositsRegionalPlots"
+            [notebook_13_reconstructing_zircon_data]="13-ReconstructingZirconData"
+            [notebook_14_rule_based_gpml_processing_pipeline]="14-RuleBasedGPMLProcessingPipeline"
+            [notebook_15_convert_grid_reference_frame]="15-ConvertGridReferenceFrame"
+            [notebook_examples_01_hello_world]="Examples/01-HelloWorld"
+            [notebook_examples_02_plate_model_manager]="Examples/02-PlateModelManager"
+            [notebook_examples_03_plot_with_cartopy]="Examples/03-PlotWithCartopy"
+            [notebook_examples_04_plot_with_pygmt]="Examples/04-PlotWithPyGMT"
+            [notebook_examples_05_reconstruct_files]="Examples/05-ReconstructFiles"
+            [notebook_examples_06_load_plate_model_from_files]="Examples/06-LoadPlateModelFromFiles"
+            [notebook_examples_07_save_reconstructed_data]="Examples/07-SaveReconstructedData"
+            [notebook_examples_08_use_auxiliary_functions]="Examples/08-UseAuxiliaryFunctions"
+            [notebook_examples_09_icosahedron_mesh]="Examples/09-IcosahedronMesh"
+          )
+
+          # Preserve a stable, human-friendly order (bash associative arrays
+          # don't iterate in insertion order, so list keys explicitly).
+          order=(
+            notebook_01_getting_started
+            notebook_02_plate_reconstructions
+            notebook_03_working_with_points
+            notebook_04_velocity_basics
+            notebook_05_working_with_feature_geometries
+            notebook_06_rasters
+            notebook_07_working_with_plate_tectonic_stats
+            notebook_08_predicting_slab_flux
+            notebook_09_creating_motion_paths_and_flowlines
+            notebook_10_seafloor_grids
+            notebook_11_andes_fluxes
+            notebook_12_mutschler_world_porphyry_copper_deposits_regional_plots
+            notebook_13_reconstructing_zircon_data
+            notebook_14_rule_based_gpml_processing_pipeline
+            notebook_15_convert_grid_reference_frame
+            notebook_examples_01_hello_world
+            notebook_examples_02_plate_model_manager
+            notebook_examples_03_plot_with_cartopy
+            notebook_examples_04_plot_with_pygmt
+            notebook_examples_05_reconstruct_files
+            notebook_examples_06_load_plate_model_from_files
+            notebook_examples_07_save_reconstructed_data
+            notebook_examples_08_use_auxiliary_functions
+            notebook_examples_09_icosahedron_mesh
+          )
+
+          all_selected=$(echo "$INPUTS_JSON" | jq -r '.notebook_all')
+
+          selected=()
+          for key in "${order[@]}"; do
+            if [ "$all_selected" = "true" ]; then
+              selected+=("${map[$key]}")
+            else
+              val=$(echo "$INPUTS_JSON" | jq -r --arg k "$key" '.[$k]')
+              if [ "$val" = "true" ]; then
+                selected+=("${map[$key]}")
+              fi
+            fi
+          done
+
+          json=$(printf '%s\n' "${selected[@]:-}" | jq -R 'select(length > 0)' | jq -s -c .)
+          echo "Selected notebooks: $json"
+          echo "notebooks=$json" >> "$GITHUB_OUTPUT"
+
+  # ---------------------------------------------------------------------
+  # 2. Run each selected notebook in its own job. Because each job only
+  #    handles ONE notebook, no job comes close to the 6-hour limit, and
+  #    independent notebooks execute in parallel instead of stacking up.
+  # ---------------------------------------------------------------------
+  execute:
+    name: Run ${{ matrix.notebook }}
+    needs: prepare
+    if: needs.prepare.outputs.notebooks != '[]'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        notebook: ${{ fromJson(needs.prepare.outputs.notebooks) }}
     defaults:
       run:
         shell: bash -el {0}
@@ -137,12 +251,13 @@ jobs:
 
       - uses: actions/cache@v4
         id: cache-data
+        if: matrix.notebook == '12-MutschlerWorldPorphyryCopperDepositsRegionalPlots'
         with:
           path: Notebooks/12-GPlately-Regional-Plots-Source-Data
           key: 12-GPlately-Regional-Plots-Source-Data
 
       - name: Download data
-        if: ${{ (inputs.notebook_all || inputs.notebook_12_mutschler_world_porphyry_copper_deposits_regional_plots) && steps.cache-data.outputs.cache-hit != 'true' }}
+        if: matrix.notebook == '12-MutschlerWorldPorphyryCopperDepositsRegionalPlots' && steps.cache-data.outputs.cache-hit != 'true'
         run: |
           set -euo pipefail
 
@@ -157,7 +272,7 @@ jobs:
           unzip -q "${zip_path}" -d "${tmp_dir}/unzipped"
 
           extracted_source_data_dir="$(find "${tmp_dir}/unzipped" -type d -name source_data | head -n 1)"
-          
+
           if [ -z "${extracted_source_data_dir}" ]; then
             echo "Error: could not find source_data directory in downloaded archive." >&2
             exit 1
@@ -172,71 +287,49 @@ jobs:
 
           echo "Data downloaded and extracted to ${target_dir}."
 
-      - name: Execute notebooks
+      - name: Execute notebook
         run: |
-          notebooks=()
-          if ${{ inputs.notebook_all }}; then
-            notebooks+=(01-GettingStarted)
-            notebooks+=(02-PlateReconstructions)
-            notebooks+=(03-WorkingWithPoints)
-            notebooks+=(04-VelocityBasics)
-            notebooks+=(05-WorkingWithFeatureGeometries)
-            notebooks+=(06-Rasters)
-            notebooks+=(07-WorkingWithPlateTectonicStats)
-            notebooks+=(08-PredictingSlabFlux)
-            notebooks+=(09-CreatingMotionPathsAndFlowlines)
-            notebooks+=(10-SeafloorGrids)
-            notebooks+=(11-AndesFluxes)
-            notebooks+=(12-MutschlerWorldPorphyryCopperDepositsRegionalPlots)
-            notebooks+=(13-ReconstructingZirconData)
-            notebooks+=(14-RuleBasedGPMLProcessingPipeline)
-            notebooks+=(15-ConvertGridReferenceFrame)
-            notebooks+=(Examples/01-HelloWorld)
-            notebooks+=(Examples/02-PlateModelManager)
-            notebooks+=(Examples/03-PlotWithCartopy)
-            notebooks+=(Examples/04-PlotWithPyGMT)
-            notebooks+=(Examples/05-ReconstructFiles)
-            notebooks+=(Examples/06-LoadPlateModelFromFiles)
-            notebooks+=(Examples/07-SaveReconstructedData)
-            notebooks+=(Examples/08-UseAuxiliaryFunctions)
-            notebooks+=(Examples/09-IcosahedronMesh)
-          else
-            ${{ inputs.notebook_01_getting_started }} && notebooks+=(01-GettingStarted)
-            ${{ inputs.notebook_02_plate_reconstructions }} && notebooks+=(02-PlateReconstructions)
-            ${{ inputs.notebook_03_working_with_points }} && notebooks+=(03-WorkingWithPoints)
-            ${{ inputs.notebook_04_velocity_basics }} && notebooks+=(04-VelocityBasics)
-            ${{ inputs.notebook_05_working_with_feature_geometries }} && notebooks+=(05-WorkingWithFeatureGeometries)
-            ${{ inputs.notebook_06_rasters }} && notebooks+=(06-Rasters)
-            ${{ inputs.notebook_07_working_with_plate_tectonic_stats }} && notebooks+=(07-WorkingWithPlateTectonicStats)
-            ${{ inputs.notebook_08_predicting_slab_flux }} && notebooks+=(08-PredictingSlabFlux)
-            ${{ inputs.notebook_09_creating_motion_paths_and_flowlines }} && notebooks+=(09-CreatingMotionPathsAndFlowlines)
-            ${{ inputs.notebook_10_seafloor_grids }} && notebooks+=(10-SeafloorGrids)
-            ${{ inputs.notebook_11_andes_fluxes }} && notebooks+=(11-AndesFluxes)
-            ${{ inputs.notebook_12_mutschler_world_porphyry_copper_deposits_regional_plots }} && notebooks+=(12-MutschlerWorldPorphyryCopperDepositsRegionalPlots)
-            ${{ inputs.notebook_13_reconstructing_zircon_data }} && notebooks+=(13-ReconstructingZirconData)
-            ${{ inputs.notebook_14 }} && notebooks+=(14-RuleBasedGPMLProcessingPipeline)
-            ${{ inputs.notebook_15 }} && notebooks+=(15-ConvertGridReferenceFrame)
-            ${{ inputs.notebook_examples_hello_world }} && notebooks+=(Examples/01-HelloWorld)
-            ${{ inputs.notebook_examples_introducing_plate_model_manager }} && notebooks+=(Examples/02-PlateModelManager)
-            ${{ inputs.notebook_examples_plot_map_with_cartopy }} && notebooks+=(Examples/03-PlotWithCartopy)
-            ${{ inputs.notebook_plot_map_with_pygmt }} && notebooks+=(Examples/04-PlotWithPyGMT)
-            ${{ inputs.notebook_examples_reconstruct_files }} && notebooks+=(Examples/05-ReconstructFiles)
-            ${{ inputs.notebook_examples_use_your_own_plate_model }} && notebooks+=(Examples/06-LoadPlateModelFromFiles)
-            ${{ inputs.notebook_examples_save_reconstructed_data }} && notebooks+=(Examples/07-SaveReconstructedData)
-            ${{ inputs.notebook_examples_use_auxiliary_functions }} && notebooks+=(Examples/08-UseAuxiliaryFunctions)
-            ${{ inputs.notebook_examples_icosahedron_mesh }} && notebooks+=(Examples/09-IcosahedronMesh)
-          fi
-
-          if [ ${#notebooks[@]} -eq 0 ]; then
-            echo "No notebooks selected. Skipping execution."
-            exit 0
-          fi
-
           chmod +x scripts/run_notebooks.sh
-          ./scripts/run_notebooks.sh "${notebooks[@]}"
+          ./scripts/run_notebooks.sh "${{ matrix.notebook }}"
+
+      - name: Sanitize artifact name
+        id: artifact-name
+        run: |
+          # actions/upload-artifact rejects "/" in the artifact name, and
+          # some notebook ids (e.g. Examples/01-HelloWorld) contain one.
+          safe_name=$(echo "${{ matrix.notebook }}" | tr '/' '-')
+          echo "name=$safe_name" >> "$GITHUB_OUTPUT"
+
+      - name: Upload notebook HTML
+        uses: actions/upload-artifact@v4
+        with:
+          name: notebook-html-${{ steps.artifact-name.outputs.name }}
+          path: notebook-html
+          if-no-files-found: error
+          retention-days: 1
+
+  # ---------------------------------------------------------------------
+  # 3. Merge the HTML produced by every matrix job and publish it all to
+  #    gh-pages in one go.
+  # ---------------------------------------------------------------------
+  deploy:
+    name: Publish HTML to gh-pages
+    needs: execute
+    if: github.ref == 'refs/heads/master' && always() && needs.execute.result == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download all notebook HTML
+        uses: actions/download-artifact@v4
+        with:
+          pattern: notebook-html-*
+          path: notebook-html
+          merge-multiple: true
 
       - name: Deploy HTML to gh-pages
-        uses: JamesIves/github-pages-deploy-action@v4.2.2
+        uses: JamesIves/github-pages-deploy-action@v4
         with:
           branch: gh-pages
           folder: notebook-html
