@@ -312,7 +312,7 @@ jobs:
   # 3. Merge the HTML produced by every matrix job and publish it all to
   #    gh-pages in one go.
   # ---------------------------------------------------------------------
-  # github.ref == 'refs/heads/master' &&
+  # github.ref == 'refs/heads/master' # This is how to check if we are on the master branch
   deploy:
     name: Publish HTML to gh-pages
     needs: execute

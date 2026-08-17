@@ -33,6 +33,8 @@ import math
 import sys
 import os.path
 import pygplates
+import shapely
+import geopandas as gpd
 
 # Required pygplates version.
 PYGPLATES_VERSION_REQUIRED = pygplates.Version(8)
@@ -747,6 +749,121 @@ def _write_coverage_to_xy_file(xy_file, coverage, output_scalar_types):
         line_scalars = [scalars[point_index] for scalars in scalars_list]
 
         xy_file.write(line_format_string.format(*line_scalars))
+
+
+def get_geodataframe_from_coverage_features(
+    coverage_features,
+    output_scalar_types,
+    rotation_model,
+    anchor_plate_id=0,
+    reconstruction_time=None,
+    print_debug_output=0,
+):
+    """get_geodataframe_from_coverage_features(coverage_features, output_scalar_types, rotation_model, anchor_plate_id, reconstruction_time, print_debug_output)
+    Build a geopandas GeoDataFrame containing the interpolated isochron points and associated
+    per-point scalar values (one row per point, with point geometry and one column per scalar type).
+
+    :param coverage_features: the features
+    :type coverage_features: a sequence of pygplates.Feature
+    :param output_scalar_types: list of scalar types (must match those of coverages in 'coverage_features')
+    :type output_scalar_types: list of pygplates.ScalarType
+    :param rotation_model: the rotation model
+    :type rotation_model: pygplates.RotationModel
+    :param anchor_plate_id: the closeness threshold, in radians, used to determine if two geometries are adjacent
+    :type anchor_plate_id: int - defaults to zero
+    :param reconstruction_time: the reconstruction time (or None if not reconstructing)
+    :type reconstruction_time: float or None - defaults to None
+    :param print_debug_output: the level at which to print debug output - zero means no debug output, \
+            one or more means debug output
+    :type print_debug_output: int - defaults to zero
+
+    :returns: a GeoDataFrame with a 'geometry' column of points and one column per scalar type
+    :rtype: geopandas.GeoDataFrame
+    """
+
+    records = []
+
+    if reconstruction_time is None:
+        if print_debug_output >= 1:
+            print("Collecting features...")
+
+        for feature in coverage_features:
+
+            coverage = feature.get_geometry(
+                coverage_return=pygplates.CoverageReturn.geometry_and_scalars
+            )
+            if not coverage:
+                # Shouldn't be able to get here since all feature should have coverages as geometries.
+                continue
+
+            _append_coverage_to_records(records, coverage, output_scalar_types)
+
+    else:
+        if print_debug_output >= 1:
+            print("Collecting reconstructed features...")
+
+        # Reconstruct the features.
+        reconstructed_feature_geometries = []
+        pygplates.reconstruct(
+            coverage_features,
+            rotation_model,
+            reconstructed_feature_geometries,
+            reconstruction_time,
+            anchor_plate_id,
+        )
+
+        for reconstructed_feature_geometry in reconstructed_feature_geometries:
+
+            # Get the coverage from the feature (contains scalars values and present-day geometry).
+            coverage = reconstructed_feature_geometry.get_feature().get_geometry(
+                coverage_return=pygplates.CoverageReturn.geometry_and_scalars
+            )
+            if not coverage:
+                # Shouldn't be able to get here since all feature should have coverages as geometries.
+                continue
+
+            # Replace the present day geometry with the reconstructed geometry.
+            # The coverage is a tuple of (geometry, scalar-values-dict).
+            coverage = (
+                reconstructed_feature_geometry.get_reconstructed_geometry(),
+                coverage[1],
+            )
+
+            _append_coverage_to_records(records, coverage, output_scalar_types)
+
+    if print_debug_output >= 1:
+        print("Building GeoDataFrame...")
+
+    gdf = gpd.GeoDataFrame(records, geometry="geometry", crs="EPSG:4326")
+    return gdf
+
+
+def _append_coverage_to_records(records, coverage, output_scalar_types):
+    """Helper that appends one row (dict) per point in the coverage to 'records'.
+
+    :param records: list to append row dicts to (mutated in place)
+    :type records: list of dict
+    :param coverage: tuple of (geometry, scalar-values-dict)
+    :type coverage: tuple(pygplates.GeometryOnSphere, dict)
+    :param output_scalar_types: list of scalar types (must match those of coverages in 'coverage_features')
+    :type output_scalar_types: list of pygplates.ScalarType
+    """
+
+    geometry, scalar_values_dict = coverage
+
+    points = geometry.get_points()
+
+    for point_index, point in enumerate(points):
+        lat, lon = point.to_lat_lon()
+
+        row = {"geometry": shapely.geometry.Point(lon, lat)}
+        for scalar_type in output_scalar_types:
+            scalar_values = scalar_values_dict.get(scalar_type)
+            row[str(scalar_type)] = (
+                scalar_values[point_index] if scalar_values else None
+            )
+
+        records.append(row)
 
 
 def write_coverage_features_to_xy_file(
