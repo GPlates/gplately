@@ -8210,13 +8210,7 @@ there are only features that still exist at present day in the output file of ca
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
 <pre>"Coastlines of Africa" have been written to WorkflowData/14-Rule-Based-GPML-Processing-Pipeline/coastlines_with_plate_id_from_701_to_715.gpmlz
-</pre>
-</div>
-</div>
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>"Coastlines excluding Africa" have been written to WorkflowData/14-Rule-Based-GPML-Processing-Pipeline/coastlines_exclude_plate_id_from_701_to_715.gpmlz
+"Coastlines excluding Africa" have been written to WorkflowData/14-Rule-Based-GPML-Processing-Pipeline/coastlines_exclude_plate_id_from_701_to_715.gpmlz
 </pre>
 </div>
 </div>
@@ -8238,13 +8232,7 @@ there are only features that still exist at present day in the output file of ca
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
 <pre>"Coastlines with feature type Basin or IslandArc" have been written to WorkflowData/14-Rule-Based-GPML-Processing-Pipeline/coastlines_basins_and_island_arcs.gpmlz
-</pre>
-</div>
-</div>
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>"Topology with subduction polarity" have been written to WorkflowData/14-Rule-Based-GPML-Processing-Pipeline/topology_with_subduction_polarity.gpmlz
+"Topology with subduction polarity" have been written to WorkflowData/14-Rule-Based-GPML-Processing-Pipeline/topology_with_subduction_polarity.gpmlz
 </pre>
 </div>
 </div>
@@ -8253,13 +8241,7 @@ there are only features that still exist at present day in the output file of ca
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
 <pre>"Topology with subduction polarity of Left" have been written to WorkflowData/14-Rule-Based-GPML-Processing-Pipeline/topology_with_subduction_polarity_left.gpmlz
 "Topology features that had disappeared before 100 Ma" have been written to WorkflowData/14-Rule-Based-GPML-Processing-Pipeline/topology_features_disappeared_before_100_million_years.gpmlz
-</pre>
-</div>
-</div>
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>"Topology features that still exist at present day" have been written to WorkflowData/14-Rule-Based-GPML-Processing-Pipeline/topology_features_still_existing_present_day.gpmlz
+"Topology features that still exist at present day" have been written to WorkflowData/14-Rule-Based-GPML-Processing-Pipeline/topology_features_still_existing_present_day.gpmlz
 </pre>
 </div>
 </div>
@@ -8833,14 +8815,23 @@ which are represented as point features.</p>
 
 <span class="c1"># Create a feature for the region of interest and add it to the output feature collection for visualization.</span>
 <span class="n">region_of_interest_feature</span> <span class="o">=</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">Feature</span><span class="p">()</span>  <span class="c1"># type: ignore</span>
-<span class="n">region_of_interest</span> <span class="o">=</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">PolygonOnSphere</span><span class="p">((</span><span class="n">lat</span><span class="p">,</span> <span class="n">lon</span><span class="p">)</span> <span class="k">for</span> <span class="n">lon</span><span class="p">,</span> <span class="n">lat</span> <span class="ow">in</span> <span class="p">[(</span><span class="n">left</span><span class="p">,</span> <span class="n">bottom</span><span class="p">),</span> <span class="p">(</span><span class="n">left</span><span class="p">,</span> <span class="n">top</span><span class="p">),</span> <span class="p">(</span><span class="n">right</span><span class="p">,</span> <span class="n">top</span><span class="p">),</span> <span class="p">(</span><span class="n">right</span><span class="p">,</span> <span class="n">bottom</span><span class="p">)])</span>  <span class="c1"># type: ignore</span>
+<span class="n">region_of_interest</span> <span class="o">=</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">PolygonOnSphere</span><span class="p">(</span>
+    <span class="p">(</span><span class="n">lat</span><span class="p">,</span> <span class="n">lon</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">lon</span><span class="p">,</span> <span class="n">lat</span> <span class="ow">in</span> <span class="p">[</span>
+        <span class="p">(</span><span class="n">left</span><span class="p">,</span> <span class="n">bottom</span><span class="p">),</span>
+        <span class="p">(</span><span class="n">left</span><span class="p">,</span> <span class="n">top</span><span class="p">),</span>
+        <span class="p">(</span><span class="n">right</span><span class="p">,</span> <span class="n">top</span><span class="p">),</span>
+        <span class="p">(</span><span class="n">right</span><span class="p">,</span> <span class="n">bottom</span><span class="p">),</span>
+        <span class="p">(</span><span class="n">left</span><span class="p">,</span> <span class="n">bottom</span><span class="p">),</span>
+    <span class="p">]</span>
+ <span class="p">)</span>  <span class="c1"># type: ignore</span>
 <span class="n">region_of_interest_feature</span><span class="o">.</span><span class="n">set_geometry</span><span class="p">(</span><span class="n">region_of_interest</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
 <span class="n">features</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">region_of_interest_feature</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
 
 <span class="n">features</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">data_dir</span><span class="si">}</span><span class="s2">/icosahedron_vertices_in_region.gpmlz"</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span>
     <span class="sa">f</span><span class="s2">"Icosahedron vertices in the region of interest have been written to </span><span class="si">{</span><span class="n">data_dir</span><span class="si">}</span><span class="s2">/icosahedron_vertices_in_region.gpmlz"</span>
-<span class="p">)</span>
+ <span class="p">)</span>
 </pre></div>
 </div>
 </div>
