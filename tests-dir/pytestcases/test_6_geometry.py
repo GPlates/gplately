@@ -35,7 +35,7 @@ def test_multipoint_conversion(n_points=N_POINTS):
     )
     mp_pgp = MultiPointOnSphere.from_shapely(mp_shapely)
 
-    a1 = np.row_stack([i.coords for i in mp_shapely.geoms])
+    a1 = np.vstack([i.coords for i in mp_shapely.geoms])
     a2 = np.fliplr(mp_pgp.to_lat_lon_array())
     assert np.allclose(
         a1,

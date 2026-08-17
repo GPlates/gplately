@@ -30,6 +30,7 @@ and more to help you get started with plate reconstructions.
 
    api
    functions
+   filters_and_transformers
    secondaries
    plate_models
 

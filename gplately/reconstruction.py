@@ -56,21 +56,22 @@ class PlateReconstruction(object):
         """
         Parameters
         ----------
-        rotation_model : str/`os.PathLike`, or instance of `pygplates.FeatureCollection`_, or `pygplates.Feature`_, or sequence of `pygplates.Feature`_, or instance of `pygplates.RotationModel`_
+        rotation_model : str/`os.PathLike`, or a sequence (eg, `list` or `tuple`) of instances of `pygplates.Feature`_, or a single instance of `pygplates.Feature`_, or an instance of `pygplates.FeatureCollection`_, or a sequence of any combination of those four types, or an instance of `pygplates.RotationModel`_
             A rotation model to query equivalent and/or relative topological plate rotations
-            from a time in the past relative to another time in the past or to present day. Can be
-            provided as a rotation filename, or rotation feature collection, or rotation feature, or
-            sequence of rotation features, or a sequence (eg, a list or tuple) of any combination of
-            those four types.
-        topology_features : str/`os.PathLike`, or a sequence (eg, `list` or `tuple`) of instances of `pygplates.Feature`_, or a single instance of `pygplates.Feature`_, or an instance of `pygplates.FeatureCollection`_, default None
-            Reconstructable topological features like trenches, ridges and transforms. Can be provided
-            as an optional topology-feature filename, or sequence of features, or a single feature.
-        static_polygons : str/`os.PathLike`, or instance of `pygplates.Feature`_, or sequence of `pygplates.Feature`_, or an instance of `pygplates.FeatureCollection`_, default None
+            from a time in the past relative to another time in the past or to present day.
+            Can be provided as a rotation filename, or a sequence of rotation features, or a single rotation feature,
+            or a rotation feature collection, or a sequence (eg, a list or tuple) of any combination of those four types,
+            or a rotation model.
+        topology_features : str/`os.PathLike`, or a sequence (eg, `list` or `tuple`) of instances of `pygplates.Feature`_, or a single instance of `pygplates.Feature`_, or an instance of `pygplates.FeatureCollection`_, or a sequence of any combination of those four types, default None
+            Reconstructable topological features like trenches, ridges and transforms.
+            Can be provided as a topology filename, or a sequence of topology features, or a single topology feature,
+            or a topology feature collection, or a sequence (eg, a list or tuple) of any combination of those four types.
+        static_polygons : str/`os.PathLike`, or a sequence (eg, `list` or `tuple`) of instances of `pygplates.Feature`_, or a single instance of `pygplates.Feature`_, or an instance of `pygplates.FeatureCollection`_, or a sequence of any combination of those four types, default None
             Present-day polygons whose shapes do not change through geological time. They are
             used to cookie-cut dynamic polygons into identifiable topological plates (assigned
-            an ID) according to their present-day locations. Can be provided as a static polygon feature
-            collection, or optional filename, or a single feature, or a sequence of
-            features.
+            an ID) according to their present-day locations.
+            Can be provided as a static polygon filename, or a sequence of static polygon features, or a single static polygon feature,
+            or a static polygon feature collection, or a sequence (eg, a list or tuple) of any combination of those four types.
         anchor_plate_id : int, optional
             Default anchor plate ID for reconstruction.
             If not specified then uses the default anchor plate of :py:attr:`~rotation_model`.
@@ -82,8 +83,8 @@ class PlateReconstruction(object):
         .. _pygplates.Feature: https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature
         .. _pygplates.FeatureCollection: https://www.gplates.org/docs/pygplates/generated/pygplates.featurecollection#pygplates.FeatureCollection
         """
-        #: A `pygplates.RotationModel <https://www.gplates.org/docs/pygplates/generated/pygplates.rotationmodel>`__ object
-        #: to query equivalent and/or relative topological plate rotations
+        #: A `pygplates.RotationModel <https://www.gplates.org/docs/pygplates/generated/pygplates.rotationmodel>`__ object,
+        #: with default anchor plate :py:attr:`anchor_plate_id`, used to query equivalent and/or relative topological plate rotations
         #: from a time in the past relative to another time in the past or to present day.
         self.rotation_model: Union[pygplates.RotationModel, None] = None
 
@@ -221,6 +222,29 @@ class PlateReconstruction(object):
         # This includes pygplates reconstructed feature geometries and resolved topological geometries.
         # Note: PyGPlates features and features collections (and rotation models) can be pickled though.
         #
+
+    def copy(self):
+        """Return a copy of the :py:class:`PlateReconstruction` object.
+        This is a pure shallow copy, so the copy shares the same underlying data as the original.
+        For example, if you modify the rotation model of the copy, it will also modify the rotation model of the original.
+        However, if you assign a new rotation model to the copy, it will not affect the original.
+        I need this function for a less expensive way to create a copy of the PlateReconstruction object.
+        """
+        cls = type(self)
+        new_obj = cls.__new__(cls)
+
+        # copy __dict__-based attributes, if present
+        if hasattr(self, "__dict__"):
+            new_obj.__dict__.update(self.__dict__)
+
+        # copy __slots__-based attributes, if present (walk the MRO in case
+        # slots are defined across multiple base classes)
+        for klass in cls.__mro__:
+            for slot in getattr(klass, "__slots__", ()):
+                if hasattr(self, slot):
+                    setattr(new_obj, slot, getattr(self, slot))
+
+        return new_obj
 
     @property
     def anchor_plate_id(self):
@@ -740,6 +764,7 @@ class PlateReconstruction(object):
         anchor_plate_id,
         include_network_boundaries,
         convergence_threshold_in_cm_per_yr,
+        include_all_subducting_boundary_types=False,
         output_distance_to_nearest_edge_of_trench=False,
         output_distance_to_start_edge_of_trench=False,
         output_convergence_velocity_components=False,
@@ -760,19 +785,25 @@ class PlateReconstruction(object):
         #   which can happen if the topological model was built incorrectly (eg, mislabelled plate boundaries).
         #   As long as there's at least one plate (or network) on the subducting side then it can find it
         #   (even if the plate is not directly attached to the subduction zone, ie, doesn't specify it as part of its boundary).
-        # However, like 'ptt.subduction_convergence.subduction_convergence()', it only samples plate boundaries that have a
-        # subduction polarity (eg, subduction zones) since we still need to know which plates are subducting and overriding,
+        # However, like 'ptt.subduction_convergence.subduction_convergence()', it only samples subducting plate boundaries
+        # (eg, subduction zones) since we still need to know which plates are subducting and overriding,
         # and hence cannot calculate convergence over all plate boundaries.
 
-        # Restrict plate boundaries to those that have a subduction polarity.
+        # Restrict plate boundaries to those that are subducting boundary types.
         # This is just an optimisation to avoid unnecessarily sampling all plate boundaries.
         def _boundary_section_filter_function(resolved_topological_section):
-            return (
-                resolved_topological_section.get_feature().get_enumeration(
-                    pygplates.PropertyName.gpml_subduction_polarity
+            feature = resolved_topological_section.get_feature()
+            if (
+                feature.get_enumeration(pygplates.PropertyName.gpml_subduction_polarity)
+                is None
+            ):
+                return False
+            if not include_all_subducting_boundary_types:
+                return (
+                    feature.get_feature_type()  # type: ignore[attr-defined]
+                    == pygplates.FeatureType.gpml_subduction_zone  # type: ignore[attr-defined]
                 )
-                is not None
-            )
+            return True
 
         # Generate statistics at uniformly spaced points along plate boundaries.
         plate_boundary_statistics_dict = self.topological_snapshot(
@@ -1086,6 +1117,7 @@ class PlateReconstruction(object):
         *,
         use_ptt=False,
         include_network_boundaries=False,
+        include_all_subducting_boundary_types=False,
         convergence_threshold_in_cm_per_yr=None,
         anchor_plate_id=None,
         velocity_delta_time=1.0,
@@ -1132,12 +1164,16 @@ class PlateReconstruction(object):
             (which uses the subducting stage rotation of the subduction/trench plate IDs calculate subducting velocities).
             If set to ``False`` then uses plate convergence to calculate subduction convergence
             (which samples velocities of the two adjacent boundary plates at each sampled point to calculate subducting velocities).
-            Both methods ignore plate boundaries that do not have a subduction polarity (feature property), which essentially means
-            they only sample subduction zones.
+            Both methods sample subduction zone features that have a subduction polarity, and can optionally include other
+            feature types with a subduction polarity (such as orogenic belts) via ``include_all_subducting_boundary_types``.
         include_network_boundaries : bool, default=False
             Whether to calculate subduction convergence along network boundaries that are not also plate boundaries (defaults to False).
             If a deforming network shares a boundary with a plate then it'll get included regardless of this option.
             Since subduction zones occur along *plate* boundaries this would only be an issue if an intra-plate network boundary was incorrectly labelled as subducting.
+        include_all_subducting_boundary_types : bool, default=False
+            If ``False`` (the default), only features of type ``SubductionZone`` that have a subduction polarity are sampled.
+            If ``True``, all features that have a subduction polarity are sampled regardless of feature type
+            (e.g. also includes ``OrogenicBelt`` features that have a subduction polarity).
         convergence_threshold_in_cm_per_yr : float, optional
             Only return sample points with an orthogonal (ie, in the subducting geometry's normal direction) converging velocity above this value (in cm/yr).
             For example, setting this to ``0.0`` would remove all diverging sample points (leaving only converging points).
@@ -1267,6 +1303,7 @@ class PlateReconstruction(object):
                     velocity_delta_time=velocity_delta_time,
                     anchor_plate_id=anchor_plate_id,  # if None then uses 'self.anchor_plate_id' (default anchor plate of 'self.rotation_model')
                     include_network_boundaries=include_network_boundaries,
+                    include_all_subducting_boundary_types=include_all_subducting_boundary_types,
                     output_distance_to_nearest_edge_of_trench=output_distance_to_nearest_edge_of_trench,
                     output_distance_to_start_edge_of_trench=output_distance_to_start_edge_of_trench,
                     output_convergence_velocity_components=output_convergence_velocity_components,
@@ -1284,6 +1321,7 @@ class PlateReconstruction(object):
                 anchor_plate_id=anchor_plate_id,  # if None then uses 'self.anchor_plate_id' (default anchor plate of 'self.rotation_model')
                 include_network_boundaries=include_network_boundaries,
                 convergence_threshold_in_cm_per_yr=convergence_threshold_in_cm_per_yr,
+                include_all_subducting_boundary_types=include_all_subducting_boundary_types,
                 output_distance_to_nearest_edge_of_trench=output_distance_to_nearest_edge_of_trench,
                 output_distance_to_start_edge_of_trench=output_distance_to_start_edge_of_trench,
                 output_convergence_velocity_components=output_convergence_velocity_components,

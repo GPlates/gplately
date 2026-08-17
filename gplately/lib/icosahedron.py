@@ -1,5 +1,5 @@
 #
-#    Copyright (C) 2024-2025 The University of Sydney, Australia
+#    Copyright (C) 2024-2026 The University of Sydney, Australia
 #
 #    This program is free software; you can redistribute it and/or modify it under
 #    the terms of the GNU General Public License, version 2, as published by
@@ -19,6 +19,7 @@
 #
 
 import math
+from typing import Tuple
 
 import numpy as np
 
@@ -172,7 +173,7 @@ def normalize(v):
     return v / norm
 
 
-def bisect(vertices, faces, level=3):
+def bisect(vertices, faces, level=3) -> Tuple[np.ndarray, np.ndarray]:
     if level == 0:
         return vertices, faces
 
@@ -210,7 +211,7 @@ def bisect(vertices, faces, level=3):
     return bisect(new_vertices, new_faces, level - 1)
 
 
-def get_mesh(level=5, use_stripy_icosahedron=False):
+def get_mesh(level=5, use_stripy_icosahedron=False) -> Tuple[np.ndarray, np.ndarray]:
     """Return the Icospheres mesh."""
     if use_stripy_icosahedron:
         vertices, faces = _get_vertices_and_faces_stripy()

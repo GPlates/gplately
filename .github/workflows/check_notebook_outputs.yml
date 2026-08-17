@@ -1,0 +1,21 @@
+name: Check Notebook Outputs
+
+on:
+  pull_request:
+    paths:
+      - "**/*.ipynb"
+  push:
+    paths:
+      - "**/*.ipynb"
+
+jobs:
+  check-outputs:
+    name: Fail if notebooks contain output cells
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check for output cells
+        run: python3 scripts/check_notebook_outputs.py

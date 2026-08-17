@@ -1,7 +1,6 @@
-# This workflow will install Python dependencies, run tests and lint with a single version of Python
-# For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
+# This workflow tests GPlately on various platforms and Python versions.
 
-name: Test GPlately
+name: GPlately Tests 
 
 on:
   push:
@@ -10,37 +9,127 @@ on:
   pull_request:
     branches:
       - master
+  workflow_dispatch:
+    inputs:
+      runner_os:
+        description: Operating system to run the tests on
+        required: true
+        type: choice
+        options: &supported_os_list
+          - ubuntu-latest
+          - macos-latest
+          - windows-latest
+        default: ubuntu-latest
+      python_version:
+        description: Python version to test with
+        required: true
+        type: choice
+        options: &supported_python_versions
+          # Conda-forge currently supports Python >=3.10 ...
+          - "3.10"
+          - "3.11"
+          - "3.12"
+          - "3.13"
+          - "3.14"
+        default: "3.11"
 
 jobs:
-  build:
-    name: Test Python ${{ matrix.python-version }} on ${{ matrix.os }}
+  detect-relevant-changes:
+    name: Check relevant changes
+    runs-on: ubuntu-latest
+    outputs:
+      run_tests: ${{ steps.filter.outputs.run_tests }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Determine whether tests should run
+        id: filter
+        shell: bash
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            echo "run_tests=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          if [[ "${{ github.event_name }}" == "push" ]]; then
+            base="${{ github.event.before }}"
+            if [[ -z "$base" || "$base" == "0000000000000000000000000000000000000000" ]]; then
+              base="$(git rev-list --max-parents=0 HEAD)"
+            fi
+          else
+            base="${{ github.event.pull_request.base.sha }}"
+          fi
+
+          if git diff --name-only "$base" "${{ github.sha }}" -- 'gplately/**' | grep -q .; then
+            echo "run_tests=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "run_tests=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  required-status-check:
+    name: GPlately required check
+    needs: [detect-relevant-changes, test-gplately-automatic, test-gplately-manual]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Evaluate required check
+        shell: bash
+        run: |
+          if [[ "${{ needs.detect-relevant-changes.outputs.run_tests }}" != "true" ]]; then
+            echo "No relevant changes detected; passing status check without running expensive tests."
+            exit 0
+          fi
+
+          auto_result="${{ needs.test-gplately-automatic.result }}"
+          manual_result="${{ needs.test-gplately-manual.result }}"
+
+          if [[ "$auto_result" == "failure" || "$manual_result" == "failure" ]]; then
+            echo "Required tests failed."
+            exit 1
+          fi
+
+          if [[ "$auto_result" == "cancelled" || "$manual_result" == "cancelled" ]]; then
+            echo "Required tests were cancelled."
+            exit 1
+          fi
+
+          if [[ "$auto_result" == "skipped" && "$manual_result" == "skipped" ]]; then
+            echo "No required tests were run; this should not happen when relevant changes are present."
+            exit 1
+          fi
+
+          echo "Required tests passed."
+
+  test-gplately-automatic:
+    name: Test with Python ${{ matrix.python-version }} on ${{ matrix.os }}
+    needs: detect-relevant-changes
+    if: needs.detect-relevant-changes.outputs.run_tests == 'true' && github.event_name != 'workflow_dispatch' && (github.event_name != 'pull_request' || github.event.pull_request.draft == false)
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
-        # Conda-forge currently supports Python >=3.9 ...
-        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
+        os: *supported_os_list
+        python-version: *supported_python_versions
 
     defaults:
       run:
         shell: bash -el {0}
-        
-    if: github.event.pull_request.draft == false
-    steps:
-      # Used with 'cache-environment-key'.
-      # See https://github.com/mamba-org/setup-micromamba?tab=readme-ov-file#caching
+    env:
+      TEST_PYTHON_VERSION: ${{ matrix.python-version }}
+    steps: &test_steps
       - name: Get current date
         id: date
         run: echo "date=$(date +%Y-%m-%d)" >> "${GITHUB_OUTPUT}"
-      
+
       - uses: actions/checkout@v4
       - uses: mamba-org/setup-micromamba@v1
         with:
           micromamba-version: "1.5.8-0"
           environment-file: tests-dir/test-env.yml
           create-args: >-
-            python=${{ matrix.python-version }}
+            python=${{ env.TEST_PYTHON_VERSION }}
           init-shell: >-
             bash
             powershell
@@ -54,6 +143,28 @@ jobs:
         run: |
           pip install . --no-binary :all: --no-cache-dir --no-dependencies
 
+      - name: Set SSL cert path (Windows workaround)
+        # This is a workaround for SSL certificate issues on Windows runners.
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $certPath = python -c "import certifi; print(certifi.where())"
+          echo "SSL_CERT_FILE=$certPath" >> $env:GITHUB_ENV
+
       - name: Test with pytest
         run: |
           python -m pytest -vv tests-dir/pytestcases
+
+  test-gplately-manual:
+    name: Test with Python ${{ inputs.python_version }} on ${{ inputs.runner_os }}
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ${{ inputs.runner_os }}
+
+    defaults:
+      run:
+        shell: bash -el {0}
+
+    env:
+      TEST_PYTHON_VERSION: ${{ inputs.python_version }}
+
+    steps: *test_steps

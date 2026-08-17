@@ -1,5 +1,5 @@
 #
-#    Copyright (C) 2024-2025 The University of Sydney, Australia
+#    Copyright (C) 2024-2026 The University of Sydney, Australia
 #
 #    This program is free software; you can redistribute it and/or modify it under
 #    the terms of the GNU General Public License, version 2, as published by
@@ -19,16 +19,17 @@ import os
 import sys
 from typing import List
 
-import pygplates
+import pygplates  # type: ignore
 
 from gplately import __version__
 
 from .commands import (
     create_age_grids,
-    feature_filter,
+    feature_filter_cmd,
     list_models,
     regrid,
     reset_feature_type,
+    rotate_grid,
 )
 from .ptt import (
     cleanup_topologies,
@@ -97,7 +98,7 @@ def main():
     combine_cmd.formatter_class = argparse.RawDescriptionHelpFormatter
 
     # add "feature filter" sub-command
-    feature_filter.add_parser(subparser)
+    feature_filter_cmd.add_parser(subparser)
 
     # add "reset feature type" sub-command
     reset_feature_type.add_parser(subparser)
@@ -107,6 +108,9 @@ def main():
 
     # add "regrid" sub-command
     regrid.add_parser(subparser)
+
+    # add "rotate_grid" sub-command
+    rotate_grid.add_parser(subparser)
 
     # add "fix crossovers" sub-command
     fix_crossovers_cmd = subparser.add_parser(
@@ -182,6 +186,7 @@ def main():
     )
     subduction_convergence.add_arguments(subduction_convergence_cmd)
 
+    # disable for now since it is not working right now due to the redesign of gpmdb.net
     # add gpmdb sub-command
     gpmdb_cmd = subparser.add_parser(
         "gpmdb",

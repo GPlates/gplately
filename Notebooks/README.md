@@ -17,3 +17,5 @@ To see GPlately in action, launch a Jupyter Notebook environment and check out t
 - [**11 - Andes Fluxes**](11-AndesFluxes.ipynb): Demonstrates how the reconstructed subduction history along the Andean margin can be potentially used in the plate kinematics analysis and data mining.
 - [**12 - Mutschler World Porphyry Copper Deposits Regional Plots**](12-MutschlerWorldPorphyryCopperDepositsRegionalPlots.ipynb): Generates regional plots for Mutschler world porphyry copper deposits.
 - [**13 - Reconstructing Zircon Data**](13-ReconstructingZirconData.ipynb): Demonstrates how to reconstruct and plot Zircon data on a global map through geological time.
+- [**14 - Rule Based GPML Processing Pipeline**](14-RuleBasedGPMLProcessingPipeline.ipynb): Demonstrates how to use the rule-based GPML processing pipeline to filter and transform geological data.
+- [**15 - Convert Grid Reference Frame**](15-ConvertGridReferenceFrame.ipynb): Demonstrates how to convert reference frame of grids.

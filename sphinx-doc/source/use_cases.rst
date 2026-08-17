@@ -80,10 +80,10 @@ Alternatively, you may use the auxiliary functions to create a :py:class:`gplate
 
 
 The `PlateReconstructions example`_ demonstrates in detail how to use the :py:class:`gplately.PlateReconstruction` class.
-The `02-PlateReconstructions.ipynb`_ Jupyter Notebook is available in the GitHub GPlately repository.
+The latest `02-PlateReconstructions.ipynb`_ Jupyter Notebook is available in the GitHub GPlately repository.
 
 .. _`02-PlateReconstructions.ipynb`: https://github.com/GPlates/gplately/blob/master/Notebooks/02-PlateReconstructions.ipynb
-.. _`PlateReconstructions example`: https://gplates.github.io/gplately/stable/02-PlateReconstructions.html
+.. _`PlateReconstructions example`: ../../notebook-html/02-PlateReconstructions.html
 
 Points
 ------
@@ -93,16 +93,14 @@ through geologic time. This motion can be visualised using flowlines or motion p
 
 .. code-block:: python
    :linenos:
-   :emphasize-lines: 15
+   :emphasize-lines: 13
 
    import numpy as np
 
-   from gplately import PlateModelManager, Points, auxiliary
-
-   model = PlateModelManager().get_model("Muller2019")
+   from gplately import Points, auxiliary
 
    # Create a plate reconstruction model using a rotation model, a set of topology features and static polygons
-   recon_model = auxiliary.get_plate_reconstruction(model)
+   recon_model = auxiliary.get_plate_reconstruction("Muller2019")
 
    # Define some points using their latitude and longitude coordinates so we can track them through time!
    pt_lons = np.array([140.0, 150.0, 160.0])
@@ -113,9 +111,9 @@ through geologic time. This motion can be visualised using flowlines or motion p
 
 
 The `WorkingWithPoints example`_ demonstrates in detail how to use the Points class. 
-The `03-WorkingWithPoints.ipynb`_ Jupyter Notebook is available in the GitHub GPlately repository.
+The latest `03-WorkingWithPoints.ipynb`_ Jupyter Notebook is available in the GitHub GPlately repository.
 
-.. _`WorkingWithPoints example`: https://gplates.github.io/gplately/stable/03-WorkingWithPoints.html
+.. _`WorkingWithPoints example`: ../../notebook-html/03-WorkingWithPoints.html
 .. _`03-WorkingWithPoints.ipynb`: https://github.com/GPlates/gplately/blob/master/Notebooks/03-WorkingWithPoints.ipynb
 
 .. image:: images/Reconstructed-Jurassic-Foraminifera-locations-min.png
@@ -123,9 +121,9 @@ The `03-WorkingWithPoints.ipynb`_ Jupyter Notebook is available in the GitHub GP
       :alt: PointsDemo
 
 The `CreatingMotionPathsAndFlowlines example`_ demonstrates how to create motion paths and flowlines.
-The `09-CreatingMotionPathsAndFlowlines.ipynb`_ Jupyter Notebook is available in the GitHub GPlately repository.
+The latest `09-CreatingMotionPathsAndFlowlines.ipynb`_ Jupyter Notebook is available in the GitHub GPlately repository.
 
-.. _`CreatingMotionPathsAndFlowlines example`:
+.. _`CreatingMotionPathsAndFlowlines example`: ../../notebook-html/09-CreatingMotionPathsAndFlowlines.html
 .. _`09-CreatingMotionPathsAndFlowlines.ipynb`: https://github.com/GPlates/gplately/blob/master/Notebooks/09-CreatingMotionPathsAndFlowlines.ipynb
 
 .. image:: images/Hawaii_Emperor_motion_path.png
@@ -143,11 +141,11 @@ interpolated onto Raster grids.
    :linenos:
    :emphasize-lines: 8, 16
 
-   from gplately import PlateModelManager, PresentDayRasterManager, Raster, auxiliary
+   from gplately import PresentDayRasterManager, Raster, auxiliary
 
-   model_name = "Muller2019"
+   model = auxiliary.get_plate_model("Muller2019")
    # Create a plate reconstruction model using a rotation model, a set of topology features and static polygons
-   recon_model = auxiliary.get_plate_reconstruction(model_name)
+   recon_model = auxiliary.get_plate_reconstruction(model)
 
    # Any numpy array can be turned into a Raster object!
    raster = Raster(
@@ -160,17 +158,15 @@ interpolated onto Raster grids.
    # Reconstruct the raster data to 50 million years ago!
    reconstructed_raster = raster.reconstruct(
       time=50,
-      partitioning_features=PlateModelManager()
-      .get_model(model_name)
-      .get_layer("ContinentalPolygons"),
+      partitioning_features=model.get_layer("ContinentalPolygons"),
    )
 
 
 The `Rasters example`_ demonstrates in detail how to use the :py:class:`gplately.Raster` class. 
-The `06-Rasters.ipynb`_ Jupyter Notebook is available in the GitHub GPlately repository.
+The latest `06-Rasters.ipynb`_ Jupyter Notebook is available in the GitHub GPlately repository.
 
 .. _`06-Rasters.ipynb`: https://github.com/GPlates/gplately/blob/master/Notebooks/06-Rasters.ipynb
-.. _`Rasters example`: https://gplates.github.io/gplately/stable/06-Rasters.html
+.. _`Rasters example`: ../../notebook-html/06-Rasters.html
 
 .. image:: images/etopo_reconstruction.png
       :width: 600
@@ -186,9 +182,9 @@ geologic features of different types, such as coastlines, continents and contine
    :linenos:
    :emphasize-lines: 6
 
-   from gplately import PlateModelManager, PlotTopologies, auxiliary
+   from gplately import PlotTopologies, auxiliary
 
-   model = PlateModelManager().get_model("Muller2019")
+   model = auxiliary.get_plate_model("Muller2019")
    recon_model = auxiliary.get_plate_reconstruction(model)
 
    gplot = PlotTopologies(
@@ -234,28 +230,28 @@ as encoded by a plate reconstruction model.
 
    from gplately import SeafloorGrid, auxiliary
 
-   if __name__ == "__main__":
-      gplot = auxiliary.get_gplot("Muller2019")
+   model = auxiliary.get_plate_model("Muller2019")
+   plate_reconstruction = auxiliary.get_plate_reconstruction(model)
 
-      # Set up automatic gridding from 5Ma to present day
-      seafloorgrid = SeafloorGrid(
-         PlateReconstruction_object=gplot.plate_reconstruction,  # The PlateReconstruction object
-         PlotTopologies_object=gplot,  # The PlotTopologies object
-         max_time=5,  # start time (Ma)
-         min_time=0,  # end time (Ma)
-         ridge_time_step=1,  # time increment (Myr)
-      )
+   # Set up automatic gridding from 5Ma to present day
+   seafloorgrid = SeafloorGrid(
+      plate_reconstruction=plate_reconstruction,  # the PlateReconstruction object
+      max_time=5,  # start time (Ma)
+      min_time=0,  # end time (Ma)
+      ridge_time_step=1,  # time increment (Myr)
+      continent_polygon_features=model.get_layer("ContinentalPolygons"),  # the continent polygons
+   )
 
-      # Begin automatic gridding!
-      seafloorgrid.reconstruct_by_topologies()
+    # Begin automatic gridding!
+    seafloorgrid.reconstruct_by_topologies()
 
 The `SeafloorGrids example`_ is a tutorial notebook that demonstrates
 how to set up and use the :py:class:`gplately.SeafloorGrid` object, and shows a sample set of output grids. 
-The `10-SeafloorGrids.ipynb`_ Jupyter Notebook is available in the GitHub GPlately repository.
+The latest `10-SeafloorGrids.ipynb`_ Jupyter Notebook is available in the GitHub GPlately repository.
 
-.. _`SeafloorGrids example`: https://gplates.github.io/gplately/dev-doc/10-SeafloorGrids.html
+.. _`SeafloorGrids example`: ../../notebook-html//10-SeafloorGrids.html
 .. _`10-SeafloorGrids.ipynb`: https://github.com/GPlates/gplately/blob/master/Notebooks/10-SeafloorGrids.ipynb
 
-.. image:: images/seafloorgrid.gif
+.. image:: images/seafloor_age_65Ma.png
       :width: 600
       :alt: SeafloorGridDemo

@@ -1,5 +1,5 @@
 #
-#    Copyright (C) 2024-2025 The University of Sydney, Australia
+#    Copyright (C) 2024-2026 The University of Sydney, Australia
 #
 #    This program is free software; you can redistribute it and/or modify it under
 #    the terms of the GNU General Public License, version 2, as published by
@@ -15,35 +15,80 @@
 #    51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 
-"""A set of helper functions designed to streamline the use of GPlately’s functionalities,
+"""A set of helper functions designed to streamline the use of GPlately's functionalities,
 minimizing the coding effort required from users."""
 
 import logging
-from typing import Union
+from typing import Optional, Union
 
 logger = logging.getLogger("gplately")
 try:
     import pygmt
-except:
-    logger.error("Failed to import PyGMT. PyGMT requires Python>=3.11.")
+except ImportError:
+    logger.error(
+        "Failed to import PyGMT. Make sure PyGMT is installed. PyGMT requires Python>=3.11."
+    )
+    pygmt = None
 from plate_model_manager import PlateModel, PlateModelManager
 
-from .download import path_to_cache
-from .mapping.cartopy_plot import CartopyPlotEngine
-from .mapping.plot_engine import PlotEngine
+from .data_server import DataServer
+from .plot.cartopy_plot import CartopyPlotEngine
+from .plot.plot_engine import PlotEngine
 from .plot import PlotTopologies
 from .reconstruction import PlateReconstruction
 
 
-def get_plate_reconstruction(model: Union[str, PlateModel], model_repo_dir: str = "./"):
+def get_plate_model(
+    model: Union[str, PlateModel], model_repo_dir: str = "./"
+) -> PlateModel:
+    """Return a :py:class:`gplately.PlateModel` object for a given model name.
+
+    If ``model`` is a :class:`gplately.PlateModel` object then it is simply returned.
+
+    Parameters
+    ----------
+    model : `str` or `PlateModel`
+        model name or a :class:`gplately.PlateModel` object
+    model_repo_dir: `str`, default="./"
+        the folder in which you would like to keep the model files
+
+    Returns
+    -------
+    PlateModel
+        a :class:`gplately.PlateModel` object
+    """
+    if isinstance(model, str):
+        model_name: str = model
+        try:
+            plate_model = PlateModelManager().get_model(
+                model_name, data_dir=model_repo_dir
+            )
+        except Exception:
+            plate_model = PlateModel(model_name, data_dir=model_repo_dir, readonly=True)
+
+        if plate_model is None:
+            raise RuntimeError(f"Unable to get model ({model_name})")
+    else:
+        plate_model = model
+
+    return plate_model
+
+
+def get_plate_reconstruction(
+    model: Union[str, PlateModel],
+    model_repo_dir: str = "./",
+    default_anchor_plate_id: int = 0,
+) -> PlateReconstruction:
     """Return a :py:class:`gplately.PlateReconstruction` object for a given model name or :class:`gplately.PlateModel` object.
 
     Parameters
     ----------
-    model : str or PlateModel
+    model : `str` or `PlateModel`
         model name or a :class:`gplately.PlateModel` object
-    model_repo_dir: str, default="./"
+    model_repo_dir: `str`, default="./"
         the folder in which you would like to keep the model files
+    default_anchor_plate_id: `int`, default=0
+        the default anchor plate ID to use to create pygplates.RotationModel.
 
     Returns
     -------
@@ -53,21 +98,9 @@ def get_plate_reconstruction(model: Union[str, PlateModel], model_repo_dir: str 
 
     .. seealso::
 
-        `usage example <https://github.com/GPlates/gplately/blob/master/Notebooks/Examples/use_auxiliary_functions.py>`__
+        `Usage example <https://gplates.github.io/gplately/latest/notebook-html/Examples/08-UseAuxiliaryFunctions.html>`__
     """
-    if isinstance(model, str):
-        model_name: str = model
-        try:
-            plate_model = PlateModelManager().get_model(
-                model_name, data_dir=model_repo_dir
-            )
-        except:
-            plate_model = PlateModel(model_name, data_dir=model_repo_dir, readonly=True)
-
-        if plate_model is None:
-            raise Exception(f"Unable to get model ({model_name})")
-    else:
-        plate_model = model
+    plate_model = get_plate_model(model, model_repo_dir)
 
     topology_features = None
     static_polygons = None
@@ -81,6 +114,7 @@ def get_plate_reconstruction(model: Union[str, PlateModel], model_repo_dir: str 
 
     return PlateReconstruction(
         plate_model.get_rotation_model(),
+        anchor_plate_id=default_anchor_plate_id,
         topology_features=topology_features,
         static_polygons=static_polygons,
         plate_model=plate_model,
@@ -91,13 +125,14 @@ def get_gplot(
     model: Union[str, PlateModel],
     model_repo_dir: str = "./",
     time: Union[int, float] = 0,
-    plot_engine: PlotEngine = CartopyPlotEngine(),
+    plot_engine: Optional[PlotEngine] = None,
+    default_anchor_plate_id: int = 0,
 ) -> PlotTopologies:
     """Return a :py:class:`gplately.PlotTopologies` object for a given model name or :class:`gplately.PlateModel` object.
 
     Parameters
     ----------
-    model : str or PlateModel
+    model : `str` or `PlateModel`
         model name or a :class:`gplately.PlateModel` object
     model_repo_dir: str, default="./"
         the folder in which you would like to keep the model files
@@ -105,6 +140,8 @@ def get_gplot(
         the reconstruction age/time
     plot_engine: PlotEngine, default=CartopyPlotEngine()
         two choices - CartopyPlotEngine() or PygmtPlotEngine()
+    default_anchor_plate_id: int, default=0
+        the default anchor plate ID to use to create pygplates.RotationModel.
 
     Returns
     -------
@@ -114,23 +151,14 @@ def get_gplot(
 
     .. seealso::
 
-        `usage example <https://github.com/GPlates/gplately/blob/master/Notebooks/Examples/use_auxiliary_functions.py>`__
+        `Usage example. <https://gplates.github.io/gplately/latest/notebook-html/Examples/08-UseAuxiliaryFunctions.html>`__
     """
-    if isinstance(model, str):
-        model_name: str = model
-        try:
-            plate_model = PlateModelManager().get_model(
-                model_name, data_dir=model_repo_dir
-            )
-        except:
-            plate_model = PlateModel(model_name, data_dir=model_repo_dir, readonly=True)
+    if plot_engine is None:
+        plot_engine = CartopyPlotEngine()
 
-        if plate_model is None:
-            raise Exception(f"Unable to get model ({model_name})")
-    else:
-        plate_model = model
+    plate_model = get_plate_model(model, model_repo_dir)
 
-    m = get_plate_reconstruction(plate_model)
+    m = get_plate_reconstruction(plate_model, model_repo_dir, default_anchor_plate_id)
 
     coastlines = None
     COBs = None
@@ -155,7 +183,9 @@ def get_gplot(
     )
 
 
-def get_pygmt_basemap_figure(projection="N180/10c", region="d"):
+def get_pygmt_basemap_figure(
+    projection="N180/10c", region="d", frame: Union[str, list] = "lrtb", title: str = ""
+):
     """A helper function to return a ``pygmt.Figure()`` object
 
     Parameters
@@ -164,6 +194,8 @@ def get_pygmt_basemap_figure(projection="N180/10c", region="d"):
         string to define the map projection in GMT style
     region: str, default="d"
         string to define the map extent in GMT style
+    frame: str or list, default="lrtb"
+        GMT frame setting. Use ``"afg"`` to draw annotations, ticks, and gridlines.
 
 
     Returns
@@ -172,16 +204,30 @@ def get_pygmt_basemap_figure(projection="N180/10c", region="d"):
        a ``pygmt.Figure()`` object for map plotting
 
     """
+    if pygmt is None:
+        raise ModuleNotFoundError(
+            "PyGMT is not available. Please install PyGMT to use this function."
+        )
+
     fig = pygmt.Figure()
-    fig.basemap(region=region, projection=projection, frame="lrtb")
+    fig.basemap(region=region, projection=projection, frame=frame)
+    if title:
+        fig.text(
+            x=180,
+            y=90,
+            text=title,
+            font="10p,Helvetica-Bold,black",
+            offset="0.c/0.3c",
+            no_clip=True,
+        )
     return fig
 
 
 def get_data_server_cache_path():
-    """Return the path to the :class:`gplately.DataServer` cache as a ``os.PathLike`` object.
+    """Return the path to the :class:`gplately.DataServer` cache as a `os.PathLike` object.
 
     .. seealso::
 
-        :py:attr:`gplately.DataServer.cache_path`
+        :py:meth:`gplately.DataServer.cache_path`
     """
-    return path_to_cache()
+    return DataServer.cache_path()

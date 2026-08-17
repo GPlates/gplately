@@ -6,8 +6,8 @@ __pycache__
 output
 *.log
 requirements.txt
-typings/
 api/
 sphinx-doc/source/generated/
 Notebooks/source_data/
 notebook-html/
+.vscode/settings.json

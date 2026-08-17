@@ -1,5 +1,5 @@
 #
-#    Copyright (C) 2024-2025 The University of Sydney, Australia
+#    Copyright (C) 2024-2026 The University of Sydney, Australia
 #
 #    This program is free software; you can redistribute it and/or modify it under
 #    the terms of the GNU General Public License, version 2, as published by
@@ -15,51 +15,43 @@
 #    51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 
-"""
-This sub-module contains tools for working with MaskedArray, ndarray and netCDF4 rasters, as well as
-gridded-data.
+"""This sub-module contains tools for working with MaskedArray, ndarray and netCDF4 rasters, as well as gridded-data."""
 
-Some methods available in `grids`:
-
-* Point data can be interpolated onto a raster or grid with Scipy using linear or
-nearest-neighbour interpolation.
-* Rasters can be resampled with a set of X and Y-direction spacings, and can be resized
-using given X and Y resolutions.
-* Grids with invalid (NaN-type) data cells can have their NaN entries replaced
-with the values of their nearest valid neighbours.
-
-Classes
--------
-* RegularGridInterpolator
-* Raster
-"""
-
-import copy
 import logging
 import math
+import os
 import warnings
 from multiprocessing import cpu_count
-from typing import Tuple, Union
+from typing import Tuple, Union, cast, overload, Literal
+
+# pyright: reportMissingImports=false
+# pyright: reportMissingModuleSource=false
 
 import matplotlib.colors
-import matplotlib.pyplot as plt
 import netCDF4
 import numpy as np
 import pygplates
-from cartopy.crs import PlateCarree as _PlateCarree
-from cartopy.mpl.geoaxes import GeoAxes as _GeoAxes
+from pygplates import (
+    RotationModel as _RotationModel,  # pyright: ignore[reportAttributeAccessIssue]
+    FiniteRotation as _FiniteRotation,  # pyright: ignore[reportAttributeAccessIssue]
+    Feature as _Feature,  # pyright: ignore[reportAttributeAccessIssue]
+    FeaturesFunctionArgument as _FeaturesFunctionArgument,  # pyright: ignore[reportAttributeAccessIssue]
+    FeatureCollection as _FeatureCollection,  # pyright: ignore[reportAttributeAccessIssue]
+)
 from rasterio.enums import MergeAlg
 from rasterio.features import rasterize as _rasterize
 from rasterio.transform import from_bounds as _from_bounds
-from scipy.interpolate import RegularGridInterpolator as _RGI
-from scipy.interpolate import griddata
 from scipy.ndimage import distance_transform_edt, map_coordinates
-from scipy.spatial import cKDTree as _cKDTree  # type: ignore
+from scipy.spatial import (
+    cKDTree as _cKDTree,  # pyright: ignore[reportAttributeAccessIssue]
+)
 from scipy.spatial.transform import Rotation as _Rotation
 
 from .geometry import pygplates_to_shapely
-from .reconstruction import PlateReconstruction as _PlateReconstruction
-from .tools import _deg2pixels, griddata_sphere
+
+# re-export, for backward compatibility, don't remove
+from .lib.regular_grid_interpolator import RegularGridInterpolator
+from .raster import Raster
 
 logger = logging.getLogger("gplately")
 
@@ -67,6 +59,7 @@ __all__ = [
     "fill_raster",
     "read_netcdf_grid",
     "write_netcdf_grid",
+    "default_netcdf_fill_value",
     "RegularGridInterpolator",
     "sample_grid",
     "reconstruct_grid",
@@ -128,22 +121,68 @@ def fill_raster(data, invalid=None):
         if masked_array:
             invalid += mask_fill_value
     ind = distance_transform_edt(invalid, return_distances=False, return_indices=True)
+    assert ind is not None
     return data[tuple(ind)]
 
 
 def _realign_grid(array, lons, lats):
     """realigns grid to -180/180 and flips the array if the latitudinal coordinates are decreasing."""
-    mask_lons = lons > 180
+    lons = np.asarray(lons)
+    lats = np.asarray(lats)
 
-    # realign to -180/180
-    if mask_lons.any():
-        dlon = np.diff(lons).mean()
-        array = np.hstack([array[:, mask_lons], array[:, ~mask_lons]])
-        lons = np.hstack([lons[mask_lons] - 360 - dlon, lons[~mask_lons]])
+    # There must not be any duplicate longitudes or duplicate latitudes.
+    lon_differences = np.diff(lons)
+    if np.any(lon_differences == 0):
+        raise ValueError("Longitudes contain duplicate values.")
+    lat_differences = np.diff(lats)
+    if np.any(lat_differences == 0):
+        raise ValueError("Latitudes contain duplicate values.")
 
-    if lats[0] > lats[-1]:
-        array = np.flipud(array)
-        lats = lats[::-1]
+    # Check if longitudes and latitudes are in increasing order. If not then sort them.
+    if not np.all(lon_differences > 0):
+        sort_indices = np.argsort(lons)
+        array = array[:, sort_indices]
+        lons = lons[sort_indices]
+    if not np.all(lat_differences > 0):
+        sort_indices = np.argsort(lats)
+        array = array[sort_indices, :]
+        lats = lats[sort_indices]
+
+    # If we need to wrap (180, 360) to (-180, 0).
+    if lons[-1] > 180:
+        mask_lon_gt_180 = lons > 180
+
+        # If we have longitudes at 0 and 360 then we don't want to wrap the 360 column to 0 since we'd end up with two 0 columns.
+        # Both columns should ideally be equal anyway (if input raster wraps 0->360 properly).
+        if np.isclose(lons[0], 0.0) and np.isclose(lons[-1], 360.0):
+            mask_lon_wrap = mask_lon_gt_180.copy()
+            mask_lon_wrap[-1] = False  # drop the 360 column altogether
+        else:
+            mask_lon_wrap = mask_lon_gt_180
+
+        # Wrap (180, 360) to (-180, 0).
+        array = np.hstack([array[:, mask_lon_wrap], array[:, ~mask_lon_gt_180]])
+        lons = np.hstack([lons[mask_lon_wrap] - 360.0, lons[~mask_lon_gt_180]])
+
+        # If the input grid crossed the dateline (180) then create a matching column at -180 so that the output wraps -180->180 properly.
+        #
+        # The dateline was crossed if there are longitudes in (0, 180), noting that we already wrapped (180, 360) to (-180, 0).
+        if lons[-1] > 0:
+            if np.isclose(lons[-1], 180.0):
+                # There's a longitude at 180, so duplicate it at -180.
+                array = np.hstack([array[:, [-1]], array])
+                lons = np.hstack([-180.0, lons])
+            else:
+                # There's no longitude at 180, so interpolate at 180 and insert at -180.
+                #
+                # The 360.0 accounts for the fact that lons[0] was wrapped above.
+                interp_180_weight = (180.0 - lons[-1]) / (360.0 - (lons[-1] - lons[0]))
+                interp_180_column = (
+                    array[:, -1] * (1.0 - interp_180_weight)
+                    + array[:, 0] * interp_180_weight
+                )
+                array = np.hstack([interp_180_column[:, np.newaxis], array])
+                lons = np.hstack([-180.0, lons])
 
     return array, lons, lats
 
@@ -161,6 +200,61 @@ def _guess_data_variable_name(cdf: netCDF4.Dataset, x_name: str, y_name: str) ->
     return None
 
 
+def _is_a_common_name_for_longitude(name: str) -> bool:
+    """Return True if the `name` parameter is a possible common name for longitude."""
+    return name in ["lon", "lons", "longitude", "x", "east", "easting", "eastings"]
+
+
+def _is_a_common_name_for_latitude(name: str) -> bool:
+    """Return True if the `name` parameter is a possible common name for latitude."""
+    return name in ["lat", "lats", "latitude", "y", "north", "northing", "northings"]
+
+
+def _spaced_axis(start, stop, step):
+    """Build an inclusive coordinate axis from `start` to `stop`, sampled every `step`.
+
+    Equivalent to ``np.arange(start, stop + step, step)``, but with exact endpoints.
+    Accumulated floating-point error in ``np.arange`` can push the final sample past
+    `stop` — a 0.2-degree global latitude axis ends at 90.00000000000256, which trips
+    the pole-clipping guard in `sample_grid`. Deriving the sample count and handing it
+    to `np.linspace` keeps both endpoints exact.
+
+    `step` must share the sign of ``stop - start``, so descending axes (as produced by
+    an ``upper`` origin) are handled the same way as ascending ones. As with
+    ``np.arange``, a mis-signed `step` yields an empty axis.
+    """
+    n = int(round((stop - start) / step)) + 1
+    return np.linspace(start, stop, max(n, 0))
+
+
+def _find_extent_from_data(
+    data, origin
+) -> Union[Tuple[float, float, float, float], None]:
+    """Try to find the extent from data. Return None if data doesn't contain coordinates.
+    As of 2025-12-10, only support xarray.DataArray."""
+    extent = None
+    lons = None
+    lats = None
+    try:
+        for name in data.coords:
+            if not lats and _is_a_common_name_for_latitude(name):
+                lats = data.coords[name]
+            elif not lons and _is_a_common_name_for_longitude(name):
+                lons = data.coords[name]
+        if lons is not None and lats is not None:
+            extent = (
+                float(lons.min()),
+                float(lons.max()),
+                float(lats.min()),
+                float(lats.max()),
+            )
+    except Exception as ex:
+        logger.debug(ex)
+        return None
+
+    return _adjust_extent_for_origin(extent, origin)
+
+
 def read_netcdf_grid(
     filename,
     return_grids: bool = False,
@@ -170,9 +264,7 @@ def read_netcdf_grid(
     x_dimension_name: str = "",
     y_dimension_name: str = "",
     data_variable_name: str = "",
-) -> Union[
-    Tuple[np.ma.MaskedArray, np.ma.MaskedArray, np.ma.MaskedArray], np.ma.MaskedArray
-]:
+) -> Union[Tuple[np.ndarray, np.ndarray, np.ndarray], np.ndarray]:
     """Read grid data from a NetCDF (.nc) file.
 
     Parameters
@@ -281,11 +373,13 @@ def read_netcdf_grid(
         cdf_lat = cdf[key_lat][:]
 
         # fill missing values
-        if hasattr(cdf[key_z], "missing_value") and np.issubdtype(
-            cdf_grid.dtype, np.floating
-        ):
-            fill_value = cdf[key_z].missing_value
-            cdf_grid[np.isclose(cdf_grid, fill_value, rtol=0.1)] = np.nan
+        if np.issubdtype(cdf_grid.dtype, np.floating):
+            if hasattr(cdf[key_z], "missing_value"):
+                fill_value = cdf[key_z].missing_value
+                cdf_grid[np.isclose(cdf_grid, fill_value, rtol=0.1)] = np.nan
+            elif hasattr(cdf[key_z], "_FillValue"):
+                fill_value = cdf[key_z]._FillValue
+                cdf_grid[np.isclose(cdf_grid, fill_value, rtol=0.1)] = np.nan
 
         # convert to boolean array
         if np.issubdtype(cdf_grid.dtype, np.integer):
@@ -294,7 +388,9 @@ def read_netcdf_grid(
                 if (unique_grid == [0, 1]).all():
                     cdf_grid = cdf_grid.astype(bool)
 
-    if realign:
+    # we realign the grid to -180/180 when the longitudes are from 0 to 360
+    # this is a temporary fix. we need a more sophisticated solution.
+    if np.max(cdf_lon) > 180:
         # realign longitudes to -180/180 dateline
         cdf_grid_z, cdf_lon, cdf_lat = _realign_grid(cdf_grid, cdf_lon, cdf_lat)
     else:
@@ -308,9 +404,9 @@ def read_netcdf_grid(
         dX = np.diff(cdf_lon).mean()
         dY = np.diff(cdf_lat).mean()
 
-        if spacingX != dX or spacingY != dY:
-            lon_grid = np.arange(cdf_lon.min(), cdf_lon.max() + spacingX, spacingX)
-            lat_grid = np.arange(cdf_lat.min(), cdf_lat.max() + spacingY, spacingY)
+        if not np.isclose(dX, spacingX) or not np.isclose(dY, spacingY):
+            lon_grid = _spaced_axis(cdf_lon.min(), cdf_lon.max(), spacingX)
+            lat_grid = _spaced_axis(cdf_lat.min(), cdf_lat.max(), spacingY)
             lonq, latq = np.meshgrid(lon_grid, lat_grid)
             original_extent = (
                 cdf_lon[0],
@@ -334,7 +430,7 @@ def read_netcdf_grid(
         resX, resY = resize
 
         # don't resize if already the same shape
-        if resX != cdf_grid_z.shape[1] or resY != cdf_grid_z.shape[0]:
+        if resX != cdf_grid_z.shape[1] or resY != cdf_grid_z.shape[0]:  # type: ignore
             original_extent = (
                 cdf_lon[0],
                 cdf_lon[-1],
@@ -371,27 +467,29 @@ def write_netcdf_grid(
     grid,
     extent: Union[tuple, str] = "global",
     significant_digits=None,
-    fill_value: Union[float, None] = np.nan,
+    fill_value: Union[str, float, bool, None] = None,
+    metadata: Union[dict, None] = None,
+    title: Union[str, None] = None,
 ):
-    """Write geological data contained in a `grid` to a netCDF4 grid with a specified `filename`.
+    """Write geological data contained in a ``grid`` to a netCDF4 grid with a specified ``filename``.
 
     Notes
     -----
-    The written netCDF4 grid has the same latitudinal and longitudinal (row and column) dimensions as `grid`.
+    The written netCDF4 grid has the same latitudinal and longitudinal (row and column) dimensions as ``grid``.
     It has three variables:
 
-    * Latitudes of `grid` data
-    * Longitudes of `grid` data
-    * The data stored in `grid`
+    * Latitudes of ``grid`` data
+    * Longitudes of ``grid`` data
+    * The data stored in ``grid``
 
     However, the latitudes and longitudes of the grid returned to the user are constrained to those
-    specified in `extent`.
-    By default, `extent` assumes a global latitudinal and longitudinal span: `extent=[-180,180,-90,90]`.
+    specified in ``extent``.
+    By default, ``extent`` assumes a global latitudinal and longitudinal span: `extent=[-180,180,-90,90]`.
 
     Parameters
     ----------
     filename : str
-        The full path (including a filename and the ".nc" extension) to save the created netCDF4 `grid` to.
+        The full path (including a filename and the ".nc" extension) to save the created netCDF4 ``grid`` to.
 
     grid : array-like
         An ndarray grid containing data to be written into a `netCDF` (.nc) file. Note: Rows correspond to
@@ -402,20 +500,40 @@ def write_netcdf_grid(
         variables of the netCDF grid to. If no extents are supplied, full global extent `[-180, 180, -90, 90]`
         is assumed.
 
-    significant_digits : int
-        Applies lossy data compression up to a specified number of significant digits.
+    significant_digits : int, optional
+        Optionally applies lossy data compression up to a specified number of significant digits.
         This significantly reduces file size, but make sure the required precision is preserved in the
         saved netcdf file.
 
-    fill_value : scalar, NoneType, default: np.nan
-        Value used to fill in missing data. By default this is np.nan.
+    fill_value : scalar or False or None, default=None
+        Value used to fill in missing data.
+
+        If ``False`` is specified then no fill value is used, and you must ensure that data was written to *all* elements of ``grid``.
+        And any NaN elements will be written as the raw bit pattern for NaN (rather than automatically converted to a fill value).
+
+        If ``None`` is specified then a default fill value is used, as follows:
+
+        * If ``significant_digits`` is NOT specified and the grid data type is floating-point then the default is `np.nan`.
+          This essentially means that `np.nan` is only used (as the default) when *losslessly* compressing *floating-point* data.
+          This is because *lossy* compression with a NaN fill value appears to *not* always mask out NaN regions.
+        * In all other cases the default is determined by `netCDF` based on the grid type.
+          For example, the default for floating-point types is 9.969209968386869e+36 (see `netCDF4.default_fillvals`) and
+          the default for *signed* integers is the largest negative value supported by the integer type (for *unsigned* its largest value).
+          In this case, please ensure the default is outside the range of your valid grid data, otherwise specify a custom fill value.
+
+        ...and to query the default value associated with ``None`` you can call :func:`default_netcdf_fill_value`.
+
+    metadata : dict, default=None
+        Optional metadata to store as global netCDF attributes.
+
+    title : str, default=None
+        Title to store as the global ``title`` netCDF attribute. If ``None``,
+        defaults to ``"Grid produced by gplately <version>"``.
 
     Returns
     -------
-    A netCDF grid will be saved to the path specified in `filename`.
+    A netCDF grid will be saved to the path specified in ``filename``.
     """
-    import netCDF4
-
     from gplately import __version__ as _version
 
     if extent == "global":
@@ -432,21 +550,70 @@ def write_netcdf_grid(
 
     data_kwds = {"compression": "zlib", "complevel": 6}
 
+    def _compute_coordinate_bounds(coords):
+        coords = np.asarray(coords, dtype=float)
+        if coords.size == 1:
+            edges = np.array([coords[0] - 0.5, coords[0] + 0.5], dtype=float)
+        else:
+            edges = np.empty(coords.size + 1, dtype=float)
+            mids = 0.5 * (coords[:-1] + coords[1:])
+            edges[1:-1] = mids
+            edges[0] = coords[0] - (mids[0] - coords[0])
+            edges[-1] = coords[-1] + (coords[-1] - mids[-1])
+        return np.column_stack((edges[:-1], edges[1:]))
+
     with netCDF4.Dataset(filename, "w", driver=None) as cdf:
-        cdf.title = "Grid produced by gplately " + str(_version)
+        if title is None:
+            cdf.title = "Grid produced by gplately " + str(_version)
+        else:
+            cdf.title = str(title)
+        if metadata:
+            for key, value in metadata.items():
+                if value is None:
+                    continue
+                attr_name = str(key).strip()
+                if not attr_name:
+                    continue
+                if isinstance(value, np.generic):
+                    value = value.item()
+                elif isinstance(value, tuple):
+                    value = list(value)
+                elif isinstance(value, (list, dict, str, int, float, bool)):
+                    pass
+                else:
+                    value = str(value)
+                cdf.setncattr(attr_name, value)
+
+        # ACDD-style geospatial discovery metadata derived from extent.
+        lon_min = float(min(extent[0], extent[1]))
+        lon_max = float(max(extent[0], extent[1]))
+        lat_min = float(min(extent[2], extent[3]))
+        lat_max = float(max(extent[2], extent[3]))
+        cdf.geospatial_lon_min = lon_min
+        cdf.geospatial_lon_max = lon_max
+        cdf.geospatial_lat_min = lat_min
+        cdf.geospatial_lat_max = lat_max
+        cdf.geospatial_bounds = (
+            f"POLYGON (({lon_min} {lat_min}, {lon_max} {lat_min}, "
+            f"{lon_max} {lat_max}, {lon_min} {lat_max}, {lon_min} {lat_min}))"
+        )
+
         cdf.createDimension("lon", lon_grid.size)
         cdf.createDimension("lat", lat_grid.size)
+        cdf.createDimension("bnds", 2)
         cdf_lon = cdf.createVariable("lon", lon_grid.dtype, ("lon",), **data_kwds)
         cdf_lat = cdf.createVariable("lat", lat_grid.dtype, ("lat",), **data_kwds)
         cdf_lon[:] = lon_grid
         cdf_lat[:] = lat_grid
 
-        # Units for Geographic Grid type
         cdf_lon.units = "degrees_east"
         cdf_lon.standard_name = "lon"
+        cdf_lon.bounds = "lon_bnds"
         cdf_lon.actual_range = [lon_grid[0], lon_grid[-1]]
+
         cdf_lat.units = "degrees_north"
         cdf_lat.standard_name = "lat"
+        cdf_lat.bounds = "lat_bnds"
         cdf_lat.actual_range = [lat_grid[0], lat_grid[-1]]
 
         # create container variable for CRS: lon/lat WGS84 datum
@@ -460,32 +627,60 @@ def write_netcdf_grid(
 
         # add more keyword arguments for quantizing data
         if significant_digits:
-            # significant_digits needs to be >= 2 so that NaNs are preserved
-            data_kwds["significant_digits"] = max(2, int(significant_digits))
+            data_kwds["significant_digits"] = int(significant_digits)
             data_kwds["quantize_mode"] = "GranularBitRound"
 
-        # boolean arrays need to be converted to integers
-        # no such thing as a mask on a boolean array
+        # The fill value can be False, but not True.
+        if isinstance(fill_value, bool):
+            if fill_value:
+                raise ValueError(
+                    "'fill_value' cannot be True; it should be False, None or a number"
+                )
+
         if grid.dtype is np.dtype(bool):
+            # Boolean arrays need to be converted to integers since
+            # there's no such thing as a mask on a boolean array.
             grid = grid.astype("i1")
-            fill_value = None
+            fill_value = False  # no pre-filling
+
+        if fill_value is None:
+            # The fill value was not specified, so we'll set it to the default.
+            fill_value = default_netcdf_fill_value(grid, significant_digits)
+            if fill_value is None:
+                raise ValueError(
+                    "Grid type does not have a default fill value (according to netCDF4)"
+                )
+
+        # Set the fill value keyword argument.
+        #
+        # If this is None then netCDF4 will pre-fill using its default fill value (for the grid type).
+        # If this is False then netCDF4 will not pre-fill. Note that True is not really a valid value (it behaves as the value 1).
+        # Otherwise netCDF4 will pre-fill using the specified value.
+        #
+        # Note: It seems better to set the 'fill_value' keyword argument (when creating z variable)
+        #       rather than set the 'missing_value' attribute (on the z variable after creating it).
+        #       This translates to setting the '_FillValue' attribute instead of the 'missing_value' attribute.
+        #       And this appears to work better when compressing/quantizing (eg, with 'significant_digits').
+        data_kwds["fill_value"] = fill_value
 
         cdf_data = cdf.createVariable("z", grid.dtype, ("lat", "lon"), **data_kwds)
 
-        # netCDF4 uses the missing_value attribute as the default _FillValue
-        # without this, _FillValue defaults to 9.969209968386869e+36
-        if fill_value is not None:
-            cdf_data.missing_value = fill_value
+        # Ensure min and max z values are properly registered.
+        if isinstance(fill_value, bool):
+            # Fill value is False (note that True is not a valid value/type).
+            # So all values are expected to be valid (note that NaN is a valid floating-point type)
+            cdf_data.actual_range = [np.nanmin(grid), np.nanmax(grid)]
+        elif np.isnan(fill_value):
+            # Fill value is NaN.
+            cdf_data.actual_range = [np.nanmin(grid), np.nanmax(grid)]
+        else:
+            # Fill value is a non-NaN number, so create a grid mask using it.
             grid_mask = grid != fill_value
-
             cdf_data.actual_range = [
+                # Note: grid elements could still contain NaN values (though unlikely)...
                 np.nanmin(grid[grid_mask]),
                 np.nanmax(grid[grid_mask]),
             ]
-
-        else:
-            # ensure min and max z values are properly registered
-            cdf_data.actual_range = [np.nanmin(grid), np.nanmax(grid)]
 
         cdf_data.standard_name = "z"
 
@@ -493,227 +688,99 @@ def write_netcdf_grid(
         cdf_data.grid_mapping = "crs"
         # cdf_data.set_auto_maskandscale(False)
 
+        #
+        # NOTE: Create the lon/lat bounds variables AFTER creating the z variable so that 'gmt grdinfo' reports correctly.
+        #
+        #       Otherwise it reports, for example, (x_min, x_max) = (0, 1) and (y_min, y_max) = (179.9, -179.9) instead of
+        #       (x_min, x_max) = (-180, 180) and (y_min, y_max) = (-90, 90) for a grid with 0.2 degree resolution.
+        #       Apparently GMT scans variables based on the order they were written to the binary file structure, so if
+        #       'z' is created before 'lon_bnds' then GMT processes 'z' first. And since 'lon_bnds' is a 2D variable
+        #       with a column dimension of 2, we don't want GMT to get confused and try to read it as a grid plane.
+        #
+        cdf_lon_bnds = cdf.createVariable("lon_bnds", "f8", ("lon", "bnds"))
+        cdf_lon_bnds[:, :] = _compute_coordinate_bounds(lon_grid)
+        #
+        cdf_lat_bnds = cdf.createVariable("lat_bnds", "f8", ("lat", "bnds"))
+        cdf_lat_bnds[:, :] = _compute_coordinate_bounds(lat_grid)
+
         # write data
         cdf_data[:, :] = grid
 
 
-class RegularGridInterpolator(_RGI):
-    """A class to sample gridded data at a set of point coordinates using either linear or nearest-neighbour
-    interpolation methods. It is a child class of `scipy 1.10`'s [`RegularGridInterpolator`](https://docs.scipy.org/doc/scipy/reference/generated/scipy.interpolate.RegularGridInterpolator.html) class.
+def default_netcdf_fill_value(grid, significant_digits=None):
+    """Return the default fill value that would be used when calling ``write_netcdf_grid`` with ``fill_value=None``.
 
-    This will only work for scipy version 1.10 onwards.
+    Notes
+    -----
+    This is useful when you need to set some values in ``grid`` to a fill value (eg, masking out continents from a seafloor age grid)
+    before writing out the grid with ``write_netcdf_grid``.
 
-    Attributes
+    If ``significant_digits`` is NOT specified (ie, None) and the grid data type is floating-point then the default is `np.nan`.
+    This essentially means that `np.nan` is only used (as the default) when *losslessly* compressing *floating-point* data.
+    This is because *lossy* compression with a NaN fill value appears to *not* always mask out NaN regions.
+
+    In all other cases the default is determined by `netCDF` based on the grid type.
+    For example, the default for floating-point types is 9.969209968386869e+36 (see `netCDF4.default_fillvals`).
+    In this case, please ensure the default is outside the range of your valid grid data, otherwise you should specify
+    a custom fill value when calling ``write_netcdf_grid``.
+
+    Parameters
     ----------
-    points : tuple of ndarrays of float with shapes (m1, ), …, (mn, )
-        Each array contains point coordinates that define the regular grid in n dimensions.
-    values : ndarray
-        The data on a regular grid. Note: the number of rows corresponds to the number of point latitudes, while the number
-        of columns corresponds to the number of point longitudes.
-    method : str, default=’linear’
-        The method of interpolation to perform. Supported are "linear" and "nearest". Assumes “linear” by default.
-    bounds_error : bool, default=false
-        Choose whether to return a ValueError and terminate the interpolation if any provided sample points are out
-        of grid bounds. By default, it is set to `False`. In this case, all out-of-bound point values are replaced
-        with the `fill_value` (defined below) if supplied.
-    fill_value : float, default=np.nan
-        Used to replace point values that are out of grid bounds, provided that ‘bounds_error’ is false.
+    grid : ndarray
+        The grid that the default fill value will be used for (when writing the grid data to a `netCDF` file).
 
+    significant_digits : int, optional
+        Whether lossy data compression will be applied when writing the grid data to a `netCDF` file.
+        This should be the same value that you will pass to ``write_netcdf_grid``.
+
+    Returns
+    -------
+    The default fill value, or None if the grid type does not have a default value (according to netCDF4).
     """
+    # If we're NOT using *lossy* compression and the grid type is floating-point
+    # then set the fill value to np.nan.
+    if significant_digits is None and np.issubdtype(grid.dtype, np.floating):
+        return np.nan
 
-    def __init__(
-        self, points, values, method="linear", bounds_error=False, fill_value=np.nan
-    ):
-        super(RegularGridInterpolator, self).__init__(
-            points, values, method, bounds_error, fill_value
-        )
-
-    def __call__(self, xi, method=None, return_indices=False, return_distances=False):
-        """Samples gridded data at a set of point coordinates. Uses either a linear or nearest-neighbour interpolation `method`.
-
-        Uses the gridded data specified in the sample_grid method parameter. Note: if any provided sample points are out of
-        grid bounds and a corresponding error message was suppressed (by specifying bounds_error=False), all out-of-bound
-        point values are replaced with the self.fill_value attribute ascribed to the RegularGridInterpolator object (if it
-        exists). Terminates otherwise.
-
-        This is identical to scipy 1.10's RGI object.
-
-        Parameters
-        ----------
-        xi : ndarray of shape (..., ndim)
-            The coordinates of points to sample the gridded data at.
-
-        method : str, default=None
-            The method of interpolation to perform. Supported are "linear" and "Nearest". Assumes “linear” interpolation
-            if None provided.
-
-        return_indices : bool, default=False
-            Choose whether to return indices of neighbouring sampling points.
-
-        return_distances : bool, default=False
-            Choose whether to return normal distances between interpolated points and neighbouring sampling points.
-
-        Returns
-        -------
-        output_tuple : tuple of ndarrays
-            The first ndarray in the output tuple holds the interpolated grid data. If sample point distances and indices are
-            required, these are returned as subsequent tuple elements.
-
-        Raises
-        ------
-        ValueError
-            * Raised if the string method supplied is not “linear” or “nearest”.
-            * Raised if the provided sample points for interpolation (xi) do not have the same dimensions as the supplied grid.
-            * Raised if the provided sample points for interpolation include any point out of grid bounds. Alerts user which
-            dimension (index) the point is located. Only raised if the RegularGridInterpolator attribute bounds_error is set
-            to True. If suppressed, out-of-bound points are replaced with a set fill_value.
-        """
-        method = self.method if method is None else method
-        if method not in ["linear", "nearest"]:
-            raise ValueError("Method '%s' is not defined" % method)
-
-        xi, xi_shape, ndim, nans, out_of_bounds = self._prepare_xi(xi)
-
-        indices, norm_distances = self._find_indices(xi.T)
-
-        if method == "linear":
-            result = self._evaluate_linear(indices, norm_distances)
-        elif method == "nearest":
-            result = self._evaluate_nearest(indices, norm_distances)
-        if not self.bounds_error and self.fill_value is not None:
-            result[out_of_bounds] = self.fill_value
-
-        interp_output = result.reshape(xi_shape[:-1] + self.values.shape[ndim:])
-        output_tuple = [interp_output]
-
-        if return_indices:
-            output_tuple.append(indices)
-        if return_distances:
-            output_tuple.append(norm_distances)
-
-        if return_distances or return_indices:
-            return tuple(output_tuple)
-        else:
-            return output_tuple[0]
-
-    def _prepare_xi(self, xi):
-        try:
-            from scipy.interpolate.interpnd import _ndim_coords_from_arrays
-        except ImportError:
-            # SciPy 1.15 renamed interpnd to _interpnd (see https://github.com/scipy/scipy/pull/21754).
-            from scipy.interpolate._interpnd import _ndim_coords_from_arrays
-
-        ndim = len(self.grid)
-        xi = _ndim_coords_from_arrays(xi, ndim=ndim)
-        if xi.shape[-1] != len(self.grid):
-            raise ValueError(
-                "The requested sample points xi have dimension "
-                f"{xi.shape[-1]} but this "
-                f"RegularGridInterpolator has dimension {ndim}"
-            )
-
-        xi_shape = xi.shape
-        xi = xi.reshape(-1, xi_shape[-1])
-
-        # find nans in input
-        nans = np.any(np.isnan(xi), axis=-1)
-
-        if self.bounds_error:
-            for i, p in enumerate(xi.T):
-                if not np.logical_and(
-                    np.all(self.grid[i][0] <= p), np.all(p <= self.grid[i][-1])
-                ):
-                    raise ValueError(
-                        "One of the requested xi is out of bounds "
-                        "in dimension %d" % i
-                    )
-            out_of_bounds = None
-        else:
-            out_of_bounds = self._find_out_of_bounds(xi.T)
-
-        return xi, xi_shape, ndim, nans, out_of_bounds
-
-    def _find_out_of_bounds(self, xi):
-        # check for out of bounds xi
-        out_of_bounds = np.zeros((xi.shape[1]), dtype=bool)
-        # iterate through dimensions
-        for x, grid in zip(xi, self.grid):
-            out_of_bounds += x < grid[0]
-            out_of_bounds += x > grid[-1]
-        return out_of_bounds
-
-    def _find_indices(self, xi):
-        """Index identifier outsourced from scipy 1.9's
-        RegularGridInterpolator to ensure stable
-        operations with all versions of scipy >1.0.
-        """
-        # find relevant edges between which xi are situated
-        indices = []
-        # compute distance to lower edge in unity units
-        norm_distances = []
-        # iterate through dimensions
-        for x, grid in zip(xi, self.grid):
-            i = np.searchsorted(grid, x) - 1
-            i[i < 0] = 0
-            i[i > grid.size - 2] = grid.size - 2
-            indices.append(i)
-
-            # compute norm_distances, incl length-1 grids,
-            # where `grid[i+1] == grid[i]`
-            denom = grid[i + 1] - grid[i]
-            with np.errstate(divide="ignore", invalid="ignore"):
-                norm_dist = np.where(denom != 0, (x - grid[i]) / denom, 0)
-            norm_distances.append(norm_dist)
-
-        return indices, norm_distances
-
-    def _evaluate_linear(self, indices, norm_distances):
-        """Linear interpolator outsourced from scipy 1.9's
-        RegularGridInterpolator to ensure stable
-        operations with all versions of scipy >1.0.
-        """
-        import itertools
-
-        # slice for broadcasting over trailing dimensions in self.values
-        vslice = (slice(None),) + (None,) * (self.values.ndim - len(indices))
-
-        # Compute shifting up front before zipping everything together
-        shift_norm_distances = [1 - yi for yi in norm_distances]
-        shift_indices = [i + 1 for i in indices]
-
-        # The formula for linear interpolation in 2d takes the form:
-        # values = self.values[(i0, i1)] * (1 - y0) * (1 - y1) + \
-        #          self.values[(i0, i1 + 1)] * (1 - y0) * y1 + \
-        #          self.values[(i0 + 1, i1)] * y0 * (1 - y1) + \
-        #          self.values[(i0 + 1, i1 + 1)] * y0 * y1
-        # We pair i with 1 - yi (zipped1) and i + 1 with yi (zipped2)
-        zipped1 = zip(indices, shift_norm_distances)
-        zipped2 = zip(shift_indices, norm_distances)
-
-        # Take all products of zipped1 and zipped2 and iterate over them
-        # to get the terms in the above formula. This corresponds to iterating
-        # over the vertices of a hypercube.
-        hypercube = itertools.product(*zip(zipped1, zipped2))
-        values = 0.0
-        for h in hypercube:
-            edge_indices, weights = zip(*h)
-            weight = 1.0
-            for w in weights:
-                weight *= w
-            values += np.asarray(self.values[edge_indices]) * weight[vslice]
-        return values
-
-    def _evaluate_nearest(self, indices, norm_distances):
-        """Nearest neighbour interpolator outsourced from scipy 1.9's
-        RegularGridInterpolator to ensure stable
-        operations with all versions of scipy >1.0.
-        """
-        idx_res = [
-            np.where(yi <= 0.5, i, i + 1) for i, yi in zip(indices, norm_distances)
-        ]
-        return self.values[tuple(idx_res)]
+    # When using *lossy* compression, we can't seem to use NaN as a fill value
+    # because reading the resultant grid does not seem to mask out the NaN regions.
+    # It was reported in https://github.com/GPlates/gplately/pull/125
+    # that 2 significant digits was enough to preserve NaN masks, but
+    # it doesn't seem to work for me (using netCDF4 1.7.2 on Windows).
+    # Even 7 significant digits doesn't work.
+    #
+    # Instead we just use the default '_FillValue' provided by netCDF4.
+    # These default values differ depending on the grid type, and can be accessed with 'netCDF4.default_fillvals'.
+    # For example, the default for floating-point types is 9.969209968386869e+36.
+    #
+    # Note: This will return None if netCDF4 does not have a default fill value for the grid type.
+    return netCDF4.default_fillvals.get(
+        grid.dtype.str.lstrip("<>=|")  # Remove endianness/alignment prefixes
+    )
 
 
+@overload
+def sample_grid(
+    lon,
+    lat,
+    grid,
+    method: str = "linear",
+    extent: Union[tuple, str] = "global",
+    origin=None,
+    *,
+    return_indices: Literal[False] = False,
+) -> np.ndarray: ...
+@overload
+def sample_grid(
+    lon,
+    lat,
+    grid,
+    method: str = "linear",
+    extent: Union[tuple, str] = "global",
+    origin=None,
+    *,
+    return_indices: Literal[True],
+) -> Tuple[np.ndarray, Tuple[np.ndarray, np.ndarray]]: ...
 def sample_grid(
     lon,
     lat,
@@ -721,6 +788,7 @@ def sample_grid(
     method="linear",
     extent: Union[tuple, str] = "global",
     origin=None,
+    *,
     return_indices=False,
 ):
     """Sample point data with given `lon` and `lat` coordinates onto a `grid`
@@ -785,13 +853,18 @@ def sample_grid(
         "cubic": 3,
     }.get(method, method)
     if order not in {0, 1, 2, 3, 4, 5}:
-        raise ValueError("Invalid `method` parameter: {}".format(method))
+        raise ValueError(f"Invalid `method` parameter: {method}")
 
     if isinstance(grid, Raster):
         extent = grid.extent
-        grid = np.array(grid.data)
+        if np.ma.isMaskedArray(grid.data):
+            grid = np.ma.asarray(grid.data, dtype=float).filled(np.nan)
+        else:
+            grid = np.array(grid.data)
     else:
-        extent = _parse_extent_origin(extent, origin)
+        extent = _parse_extent(extent, origin)
+        if np.ma.isMaskedArray(grid):
+            grid = np.ma.asarray(grid, dtype=float).filled(np.nan)
         grid = _check_grid(grid)
 
     # Do not wrap from North to South Pole (or vice versa)
@@ -807,7 +880,7 @@ def sample_grid(
     point_i = (lat - extent[2]) / dy
     point_j = (lon - extent[0]) / dx
 
-    point_coords = np.row_stack(
+    point_coords = np.vstack(
         (
             np.ravel(point_i),
             np.ravel(point_j),
@@ -935,7 +1008,17 @@ def reconstruct_grid(
         colour code or a matplotlib colour name. The default fill
         value will be transparent black (0.0, 0.0, 0.0, 0.0).
     """
-    try:
+    if math.isclose(to_time, from_time):
+        warnings.warn(
+            "Reconstruction time is the same as the original time; returning input grid unchanged",
+            UserWarning,
+        )
+        return grid
+
+    assert rotation_model is not None, "`rotation_model` cannot be None."
+
+    # first, try and see if the `grid` is a file path.
+    if isinstance(grid, (str, bytes, os.PathLike)) and os.path.isfile(grid):
         grid = np.array(
             read_netcdf_grid(
                 grid,
@@ -943,22 +1026,21 @@ def reconstruct_grid(
                 y_dimension_name=y_dimension_name,
                 data_variable_name=data_variable_name,
             )
-        )  # load grid data from file
-    except Exception:
-        grid = np.array(grid)  # copy grid data to array
-    if to_time == from_time:
-        return grid
-    elif rotation_model is None:
-        raise TypeError("`rotation_model` must be provided if `to_time` != `from_time`")
+        )
+    else:
+        # If the grid is not a file, we assume it is already an array-like object and proceed without loading.
+        # convert grid data to numpy array. This will make a copy of the input grid.
+        grid = np.array(grid)
 
-    extent = _parse_extent_origin(extent, origin)
+    extent = _parse_extent(extent, origin)
     dtype = grid.dtype
 
+    # Determine number of threads to use
     if isinstance(threads, str):
         if threads.lower() in {"all", "max"}:
             threads = cpu_count()
         else:
-            raise ValueError("Invalid `threads` value: {}".format(threads))
+            raise ValueError(f"Invalid `threads` value: {threads}")
     threads = min([int(threads), cpu_count()])
     threads = max([threads, 1])
 
@@ -981,7 +1063,7 @@ def reconstruct_grid(
                 fill_value = tuple([0.0] * grid.shape[2])
     if isinstance(fill_value, str):
         if grid.ndim == 2:
-            raise TypeError("Invalid fill_value for 2D grid: {}".format(fill_value))
+            raise TypeError(f"Invalid fill_value for 2D grid: {fill_value}")
         fill_value = np.array(matplotlib.colors.to_rgba(fill_value))
         if dtype.kind == "u":
             fill_value = (fill_value * 255.0).astype("u1")
@@ -992,31 +1074,27 @@ def reconstruct_grid(
         grid.ndim == 3
         and grid.shape[2] == 4
         and hasattr(fill_value, "__len__")
-        and len(fill_value) == 3
+        and len(fill_value) == 3  # type: ignore
     ):  # give fill colour maximum alpha value if not specified
         fill_alpha = 255 if dtype.kind in ("i", "u") else 1.0
-        fill_value = (*fill_value, fill_alpha)
+        fill_value = (*fill_value, fill_alpha)  # type: ignore
     if np.size(fill_value) != np.atleast_3d(grid).shape[-1]:
         raise ValueError(
-            "Shape mismatch: "
-            + "fill_value size: {}".format(np.size(fill_value))
-            + ", grid shape: {}".format(np.shape(grid))
+            f"Shape mismatch: fill_value size: {np.size(fill_value)}, grid shape: {np.shape(grid)}"
         )
 
     xmin, xmax, ymin, ymax = extent
     ny, nx = grid.shape[:2]
 
-    if isinstance(partitioning_features, pygplates.FeaturesFunctionArgument):
-        partitioning_features = pygplates.FeatureCollection(
-            partitioning_features.get_features()
-        )
-    elif not isinstance(partitioning_features, pygplates.FeatureCollection):
-        partitioning_features = pygplates.FeatureCollection(
-            pygplates.FeaturesFunctionArgument(partitioning_features).get_features()
+    if isinstance(partitioning_features, _FeaturesFunctionArgument):
+        partitioning_features = _FeatureCollection(partitioning_features.get_features())
+    elif not isinstance(partitioning_features, _FeatureCollection):
+        partitioning_features = _FeatureCollection(
+            _FeaturesFunctionArgument(partitioning_features).get_features()
         )
 
-    if not isinstance(rotation_model, pygplates.RotationModel):
-        rotation_model = pygplates.RotationModel(rotation_model)
+    if not isinstance(rotation_model, _RotationModel):
+        rotation_model = _RotationModel(rotation_model)
 
     lons = np.linspace(xmin, xmax, nx)
     lats = np.linspace(ymin, ymax, ny)
@@ -1054,6 +1132,7 @@ def reconstruct_grid(
     valid_mask = plate_ids != -1
     valid_m_lons = m_lons[valid_mask]
     valid_m_lats = m_lats[valid_mask]
+    assert plate_ids is not None
     valid_plate_ids = plate_ids[valid_mask]
     if grid.ndim == 2:
         valid_data = grid[valid_mask]
@@ -1070,7 +1149,7 @@ def reconstruct_grid(
     else:
         output_grid = np.empty(grid.shape, dtype=dtype)
         for k in range(grid.shape[2]):
-            output_grid[..., k] = fill_value[k]
+            output_grid[..., k] = fill_value[k]  # type: ignore
     output_lons = m_lons[valid_output_mask]
     output_lats = m_lats[valid_output_mask]
 
@@ -1083,8 +1162,8 @@ def reconstruct_grid(
             moving_plate_id=int(plate),
             anchor_plate_id=anchor_plate_id,  # if None then uses default anchor plate of 'rotation_model'
         )
-        if not isinstance(rot, pygplates.FiniteRotation):
-            raise ValueError("No rotation found for plate ID: {}".format(plate))
+        if not isinstance(rot, _FiniteRotation):
+            raise ValueError(f"No rotation found for plate ID: {plate}")
         lat, lon, angle = rot.get_lat_lon_euler_pole_and_angle_degrees()
         angle = np.deg2rad(angle)
         vec = _lat_lon_to_vector(lat, lon, degrees=True)
@@ -1108,20 +1187,9 @@ def reconstruct_grid(
     # Compatibility with older versions of SciPy:
     # 'n_jobs' argument was replaced with 'workers'
     try:
-        _, indices = tree.query(
-            output_vecs,
-            k=1,
-            workers=threads,
-        )
-    except TypeError as err:
-        if "Unexpected keyword argument" in err.args[0] and "workers" in err.args[0]:
-            _, indices = tree.query(
-                output_vecs,
-                k=1,
-                n_jobs=threads,
-            )
-        else:
-            raise err
+        _, indices = tree.query(output_vecs, k=1, workers=threads)
+    except TypeError:
+        _, indices = tree.query(output_vecs, k=1, n_jobs=threads)
 
     if grid.ndim == 2:
         output_data = valid_data[indices]
@@ -1137,7 +1205,7 @@ def reconstruct_grid(
 def rasterise(
     features,
     rotation_model=None,
-    key="plate_id",
+    key: Union[str, float, int, list] = "plate_id",
     time=None,
     resx=1.0,
     resy=1.0,
@@ -1237,7 +1305,7 @@ def rasterise(
                 + "\nkey must be one of {}".format(valid_keys)
             )
 
-    extent = _parse_extent_origin(extent, origin)
+    extent = _parse_extent(extent, origin)
     minx, maxx, miny, maxy = extent
 
     if minx > maxx:
@@ -1249,13 +1317,13 @@ def rasterise(
         lons = np.linspace(minx, maxx, shape[1], endpoint=True)
         lats = np.linspace(miny, maxy, shape[0], endpoint=True)
     else:
-        lons = np.arange(minx, maxx + resx, resx)
-        lats = np.arange(miny, maxy + resy, resy)
+        lons = _spaced_axis(minx, maxx, resx)
+        lats = _spaced_axis(miny, maxy, resy)
     nx = lons.size
     ny = lats.size
 
     try:
-        features = pygplates.FeaturesFunctionArgument(features).get_features()
+        features = _FeaturesFunctionArgument(features).get_features()
         geometries = None
     except Exception as err:
         if not str(err).startswith("Python argument types in"):
@@ -1273,9 +1341,9 @@ def rasterise(
                 raise TypeError(
                     "Rotation model must be provided if `time` is not `None`"
                 )
-            rotation_model = pygplates.RotationModel(pygplates.Feature())
+            rotation_model = _RotationModel(_Feature())
             time = 0.0
-        features = pygplates.FeaturesFunctionArgument(features).get_features()
+        features = _FeaturesFunctionArgument(features).get_features()
         if time is None:
             time = 0.0
         time = float(time)
@@ -1297,12 +1365,11 @@ def rasterise(
     if isinstance(key, str):
         values, fill_value, dtype = _get_rasterise_values(key, reconstructed)
     else:
-        if not hasattr(key, "__len__"):
+        if isinstance(key, (int, float)):
             key = [key] * len(geometries)
         if len(key) != len(geometries):
             raise ValueError(
-                "Shape mismatch: len(key) = {}, ".format(len(key))
-                + "len(geometries) = {}".format(len(geometries))
+                f"Shape mismatch: len(key) = {len(key)}, len(geometries) = {len(geometries)}"
             )
         values = np.array(key)
         dtype = values.dtype
@@ -1390,7 +1457,7 @@ def _rasterise_geometries(
     return np.flipud(out)
 
 
-rasterize = rasterise
+rasterize = rasterise  # alias for American English spelling
 
 
 def _lat_lon_to_vector(lat, lon, degrees=False):
@@ -1493,18 +1560,15 @@ def _check_grid(data):
     """Check grid shape and values make sense."""
     if not isinstance(data, np.ndarray):
         data = np.array(data)
-    ndim = data.ndim
-    dtype = data.dtype
-    _check_grid_shape(data)
 
-    if ndim == 3:
+    _check_grid_shape(data)
+    if data.ndim == 3:
         # data is an RGB(A) image
         data = _check_image_values(data)
-
     return data
 
 
-def _parse_extent_origin(extent, origin):
+def _parse_extent(extent, origin) -> Tuple[float, float, float, float]:
     """Default values: extent='global', origin=None"""
     if hasattr(extent, "lower"):  # i.e. a string
         extent = extent.lower()
@@ -1513,1192 +1577,46 @@ def _parse_extent_origin(extent, origin):
         extent = (-180.0, 180.0, -90.0, 90.0)
     elif len(extent) != 4:
         raise TypeError("`extent` must be a four-element tuple, 'global', or None")
+
     extent = tuple(float(i) for i in extent)
+    return cast(
+        Tuple[float, float, float, float], _adjust_extent_for_origin(extent, origin)
+    )
 
-    if origin is not None:
-        origin = str(origin).lower()
-        if origin == "lower" and extent[2] > extent[3]:
-            extent = (
-                extent[0],
-                extent[1],
-                extent[3],
-                extent[2],
-            )
-        if origin == "upper" and extent[2] < extent[3]:
-            extent = (
-                extent[0],
-                extent[1],
-                extent[3],
-                extent[2],
-            )
+
+def _adjust_extent_for_origin(
+    extent, origin
+) -> Union[Tuple[float, float, float, float], None]:
+    """Adjust upper/lower bounds of extent according to origin."""
+    if extent is None:
+        return None
+
+    if origin is None:
+        return extent
+
+    origin = str(origin).lower()
+    if origin == "lower" and extent[2] > extent[3]:
+        extent = (
+            extent[0],
+            extent[1],
+            extent[3],
+            extent[2],
+        )
+    if origin == "upper" and extent[2] < extent[3]:
+        extent = (
+            extent[0],
+            extent[1],
+            extent[3],
+            extent[2],
+        )
+
     return extent
-
-
-class Raster(object):
-    """The functionalities include sampling data at points using spline
-    interpolation, resampling rasters with new X and Y-direction spacings and
-    resizing rasters using new X and Y grid pixel resolutions. NaN-type data
-    in rasters can be replaced with the values of their nearest valid neighbours.
-    """
-
-    def __init__(
-        self,
-        data=None,
-        plate_reconstruction=None,
-        extent: Union[str, tuple] = "global",
-        realign=False,
-        resample=None,
-        resize=None,
-        time=0.0,
-        origin=None,
-        x_dimension_name: str = "",
-        y_dimension_name: str = "",
-        data_variable_name: str = "",
-        **kwargs,
-    ):
-        """Constructor. Create a :class:`Raster` object.
-
-        Parameters
-        ----------
-        data : str or array-like or :class:`Raster`
-            The raster data, either as a file path (:class:`str`) or array data or a ``Raster`` object.
-            If a ``Raster`` object is specified then all other arguments are ignored except ``plate_reconstruction``
-            which, if it is not ``None``, will override the plate reconstruction of the ``Raster`` object.
-
-        plate_reconstruction : PlateReconstruction
-            A :class:`PlateReconstruction` object to provide the following essential components for reconstructing points.
-
-            * :py:attr:`PlateReconstruction.rotation_model`
-            * :py:attr:`PlateReconstruction.topology_featues`
-            * :py:attr:`PlateReconstruction.static_polygons`
-
-        extent : str or 4-tuple, default: 'global'
-            4-tuple to specify (min_lon, max_lon, min_lat, max_lat) extents
-            of the raster. If no extents are supplied, full global extent
-            (-180, 180, -90, 90) is assumed (equivalent to ``extent='global'``).
-            For array data with an upper-left origin, make sure ``min_lat`` is
-            greater than ``max_lat``, or specify ``origin`` parameter.
-
-        resample : 2-tuple, optional
-            Optionally resample grid, pass spacing in X and Y direction as a
-            2-tuple e.g. resample=(spacingX, spacingY).
-
-        resize : 2-tuple, optional
-            Optionally resample grid to X-columns, Y-rows as a
-            2-tuple e.g. resample=(resX, resY).
-
-        time : float, default: 0.0
-            The geological time the time-dependant raster data.
-
-        origin : {'lower', 'upper'}, optional
-            When ``data`` is an array, use this parameter to specify the origin
-            (upper left or lower left) of the data (overriding ``extent``).
-
-        x_dimension_name : str, optional, default=""
-            If the grid file uses the comman names, such as ``x``, ``lon``, ``lons`` or ``longitude``,
-            you need not to provide this parameter. Otherwise, you need to tell us what the x dimension name is.
-
-        y_dimension_name : str, optional, default=""
-            If the grid file uses the comman names, such as ``y``, ``lat``, ``lats`` or ``latitude``,
-            you need not to provide this parameter. Otherwise, you need to tell us what the y dimension name is.
-
-        data_variable_name : str, optional, default=""
-            GPlately will try its best to guess the data variable name.
-            However, it would be much better if you tell us what the data variable name is.
-            Otherwise, GPlately's guess may/may not be correct.
-
-        **kwargs
-            Handle deprecated arguments such as ``PlateReconstruction_object``, ``filename``, and ``array``.
-        """
-
-        if "PlateReconstruction_object" in kwargs.keys():
-            warnings.warn(
-                "`PlateReconstruction_object` keyword argument has been "
-                + "deprecated, use `plate_reconstruction` instead",
-                DeprecationWarning,
-            )
-            if plate_reconstruction is None:
-                plate_reconstruction = kwargs.pop("PlateReconstruction_object")
-        if "filename" in kwargs.keys() and "array" in kwargs.keys():
-            raise TypeError(
-                "Both `filename` and `array` were provided; use "
-                + "one or the other, or use the `data` argument"
-            )
-        if "filename" in kwargs.keys():
-            warnings.warn(
-                "`filename` keyword argument has been deprecated, "
-                + "use `data` instead",
-                DeprecationWarning,
-            )
-            if data is None:
-                data = kwargs.pop("filename")
-        if "array" in kwargs.keys():
-            warnings.warn(
-                "`array` keyword argument has been deprecated, " + "use `data` instead",
-                DeprecationWarning,
-            )
-            if data is None:
-                data = kwargs.pop("array")
-        for key in kwargs.keys():
-            raise TypeError(
-                "Raster.__init__() got an unexpected keyword argument "
-                + "'{}'".format(key)
-            )
-
-        if isinstance(data, self.__class__):
-            self._data = data._data.copy()
-            # Use specified plate reconstruction (if specified),
-            # otherwise use the plate reconstruction from 'data'.
-            if plate_reconstruction is not None:
-                self.plate_reconstruction = plate_reconstruction
-            else:
-                self.plate_reconstruction = data.plate_reconstruction
-            self._lons = data._lons
-            self._lats = data._lats
-            self._time = data._time
-            self._filename = data._filename
-            return
-
-        self.plate_reconstruction = plate_reconstruction
-
-        if time < 0.0:
-            raise ValueError("Invalid time: {}".format(time))
-        time = float(time)
-        self._time = time
-
-        if data is None:
-            raise TypeError("`data` argument (or `filename` or `array`) is required")
-        if isinstance(data, str):
-            # Filename
-            self._filename = data
-            self._data, lons, lats = read_netcdf_grid(
-                data,
-                return_grids=True,
-                realign=realign,
-                resample=resample,
-                resize=resize,
-                x_dimension_name=x_dimension_name,
-                y_dimension_name=y_dimension_name,
-                data_variable_name=data_variable_name,
-            )
-            self._lons = lons
-            self._lats = lats
-
-        else:
-            # numpy array
-            self._filename = None
-            extent = _parse_extent_origin(extent, origin)
-            data = _check_grid(data)
-            self._data = np.array(data)
-            self._lons = np.linspace(extent[0], extent[1], self.data.shape[1])
-            self._lats = np.linspace(extent[2], extent[3], self.data.shape[0])
-            if realign:
-                # realign to -180,180 and flip grid
-                self._data, self._lons, self._lats = _realign_grid(
-                    self._data, self._lons, self._lats
-                )
-
-        if (not isinstance(data, str)) and (resample is not None):
-            self.resample(*resample, inplace=True)
-
-        if (not isinstance(data, str)) and (resize is not None):
-            self.resize(*resize, inplace=True)
-
-    @property
-    def time(self):
-        """The geological time of the time-dependant raster data.
-
-        :type: float
-        """
-        return self._time
-
-    @time.setter
-    def time(self, new_time: float):
-        """Set a new reconstruction time."""
-        try:
-            new_time_f = float(new_time)
-        except ValueError:
-            raise ValueError(f"Invalid new reconstruction time: {new_time}")
-        if new_time_f < 0.0:
-            raise ValueError(
-                f"The reconstruction time ({new_time_f}) must be greater than 0."
-            )
-        if not math.isclose(self._time, new_time_f):
-            self._time = new_time_f
-            self.reconstruct(new_time_f, inplace=True)
-
-    @property
-    def data(self):
-        """Array containing the raster data. This attribute can be modified after creating the :class:`Raster` object.
-
-        :type: ndarray, shape (ny, nx)
-        """
-        return self._data
-
-    @data.setter
-    def data(self, z):
-        z = np.array(z)
-        if z.shape != np.shape(self.data):
-            raise ValueError(
-                "Shape mismatch: old dimensions are {}, new are {}".format(
-                    np.shape(self.data),
-                    z.shape,
-                )
-            )
-        self._data = z
-
-    @property
-    def lons(self):
-        """The x-coordinates of the raster data. This attribute can be modified after creating the :class:`Raster` object.
-
-        :type: ndarray, shape (nx,)
-        """
-        return self._lons
-
-    @lons.setter
-    def lons(self, x):
-        x = np.array(x).ravel()
-        if x.size != np.shape(self.data)[1]:
-            raise ValueError(
-                "Shape mismatch: data x-dimension is {}, new value is {}".format(
-                    np.shape(self.data)[1],
-                    x.size,
-                )
-            )
-        self._lons = x
-
-    @property
-    def lats(self):
-        """The y-coordinates of the raster data. This attribute can be modified after creating the :class:`Raster` object.
-
-        :type: ndarray, shape (ny,)
-        """
-        return self._lats
-
-    @lats.setter
-    def lats(self, y):
-        y = np.array(y).ravel()
-        if y.size != np.shape(self.data)[0]:
-            raise ValueError(
-                "Shape mismatch: data y-dimension is {}, new value is {}".format(
-                    np.shape(self.data)[0],
-                    y.size,
-                )
-            )
-        self._lats = y
-
-    @property
-    def extent(self):
-        """The spatial extent ``(x0, x1, y0, y1)`` of the data. If not supplied, global extent ``(-180, 180, -90, 90)`` is assumed.
-
-        If y0 < y1, the origin is the lower-left corner; else the upper-left.
-
-        :type:  tuple of 4 floats
-        """
-        return (
-            float(self.lons[0]),
-            float(self.lons[-1]),
-            float(self.lats[0]),
-            float(self.lats[-1]),
-        )
-
-    @property
-    def origin(self):
-        """The origin (``lower`` or ``upper``) of the data array.
-
-        :type: str
-        """
-        if self.lats[0] < self.lats[-1]:
-            return "lower"
-        else:
-            return "upper"
-
-    @property
-    def shape(self):
-        """The shape of the data array."""
-        return np.shape(self.data)
-
-    @property
-    def size(self):
-        """The size of the data array."""
-        return np.size(self.data)
-
-    @property
-    def dtype(self):
-        """The data type of the array."""
-        return self.data.dtype
-
-    @property
-    def ndim(self):
-        """The number of dimensions in the array."""
-        return np.ndim(self.data)
-
-    @property
-    def filename(self):
-        """The filename used to create the :class:`Raster` object.
-        If the object was created directly from an array, this attribute is ``None``.
-
-        :type: str or None
-        """
-        return self._filename
-
-    @property
-    def plate_reconstruction(self):
-        """A :class:`PlateReconstruction` object to provide the following essential components for reconstructing points.
-
-            * :py:attr:`PlateReconstruction.rotation_model`
-            * :py:attr:`PlateReconstruction.topology_featues`
-            * :py:attr:`PlateReconstruction.static_polygons`
-
-        :type: PlateReconstruction
-        """
-        return self._plate_reconstruction
-
-    @plate_reconstruction.setter
-    def plate_reconstruction(self, reconstruction):
-        if reconstruction is None:
-            # Remove `plate_reconstruction` attribute
-            pass
-        elif not isinstance(reconstruction, _PlateReconstruction):
-            # Convert to a `PlateReconstruction` if possible
-            try:
-                reconstruction = _PlateReconstruction(*reconstruction)
-            except Exception:
-                reconstruction = _PlateReconstruction(reconstruction)
-        self._plate_reconstruction = reconstruction
-
-    def copy(self):
-        """Return a copy of the :class:`Raster` object.
-
-        Returns
-        -------
-        Raster
-            A copy of the current :class:`Raster` object.
-        """
-        return Raster(
-            self.data.copy(), self.plate_reconstruction, self.extent, time=self.time
-        )
-
-    def interpolate(
-        self,
-        lons,
-        lats,
-        method="linear",
-        return_indices=False,
-    ):
-        """Sample grid data at a set of points using spline interpolation.
-
-        Parameters
-        ----------
-        lons, lats : array_like
-            The longitudes and latitudes of the points to interpolate onto the
-            gridded data. Must be broadcastable to a common shape.
-        method : str or int; default: 'linear'
-            The order of spline interpolation. Must be an integer in the range
-            0-5. ``nearest``, ``linear``, and ``cubic`` are aliases for 0, 1, and 3,
-            respectively.
-        return_indices : bool, default=False
-            Whether to return the row and column indices of the nearest grid
-            points.
-
-        Returns
-        -------
-        numpy.ndarray
-            The values interpolated at the input points.
-        indices : 2-tuple of numpy.ndarray
-            The i- and j-indices of the nearest grid points to the input
-            points, only present if ``return_indices=True``.
-
-        Raises
-        ------
-        ValueError
-            If an invalid ``method`` is provided.
-        RuntimeWarning
-            If ``lats`` contains any invalid values outside of the interval
-            [-90, 90]. Invalid values will be clipped to this interval.
-
-
-        .. note::
-
-            If ``return_indices`` is set to ``True``, the nearest array indices
-            are returned as a tuple of arrays, in ``(i, j)`` or ``(lat, lon)`` format.
-
-
-        An example output:
-
-        .. code:: console
-
-            # The first array holds the rows of the raster where point data spatially falls near.
-            # The second array holds the columns of the raster where point data spatially falls near.
-            sampled_indices = (array([1019, 1019, 1019, ..., 1086, 1086, 1087]), array([2237, 2237, 2237, ...,  983,  983,  983]))
-        """
-        return sample_grid(
-            lon=lons,
-            lat=lats,
-            grid=self,
-            method=method,
-            return_indices=return_indices,
-        )
-
-    def resample(self, spacingX, spacingY, method="linear", inplace=False):
-        """Resamples the grid with a new ``spacingX`` and ``spacingY``, meshed with linear interpolation.
-
-        .. note::
-
-            Ultimately, the :meth:`resample` changes the lat-lon resolution of the gridded data. The
-            larger the x and y spacings given are, the larger the pixellation of raster data.
-
-            The :meth:`resample` creates new latitude and longitude arrays with specified spacings in the
-            X and Y directions (``spacingX`` and ``spacingY``). These arrays are linearly interpolated
-            into a new raster. If ``inplace`` is set to ``True``, the respaced latitude array, longitude
-            array and raster will inplace the ones currently attributed to the :class:`Raster` object.
-
-        Parameters
-        ----------
-        spacingX, spacingY : ndarray
-            Specify the spacing in the X and Y directions with which to resample. The larger
-            ``spacingX`` and ``spacingY`` are, the larger the raster pixels become (less resolved).
-            Note: to keep the size of the raster consistent, set ``spacingX = spacingY``;
-            otherwise, if for example ``spacingX > spacingY``, the raster will appear stretched
-            longitudinally.
-
-        method : str or int; default: 'linear'
-            The order of spline interpolation. Must be an integer in the range
-            0-5. 'nearest', 'linear', and 'cubic' are aliases for 0, 1, and 3,
-            respectively.
-
-        inplace : bool, default=False
-            Choose to overwrite the data (the ``self.data`` attribute), latitude array
-            (``self.lats``) and longitude array (``self.lons``) currently attributed to the
-            :class:`Raster` object.
-
-        Returns
-        -------
-        Raster
-            The resampled grid. If ``inplace`` is set to ``True``, this raster overwrites the
-            one attributed to ``data``.
-        """
-        spacingX = np.abs(spacingX)
-        spacingY = np.abs(spacingY)
-        if self.origin == "upper":
-            spacingY *= -1.0
-
-        lons = np.arange(self.extent[0], self.extent[1] + spacingX, spacingX)
-        lats = np.arange(self.extent[2], self.extent[3] + spacingY, spacingY)
-        lonq, latq = np.meshgrid(lons, lats)
-
-        data = self.interpolate(lonq, latq, method=method)
-        if inplace:
-            self._data = data
-            self._lons = lons
-            self._lats = lats
-        else:
-            return Raster(data, self.plate_reconstruction, self.extent, self.time)
-
-    def resize(self, resX, resY, inplace=False, method="linear", return_array=False):
-        """Resize the grid with a new resolution (``resX`` and ``resY``) using linear interpolation.
-
-        .. note::
-
-            Ultimately, The :meth:`resize` "stretches" a raster in the x and y directions. The larger
-            the resolutions in x and y, the more stretched the raster appears in x and y.
-
-            It creates new latitude and longitude arrays with specific resolutions in
-            the X and Y directions (``resX`` and ``resY``). These arrays are linearly interpolated
-            into a new raster. If ``inplace`` is set to ``True``, the resized latitude, longitude
-            arrays and raster will inplace the ones currently attributed to the :class:`Raster` object.
-
-        Parameters
-        ----------
-        resX, resY : ndarray
-            Specify the resolutions with which to resize the raster. The larger ``resX`` is,
-            the more longitudinally-stretched the raster becomes. The larger ``resY`` is, the
-            more latitudinally-stretched the raster becomes.
-
-        method : str or int; default: 'linear'
-            The order of spline interpolation. Must be an integer in the range
-            0-5. 'nearest', 'linear', and 'cubic' are aliases for 0, 1, and 3,
-            respectively.
-
-        inplace : bool, default=False
-            Choose to overwrite the data (the ``self.data`` attribute), latitude array
-            (``self.lats``) and longitude array (``self.lons``) currently attributed to the
-            :class:`Raster` object.
-
-        return_array : bool, default False
-            Return a ``numpy.ndarray``, rather than a :class:`Raster` object.
-
-        Returns
-        -------
-        Raster
-            The resized grid. If ``inplace`` is set to ``True``, the data in :attr:`Raster.data` will be overwritten.
-        """
-        # construct grid
-        lons = np.linspace(self.extent[0], self.extent[1], resX)
-        lats = np.linspace(self.extent[2], self.extent[3], resY)
-        lonq, latq = np.meshgrid(lons, lats)
-
-        data = self.interpolate(lonq, latq, method=method)
-        if inplace:
-            self._data = data
-            self._lons = lons
-            self._lats = lats
-        if return_array:
-            return data
-        else:
-            return Raster(data, self.plate_reconstruction, self.extent, time=self.time)
-
-    def fill_NaNs(self, inplace=False, return_array=False):
-        """Search for the invalid ``data`` cells containing NaN-type entries and
-        replaces NaNs with the value of the nearest valid data cell.
-
-        Parameters
-        ---------
-        inplace : bool, default=False
-            Choose whether to overwrite the grid currently held in the ``data`` attribute with the filled grid.
-
-        return_array : bool, default False
-            Return a ``numpy.ndarray``, rather than a :class:`Raster`.
-
-        Returns
-        --------
-        Raster
-            The resized grid. If ``inplace`` is set to ``True``, the data in :attr:`Raster.data` will be overwritten.
-        """
-        data = fill_raster(self.data)
-        if inplace:
-            self._data = data
-        if return_array:
-            return data
-        else:
-            return Raster(data, self.plate_reconstruction, self.extent, time=self.time)
-
-    def save_to_netcdf4(self, filename, significant_digits=None, fill_value=np.nan):
-        """Saves the grid attributed to the :class:`Raster` object to the given ``filename`` (including
-        the ".nc" extension) in netCDF4 format."""
-        write_netcdf_grid(
-            str(filename), self.data, self.extent, significant_digits, fill_value
-        )
-
-    def reconstruct(
-        self,
-        time,
-        fill_value=None,
-        partitioning_features=None,
-        threads=1,
-        anchor_plate_id=None,
-        inplace=False,
-        return_array=False,
-    ):
-        """Reconstruct the raster from its initial time (``self.time``) to a new time.
-
-        Parameters
-        ----------
-        time : float
-            Time to which the data will be reconstructed.
-        fill_value : float, int, str, or tuple, optional
-            The value to be used for regions outside of the static polygons
-            at ``time``. By default (``fill_value=None``), this value will be
-            determined based on the input.
-        partitioning_features : sequence of Feature or str, optional
-            The features used to partition the raster grid and assign plate
-            IDs. By default, ``self.plate_reconstruction.static_polygons``
-            will be used, but alternatively any valid argument to
-            ``pygplates.FeaturesFunctionArgument`` can be specified here.
-        threads : int, default 1
-            Number of threads to use for certain computationally heavy routines.
-        anchor_plate_id : int, optional
-            ID of the anchored plate. By default, reconstructions are made with respect to
-            the anchor plate ID specified in the :class:`PlateReconstruction` object.
-        inplace : bool, default False
-            Perform the reconstruction in-place (replace the raster's data with the reconstructed data).
-        return_array : bool, default False
-            Return a ``numpy.ndarray``, rather than a :class:`Raster`.
-
-        Returns
-        -------
-        Raster or np.ndarray
-            The reconstructed grid. Areas for which no plate ID could be determined will be filled with ``fill_value``.
-
-        .. note::
-
-            For two-dimensional grids, ``fill_value`` should be a single
-            number. The default value will be ``np.nan`` for float or
-            complex types, the minimum value for integer types, and the
-            maximum value for unsigned types.
-            For RGB image grids, ``fill_value`` should be a 3-tuple RGB
-            colour code or a matplotlib colour string. The default value
-            will be black (0.0, 0.0, 0.0) or (0, 0, 0).
-            For RGBA image grids, ``fill_value`` should be a 4-tuple RGBA
-            colour code or a matplotlib colour string. The default fill
-            value will be transparent black (0.0, 0.0, 0.0, 0.0) or
-            (0, 0, 0, 0).
-        """
-        try:
-            to_time_f = float(time)
-        except ValueError:
-            raise ValueError(f"Invalid reconstruction time: {time}")
-        if to_time_f < 0.0:
-            raise ValueError(
-                f"The reconstruction time ({to_time_f}) must be greater than 0."
-            )
-
-        # A valid PlateReconstruction object is required!
-        assert self.plate_reconstruction is not None
-
-        if partitioning_features is None:
-            partitioning_features = self.plate_reconstruction.static_polygons
-
-        result = reconstruct_grid(
-            grid=self.data,
-            partitioning_features=partitioning_features,
-            rotation_model=self.plate_reconstruction.rotation_model,
-            from_time=self.time,
-            to_time=to_time_f,
-            extent=self.extent,
-            origin=self.origin,
-            fill_value=fill_value,
-            threads=threads,
-            anchor_plate_id=anchor_plate_id,
-        )
-
-        raster_rotation_model = self.plate_reconstruction.rotation_model
-        # use the new reconstructed raster data to replace the current Raster obj
-        # TODO: maybe need to put anchor_plate_id into rotation_model if it is not None
-        if inplace:
-            self.data = result
-            self._time = to_time_f
-            if (
-                anchor_plate_id is not None
-                and raster_rotation_model
-                and raster_rotation_model.get_default_anchor_plate_id()
-                != anchor_plate_id
-            ):
-                self.plate_reconstruction.rotation_model = pygplates.RotationModel(
-                    raster_rotation_model, default_anchor_plate_id=anchor_plate_id
-                )
-            if return_array:
-                return result
-            return self
-
-        # create a new Raster obj to return
-        if not return_array:
-            result = Raster(
-                data=result,
-                plate_reconstruction=copy.deepcopy(self.plate_reconstruction),
-                extent=self.extent,
-                time=to_time_f,
-                origin=self.origin,
-            )
-            if (
-                anchor_plate_id is not None
-                and raster_rotation_model
-                and raster_rotation_model.get_default_anchor_plate_id()
-                != anchor_plate_id
-            ):
-                result.plate_reconstruction.rotation_model = pygplates.RotationModel(
-                    raster_rotation_model, default_anchor_plate_id=anchor_plate_id
-                )
-        return result
-
-    def imshow(self, ax=None, projection=None, **kwargs):
-        """Display raster data.
-
-        A pre-existing matplotlib ``Axes`` instance is used if available,
-        else a new one is created. The ``origin`` and ``extent`` of the image
-        are determined automatically and should not be specified.
-
-        Parameters
-        ----------
-        ax : matplotlib.axes.Axes, optional
-            If specified, the image will be drawn within these axes.
-        projection : cartopy.crs.Projection, optional
-            The map projection to be used. If both ``ax`` and ``projection``
-            are specified, this will be checked against the ``projection``
-            attribute of ``ax``, if it exists.
-        **kwargs : dict, optional
-            Any further keyword arguments are passed to
-            ``matplotlib.pyplot.imshow`` or ``matplotlib.axes.Axes.imshow``,
-            where appropriate.
-
-        Returns
-        -------
-        matplotlib.image.AxesImage
-
-        Raises
-        ------
-        ValueError
-            If ``ax`` and ``projection`` are both specified, but do not match (i.e. ``ax.projection != projection``).
-        """
-        for kw in ("origin", "extent"):
-            if kw in kwargs.keys():
-                raise TypeError(
-                    "imshow got an unexpected keyword argument: {}".format(kw)
-                )
-        if ax is None:
-            existing_figure = len(plt.get_fignums()) > 0
-            current_axes = plt.gca()
-            if projection is None:
-                ax = current_axes
-            elif (
-                isinstance(current_axes, _GeoAxes)
-                and current_axes.projection == projection
-            ):
-                ax = current_axes
-            else:
-                if not existing_figure:
-                    current_axes.remove()
-                ax = plt.axes(projection=projection)
-        elif projection is not None:
-            # projection and ax both specified
-            if isinstance(ax, _GeoAxes) and ax.projection == projection:
-                pass  # projections match
-            else:
-                raise ValueError(
-                    "Both `projection` and `ax` were specified, but"
-                    + " `projection` does not match `ax.projection`"
-                )
-
-        if isinstance(ax, _GeoAxes) and "transform" not in kwargs.keys():
-            kwargs["transform"] = _PlateCarree()
-        extent = self.extent
-        if self.origin == "upper":
-            extent = (
-                extent[0],
-                extent[1],
-                extent[3],
-                extent[2],
-            )
-        im = ax.imshow(self.data, origin=self.origin, extent=extent, **kwargs)
-        return im
-
-    plot = imshow
-
-    def rotate_reference_frames(
-        self,
-        grid_spacing_degrees,
-        reconstruction_time,
-        from_rotation_features_or_model=None,  # filename(s), or pyGPlates feature(s)/collection(s) or a RotationModel
-        to_rotation_features_or_model=None,  # filename(s), or pyGPlates feature(s)/collection(s) or a RotationModel
-        from_rotation_reference_plate=0,
-        to_rotation_reference_plate=0,
-        non_reference_plate=701,
-        output_name=None,
-    ):
-        """Rotate a grid defined in one plate model reference frame
-        within a :class:`Raster` object to another plate reconstruction model reference frame.
-
-        Parameters
-        ----------
-        grid_spacing_degrees : float
-            The spacing (in degrees) for the output rotated grid.
-        reconstruction_time : float
-            The time at which to rotate the input grid.
-        from_rotation_features_or_model : str, list of str, or instance of pygplates.RotationModel
-            A filename, or a list of filenames, or a pyGPlates
-            RotationModel object that defines the rotation model
-            that the input grid is currently associated with.
-        to_rotation_features_or_model : str, list of str, or instance of pygplates.RotationModel
-            A filename, or a list of filenames, or a pyGPlates
-            RotationModel object that defines the rotation model
-            that the input grid shall be rotated with.
-        from_rotation_reference_plate : int, default = 0
-            The current reference plate for the plate model the grid
-            is defined in. Defaults to the anchor plate 0.
-        to_rotation_reference_plate : int, default = 0
-            The desired reference plate for the plate model the grid
-            is being rotated to. Defaults to the anchor plate 0.
-        non_reference_plate : int, default = 701
-            An arbitrary placeholder reference frame with which
-            to define the "from" and "to" reference frames.
-        output_name : str, default None
-            If passed, the rotated grid is saved as a netCDF grid to this filename.
-
-        Returns
-        -------
-        Raster
-            An instance of the :class:`Raster` object containing the rotated grid.
-        """
-
-        if from_rotation_features_or_model is None:
-            if self.plate_reconstruction is None:
-                raise ValueError("Set a plate reconstruction model")
-            from_rotation_features_or_model = self.plate_reconstruction.rotation_model
-        if to_rotation_features_or_model is None:
-            if self.plate_reconstruction is None:
-                raise ValueError("Set a plate reconstruction model")
-            to_rotation_features_or_model = self.plate_reconstruction.rotation_model
-
-        # Create the pygplates.FiniteRotation that rotates
-        # between the two reference frames.
-        from_rotation_model = pygplates.RotationModel(from_rotation_features_or_model)
-        to_rotation_model = pygplates.RotationModel(to_rotation_features_or_model)
-        from_rotation = from_rotation_model.get_rotation(
-            reconstruction_time,
-            non_reference_plate,
-            anchor_plate_id=from_rotation_reference_plate,
-        )
-        to_rotation = to_rotation_model.get_rotation(
-            reconstruction_time,
-            non_reference_plate,
-            anchor_plate_id=to_rotation_reference_plate,
-        )
-        reference_frame_conversion_rotation = to_rotation * from_rotation.get_inverse()
-
-        # Resize the input grid to the specified output resolution before rotating
-        resX = _deg2pixels(grid_spacing_degrees, self.extent[0], self.extent[1])
-        resY = _deg2pixels(grid_spacing_degrees, self.extent[2], self.extent[3])
-        resized_input_grid = self.resize(resX, resY, inplace=False)
-
-        # Get the flattened lons, lats
-        llons, llats = np.meshgrid(resized_input_grid.lons, resized_input_grid.lats)
-        llons = llons.ravel()
-        llats = llats.ravel()
-
-        # Convert lon-lat points of Raster grid to pyGPlates points
-        input_points = pygplates.MultiPointOnSphere(
-            (lat, lon) for lon, lat in zip(llons, llats)
-        )
-        # Get grid values of the resized Raster object
-        values = np.array(resized_input_grid.data).ravel()
-
-        # Rotate grid nodes to the other reference frame
-        output_points = reference_frame_conversion_rotation * input_points
-
-        # Assemble rotated points with grid values.
-        out_lon = np.empty_like(llons)
-        out_lat = np.empty_like(llats)
-        zdata = np.empty_like(values)
-        for i, point in enumerate(output_points):
-            out_lat[i], out_lon[i] = point.to_lat_lon()
-            zdata[i] = values[i]
-
-        # Create a regular grid on which to interpolate lats, lons and zdata
-        # Use the extent of the original Raster object
-        extent_globe = self.extent
-
-        resX = (
-            int(np.floor((extent_globe[1] - extent_globe[0]) / grid_spacing_degrees))
-            + 1
-        )
-        resY = (
-            int(np.floor((extent_globe[3] - extent_globe[2]) / grid_spacing_degrees))
-            + 1
-        )
-
-        grid_lon = np.linspace(extent_globe[0], extent_globe[1], resX)
-        grid_lat = np.linspace(extent_globe[2], extent_globe[3], resY)
-
-        X, Y = np.meshgrid(grid_lon, grid_lat)
-
-        # Interpolate lons, lats and zvals over a regular grid using nearest
-        # neighbour interpolation
-        Z = griddata_sphere((out_lon, out_lat), zdata, (X, Y), method="nearest")
-
-        # Write output grid to netCDF if requested.
-        if output_name:
-            write_netcdf_grid(output_name, Z, extent=extent_globe)
-
-        return Raster(data=Z)
-
-    def query(self, lons, lats, region_of_interest=None):
-        """Given a set of location coordinates, return the grid values at these locations.
-
-        Parameters
-        ----------
-        lons: list
-            a list of longitudes of the location coordinates
-        lats: list
-            a list of latitude of the location coordinates
-        region_of_interest: float
-            the radius of the region of interest in km
-            this is the arch length. we need to calculate the straight distance between the two points in 3D space from this arch length.
-
-        Returns
-        -------
-        list
-            a list of grid values for the given locations.
-        """
-
-        if not hasattr(self, "spatial_cKDTree"):
-            # build the spatial tree if the tree has not been built yet
-            x0 = self.extent[0]
-            x1 = self.extent[1]
-            y0 = self.extent[2]
-            y1 = self.extent[3]
-            yn = self.data.shape[0]
-            xn = self.data.shape[1]
-            # we assume the grid is Grid-line Registration, not Pixel Registration
-            # http://www.soest.hawaii.edu/pwessel/courses/gg710-01/GMT_grid.pdf
-            # TODO: support both Grid-line and Pixel Registration
-            grid_x, grid_y = np.meshgrid(
-                np.linspace(x0, x1, xn), np.linspace(y0, y1, yn)
-            )
-            # in degrees
-            self.grid_cell_radius = (
-                math.sqrt(math.pow(((y0 - y1) / yn), 2) + math.pow(((x0 - x1) / xn), 2))
-                / 2
-            )
-            self.data_mask = ~np.isnan(self.data)
-            grid_points = [
-                pygplates.PointOnSphere((float(p[1]), float(p[0]))).to_xyz()
-                for p in np.dstack((grid_x, grid_y))[self.data_mask]
-            ]
-            logger.debug("building the spatial tree...")
-            self.spatial_cKDTree = _cKDTree(grid_points)
-
-        query_points = [
-            pygplates.PointOnSphere((float(p[1]), float(p[0]))).to_xyz()
-            for p in zip(lons, lats)
-        ]
-
-        if region_of_interest is None:
-            # convert the arch length(in degrees) to direct length in 3D space
-            roi = 2 * math.sin(math.radians(self.grid_cell_radius / 2.0))
-        else:
-            roi = 2 * math.sin(
-                region_of_interest / pygplates.Earth.mean_radius_in_kms / 2.0
-            )
-
-        dists, indices = self.spatial_cKDTree.query(
-            query_points, k=1, distance_upper_bound=roi
-        )
-        # print(dists, indices)
-        return np.concatenate((self.data[self.data_mask], [math.nan]))[indices]
-
-    def clip_by_extent(self, extent):
-        """Clip the raster according to a given extent ``(x_min, x_max, y_min, y_max)``.
-        The extent of the returned raster may be slightly bigger than the given extent.
-        This happens when the border of the given extent fall between two gird lines.
-
-        Parameters
-        ----------
-        extent: tuple
-            A tuple of 4 (min_lon, max_lon, min_lat, max_lat) extent.
-
-        Returns
-        --------
-        Raster
-            The clipped grid.
-        """
-        if (
-            extent[0] >= extent[1]
-            or extent[2] >= extent[3]
-            or extent[0] < -180
-            or extent[1] > 180
-            or extent[2] < -90
-            or extent[3] > 90
-        ):
-            raise Exception(f"Invalid extent: {extent}")
-        if (
-            extent[0] < self.extent[0]
-            or extent[1] > self.extent[1]
-            or extent[2] < self.extent[2]
-            or extent[3] > self.extent[3]
-        ):
-            raise Exception(
-                f"The given extent is out of scope. {extent} -- {self.extent}"
-            )
-        y_len, x_len = self.data.shape
-        logger.debug(f"the shape of raster data x:{x_len} y:{y_len}")
-
-        x0 = math.floor(
-            (extent[0] - self.extent[0])
-            / (self.extent[1] - self.extent[0])
-            * (x_len - 1)
-        )
-        x1 = math.ceil(
-            (extent[1] - self.extent[0])
-            / (self.extent[1] - self.extent[0])
-            * (x_len - 1)
-        )
-        # print(x0, x1)
-        y0 = math.floor(
-            (extent[2] - self.extent[2])
-            / (self.extent[3] - self.extent[2])
-            * (y_len - 1)
-        )
-        y1 = math.ceil(
-            (extent[3] - self.extent[2])
-            / (self.extent[3] - self.extent[2])
-            * (y_len - 1)
-        )
-        # print(y0, y1)
-        new_extent = (
-            x0 / (x_len - 1) * (self.extent[1] - self.extent[0]) - 180,
-            x1 / (x_len - 1) * (self.extent[1] - self.extent[0]) - 180,
-            y0 / (y_len - 1) * (self.extent[3] - self.extent[2]) - 90,
-            y1 / (y_len - 1) * (self.extent[3] - self.extent[2]) - 90,
-        )
-        # print(new_extent)
-        # print(self.data[y0 : y1 + 1, x0 : x1 + 1].shape)
-        return Raster(
-            data=self.data[y0 : y1 + 1, x0 : x1 + 1],
-            extent=new_extent,
-        )
-
-    def _clip_by_polygon(self, polygon):
-        """TODO:"""
-        pass
-
-    def __array__(self):
-        return np.array(self.data)
-
-    def __add__(self, other):
-        if isinstance(other, Raster):
-            # Return array, since we don't know which Raster
-            # to take properties from
-            return self.data + other.data
-
-        # Return Raster with new data
-        new_raster = self.copy()
-        new_data = self.data + other
-        new_raster.data = new_data
-        return new_raster
-
-    def __radd__(self, other):
-        return self + other
-
-    def __sub__(self, other):
-        if isinstance(other, Raster):
-            # Return array, since we don't know which Raster
-            # to take properties from
-            return self.data - other.data
-
-        # Return Raster with new data
-        new_raster = self.copy()
-        new_data = self.data - other
-        new_raster.data = new_data
-        return new_raster
-
-    def __rsub__(self, other):
-        if isinstance(other, Raster):
-            # Return array, since we don't know which Raster
-            # to take properties from
-            return other.data - self.data
-
-        # Return Raster with new data
-        new_raster = self.copy()
-        new_data = other - self.data
-        new_raster.data = new_data
-        return new_raster
-
-    def __mul__(self, other):
-        if isinstance(other, Raster):
-            # Return array, since we don't know which Raster
-            # to take properties from
-            return self.data * other.data
-
-        # Return Raster with new data
-        new_raster = self.copy()
-        new_data = self.data * other
-        new_raster.data = new_data
-        return new_raster
-
-    def __rmul__(self, other):
-        return self * other
-
-    def __truediv__(self, other):
-        if isinstance(other, Raster):
-            # Return array, since we don't know which Raster
-            # to take properties from
-            return self.data / other.data
-
-        # Return Raster with new data
-        new_raster = self.copy()
-        new_data = self.data / other
-        new_raster.data = new_data
-        return new_raster
-
-    def __rtruediv__(self, other):
-        if isinstance(other, Raster):
-            # Return array, since we don't know which Raster
-            # to take properties from
-            return other.data / self.data
-
-        # Return Raster with new data
-        new_raster = self.copy()
-        new_data = other / self.data
-        new_raster.data = new_data
-        return new_raster
-
-    def __floordiv__(self, other):
-        if isinstance(other, Raster):
-            # Return array, since we don't know which Raster
-            # to take properties from
-            return self.data // other.data
-
-        # Return Raster with new data
-        new_raster = self.copy()
-        new_data = self.data // other
-        new_raster.data = new_data
-        return new_raster
-
-    def __rfloordiv__(self, other):
-        if isinstance(other, Raster):
-            # Return array, since we don't know which Raster
-            # to take properties from
-            return other.data // self.data
-
-        # Return Raster with new data
-        new_raster = self.copy()
-        new_data = other // self.data
-        new_raster.data = new_data
-        return new_raster
-
-    def __mod__(self, other):
-        if isinstance(other, Raster):
-            # Return array, since we don't know which Raster
-            # to take properties from
-            return self.data % other.data
-
-        # Return Raster with new data
-        new_raster = self.copy()
-        new_data = self.data % other
-        new_raster.data = new_data
-        return new_raster
-
-    def __rmod__(self, other):
-        if isinstance(other, Raster):
-            # Return array, since we don't know which Raster
-            # to take properties from
-            return other.data % self.data
-
-        # Return Raster with new data
-        new_raster = self.copy()
-        new_data = other % self.data
-        new_raster.data = new_data
-        return new_raster
-
-    def __pow__(self, other):
-        if isinstance(other, Raster):
-            # Return array, since we don't know which Raster
-            # to take properties from
-            return self.data**other.data
-
-        # Return Raster with new data
-        new_raster = self.copy()
-        new_data = self.data**other
-        new_raster.data = new_data
-        return new_raster
-
-    def __rpow__(self, other):
-        if isinstance(other, Raster):
-            # Return array, since we don't know which Raster
-            # to take properties from
-            return other.data**self.data
-
-        # Return Raster with new data
-        new_raster = self.copy()
-        new_data = other**self.data
-        new_raster.data = new_data
-        return new_raster
 
 
 # class TimeRaster(Raster):
 #     """A class for the temporal manipulation of raster data. To be added soon!"""
-#     def __init__(self, PlateReconstruction_object=None, filename=None, array=None, extent=None, resample=None):
+#     def __init__(self, plate_reconstruction=None, filename=None, array=None, extent=None, resample=None):
 #         raise NotImplementedError(
 #             "This class has not been implemented; use `Raster` instead"
 #         )
-#         super(TimeRaster, self).__init__(PlateReconstruction_object)
+#         super(TimeRaster, self).__init__(plate_reconstruction)

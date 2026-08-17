@@ -272,3 +272,28 @@ Retrieve the paleomagnetic data from the `GPMDB website <http://www.gpmdb.net>`_
    $ gplately gpmdb -m zahirovic2022 -o vgp.gpmlz
    
 
+rotate_grid
+-----------
+
+Rotate a grid (or all grids in a folder) between plate-model reference frames.
+The source and target rotation models can each be a named plate model or local rotation files (the two options are mutually exclusive).
+If the reconstruction time is not given explicitly, it is deduced from the filename (e.g. ``paleobathymetry_103Ma.nc`` → 103 Ma).
+
+👉 rotate ``input.nc`` at 100 Ma from the Alfonso2024 mantle frame (anchor 0) to the Alfonso2024 pmag frame (anchor 701701)
+
+.. code:: console
+
+   $ gplately rotate_grid input.nc output.nc --from-model Alfonso2024 --to-model Alfonso2024 --from-anchor 0 --to-anchor 701701 --time 100
+
+👉 rotate all .nc files in a directory; reconstruction times are deduced from filenames such as ``paleobathymetry_103Ma.nc``
+
+.. code:: console
+
+   $ gplately rotate_grid input_dir output_dir --from-model Alfonso2024 --to-model Alfonso2024 --from-anchor 0 --to-anchor 701701
+
+👉 rotate using local rotation files instead of a named model
+
+.. code:: console
+
+   $ gplately rotate_grid input.nc output.nc --from-rotation-files from.rot --to-rotation-files to.rot --time 100
+

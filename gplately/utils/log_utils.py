@@ -1,5 +1,5 @@
 #
-#    Copyright (C) 2024-2025 The University of Sydney, Australia
+#    Copyright (C) 2024-2026 The University of Sydney, Australia
 #
 #    This program is free software; you can redistribute it and/or modify it under
 #    the terms of the GNU General Public License, version 2, as published by
@@ -15,10 +15,9 @@
 #    51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 import logging.config
-import logging.handlers
 import os
 
-import yaml
+import yaml  # pyright: ignore[reportMissingModuleSource]
 
 
 # configurate the logging utility

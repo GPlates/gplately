@@ -41,6 +41,8 @@ Miscellaneous
 
    gplately.auxiliary
    gplately.read_netcdf_grid
+   gplately.write_netcdf_grid
+   gplately.default_netcdf_fill_value
    gplately.ridge_spreading_rate
    gplately.subduction_convergence
    

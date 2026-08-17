@@ -1,0 +1,153 @@
+#
+#    Copyright (C) 2024-2025 The University of Sydney, Australia
+#
+#    This program is free software; you can redistribute it and/or modify it under
+#    the terms of the GNU General Public License, version 2, as published by
+#    the Free Software Foundation.
+#
+#    This program is distributed in the hope that it will be useful, but WITHOUT
+#    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+#    FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+#    for more details.
+#
+#    You should have received a copy of the GNU General Public License along
+#    with this program; if not, write to Free Software Foundation, Inc.,
+#    51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+#
+
+"""This sub-module contains tools for efficiently executing routines by parallelizing them across multiple threads,
+utilizing multiple processing units."
+"""
+
+from multiprocessing import Pool, Process, Queue, cpu_count
+
+
+class Parallel(object):
+    """A class that uses multiple processors with `multiprocessing`
+    to execute routines in parallel over several threads.
+
+    Parameters
+    -----------
+    nprocs : int, default=1
+        The number of separate executions of a process. By default,
+        a single thread is run.
+    """
+
+    def __init__(self, nprocs=1):
+
+        self.nprocs = nprocs
+
+    def parallelise_routine(self, function, *args, **kwargs):
+        """Execute a routine over multiple threads on different
+        processors, ultimately reducing computation time.
+
+        `parallelise_routine` permits one item through the process
+        queue when an executed item is extracted with get().
+
+        Parameters
+        ----------
+        self.nprocs : int, default=1
+            The number of separate executions of a process. By
+            default, a single thread is run.
+
+        function : method from an instance of an object
+            The process to be executed in parallel. Should be
+            supplied as module.class.method (if belonging to a class)
+            or module.method.
+
+        *args : tuple
+            Contains all necessary input parameters for the ‘function’.
+
+        **kwargs : dict
+            Keyword arguments for the ‘function’.
+        """
+        if self.nprocs == 1:
+            # single thread
+            result = function(*args, **kwargs)
+            return result
+
+        elif self.nprocs > 1:
+            # more than one processor - game on
+
+            results = [[] for i in range(self.nprocs)]
+            processes = []
+            q_in = Queue(1)
+            q_out = Queue()
+
+            for i in range(self.nprocs):
+                pass_args = [function]
+                pass_args.extend(args)
+                p = Process(
+                    target=self._func_queue, args=tuple(pass_args), kwargs=kwargs
+                )
+                processes.append(p)
+
+            for p in processes:
+                p.daemon = True
+                p.start()
+
+            # put items in the queue
+            sent = [q_in.put((i,)) for i in range(self.nprocs)]
+            [q_in.put((None,)) for _ in range(self.nprocs)]
+
+            # get the results
+            results = []
+            for i in range(len(sent)):
+                index, result = q_out.get()
+                results[index] = result
+
+            # wait until each processor has finished
+            [p.join() for p in processes]
+
+            return results
+
+    def _func_queue(self, function, q_in, q_out, *args, **kwargs):
+        while True:
+            pos, input_args = q_in.get()
+            if pos is None:
+                break
+
+            res = function(*input_args, **kwargs)
+            q_out.put((pos, res))
+        return
+
+
+def get_num_cpus(nprocs):
+    """Return number of CPUs to use.
+
+    Parameters
+    ----------
+    nprocs : int
+        The number of CPUs to use for parts of the code that are parallelized.
+        Must be an integer or convertible to an integer (eg, float is rounded towards zero).
+        If positive then uses that many CPUs.
+        If ``1`` then executes in serial (ie, is not parallelized).
+        If ``0`` then a ``ValueError`` is raised.
+        If ``-1`` then all available CPUs are used.
+        If ``-2`` then all available CPUs except one are used, etc.
+    """
+
+    try:
+        nprocs = int(nprocs)
+    except ValueError:
+        raise TypeError('"nprocs" should be an integer, or convertible to integer')
+
+    if nprocs == 0:
+        raise ValueError('"nprocs" should not be zero')
+
+    if nprocs > 0:
+        # A positive integer specifying the number of CPUs to use.
+        num_cpus = nprocs
+    else:  # nprocs < 0
+        #
+        # A negative integer specifying the number of CPUs to NOT use.
+        # '-1' means use all CPUs. '-2' means use all CPUs but one. Etc.
+        try:
+            num_cpus = cpu_count() + 1 + nprocs
+            # If specified more CPUs to NOT use than there are CPUs available.
+            if num_cpus < 1:
+                num_cpus = 1
+        except NotImplementedError:
+            num_cpus = 1
+
+    return num_cpus

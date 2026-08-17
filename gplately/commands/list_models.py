@@ -21,7 +21,7 @@ import logging
 import requests
 from plate_model_manager import PlateModelManager
 
-from ..exceptions import UnableToGetModelList
+from ..lib.exceptions import UnableToGetModelList
 
 logger = logging.getLogger("gplately")
 

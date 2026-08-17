@@ -32,8 +32,7 @@ def print_dev_warning(version: str):
         print(
             "##################################################################################################"
         )
-        print(
-            f"""
+        print(f"""
             WARNING:  
             You are using a DEV version ({version}) GPlately.     
             Some functionalities in the DEV version have not been tested thoroughly, 
@@ -56,8 +55,7 @@ def print_dev_warning(version: str):
             
             If you prefer not seeing this warning always, you may set the environment variable 
             in your boot scripts, such as .bashrc, .profile, autoexec.bat, etc.
-            """
-        )
+            """)
         print(
             "##################################################################################################"
         )
