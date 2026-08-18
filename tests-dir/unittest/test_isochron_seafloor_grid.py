@@ -4,8 +4,7 @@ import zipfile
 import requests
 
 import pygplates
-import gplately
-from gplately.isochron_seafloor_grid import IsochronSeafloorGrid
+from gplately.isochron_seafloor_grid import IsochronSeafloorGrid, OutputScalarType
 from gplately.auxiliary import get_gplot
 
 age_grid_input_dir = "AgeGridInput"
@@ -24,7 +23,7 @@ gplot = get_gplot("zahirovic2022", model_repo_dir="plate-model-repo")
 
 o = IsochronSeafloorGrid(
     plate_reconstruction=gplot.plate_reconstruction,
-    time_steps=[0],
+    time_steps=[0, 100],
     ridges=pygplates.FeatureCollection(
         f"{age_grid_input_dir}/Global_EarthByte_GeeK07_Ridges.gpml"
     ),
@@ -34,10 +33,13 @@ o = IsochronSeafloorGrid(
     iso_cob=pygplates.FeatureCollection(
         f"{age_grid_input_dir}/Global_EarthByte_GeeK07_IsoCOB.gpml"
     ),
-    continental_polygons=gplately.utils.io_utils.load_feature_collection(
-        gplot.plate_reconstruction.plate_model.get_layer("ContinentalPolygons")
+    # continental_polygons=gplately.utils.io_utils.load_feature_collection(
+    #    gplot.plate_reconstruction.plate_model.get_layer("ContinentalPolygons")
+    # ),
+    continental_polygons=pygplates.FeatureCollection(
+        f"{age_grid_input_dir}/Global_EarthByte_GeeK07_COB_Terranes_ContinentsOnly.gpml"
     ),
-    interval_spacing_radians=0.01,
+    interval_spacing_degrees=0.5,
 )
 # o._get_continent_mask(0)
-o.generate()
+o.generate(set([OutputScalarType.AGE, OutputScalarType.SPREADING_RATE]))

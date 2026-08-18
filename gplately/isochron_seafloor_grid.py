@@ -27,6 +27,7 @@ from .lib import isopolate
 from rasterio.features import rasterize as _rasterize
 from rasterio.transform import from_origin as _from_origin
 from rasterio.enums import MergeAlg as _MergeAlg
+from .utils.io_utils import load_feature_collection
 from .geometry import pygplates_to_shapely
 
 logger = logging.getLogger("gplately")
@@ -94,7 +95,7 @@ _OUTPUT_SCALAR_TYPE_NAMES = {
 }
 
 
-# https://github.com/EarthByte/presentday-agegridding/blob/master/compute_agegrid.sh
+# This implementation was based on https://github.com/EarthByte/presentday-agegridding/blob/master/compute_agegrid.sh
 class IsochronSeafloorGrid:
     """
     Using isochrons interpolation to genereate seafloor grids.
@@ -111,16 +112,30 @@ class IsochronSeafloorGrid:
         continental_polygons: pygplates.FeatureCollection | None = None,
         grid_region: str = "d",
         grid_spacing: str = "0.1d",
-        interval_spacing_radians: float = isopolate.DEFAULT_INTERPOLATE_RESOLUTION_RADIANS,
+        interval_spacing_degrees: float = 0.1,
         grid_output_dir: str | Path = "seafloor_grids_by_isochron_interpolation",
     ):
         self._plate_reconstruction = plate_reconstruction
         self._time_steps = np.asarray(time_steps)
-        self._ridges = ridges
-        self._isochrons = isochrons
-        self._iso_cob = iso_cob
-        self._continental_polygons = continental_polygons
-        self._interval_spacing_radians = interval_spacing_radians
+        if not isinstance(ridges, pygplates.FeatureCollection):
+            self._ridges = load_feature_collection(ridges)
+        else:
+            self._ridges = ridges
+        if not isinstance(isochrons, pygplates.FeatureCollection):
+            self._isochrons = load_feature_collection(isochrons)
+        else:
+            self._isochrons = isochrons
+        if not isinstance(iso_cob, pygplates.FeatureCollection):
+            self._iso_cob = load_feature_collection(iso_cob)
+        else:
+            self._iso_cob = iso_cob
+        if continental_polygons is not None and not isinstance(
+            continental_polygons, pygplates.FeatureCollection
+        ):
+            self._continental_polygons = load_feature_collection(continental_polygons)
+        else:
+            self._continental_polygons = continental_polygons
+        self._interval_spacing_radians = np.radians(interval_spacing_degrees)
         self._grid_region = grid_region
         self._grid_spacing = grid_spacing
         self._grid_output_dir = Path(grid_output_dir)
@@ -136,12 +151,6 @@ class IsochronSeafloorGrid:
         """
         Generate the seafloor grids from the isochrons.
         """
-        if self._continental_polygons is None:
-            raise ValueError(
-                "Cannot generate seafloor grids because continental polygons "
-                "are required for continent masking but were not provided."
-            )
-
         if output_scalar_types is None:
             output_scalar_types = _DEFAULT_OUTPUT_SCALAR_TYPES
 
@@ -193,7 +202,7 @@ class IsochronSeafloorGrid:
 
             # Keywords arguments for the interpolate_isochrons() function.
             interpolate_isochrons_kwargs = {}
-            interpolate_isochrons_kwargs["print_debug_output"] = 1
+            interpolate_isochrons_kwargs["print_debug_output"] = 0
             interpolate_isochrons_kwargs["tessellate_threshold_radians"] = (
                 interval_spacing_radians  # Make spacing the same along *and* between lines.
             )
@@ -239,7 +248,10 @@ class IsochronSeafloorGrid:
             # Computed once per time step and reused for every scalar type below —
             # it doesn't depend on the scalar type, and rasterizing/writing it
             # repeatedly per scalar type was wasted work.
-            mask = self._get_continent_mask(_time)
+            if self._continental_polygons is not None:
+                mask = self._get_continent_mask(_time)
+            else:
+                mask = None
 
             # Build one NetCDF grid for each selected scalar type.
             for output_scalar_type in output_scalar_types:
@@ -275,13 +287,26 @@ class IsochronSeafloorGrid:
                     spacing=self._grid_spacing,
                 )
 
-                scalar_dir = (
-                    self._grid_output_dir / output_scalar_type.name.lower() / "NoMask"
-                )
-                scalar_dir.mkdir(parents=True, exist_ok=True)
-                grid_path = scalar_dir / (
-                    f"{output_scalar_type.name.lower()}grid_final_nomask_{_time}Ma.nc"
-                )
+                if mask is None:
+                    scalar_dir = (
+                        self._grid_output_dir
+                        / output_scalar_type.name.lower()
+                        / "NoMask"
+                    )
+                    scalar_dir.mkdir(parents=True, exist_ok=True)
+                    grid_path = scalar_dir / (
+                        f"seafloor_{output_scalar_type.name.lower()}_grid_nomask_{_time}Ma.nc"
+                    )
+                else:
+                    scalar_dir = (
+                        self._grid_output_dir
+                        / output_scalar_type.name.lower()
+                        / "Masked"
+                    )
+                    scalar_dir.mkdir(parents=True, exist_ok=True)
+                    grid_path = scalar_dir / (
+                        f"seafloor_{output_scalar_type.name.lower()}_grid_{_time}Ma.nc"
+                    )
 
                 grid = pygmt.sphinterpolate(
                     data=median_table,
@@ -312,8 +337,11 @@ class IsochronSeafloorGrid:
                 else:
                     clipped_grid.attrs.pop("actual_range", None)
 
-                masked_grid = clipped_grid.where(mask == 0)
-                masked_grid.to_netcdf(grid_path)
+                if mask is None:
+                    clipped_grid.to_netcdf(grid_path)
+                else:
+                    masked_grid = clipped_grid.where(mask == 0)
+                    masked_grid.to_netcdf(grid_path)
 
     def _target_lon_lat(self) -> tuple[np.ndarray, np.ndarray]:
         """Compute the exact lon/lat node coordinates for grid_region/grid_spacing."""
@@ -323,16 +351,13 @@ class IsochronSeafloorGrid:
         ny = round((maxy - miny) / spacing) + 1
         return np.linspace(minx, maxx, nx), np.linspace(miny, maxy, ny)
 
-    def _get_continent_mask(self, time: float) -> xarray.DataArray:
+    def _get_continent_mask(self, time: float, save: bool = False) -> xarray.DataArray:
         if self._continental_polygons is None:
             raise ValueError(
                 "Cannot generate continent mask grid because continental polygons are not provided."
             )
 
         logger.info("Generating continent mask grid...")
-        continent_mask_dir = self._grid_output_dir / "continent_mask"
-        continent_mask_dir.mkdir(parents=True, exist_ok=True)
-        continent_mask_path = continent_mask_dir / f"continent_mask_{time}Ma.nc"
 
         reconstructed_polygons = pygplates_to_shapely(
             self._plate_reconstruction.reconstruct(self._continental_polygons, time)
@@ -351,9 +376,7 @@ class IsochronSeafloorGrid:
         miny, maxy = float(lat.min()), float(lat.max())
 
         if not reconstructed_polygons:
-            # No continental polygons at this reconstruction time (e.g. all
-            # continents have drifted out of the requested region) — rasterize()
-            # raises on an empty shapes iterable, so just build the all-ocean mask.
+            # No continental polygons at this reconstruction time.
             logger.info(
                 "No continental polygons found at %s Ma; mask is all-ocean.", time
             )
@@ -395,6 +418,10 @@ class IsochronSeafloorGrid:
         mask_grid.lat.attrs.update(
             {"standard_name": "latitude", "units": "degrees_north", "axis": "Y"}
         )
-        mask_grid.to_netcdf(continent_mask_path)
-        logger.info(f"Continent mask grid saved to {continent_mask_path}")
+        if save:
+            continent_mask_dir = self._grid_output_dir / "continent_mask"
+            continent_mask_dir.mkdir(parents=True, exist_ok=True)
+            continent_mask_path = continent_mask_dir / f"continent_mask_{time}_Ma.nc"
+            mask_grid.to_netcdf(continent_mask_path)
+            logger.info(f"Continent mask grid saved to {continent_mask_path}")
         return mask_grid
