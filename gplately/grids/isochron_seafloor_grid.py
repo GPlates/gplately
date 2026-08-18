@@ -22,13 +22,13 @@ import xarray
 import pygmt
 from enum import Enum, auto
 from pathlib import Path
-from .reconstruction import PlateReconstruction
-from .lib import isopolate
+from ..reconstruction import PlateReconstruction
+from ..lib import isopolate
 from rasterio.features import rasterize as _rasterize
 from rasterio.transform import from_origin as _from_origin
 from rasterio.enums import MergeAlg as _MergeAlg
-from .utils.io_utils import load_feature_collection
-from .geometry import pygplates_to_shapely
+from ..utils.io_utils import load_feature_collection
+from ..geometry import pygplates_to_shapely
 
 logger = logging.getLogger("gplately")
 

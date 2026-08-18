@@ -24,19 +24,16 @@ import warnings
 from multiprocessing import cpu_count
 from typing import Tuple, Union, cast, overload, Literal
 
-# pyright: reportMissingImports=false
-# pyright: reportMissingModuleSource=false
-
 import matplotlib.colors
 import netCDF4
 import numpy as np
 import pygplates
 from pygplates import (
-    RotationModel as _RotationModel,  # pyright: ignore[reportAttributeAccessIssue]
-    FiniteRotation as _FiniteRotation,  # pyright: ignore[reportAttributeAccessIssue]
-    Feature as _Feature,  # pyright: ignore[reportAttributeAccessIssue]
-    FeaturesFunctionArgument as _FeaturesFunctionArgument,  # pyright: ignore[reportAttributeAccessIssue]
-    FeatureCollection as _FeatureCollection,  # pyright: ignore[reportAttributeAccessIssue]
+    RotationModel as _RotationModel,
+    FiniteRotation as _FiniteRotation,
+    Feature as _Feature,
+    FeaturesFunctionArgument as _FeaturesFunctionArgument,
+    FeatureCollection as _FeatureCollection,
 )
 from rasterio.enums import MergeAlg
 from rasterio.features import rasterize as _rasterize
@@ -47,11 +44,11 @@ from scipy.spatial import (
 )
 from scipy.spatial.transform import Rotation as _Rotation
 
-from .geometry import pygplates_to_shapely
+from ..geometry import pygplates_to_shapely
 
 # re-export, for backward compatibility, don't remove
-from .lib.regular_grid_interpolator import RegularGridInterpolator
-from .raster import Raster
+from ..lib.regular_grid_interpolator import RegularGridInterpolator
+from ..raster import Raster
 
 logger = logging.getLogger("gplately")
 

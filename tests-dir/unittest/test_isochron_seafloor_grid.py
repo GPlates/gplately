@@ -4,7 +4,7 @@ import zipfile
 import requests
 
 import pygplates
-from gplately.isochron_seafloor_grid import IsochronSeafloorGrid, OutputScalarType
+from gplately import IsochronSeafloorGrid, OutputScalarType
 from gplately.auxiliary import get_gplot
 
 age_grid_input_dir = "AgeGridInput"

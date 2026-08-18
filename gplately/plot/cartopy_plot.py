@@ -26,7 +26,7 @@ import cartopy.crs as ccrs
 from geopandas.geodataframe import GeoDataFrame
 import matplotlib.pyplot as plt
 import xarray as xr
-from ..grids import Raster
+from ..raster import Raster
 
 from ..tools import EARTH_RADIUS
 from .utils import plot_subduction_teeth
