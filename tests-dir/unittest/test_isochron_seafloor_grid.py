@@ -1,10 +1,10 @@
-import os
+import os, io
 import zipfile
 
 import requests
-from scipy import io
 
 import pygplates
+import gplately
 from gplately.isochron_seafloor_grid import IsochronSeafloorGrid
 from gplately.auxiliary import get_gplot
 
@@ -34,8 +34,10 @@ o = IsochronSeafloorGrid(
     iso_cob=pygplates.FeatureCollection(
         f"{age_grid_input_dir}/Global_EarthByte_GeeK07_IsoCOB.gpml"
     ),
-    continent_polygon_features=gplot.plate_reconstruction.plate_model.get_layer(
-        "ContinentalPolygons"
+    continental_polygons=gplately.utils.io_utils.load_feature_collection(
+        gplot.plate_reconstruction.plate_model.get_layer("ContinentalPolygons")
     ),
+    interval_spacing_radians=0.01,
 )
+# o._get_continent_mask(0)
 o.generate()

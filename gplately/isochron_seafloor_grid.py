@@ -15,13 +15,46 @@ with this program; if not, write to Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """
 
+import logging
 import numpy as np
 import pygplates
+import xarray
+import pygmt
 from enum import Enum, auto
 from pathlib import Path
-from .oceans import SeafloorGrid
 from .reconstruction import PlateReconstruction
 from .lib import isopolate
+from rasterio.features import rasterize as _rasterize
+from rasterio.transform import from_origin as _from_origin
+from rasterio.enums import MergeAlg as _MergeAlg
+from .geometry import pygplates_to_shapely
+
+logger = logging.getLogger("gplately")
+
+
+def _parse_gmt_region(region: str) -> tuple[float, float, float, float]:
+    """Convert a GMT-style region string (e.g. "d", "g", "minx/maxx/miny/maxy") to bounds."""
+    if region == "d":
+        return -180.0, 180.0, -90.0, 90.0
+    if region == "g":
+        return 0.0, 360.0, -90.0, 90.0
+    minx, maxx, miny, maxy = (float(value) for value in region.split("/"))
+    return minx, maxx, miny, maxy
+
+
+def _parse_gmt_spacing(spacing: str) -> float:
+    """Convert a GMT-style spacing string (e.g. "0.1d", "5m", "30s") to degrees."""
+    unit = spacing[-1]
+    if unit.isalpha():
+        value = float(spacing[:-1])
+        if unit == "m":
+            return value / 60.0
+        if unit == "s":
+            return value / 3600.0
+        if unit != "d":
+            raise ValueError(f"Unsupported grid spacing unit: {unit!r}")
+        return value
+    return float(spacing)
 
 
 class OutputScalarType(Enum):
@@ -62,34 +95,35 @@ _OUTPUT_SCALAR_TYPE_NAMES = {
 
 
 # https://github.com/EarthByte/presentday-agegridding/blob/master/compute_agegrid.sh
-class IsochronSeafloorGrid(SeafloorGrid):
+class IsochronSeafloorGrid:
     """
-    A SeafloorGrid that is constructed from a set of isochrons.
+    Using isochrons interpolation to genereate seafloor grids.
     """
 
     def __init__(
         self,
         plate_reconstruction: PlateReconstruction,
-        time_steps: np.ndarray,
+        time_steps: np.ndarray | list,
         *,
         ridges: pygplates.FeatureCollection,
         isochrons: pygplates.FeatureCollection,
         iso_cob: pygplates.FeatureCollection,
-        **kwargs,
+        continental_polygons: pygplates.FeatureCollection | None = None,
+        grid_region: str = "d",
+        grid_spacing: str = "0.1d",
+        interval_spacing_radians: float = isopolate.DEFAULT_INTERPOLATE_RESOLUTION_RADIANS,
+        grid_output_dir: str | Path = "seafloor_grids_by_isochron_interpolation",
     ):
-        kwargs["plate_reconstruction"] = plate_reconstruction
+        self._plate_reconstruction = plate_reconstruction
         self._time_steps = np.asarray(time_steps)
-        kwargs["max_time"] = np.max(self._time_steps)
-        kwargs["min_time"] = np.min(self._time_steps)
-        if len(self._time_steps) > 1:
-            kwargs["ridge_time_step"] = np.min(np.diff(self._time_steps))
-        else:
-            kwargs["ridge_time_step"] = 1
-
         self._ridges = ridges
         self._isochrons = isochrons
         self._iso_cob = iso_cob
-        super().__init__(**kwargs)
+        self._continental_polygons = continental_polygons
+        self._interval_spacing_radians = interval_spacing_radians
+        self._grid_region = grid_region
+        self._grid_spacing = grid_spacing
+        self._grid_output_dir = Path(grid_output_dir)
 
     @property
     def time_steps(self) -> np.ndarray:
@@ -98,14 +132,16 @@ class IsochronSeafloorGrid(SeafloorGrid):
     def generate(
         self,
         output_scalar_types: set[OutputScalarType] | None = None,
-        *,
-        grid_region: str = "d",
-        grid_spacing: str = "0.1d",
-        grid_output_dir: str | Path = "InterpolatedIsochrons_grids",
     ):
         """
         Generate the seafloor grids from the isochrons.
         """
+        if self._continental_polygons is None:
+            raise ValueError(
+                "Cannot generate seafloor grids because continental polygons "
+                "are required for continent masking but were not provided."
+            )
+
         if output_scalar_types is None:
             output_scalar_types = _DEFAULT_OUTPUT_SCALAR_TYPES
 
@@ -121,19 +157,11 @@ class IsochronSeafloorGrid(SeafloorGrid):
             )
 
         output_scalar_types = set(output_scalar_types)
-        grid_output_dir = Path(grid_output_dir)
-
-        try:
-            import pygmt
-        except ImportError as exc:
-            raise ImportError(
-                "PyGMT is required to generate NetCDF grids from interpolated isochrons."
-            ) from exc
 
         for _time in self.time_steps:
-            rotation_model = self.plate_reconstruction.rotation_model
+            rotation_model = self._plate_reconstruction.rotation_model
 
-            print("Current reconstruction time is", _time, "Ma")
+            logger.info("Current reconstruction time is %s Ma", _time)
 
             _valid_isochrons = pygplates.FeatureCollection(
                 [
@@ -159,13 +187,9 @@ class IsochronSeafloorGrid(SeafloorGrid):
                 ]
             )
 
-            # This is where isopolate is actually called - note that these one line interpolates the isochrons,
-            # but does not reconstruct them
-
             # The spacing between lines (in radians) at which to generate interpolated isochrons.
             # Note that 'tessellate_threshold_radians' is the spacing ALONG lines.
-            # interval_spacing_radians = isopolate.DEFAULT_INTERPOLATE_RESOLUTION_RADIANS  # Default spacing (0.1 degrees).
-            interval_spacing_radians = 0.002
+            interval_spacing_radians = self._interval_spacing_radians
 
             # Keywords arguments for the interpolate_isochrons() function.
             interpolate_isochrons_kwargs = {}
@@ -210,7 +234,12 @@ class IsochronSeafloorGrid(SeafloorGrid):
                 and "gpml:Age" in gdf.columns
             ):
                 gdf["gpml:Age"] = gdf["gpml:Age"] - _time
-            print(gdf)
+            logger.debug("Interpolated GeoDataFrame:\n%s", gdf)
+
+            # Computed once per time step and reused for every scalar type below —
+            # it doesn't depend on the scalar type, and rasterizing/writing it
+            # repeatedly per scalar type was wasted work.
+            mask = self._get_continent_mask(_time)
 
             # Build one NetCDF grid for each selected scalar type.
             for output_scalar_type in output_scalar_types:
@@ -234,22 +263,20 @@ class IsochronSeafloorGrid(SeafloorGrid):
                 if xyz_table.empty:
                     continue
 
-                print(
-                    "Running sphinterpolate for",
+                logger.info(
+                    "Running sphinterpolate for %s at %s Ma",
                     output_scalar_type.gpml_name,
-                    "at",
                     _time,
-                    "Ma",
                 )
 
                 median_table = pygmt.blockmedian(
                     data=xyz_table,
-                    region=grid_region,
-                    spacing=grid_spacing,
+                    region=self._grid_region,
+                    spacing=self._grid_spacing,
                 )
 
                 scalar_dir = (
-                    grid_output_dir / output_scalar_type.name.lower() / "NoMask"
+                    self._grid_output_dir / output_scalar_type.name.lower() / "NoMask"
                 )
                 scalar_dir.mkdir(parents=True, exist_ok=True)
                 grid_path = scalar_dir / (
@@ -258,11 +285,19 @@ class IsochronSeafloorGrid(SeafloorGrid):
 
                 grid = pygmt.sphinterpolate(
                     data=median_table,
-                    region=grid_region,
-                    spacing=grid_spacing,
+                    region=self._grid_region,
+                    spacing=self._grid_spacing,
                     Q=0,
                 )
-
+                if grid is None:
+                    raise RuntimeError(
+                        f"pygmt.sphinterpolate returned no grid for "
+                        f"{output_scalar_type.gpml_name} at {_time} Ma."
+                    )
+                # GMT may not honour the requested spacing/region exactly, so resample
+                # onto the exact target grid to guarantee the expected output size.
+                target_lon, target_lat = self._target_lon_lat()
+                grid = grid.interp(lon=target_lon, lat=target_lat)
                 # Prevent small negative artifacts introduced by interpolation.
                 clipped_grid = grid.clip(min=0.01)
                 finite_values = clipped_grid.values[np.isfinite(clipped_grid.values)]
@@ -276,4 +311,90 @@ class IsochronSeafloorGrid(SeafloorGrid):
                     clipped_grid.attrs["valid_max"] = max_value
                 else:
                     clipped_grid.attrs.pop("actual_range", None)
-                clipped_grid.to_netcdf(grid_path)
+
+                masked_grid = clipped_grid.where(mask == 0)
+                masked_grid.to_netcdf(grid_path)
+
+    def _target_lon_lat(self) -> tuple[np.ndarray, np.ndarray]:
+        """Compute the exact lon/lat node coordinates for grid_region/grid_spacing."""
+        minx, maxx, miny, maxy = _parse_gmt_region(self._grid_region)
+        spacing = _parse_gmt_spacing(self._grid_spacing)
+        nx = round((maxx - minx) / spacing) + 1
+        ny = round((maxy - miny) / spacing) + 1
+        return np.linspace(minx, maxx, nx), np.linspace(miny, maxy, ny)
+
+    def _get_continent_mask(self, time: float) -> xarray.DataArray:
+        if self._continental_polygons is None:
+            raise ValueError(
+                "Cannot generate continent mask grid because continental polygons are not provided."
+            )
+
+        logger.info("Generating continent mask grid...")
+        continent_mask_dir = self._grid_output_dir / "continent_mask"
+        continent_mask_dir.mkdir(parents=True, exist_ok=True)
+        continent_mask_path = continent_mask_dir / f"continent_mask_{time}Ma.nc"
+
+        reconstructed_polygons = pygplates_to_shapely(
+            self._plate_reconstruction.reconstruct(self._continental_polygons, time)
+        )
+        if not isinstance(reconstructed_polygons, list):
+            reconstructed_polygons = [reconstructed_polygons]
+
+        lon, lat = self._target_lon_lat()
+        nx, ny = lon.size, lat.size
+        if nx < 2 or ny < 2:
+            raise ValueError(
+                f"Grid must have at least 2 nodes per axis to rasterize a mask "
+                f"(got nx={nx}, ny={ny})."
+            )
+        minx, maxx = float(lon.min()), float(lon.max())
+        miny, maxy = float(lat.min()), float(lat.max())
+
+        if not reconstructed_polygons:
+            # No continental polygons at this reconstruction time (e.g. all
+            # continents have drifted out of the requested region) — rasterize()
+            # raises on an empty shapes iterable, so just build the all-ocean mask.
+            logger.info(
+                "No continental polygons found at %s Ma; mask is all-ocean.", time
+            )
+            mask_array = np.zeros((ny, nx), dtype=np.uint8)
+        else:
+            # lon/lat are node (pixel-center) coordinates from linspace, spanning
+            # nx and ny *points*, i.e. (nx-1)/(ny-1) intervals. rasterio's
+            # from_bounds() instead treats nx/ny as cell *counts* spanning the
+            # bounds, which would shift pixel centers off the lon/lat nodes
+            # (worse the larger the grid). Build the affine transform directly so
+            # pixel centers land exactly on the lon/lat node coordinates instead.
+            dx = (maxx - minx) / (nx - 1)
+            dy = (maxy - miny) / (ny - 1)
+            transform = _from_origin(minx - dx / 2, maxy + dy / 2, dx, dy)
+            mask_array = _rasterize(
+                shapes=zip(reconstructed_polygons, [1] * len(reconstructed_polygons)),
+                out_shape=(ny, nx),
+                fill=0,
+                dtype=np.uint8,
+                merge_alg=_MergeAlg.replace,
+                transform=transform,
+            )
+            if mask_array is None:
+                raise RuntimeError(
+                    f"Failed to rasterize continental polygons at {time} Ma."
+                )
+        # rasterize's row 0 is the top (maxy); flip to match ascending lat coordinates.
+        mask_array = mask_array[::-1, :]
+
+        mask_grid = xarray.DataArray(
+            mask_array,
+            dims=["lat", "lon"],
+            coords={"lon": lon, "lat": lat},
+            name="continent_mask",
+        )
+        mask_grid.lon.attrs.update(
+            {"standard_name": "longitude", "units": "degrees_east", "axis": "X"}
+        )
+        mask_grid.lat.attrs.update(
+            {"standard_name": "latitude", "units": "degrees_north", "axis": "Y"}
+        )
+        mask_grid.to_netcdf(continent_mask_path)
+        logger.info(f"Continent mask grid saved to {continent_mask_path}")
+        return mask_grid

@@ -426,9 +426,8 @@ def _create_a_basic_cartopy_ax(
 
     if add_gridlines:
         # Add gridlines and lat/lon labels.
-        gl = ax.gridlines(
-            # crs=ccrs.PlateCarree(),
-            # draw_labels=True,
+        gl = ax.gridlines(  # type: ignore
+            draw_labels=True,
             linewidth=0.8,
             color="gray",
             alpha=0.6,
