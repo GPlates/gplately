@@ -2,9 +2,13 @@ name: Check Notebook Outputs
 
 on:
   pull_request:
+    branches:
+      - master
     paths:
       - "**/*.ipynb"
   push:
+    branches:
+      - master
     paths:
       - "**/*.ipynb"
 
