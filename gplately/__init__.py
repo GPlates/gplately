@@ -63,7 +63,12 @@ from .plot.cartopy_plot import CartopyPlotEngine
 from .plot.plot_engine import PlotEngine
 from .plot.pygmt_plot import PygmtPlotEngine
 from .plot.hillshade import get_topo_cmap
-from .grids import SeafloorGrid, IsochronSeafloorGrid, OutputScalarType
+from .grids import (
+    SeafloorGrid,
+    IsochronSeafloorGrid,
+    OutputScalarType,
+    TopologySeafloorGrid,
+)
 from .plot import PlotTopologies
 from .points import Points
 from .ptt.resolve_topologies import (
@@ -121,6 +126,8 @@ __all__ = [
     "Points",
     "Raster",
     "SeafloorGrid",
+    "IsochronSeafloorGrid",
+    "TopologySeafloorGrid",
     # other classes
     "PlateModel",
     "PlateModelManager",
