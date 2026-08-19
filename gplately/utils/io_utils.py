@@ -313,9 +313,10 @@ def load_feature_collection(
         return pygplates.FeatureCollection(
             pygplates.FeaturesFunctionArgument(source).get_features()
         )
-    except Exception:
+    except Exception as e:
         logger.error(
             "Failed to load feature collection. Expected a feature collection, a filename, a feature, a sequence of features, or a sequence (eg, list or tuple) of any combination of aforementioned four types."
             + f"The source provided is of {source}. An empty feature collection will be returned."
         )
+        logger.error(f"Error details: {e}")
         return pygplates.FeatureCollection()

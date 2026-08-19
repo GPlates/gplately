@@ -987,23 +987,33 @@ class _ReconstructByTopologicalModelImpl(_ReconstructByTopologies):
             current_active_point_indices.append(point_index)
 
         # Reconstruct active points to the next time step.
-        reconstructed_time_span = self.topological_model.reconstruct_geometry(
-            current_active_points,
-            initial_time=current_time,
-            youngest_time=next_time,
-            time_increment=self.reconstruction_time_interval,  # must be positive
-            deactivate_points=self.detect_collisions,
-        )
+        # Skip reconstruction entirely if there are no active points - passing an
+        # empty point list to reconstruct_geometry() causes get_geometry_points()
+        # to return None instead of an empty iterable.
+        if current_active_points:
+            reconstructed_time_span = self.topological_model.reconstruct_geometry(
+                current_active_points,
+                initial_time=current_time,
+                youngest_time=next_time,
+                time_increment=self.reconstruction_time_interval,  # must be positive
+                deactivate_points=self.detect_collisions,
+            )
 
-        # Store the next points back to their original locations in ALL points (active and inactive).
-        next_points = reconstructed_time_span.get_geometry_points(
-            next_time, return_inactive_points=True
-        )
-        for next_point_index, next_point in enumerate(next_points):
-            # Get index into ALL points (active and inactive).
-            point_index = current_active_point_indices[next_point_index]
-            # Update next point (note that this can be None if a collision was detected).
-            self.next_points[point_index] = next_point
+            # Store the next points back to their original locations in ALL points (active and inactive).
+            next_points = reconstructed_time_span.get_geometry_points(
+                next_time, return_inactive_points=True
+            )
+            # get_geometry_points() also returns None (instead of a list of Nones) if
+            # every active point got deactivated before reaching 'next_time'.
+            if next_points is not None:
+                for next_point_index, next_point in enumerate(next_points):
+                    # Get index into ALL points (active and inactive).
+                    point_index = current_active_point_indices[next_point_index]
+                    # Update next point (note that this can be None if a collision was detected).
+                    self.next_points[point_index] = next_point
+            else:
+                for point_index in current_active_point_indices:
+                    self.next_points[point_index] = None
 
         #
         # Set up for next loop iteration.
