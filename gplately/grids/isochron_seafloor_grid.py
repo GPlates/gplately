@@ -303,25 +303,21 @@ class IsochronSeafloorGrid:
                     ),
                 )
 
+                scalar_dir_base = (
+                    self._grid_output_dir
+                    / f"isochron_seafloor_{output_scalar_type.name.lower()}"
+                )
                 if mask is None:
-                    scalar_dir = (
-                        self._grid_output_dir
-                        / output_scalar_type.name.lower()
-                        / "NoMask"
-                    )
+                    scalar_dir = scalar_dir_base / "NoMask"
                     scalar_dir.mkdir(parents=True, exist_ok=True)
                     grid_path = scalar_dir / (
                         f"seafloor_{output_scalar_type.name.lower()}_grid_nomask_{_time}Ma.nc"
                     )
                 else:
-                    scalar_dir = (
-                        self._grid_output_dir
-                        / output_scalar_type.name.lower()
-                        / "Masked"
-                    )
+                    scalar_dir = scalar_dir_base / "Masked"
                     scalar_dir.mkdir(parents=True, exist_ok=True)
                     grid_path = scalar_dir / (
-                        f"seafloor_{output_scalar_type.name.lower()}_grid_{_time}Ma.nc"
+                        f"seafloor_{output_scalar_type.name.lower()}_grid_masked_{_time}Ma.nc"
                     )
 
                 grid = pygmt.sphinterpolate(

@@ -42,6 +42,7 @@ dependencies = [
     "rioxarray",
     "pygplates>=1.0.0",
     "packaging",
+    "tomli; python_version < '3.11'",
 ]
 
 [tool.setuptools.packages.find]

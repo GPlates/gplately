@@ -1,0 +1,12 @@
+[agegrid]
+    model_name = "zahirovic2022"
+    min_time = 0
+    max_time = 5
+    grid_spacing = 0.5	
+    use_isochron_interp = true
+    times = [0, 50, 100, 150]
+    ridges_filenames = "AgeGridInput/Global_EarthByte_GeeK07_Ridges.gpml"
+    isochron_filenames = "AgeGridInput/Global_EarthByte_GeeK07_Isochrons.gpml"
+    isochron_cob_filenames = "AgeGridInput/Global_EarthByte_GeeK07_IsoCOB.gpml"
+    continents_filenames = "AgeGridInput/Global_EarthByte_GeeK07_COB_Terranes_ContinentsOnly.gpml"
+    interval_spacing = 0.5
