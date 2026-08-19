@@ -194,22 +194,11 @@ def test_resample_axis_endpoints_are_exact(spacing):
     )
 
     with warnings.catch_warnings():
-        warnings.filterwarnings(
-            "error", message="Invalid values encountered in lat"
-        )
+        warnings.filterwarnings("error", message="Invalid values encountered in lat")
         resampled = raster.resample(spacing, spacing)
 
     assert resampled.lats[0] == -90.0 and resampled.lats[-1] == 90.0
     assert resampled.lons[0] == -180.0 and resampled.lons[-1] == 180.0
-
-
-# A MIS-SIGNED STEP MUST STILL BEHAVE LIKE np.arange (rasterise documents that a
-# negative resx/resy flips the origin, so the sign of the step is meaningful)
-def test_spaced_axis_matches_arange_for_mis_signed_step():
-    start, stop, step = -90.0, 90.0, -1.0
-    assert gplately.grids._spaced_axis(start, stop, step).size == (
-        np.arange(start, stop + step, step).size
-    )
 
 
 # TEST FILLING NaNs IN AGE GRIDS

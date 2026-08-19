@@ -16,7 +16,6 @@
 #
 
 from .grids import *
-from .grids import _spaced_axis
 from .isochron_seafloor_grid import IsochronSeafloorGrid, OutputScalarType
 from .oceans import SeafloorGrid
 from .topology_seafloor_grid import TopologySeafloorGrid
