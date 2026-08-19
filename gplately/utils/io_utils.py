@@ -28,6 +28,8 @@ If `GeoPandas` is not found on the system, input files are read with
 """
 
 import logging
+from pathlib import Path
+from collections.abc import Sequence
 
 # pyright: reportMissingImports=false
 # pyright: reportMissingModuleSource=false
@@ -39,6 +41,18 @@ from shapely.geometry.base import BaseGeometry
 import xarray as xr
 
 logger = logging.getLogger("gplately")
+
+# A feature collection, or something that can be loaded into one (filename(s),
+# Path(s), feature(s), etc.) via load_feature_collection().
+FeatureCollectionInput = (
+    pygplates.FeatureCollection
+    | str
+    | Path
+    | pygplates.Feature
+    | Sequence[str]
+    | Sequence[Path]
+    | Sequence[pygplates.Feature]
+)
 
 gpd = None
 shpreader = None
@@ -163,7 +177,7 @@ def _get_geometries_cartopy(filename, buffer=None):
     with shpreader.Reader(filename) as reader:
         shape_records = reader.shapeRecords()
         shapes = [i.shape for i in shape_records]
-        geoms = [shape(i.__geo_interface__) for i in shapes]
+        geoms = [shape(i.__geo_interface__) for i in shapes]  # type: ignore #why call __geo_interface__? consider using public API instead of private attribute.
     return buffer_func(geoms, buffer)
 
 
@@ -275,7 +289,9 @@ def to_geographic_data_array(data_array):
     return ret_da
 
 
-def load_feature_collection(source) -> pygplates.FeatureCollection:
+def load_feature_collection(
+    source: FeatureCollectionInput,
+) -> pygplates.FeatureCollection:
     """Load and return a `pygplates.FeatureCollection`_ from a source.
 
     Parameters

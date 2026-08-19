@@ -19,7 +19,17 @@ from .oceans import SeafloorGrid
 
 
 class TopologySeafloorGrid(SeafloorGrid):
+    """
+    A class for generating seafloor grids using topologies."""
+
     def generate(self, use_topological_model=True):
+        """
+        Parameters
+        ----------
+        use_topological_model : bool, optional
+            If True, use the `pygplates.TopologicalModel`_ class to reconstruct seed points.
+            If False, use the GPlately Python code to reconstruct. Default is True.
+        """
         if use_topological_model:
             return super().reconstruct_by_topological_model()
         else:

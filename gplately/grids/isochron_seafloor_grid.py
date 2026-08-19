@@ -27,14 +27,18 @@ from ..lib import isopolate
 from rasterio.features import rasterize as _rasterize
 from rasterio.transform import from_origin as _from_origin
 from rasterio.enums import MergeAlg as _MergeAlg
-from ..utils.io_utils import load_feature_collection
+from ..utils.io_utils import FeatureCollectionInput, load_feature_collection
 from ..geometry import pygplates_to_shapely
 
 logger = logging.getLogger("gplately")
 
 
-def _parse_gmt_region(region: str) -> tuple[float, float, float, float]:
+def _parse_gmt_region(
+    region: str | tuple[float, float, float, float],
+) -> tuple[float, float, float, float]:
     """Convert a GMT-style region string (e.g. "d", "g", "minx/maxx/miny/maxy") to bounds."""
+    if isinstance(region, tuple):
+        return region
     if region == "d":
         return -180.0, 180.0, -90.0, 90.0
     if region == "g":
@@ -43,8 +47,10 @@ def _parse_gmt_region(region: str) -> tuple[float, float, float, float]:
     return minx, maxx, miny, maxy
 
 
-def _parse_gmt_spacing(spacing: str) -> float:
+def _parse_gmt_spacing(spacing: str | float) -> float:
     """Convert a GMT-style spacing string (e.g. "0.1d", "5m", "30s") to degrees."""
+    if not isinstance(spacing, str):
+        return float(spacing)
     unit = spacing[-1]
     if unit.isalpha():
         value = float(spacing[:-1])
@@ -106,36 +112,42 @@ class IsochronSeafloorGrid:
         plate_reconstruction: PlateReconstruction,
         time_steps: np.ndarray | list,
         *,
-        ridges: pygplates.FeatureCollection,
-        isochrons: pygplates.FeatureCollection,
-        iso_cob: pygplates.FeatureCollection,
-        continental_polygons: pygplates.FeatureCollection | None = None,
-        grid_region: str = "d",
-        grid_spacing: str = "0.1d",
+        ridges: FeatureCollectionInput,
+        isochrons: FeatureCollectionInput,
+        iso_cob: FeatureCollectionInput,
+        continental_polygons: FeatureCollectionInput | None = None,
+        grid_region: str | tuple[float, float, float, float] = "d",
+        grid_spacing: str | float = "0.1d",  # degrees
         interval_spacing_degrees: float = 0.1,
         grid_output_dir: str | Path = "seafloor_grids_by_isochron_interpolation",
     ):
         self._plate_reconstruction = plate_reconstruction
         self._time_steps = np.asarray(time_steps)
-        if not isinstance(ridges, pygplates.FeatureCollection):
-            self._ridges = load_feature_collection(ridges)
-        else:
-            self._ridges = ridges
-        if not isinstance(isochrons, pygplates.FeatureCollection):
-            self._isochrons = load_feature_collection(isochrons)
-        else:
-            self._isochrons = isochrons
-        if not isinstance(iso_cob, pygplates.FeatureCollection):
-            self._iso_cob = load_feature_collection(iso_cob)
-        else:
-            self._iso_cob = iso_cob
-        if continental_polygons is not None and not isinstance(
+        self._ridges: pygplates.FeatureCollection = (
+            ridges
+            if isinstance(ridges, pygplates.FeatureCollection)
+            else load_feature_collection(ridges)
+        )
+        self._isochrons: pygplates.FeatureCollection = (
+            isochrons
+            if isinstance(isochrons, pygplates.FeatureCollection)
+            else load_feature_collection(isochrons)
+        )
+        self._iso_cob: pygplates.FeatureCollection = (
+            iso_cob
+            if isinstance(iso_cob, pygplates.FeatureCollection)
+            else load_feature_collection(iso_cob)
+        )
+        self._continental_polygons: pygplates.FeatureCollection | None
+        if continental_polygons is None or isinstance(
             continental_polygons, pygplates.FeatureCollection
         ):
-            self._continental_polygons = load_feature_collection(continental_polygons)
-        else:
             self._continental_polygons = continental_polygons
+        else:
+            self._continental_polygons = load_feature_collection(continental_polygons)
         self._interval_spacing_radians = np.radians(interval_spacing_degrees)
+        if isinstance(grid_region, str) and grid_region.lower() == "global":
+            grid_region = "d"
         self._grid_region = grid_region
         self._grid_spacing = grid_spacing
         self._grid_output_dir = Path(grid_output_dir)
@@ -284,7 +296,11 @@ class IsochronSeafloorGrid:
                 median_table = pygmt.blockmedian(
                     data=xyz_table,
                     region=self._grid_region,
-                    spacing=self._grid_spacing,
+                    spacing=(
+                        self._grid_spacing
+                        if isinstance(self._grid_spacing, str)
+                        else f"{self._grid_spacing}d"
+                    ),
                 )
 
                 if mask is None:
@@ -311,7 +327,11 @@ class IsochronSeafloorGrid:
                 grid = pygmt.sphinterpolate(
                     data=median_table,
                     region=self._grid_region,
-                    spacing=self._grid_spacing,
+                    spacing=(
+                        self._grid_spacing
+                        if isinstance(self._grid_spacing, str)
+                        else f"{self._grid_spacing}d"
+                    ),
                     Q=0,
                 )
                 if grid is None:
