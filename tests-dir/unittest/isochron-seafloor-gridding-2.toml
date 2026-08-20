@@ -3,6 +3,8 @@ max_time = 200
 min_time = 150
 time_interval = 10
 input_filenames = ["plate-model-repo/zahirovic2022/Rotations/CombinedRotations.rot"]
+
+# The input files can be found at https://repo.gplates.org/webdav/gplately/AgeGridInput.zip.
 ridges_filenames = "AgeGridInput/Global_EarthByte_GeeK07_Ridges.gpml"
 isochron_filenames = "AgeGridInput/Global_EarthByte_GeeK07_Isochrons.gpml"
 isochron_cob_filenames = "AgeGridInput/Global_EarthByte_GeeK07_IsoCOB.gpml"

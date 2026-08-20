@@ -1,3 +1,4 @@
+# Use Plate Model Manager to download zahirovic2022 model into directory "plate-model-repo".
 input_filenames = [
     'plate-model-repo/zahirovic2022/Rotations/CombinedRotations.rot',
     'plate-model-repo/zahirovic2022/Topologies/Plate_Boundaries.gpml', 
