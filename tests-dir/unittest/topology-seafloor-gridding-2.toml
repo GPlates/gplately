@@ -1,0 +1,12 @@
+input_filenames = [
+    'plate-model-repo/zahirovic2022/Rotations/CombinedRotations.rot',
+    'plate-model-repo/zahirovic2022/Topologies/Plate_Boundaries.gpml', 
+    'plate-model-repo/zahirovic2022/Topologies/Deforming_Networks_Inactive.gpml', 
+    'plate-model-repo/zahirovic2022/Topologies/Deforming_Networks_Active.gpml', 
+    'plate-model-repo/zahirovic2022/Topologies/Feature_Geometries.gpml'
+    ]
+continents_filenames = ['plate-model-repo/zahirovic2022/ContinentalPolygons/Global_EarthByte_GPlates_PresentDay_ContinentalPolygons.shp']
+max_time = 410
+min_time = 400
+time_interval = 2
+grid_spacing = 0.5

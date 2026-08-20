@@ -1,0 +1,11 @@
+use_isochron_interp = true
+max_time = 200
+min_time = 150
+time_interval = 10
+input_filenames = ["plate-model-repo/zahirovic2022/Rotations/CombinedRotations.rot"]
+ridges_filenames = "AgeGridInput/Global_EarthByte_GeeK07_Ridges.gpml"
+isochron_filenames = "AgeGridInput/Global_EarthByte_GeeK07_Isochrons.gpml"
+isochron_cob_filenames = "AgeGridInput/Global_EarthByte_GeeK07_IsoCOB.gpml"
+continents_filenames = ["AgeGridInput/Global_EarthByte_GeeK07_COB_Terranes_ContinentsOnly.gpml"]
+interval_spacing = 0.5
+grid_spacing = 0.5	
