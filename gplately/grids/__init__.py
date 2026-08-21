@@ -15,11 +15,7 @@
 #    51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 
-from .io_utils import get_geometries, get_valid_geometries
-from ..plot.utils import plot_subduction_teeth
-
-__all__ = [
-    "get_geometries",
-    "get_valid_geometries",
-    "plot_subduction_teeth",
-]
+from .grids import *
+from .isochron_seafloor_grid import IsochronSeafloorGrid, OutputScalarType
+from .oceans import SeafloorGrid
+from .topology_seafloor_grid import TopologySeafloorGrid

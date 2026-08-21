@@ -26,7 +26,7 @@ import cartopy.crs as ccrs
 from geopandas.geodataframe import GeoDataFrame
 import matplotlib.pyplot as plt
 import xarray as xr
-from ..grids import Raster
+from ..raster import Raster
 
 from ..tools import EARTH_RADIUS
 from .utils import plot_subduction_teeth
@@ -403,7 +403,10 @@ class CartopyPlotEngine(PlotEngine):
 
 
 def _create_a_basic_cartopy_ax(
-    ax=None, figsize=(8, 4), projection=ccrs.Robinson(central_longitude=180)
+    ax=None,
+    figsize=(8, 4),
+    projection=ccrs.Robinson(central_longitude=180),
+    add_gridlines=True,
 ):
     """Helper function to create a basic Cartopy GeoAxes with gridlines and labels.
     Not part of the public API.
@@ -421,40 +424,40 @@ def _create_a_basic_cartopy_ax(
 
     ax.set_global()  # type: ignore
 
-    # Add gridlines and lat/lon labels
-    gl = ax.gridlines(  # type: ignore
-        crs=ccrs.PlateCarree(),
-        draw_labels=True,
-        linewidth=0.8,
-        color="gray",
-        alpha=0.6,
-        linestyle="--",
-    )
+    if add_gridlines:
+        # Add gridlines and lat/lon labels.
+        gl = ax.gridlines(  # type: ignore
+            draw_labels=True,
+            linewidth=0.8,
+            color="gray",
+            alpha=0.6,
+            linestyle="--",
+        )
 
-    # Hide labels on top/right if you want cleaner maps
-    # Newer Cartopy
-    if hasattr(gl, "top_labels"):
-        gl.top_labels = False
-    if hasattr(gl, "right_labels"):
-        gl.right_labels = False
+        # Hide labels on top/right if you want cleaner maps
+        # Newer Cartopy
+        if hasattr(gl, "top_labels"):
+            gl.top_labels = False
+        if hasattr(gl, "right_labels"):
+            gl.right_labels = False
 
-    # Older Cartopy
-    if hasattr(gl, "xlabels_top"):
-        gl.xlabels_top = False
-    if hasattr(gl, "ylabels_right"):
-        gl.ylabels_right = False
+        # Older Cartopy
+        if hasattr(gl, "xlabels_top"):
+            gl.xlabels_top = False
+        if hasattr(gl, "ylabels_right"):
+            gl.ylabels_right = False
 
-    # Control tick locations
-    gl.xlocator = mticker.FixedLocator(range(-180, 181, 60))
-    gl.ylocator = mticker.FixedLocator(range(-90, 91, 30))
+        # Control tick locations
+        gl.xlocator = mticker.FixedLocator(range(-180, 181, 60))
+        gl.ylocator = mticker.FixedLocator(range(-90, 91, 30))
 
-    # Nice lon/lat formatting
-    gl.xformatter = LongitudeFormatter(number_format=".0f", degree_symbol="°")
-    gl.yformatter = LatitudeFormatter(number_format=".0f", degree_symbol="°")
+        # Nice lon/lat formatting
+        gl.xformatter = LongitudeFormatter(number_format=".0f", degree_symbol="°")
+        gl.yformatter = LatitudeFormatter(number_format=".0f", degree_symbol="°")
 
-    # Label style
-    gl.xlabel_style = {"size": 10}
-    gl.ylabel_style = {"size": 10}
+        # Label style
+        gl.xlabel_style = {"size": 10}
+        gl.ylabel_style = {"size": 10}
 
     return ax
 
@@ -465,13 +468,19 @@ def _plot_feature_collection(
     ax=None,
     figsize=(8, 4),
     projection=ccrs.Robinson(central_longitude=180),
+    add_gridlines=True,
 ):
     """Helper function to plot a pygplates FeatureCollection using Cartopy.
     Not part of the public API.
     Mostly this function is for testing and debugging purposes,
     and to provide a simple example of how to plot pygplates features with Cartopy.
     """
-    ax = _create_a_basic_cartopy_ax(ax=ax, figsize=figsize, projection=projection)
+    ax = _create_a_basic_cartopy_ax(
+        ax=ax,
+        figsize=figsize,
+        projection=projection,
+        add_gridlines=add_gridlines,
+    )
 
     cartopy_plot_engine = CartopyPlotEngine()
     cartopy_plot_engine.plot_pygplates_features(ax, feature_collection)

@@ -24,7 +24,7 @@ import pygplates  # type: ignore
 from gplately import __version__
 
 from .commands import (
-    create_age_grids,
+    seafloor_grids,
     feature_filter_cmd,
     list_models,
     regrid,
@@ -104,7 +104,7 @@ def main():
     reset_feature_type.add_parser(subparser)
 
     # add "create age grids" sub-command
-    create_age_grids.add_parser(subparser)
+    seafloor_grids.add_parser(subparser)
 
     # add "regrid" sub-command
     regrid.add_parser(subparser)

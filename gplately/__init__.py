@@ -63,7 +63,12 @@ from .plot.cartopy_plot import CartopyPlotEngine
 from .plot.plot_engine import PlotEngine
 from .plot.pygmt_plot import PygmtPlotEngine
 from .plot.hillshade import get_topo_cmap
-from .oceans import SeafloorGrid
+from .grids import (
+    SeafloorGrid,
+    IsochronSeafloorGrid,
+    OutputScalarType,
+    TopologySeafloorGrid,
+)
 from .plot import PlotTopologies
 from .points import Points
 from .ptt.resolve_topologies import (
@@ -84,6 +89,7 @@ from .geometry import pygplates_to_shapely
 # And also do the same thing for deprecated modules for backward compatibility.
 import sys
 from . import plot as _plot
+from .grids import oceans as _oceans
 
 # Import the deprecated modules for backward compatibility
 from .deprecated import (
@@ -98,6 +104,7 @@ sys.modules["gplately.pygplates"] = _pygplates
 sys.modules["gplately.download"] = _download
 sys.modules["gplately.data"] = _data
 sys.modules["gplately.parallel"] = _parallel
+sys.modules["gplately.oceans"] = _oceans
 
 # Clean up namespace
 del _download
@@ -105,6 +112,7 @@ del _data
 del _pygplates
 del _plot
 del _parallel
+del _oceans
 del sys
 
 __all__ = [
@@ -118,6 +126,8 @@ __all__ = [
     "Points",
     "Raster",
     "SeafloorGrid",
+    "IsochronSeafloorGrid",
+    "TopologySeafloorGrid",
     # other classes
     "PlateModel",
     "PlateModelManager",

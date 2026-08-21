@@ -1,6 +1,6 @@
 # This workflow tests GPlately on various platforms and Python versions.
 
-name: GPlately Tests 
+name: GPlately Tests
 
 on:
   push:
@@ -24,18 +24,19 @@ on:
         description: Python version to test with
         required: true
         type: choice
-        options: &supported_python_versions
-          # Conda-forge currently supports Python >=3.10 ...
+        options:
+          &supported_python_versions # Conda-forge currently supports Python >=3.10 ...
           - "3.10"
           - "3.11"
           - "3.12"
           - "3.13"
           - "3.14"
-        default: "3.11"
+        default: "3.12"
 
 jobs:
   detect-relevant-changes:
     name: Check relevant changes
+    if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
     runs-on: ubuntu-latest
     outputs:
       run_tests: ${{ steps.filter.outputs.run_tests }}
@@ -70,8 +71,9 @@ jobs:
 
   required-status-check:
     name: GPlately required check
-    needs: [detect-relevant-changes, test-gplately-automatic, test-gplately-manual]
-    if: always()
+    needs:
+      [detect-relevant-changes, test-gplately-automatic, test-gplately-manual]
+    if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
     runs-on: ubuntu-latest
     steps:
       - name: Evaluate required check
