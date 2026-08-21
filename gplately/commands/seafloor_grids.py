@@ -65,7 +65,7 @@ _DEFAULTS = {
     "time_interval": 1,
     "n_jobs": None,
     "file_collection": None,
-    "unmasked": False,
+    "include_unmasked": False,
     "resume_from_checkpoints": False,
     "use_continent_contouring": False,
     "use_isochron_interp": False,
@@ -409,12 +409,12 @@ Config file (--config) values are overridden by any matching command line
 flag; anything not set in either place falls back to the built-in default.
 OUTPUT_DIR is always required on the command line. Example myconfig.toml:
 
-    [agegrid]
-    model_name = "merdith2021"
+    [seafloorgrid]
+    model_name = "zahirovic2022"
     min_time = 0
     max_time = 10
     grid_spacing = 0.5
-    unmasked = true
+    include_unmasked = true
 """
 
 
@@ -634,7 +634,7 @@ def _run_isochron_seafloor_gridding(args, values):
         topology_features=topology_files,
         anchor_plate_id=values["anchor_plate_id"],
     )
-    o = IsochronSeafloorGrid(
+    IsochronSeafloorGrid(
         plate_reconstruction=plate_recon,
         time_steps=_get_time_steps(values),
         ridges=ridges,
@@ -643,8 +643,7 @@ def _run_isochron_seafloor_gridding(args, values):
         continental_polygons=continent_files,
         interval_spacing_degrees=values["interval_spacing"],
         grid_output_dir=args.output_dir,
-    )
-    o.generate(set([OutputScalarType.AGE, OutputScalarType.SPREADING_RATE]))
+    ).generate(set([OutputScalarType.AGE, OutputScalarType.SPREADING_RATE]))
 
 
 def _get_rotation_and_topology_files_from_input_filenames(input_filenames):
