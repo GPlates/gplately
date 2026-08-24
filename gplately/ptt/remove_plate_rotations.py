@@ -1,5 +1,5 @@
 #
-#    Copyright (C) 2019-2025 The University of Sydney, Australia
+#    Copyright (C) 2019-2026 The University of Sydney, Australia
 #
 #    This program is free software; you can redistribute it and/or modify it under
 #    the terms of the GNU General Public License, version 2, as published by
@@ -19,7 +19,6 @@
 """
 Remove one or more plate IDs from a rotation model (consisting of one or more rotation files).
 """
-
 
 from __future__ import print_function
 

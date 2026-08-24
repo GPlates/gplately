@@ -1,5 +1,5 @@
 #
-#    Copyright (C) 2017-2025 The University of Sydney, Australia
+#    Copyright (C) 2017-2026 The University of Sydney, Australia
 #
 #    This program is free software; you can redistribute it and/or modify it under
 #    the terms of the GNU General Public License, version 2, as published by
@@ -23,7 +23,6 @@ Source code is based on:
    http://www.gplates.org/docs/pygplates/sample-code/pygplates_split_isochron_into_ridges_and_transforms.html
 
 """
-
 
 from __future__ import print_function
 
