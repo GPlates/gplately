@@ -82,6 +82,7 @@ from .ptt.subduction_convergence import subduction_convergence
 from .reconstruction import PlateReconstruction
 from .tools import EARTH_RADIUS
 from .geometry import pygplates_to_shapely
+from .utils.io_utils import load_feature_collection
 
 # To make the `gplately.mapping` module available for backward compatibility, we import the `plot` module
 # and assign it to `sys.modules["gplately.mapping"]`. This allows users to access the plotting functionalities through
@@ -143,6 +144,7 @@ __all__ = [
     "reconstruct_points",
     "ridge_spreading_rate",
     "subduction_convergence",
+    "load_feature_collection",
     # constants
     "EARTH_RADIUS",
 ]

@@ -25,7 +25,7 @@ if not os.path.isfile(cpt_file):
         "https://raw.githubusercontent.com/GPlates/gplately/refs/heads/master/tests-dir/unittest/create-age-grids-video/agegrid.cpt",
         cpt_file,
     )
-from gplately.mapping.gmt_cpt import get_cmap_from_gmt_cpt
+from gplately.plot.gmt_cpt import get_cmap_from_gmt_cpt
 
 model_name = "Muller2025"
 plate_model = PlateModelManager().get_model(model_name, data_dir=MODEL_REPO_DIR)

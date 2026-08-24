@@ -50,6 +50,9 @@ where = ["."]
 exclude = ['*.examples*','*.notebooks*','tests-dir*','Notebooks*', 'scripts*', 'build*']
 namespaces = true
 
+[tool.setuptools.package-data]
+gplately = ["data/*.*"]
+
 #[tool.setuptools.dynamic]
 #version = {attr = "gplately.__version__"}
 

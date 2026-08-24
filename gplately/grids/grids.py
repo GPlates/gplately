@@ -48,23 +48,8 @@ from ..geometry import pygplates_to_shapely
 
 # re-export, for backward compatibility, don't remove
 from ..lib.regular_grid_interpolator import RegularGridInterpolator
-from ..raster import Raster
 
 logger = logging.getLogger("gplately")
-
-__all__ = [
-    "fill_raster",
-    "read_netcdf_grid",
-    "write_netcdf_grid",
-    "default_netcdf_fill_value",
-    "RegularGridInterpolator",
-    "sample_grid",
-    "reconstruct_grid",
-    "rasterise",
-    "rasterize",
-    "Raster",
-    # "TimeRaster",
-]
 
 
 def fill_raster(data, invalid=None):
