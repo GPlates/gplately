@@ -28,19 +28,20 @@ import numpy as np
 import pandas as pd
 import pygplates
 
-from . import grids, tools
-from .lib.reconstruct_by_topologies import (
+from . import grids
+from .. import tools
+from ..lib.reconstruct_by_topologies import (
     _ContinentCollision,
     _DefaultCollision,
     _ReconstructByTopologiesImpl,
     _ReconstructByTopologicalModelImpl,
 )
-from .lib.reconstruct_continents import ReconstructContinents
-from .lib.icosahedron import get_mesh, xyz2lonlat
-from .ptt import continent_contours
-from .ptt.utils import points_in_polygons, points_spatial_tree
-from .tools import _deg2pixels
-from .utils.log_utils import get_debug_level
+from ..lib.reconstruct_continents import ReconstructContinents
+from ..lib.icosahedron import get_mesh, xyz2lonlat
+from ..ptt import continent_contours
+from ..ptt.utils import points_in_polygons, points_spatial_tree
+from ..tools import _deg2pixels
+from ..utils.log_utils import get_debug_level
 
 logger = logging.getLogger("gplately")
 
@@ -162,7 +163,7 @@ class SeafloorGrid(object):
             #
             _plot_topologies = None
             if len(args) >= 2:
-                from .plot import PlotTopologies
+                from ..plot import PlotTopologies
 
                 # Previously the second positional argument could be of type PlotTopologies.
                 # It has since been removed and replaced by the keyword-only argument 'continent_polygon_features'.

@@ -1,0 +1,26 @@
+[seafloorgrid]
+    use_isochron_interp = true
+    model_name = "zahirovic2022"
+    times = [0, 50, 100, 150]
+    ridges_filenames = "AgeGridInput/Global_EarthByte_GeeK07_Ridges.gpml"
+    isochron_filenames = "AgeGridInput/Global_EarthByte_GeeK07_Isochrons.gpml"
+    isochron_cob_filenames = "AgeGridInput/Global_EarthByte_GeeK07_IsoCOB.gpml"
+    continents_filenames = "AgeGridInput/Global_EarthByte_GeeK07_COB_Terranes_ContinentsOnly.gpml"
+    interval_spacing = 0.5
+    grid_spacing = 0.5	
+
+    # input_filenames= []
+    # rotation_filenames = []
+    # topology_filenames = []
+    # refinement_levels = 6
+    # ridge_sampling = 0.5
+    # initial_spreadrate = 75
+    # min_time = 0,
+    # max_time = 140
+    # time_interval = 1
+    # n_jobs = 2
+    # file_collection = "zahirovic2022"
+    # include_unmasked = false
+    # resume_from_checkpoints = false
+    # use_continent_contouring = false
+    # anchor_plate_id = 0

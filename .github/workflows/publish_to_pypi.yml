@@ -1,4 +1,5 @@
-# This workflow will upload GPlately Python Package using Twine when a release is published.
+# This workflow builds GPlately's Python distributions and uploads them to PyPI
+# via Trusted Publishing (OIDC) when a release is published.
 
 name: Upload GPlately Python Package to PyPI
 
@@ -19,6 +20,10 @@ jobs:
   upload-to-pypi:
     name: Upload GPlately Python Package to PyPI
     runs-on: ubuntu-latest
+    environment: pypi
+    permissions:
+      # IMPORTANT: this permission is mandatory for Trusted Publishing (OIDC)
+      id-token: write
     env:
       RELEASE_TAG: ${{ github.event_name == 'release' && github.event.release.tag_name || inputs.release_tag }}
 
@@ -56,7 +61,21 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: ${{ env.RELEASE_TAG }}
-      - name: Publish package
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Build distributions
         run: |
-          chmod +x ./scripts/pypi-publish.sh
-          ./scripts/pypi-publish.sh '${{secrets.PYPI_API_TOKEN}}'
+          python -m pip install --upgrade build
+          python -m build
+
+      - name: Publish package distributions to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          repository-url: https://test.pypi.org/legacy/
+        # No credentials needed here: PyPI is configured to trust this
+        # repository/workflow via Trusted Publishing (OIDC), which mints a
+        # short-lived token automatically using the id-token permission above.

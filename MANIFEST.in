@@ -1,2 +1,3 @@
 include gplately/logging_config.yaml
+include gplately/data/*.*
 prune build

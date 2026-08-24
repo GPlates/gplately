@@ -63,6 +63,7 @@ for notebook in "$@"; do
   jupyter nbconvert \
     --to notebook \
     --execute \
+    --ExecutePreprocessor.force_raise_errors=True \
     --output "${notebook_file}" \
     --output-dir "${run_dir}/${notebook}" \
     "${source_path}"
@@ -71,6 +72,7 @@ for notebook in "$@"; do
   mkdir -p "${html_dir}/$(dirname "${notebook}")"
   jupyter nbconvert \
     --to html \
+    --ExecutePreprocessor.force_raise_errors=True \
     --output "${notebook}.html" \
     --output-dir "${html_dir}" \
     "${run_dir}/${notebook}/${notebook_file}"

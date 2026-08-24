@@ -223,7 +223,7 @@ jobs:
     name: Run ${{ matrix.notebook }}
     needs: prepare
     if: needs.prepare.outputs.notebooks != '[]'
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
     strategy:
       fail-fast: false
       matrix:
@@ -240,7 +240,7 @@ jobs:
         uses: mamba-org/setup-micromamba@v1
         with:
           micromamba-version: "1.5.8-0"
-          environment-file: docker/env.yaml
+          environment-file: conda/notebook-env.yml
           init-shell: bash
           cache-environment: true
           post-cleanup: all
@@ -312,10 +312,11 @@ jobs:
   # 3. Merge the HTML produced by every matrix job and publish it all to
   #    gh-pages in one go.
   # ---------------------------------------------------------------------
+  # github.ref == 'refs/heads/master' # This is how to check if we are on the master branch
   deploy:
     name: Publish HTML to gh-pages
     needs: execute
-    if: github.ref == 'refs/heads/master' && always() && needs.execute.result == 'success'
+    if: always() && needs.execute.result == 'success'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout

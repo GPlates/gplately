@@ -42,12 +42,16 @@ dependencies = [
     "rioxarray",
     "pygplates>=1.0.0",
     "packaging",
+    "tomli; python_version < '3.11'",
 ]
 
 [tool.setuptools.packages.find]
 where = ["."]
 exclude = ['*.examples*','*.notebooks*','tests-dir*','Notebooks*', 'scripts*', 'build*']
 namespaces = true
+
+[tool.setuptools.package-data]
+gplately = ["data/*.*"]
 
 #[tool.setuptools.dynamic]
 #version = {attr = "gplately.__version__"}

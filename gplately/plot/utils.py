@@ -15,6 +15,7 @@
 #    51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 
+from importlib.metadata import files
 import logging
 import re
 
@@ -33,6 +34,14 @@ from ..utils.io_utils import get_geometries as _get_geometries
 from ..geometry import pygplates_to_shapely
 
 logger = logging.getLogger("gplately")
+
+
+def get_age_grid_cmap():
+    from .gmt_cpt import get_cmap_from_gmt_cpt
+    from importlib.resources import files
+
+    return get_cmap_from_gmt_cpt(files("gplately").joinpath("data", "agegrid.cpt"))
+
 
 PLOT_DOCSTRING = """
              

@@ -1,5 +1,5 @@
 #
-#    Copyright (C) 2016-2025 The University of Sydney, Australia
+#    Copyright (C) 2016-2026 The University of Sydney, Australia
 #
 #    This program is free software; you can redistribute it and/or modify it under
 #    the terms of the GNU General Public License, version 2, as published by
@@ -337,7 +337,10 @@ def subduction_convergence(
     for shared_boundary_section in shared_boundary_sections:
         feature = shared_boundary_section.get_feature()
         # Skip sections that do not have a subduction polarity.
-        if feature.get_enumeration(pygplates.PropertyName.gpml_subduction_polarity) is None:
+        if (
+            feature.get_enumeration(pygplates.PropertyName.gpml_subduction_polarity)
+            is None
+        ):
             continue
         # By default only include SubductionZone features (not other types such as OrogenicBelt that can also have a subduction polarity).
         if not include_all_subducting_boundary_types and (

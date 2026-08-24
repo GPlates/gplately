@@ -1,5 +1,5 @@
 #
-#    Copyright (C) 2024-2025 The University of Sydney, Australia
+#    Copyright (C) 2024-2026 The University of Sydney, Australia
 #
 #    This program is free software; you can redistribute it and/or modify it under
 #    the terms of the GNU General Public License, version 2, as published by
@@ -39,7 +39,7 @@ def print_dev_warning(version: str):
             and may break your code or produce wrong results due to 
             its unstable nature(DEV in progress). Proceed With Caution!!!
             You might also need to install the DEV version plate_model_manager 
-            from https://github.com/michaelchin/plate-model-manager.
+            from https://github.com/gplates/plate-model-manager.
 
             To disable this warning, 
                 set USING_DEV_VERSION to False in __init__.py 

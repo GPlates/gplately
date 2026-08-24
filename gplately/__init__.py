@@ -63,7 +63,12 @@ from .plot.cartopy_plot import CartopyPlotEngine
 from .plot.plot_engine import PlotEngine
 from .plot.pygmt_plot import PygmtPlotEngine
 from .plot.hillshade import get_topo_cmap
-from .oceans import SeafloorGrid
+from .grids import (
+    SeafloorGrid,
+    IsochronSeafloorGrid,
+    OutputScalarType,
+    TopologySeafloorGrid,
+)
 from .plot import PlotTopologies
 from .points import Points
 from .ptt.resolve_topologies import (
@@ -77,6 +82,7 @@ from .ptt.subduction_convergence import subduction_convergence
 from .reconstruction import PlateReconstruction
 from .tools import EARTH_RADIUS
 from .geometry import pygplates_to_shapely
+from .utils.io_utils import load_feature_collection
 
 # To make the `gplately.mapping` module available for backward compatibility, we import the `plot` module
 # and assign it to `sys.modules["gplately.mapping"]`. This allows users to access the plotting functionalities through
@@ -84,6 +90,7 @@ from .geometry import pygplates_to_shapely
 # And also do the same thing for deprecated modules for backward compatibility.
 import sys
 from . import plot as _plot
+from .grids import oceans as _oceans
 
 # Import the deprecated modules for backward compatibility
 from .deprecated import (
@@ -98,6 +105,7 @@ sys.modules["gplately.pygplates"] = _pygplates
 sys.modules["gplately.download"] = _download
 sys.modules["gplately.data"] = _data
 sys.modules["gplately.parallel"] = _parallel
+sys.modules["gplately.oceans"] = _oceans
 
 # Clean up namespace
 del _download
@@ -105,6 +113,7 @@ del _data
 del _pygplates
 del _plot
 del _parallel
+del _oceans
 del sys
 
 __all__ = [
@@ -118,6 +127,8 @@ __all__ = [
     "Points",
     "Raster",
     "SeafloorGrid",
+    "IsochronSeafloorGrid",
+    "TopologySeafloorGrid",
     # other classes
     "PlateModel",
     "PlateModelManager",
@@ -133,6 +144,7 @@ __all__ = [
     "reconstruct_points",
     "ridge_spreading_rate",
     "subduction_convergence",
+    "load_feature_collection",
     # constants
     "EARTH_RADIUS",
 ]

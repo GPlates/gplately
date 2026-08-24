@@ -1512,11 +1512,40 @@ class Raster(object):
             return r
 
     def save_to_netcdf4(self, filename, significant_digits=None, fill_value=None):
-        """Saves the grid attributed to the :class:`Raster` object to the given ``filename`` (including
-        the ".nc" extension) in netCDF4 format."""
+        """Saves the :class:`Raster` object as a netCDF4 file."""
         self._write_netcdf_grid(
             str(filename), self.data, self.extent, significant_digits, fill_value
         )
+
+    def save_as_image(
+        self,
+        filename,
+        projection=None,
+        cmap="viridis",
+        vmin=None,
+        vmax=None,
+        dpi=300,
+        colorbar_label="",
+        data_only=False,
+    ):
+        """Saves the :class:`Raster` object as a image."""
+        if not data_only:
+            if projection is None:
+                projection = _PlateCarree()
+
+            fig = plt.figure(figsize=(12, 6), dpi=dpi)
+            ax = fig.add_subplot(111, projection=projection)
+
+            im = self.plot(ax=ax, cmap=cmap, vmin=vmin, vmax=vmax)
+
+            fig.colorbar(
+                im, orientation="horizontal", shrink=0.4, pad=0.05, label=colorbar_label
+            )
+            plt.savefig(filename, dpi=dpi, bbox_inches="tight")
+        else:
+            plt.imsave(filename, np.flipud(self.data), cmap=cmap, vmin=vmin, vmax=vmax)
+
+        plt.close()
 
     def rotate_reference_frames(
         self,
