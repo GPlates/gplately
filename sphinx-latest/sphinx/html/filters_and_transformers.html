@@ -230,23 +230,23 @@ Use this property if you want to keep the order of the features.</p>
 <p>filter features by name, keep features with name matching any of the specified strings by default</p>
 <p class="rubric">Examples</p>
 <p>Find features who name contains ‘Africa’ or ‘Asia’:</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">FeatureNameFilter</span><span class="p">([</span><span class="s1">&#39;Africa&#39;</span><span class="p">,</span> <span class="s1">&#39;Asia&#39;</span><span class="p">])</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">FeatureNameFilter</span><span class="p">([</span><span class="s1">'Africa'</span><span class="p">,</span> <span class="s1">'Asia'</span><span class="p">])</span>
 </pre></div>
 </div>
 <p>Find features who name <strong>doesn’t</strong> contain ‘Africa’ or ‘Asia’:</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span> <span class="n">FeatureNameFilter</span><span class="p">([</span><span class="s1">&#39;Africa&#39;</span><span class="p">,</span> <span class="s1">&#39;Asia&#39;</span><span class="p">],</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span> <span class="n">FeatureNameFilter</span><span class="p">([</span><span class="s1">'Africa'</span><span class="p">,</span> <span class="s1">'Asia'</span><span class="p">],</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Find features who name is exactly ‘Africa’ or ‘Asia’:</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span> <span class="n">FeatureNameFilter</span><span class="p">([</span><span class="s1">&#39;Africa&#39;</span><span class="p">,</span> <span class="s1">&#39;Asia&#39;</span><span class="p">],</span> <span class="n">exact_match</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span> <span class="n">FeatureNameFilter</span><span class="p">([</span><span class="s1">'Africa'</span><span class="p">,</span> <span class="s1">'Asia'</span><span class="p">],</span> <span class="n">exact_match</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Find features who name is not ‘Africa’ or ‘Asia’:</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span> <span class="n">FeatureNameFilter</span><span class="p">([</span><span class="s1">&#39;Africa&#39;</span><span class="p">,</span> <span class="s1">&#39;Asia&#39;</span><span class="p">],</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exact_match</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span> <span class="n">FeatureNameFilter</span><span class="p">([</span><span class="s1">'Africa'</span><span class="p">,</span> <span class="s1">'Asia'</span><span class="p">],</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exact_match</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Find features who name is not ‘Africa’ or ‘Asia’ (case sensitive):</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span> <span class="n">FeatureNameFilter</span><span class="p">([</span><span class="s1">&#39;Africa&#39;</span><span class="p">,</span> <span class="s1">&#39;Asia&#39;</span><span class="p">],</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exact_match</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">case_sensitive</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span> <span class="n">FeatureNameFilter</span><span class="p">([</span><span class="s1">'Africa'</span><span class="p">,</span> <span class="s1">'Asia'</span><span class="p">],</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exact_match</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">case_sensitive</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
 <dl class="py method">
@@ -402,7 +402,7 @@ and the regular expression will be the combination of these feature types.</p>
 or keep features that do not have that property.</p>
 <p class="rubric">Examples</p>
 <p>Keep features that do not have the property <code class="docutils literal notranslate"><span class="pre">gpml:subductionPolarity</span></code>:</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">PropertyExistsFilter</span><span class="p">(</span><span class="s2">&quot;gpml:subductionPolarity&quot;</span><span class="p">,</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">PropertyExistsFilter</span><span class="p">(</span><span class="s2">"gpml:subductionPolarity"</span><span class="p">,</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
 <dl class="py method">
@@ -434,7 +434,7 @@ its value matches the specified value, or keep features that either do not have 
 the specified value.</p>
 <p class="rubric">Examples</p>
 <p>Keep features whose <code class="docutils literal notranslate"><span class="pre">gpml:subductionPolarity</span></code> property value is not <code class="docutils literal notranslate"><span class="pre">Unknown</span></code>:</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">PropertyValueFilter</span><span class="p">(</span><span class="s2">&quot;gpml:subductionPolarity&quot;</span><span class="p">,</span> <span class="s2">&quot;Unknown&quot;</span><span class="p">,</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">PropertyValueFilter</span><span class="p">(</span><span class="s2">"gpml:subductionPolarity"</span><span class="p">,</span> <span class="s2">"Unknown"</span><span class="p">,</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
 <dl class="py method">
@@ -582,11 +582,11 @@ order of IDs in <code class="docutils literal notranslate"><span class="pre">fid
 </ul>
 <p class="rubric">Examples</p>
 <p>Find features with IDs <code class="docutils literal notranslate"><span class="pre">id1</span></code>, <code class="docutils literal notranslate"><span class="pre">id2</span></code>, or <code class="docutils literal notranslate"><span class="pre">id3</span></code>:</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">FeatureIDFilter</span><span class="p">([</span><span class="s1">&#39;id1&#39;</span><span class="p">,</span> <span class="s1">&#39;id2&#39;</span><span class="p">,</span> <span class="s1">&#39;id3&#39;</span><span class="p">])</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">FeatureIDFilter</span><span class="p">([</span><span class="s1">'id1'</span><span class="p">,</span> <span class="s1">'id2'</span><span class="p">,</span> <span class="s1">'id3'</span><span class="p">])</span>
 </pre></div>
 </div>
 <p>Find features whose IDs are not <code class="docutils literal notranslate"><span class="pre">id1</span></code>, <code class="docutils literal notranslate"><span class="pre">id2</span></code>, or <code class="docutils literal notranslate"><span class="pre">id3</span></code>:</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">FeatureIDFilter</span><span class="p">([</span><span class="s1">&#39;id1&#39;</span><span class="p">,</span> <span class="s1">&#39;id2&#39;</span><span class="p">,</span> <span class="s1">&#39;id3&#39;</span><span class="p">],</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">FeatureIDFilter</span><span class="p">([</span><span class="s1">'id1'</span><span class="p">,</span> <span class="s1">'id2'</span><span class="p">,</span> <span class="s1">'id3'</span><span class="p">],</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
 <dl class="py method">

@@ -84,7 +84,7 @@
              
   <h1>Source code for gplately.reconstruction</h1><div class="highlight"><pre>
 <span></span><span class="c1">#</span>
-<span class="c1">#    Copyright (C) 2024-2025 The University of Sydney, Australia</span>
+<span class="c1">#    Copyright (C) 2024-2026 The University of Sydney, Australia</span>
 <span class="c1">#</span>
 <span class="c1">#    This program is free software; you can redistribute it and/or modify it under</span>
 <span class="c1">#    the terms of the GNU General Public License, version 2, as published by</span>
@@ -100,10 +100,10 @@
 <span class="c1">#    51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.</span>
 <span class="c1">#</span>
 
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">"""</span>
 <span class="sd">This sub-module contains tools that wrap up pyGPlates and Plate Tectonic Tools functionalities for reconstructing features,</span>
 <span class="sd">working with point data, and calculating plate velocities at specific geological times.</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">"""</span>
 
 <span class="c1"># pyright: reportMissingTypeStubs=true</span>
 
@@ -120,17 +120,17 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">.gpml</span><span class="w"> </span><span class="kn">import</span> <span class="n">_load_FeatureCollection</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.ptt</span><span class="w"> </span><span class="kn">import</span> <span class="n">separate_ridge_transform_segments</span>
 
-<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">&quot;gplately&quot;</span><span class="p">)</span>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">"gplately"</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="PlateReconstruction">
 <a class="viewcode-back" href="../../generated/gplately.PlateReconstruction.html#gplately.PlateReconstruction">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">PlateReconstruction</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Reconstruct topology features to specific geological times given a :py:attr:`~rotation_model`,</span>
+<span class="w">    </span><span class="sd">"""Reconstruct topology features to specific geological times given a :py:attr:`~rotation_model`,</span>
 <span class="sd">    a set of :py:attr:`~topology_features` and a set of :py:attr:`~static_polygons`.</span>
 <span class="sd">    Topological plate velocity data at specific geological times can also be</span>
 <span class="sd">    calculated from these reconstructed features.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
 <div class="viewcode-block" id="PlateReconstruction.__init__">
 <a class="viewcode-back" href="../../generated/gplately.PlateReconstruction.html#gplately.PlateReconstruction.__init__">[docs]</a>
@@ -142,7 +142,7 @@
         <span class="n">anchor_plate_id</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">plate_model</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">PlateModel</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        rotation_model : str/`os.PathLike`, or a sequence (eg, `list` or `tuple`) of instances of `pygplates.Feature`_, or a single instance of `pygplates.Feature`_, or an instance of `pygplates.FeatureCollection`_, or a sequence of any combination of those four types, or an instance of `pygplates.RotationModel`_</span>
@@ -171,7 +171,7 @@
 <span class="sd">        .. _pygplates.RotationModel: https://www.gplates.org/docs/pygplates/generated/pygplates.rotationmodel</span>
 <span class="sd">        .. _pygplates.Feature: https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature</span>
 <span class="sd">        .. _pygplates.FeatureCollection: https://www.gplates.org/docs/pygplates/generated/pygplates.featurecollection#pygplates.FeatureCollection</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1">#: A `pygplates.RotationModel &lt;https://www.gplates.org/docs/pygplates/generated/pygplates.rotationmodel&gt;`__ object,</span>
         <span class="c1">#: with default anchor plate :py:attr:`anchor_plate_id`, used to query equivalent and/or relative topological plate rotations</span>
         <span class="c1">#: from a time in the past relative to another time in the past or to present day.</span>
@@ -180,10 +180,10 @@
         <span class="c1"># Add a warning if the rotation_model is empty</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">rotation_model</span><span class="p">:</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
-                <span class="s2">&quot;No rotation features were passed to the constructor of PlateReconstruction. The reconstruction will not work. Check your rotation file(s).&quot;</span>
+                <span class="s2">"No rotation features were passed to the constructor of PlateReconstruction. The reconstruction will not work. Check your rotation file(s)."</span>
             <span class="p">)</span>
 
-        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">rotation_model</span><span class="p">,</span> <span class="s2">&quot;reconstruction_identifier&quot;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">rotation_model</span><span class="p">,</span> <span class="s2">"reconstruction_identifier"</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">rotation_model</span><span class="o">.</span><span class="n">reconstruction_identifier</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="kc">None</span>
@@ -191,15 +191,15 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_rotation_model_pickle</span> <span class="o">=</span> <span class="n">rotation_model</span>  <span class="c1"># Pickle the __init__ argument (see __getstate__/__setstate__ for details).</span>
         <span class="k">if</span> <span class="n">anchor_plate_id</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">rotation_model</span><span class="p">,</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">RotationModel</span><span class="p">):</span>  <span class="c1"># type: ignore</span>
-                <span class="c1"># Use the default anchor plate of &#39;rotation_model&#39;.</span>
+                <span class="c1"># Use the default anchor plate of 'rotation_model'.</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">rotation_model</span> <span class="o">=</span> <span class="n">rotation_model</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="c1"># Using rotation features/files, so default anchor plate is 0.</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">rotation_model</span> <span class="o">=</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">RotationModel</span><span class="p">(</span><span class="n">rotation_model</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="c1"># User has explicitly specified an anchor plate ID, so let&#39;s check it.</span>
+            <span class="c1"># User has explicitly specified an anchor plate ID, so let's check it.</span>
             <span class="n">anchor_plate_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_anchor_plate_id</span><span class="p">(</span><span class="n">anchor_plate_id</span><span class="p">)</span>
-            <span class="c1"># This works when &#39;rotation_model&#39; is a RotationModel or rotation features/files.</span>
+            <span class="c1"># This works when 'rotation_model' is a RotationModel or rotation features/files.</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">rotation_model</span> <span class="o">=</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">RotationModel</span><span class="p">(</span>  <span class="c1"># type: ignore</span>
                 <span class="n">rotation_model</span><span class="p">,</span> <span class="n">default_anchor_plate_id</span><span class="o">=</span><span class="n">anchor_plate_id</span>
             <span class="p">)</span>
@@ -226,7 +226,7 @@
         <span class="c1"># which, by the way, could be a different snapshot time and anchor plate than the topological snapshot.</span>
         <span class="c1">#</span>
         <span class="c1"># This avoids having to do unnessary work if the same snapshot time (and anchor plate) is requested again.</span>
-        <span class="c1"># But if the requested time (or anchor plate) changes then we&#39;ll create a new snapshot.</span>
+        <span class="c1"># But if the requested time (or anchor plate) changes then we'll create a new snapshot.</span>
         <span class="c1">#</span>
         <span class="c1"># Note: Both pygplates.TopologicalSnapshot and pygplates.ReconstructSnapshot can be pickled.</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_topological_snapshot</span> <span class="o">=</span> <span class="kc">None</span>
@@ -237,28 +237,28 @@
         <span class="c1"># Save the instance data variables.</span>
         <span class="n">state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
 
-        <span class="c1"># Set &#39;rotation_model&#39; to None to avoid pickling it.</span>
+        <span class="c1"># Set 'rotation_model' to None to avoid pickling it.</span>
         <span class="c1">#</span>
-        <span class="c1"># Instead we&#39;re pickling &#39;_rotation_model_pickle&#39;.</span>
-        <span class="c1"># If that is just rotation filenames then it&#39;s faster to rebuild a RotationModel (from files when unpickling)</span>
+        <span class="c1"># Instead we're pickling '_rotation_model_pickle'.</span>
+        <span class="c1"># If that is just rotation filenames then it's faster to rebuild a RotationModel (from files when unpickling)</span>
         <span class="c1"># than it is to pickle/unpickle a RotationModel.</span>
-        <span class="n">state</span><span class="p">[</span><span class="s2">&quot;rotation_model&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="c1"># Pickle the anchor plate ID since we&#39;ll need that when unpickling (if &#39;_rotation_model_pickle&#39; is not a RotationModel).</span>
-        <span class="n">state</span><span class="p">[</span><span class="s2">&quot;_anchor_plate_id_pickle&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">anchor_plate_id</span>
+        <span class="n">state</span><span class="p">[</span><span class="s2">"rotation_model"</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="c1"># Pickle the anchor plate ID since we'll need that when unpickling (if '_rotation_model_pickle' is not a RotationModel).</span>
+        <span class="n">state</span><span class="p">[</span><span class="s2">"_anchor_plate_id_pickle"</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">anchor_plate_id</span>
 
-        <span class="c1"># Set &#39;topology_features&#39; and &#39;static_polygons&#39; to None to avoid pickling them.</span>
+        <span class="c1"># Set 'topology_features' and 'static_polygons' to None to avoid pickling them.</span>
         <span class="c1">#</span>
-        <span class="c1"># Instead we&#39;re pickling &#39;_topology_features_pickle&#39; and &#39;_static_polygons_pickle&#39;.</span>
-        <span class="c1"># If they are just filenames then it&#39;s faster to rebuild FeatureCollection&#39;s (from files when unpickling)</span>
-        <span class="c1"># than it is to pickle/unpickle FeatureCollection&#39;s.</span>
-        <span class="n">state</span><span class="p">[</span><span class="s2">&quot;topology_features&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="n">state</span><span class="p">[</span><span class="s2">&quot;static_polygons&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="c1"># Instead we're pickling '_topology_features_pickle' and '_static_polygons_pickle'.</span>
+        <span class="c1"># If they are just filenames then it's faster to rebuild FeatureCollection's (from files when unpickling)</span>
+        <span class="c1"># than it is to pickle/unpickle FeatureCollection's.</span>
+        <span class="n">state</span><span class="p">[</span><span class="s2">"topology_features"</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">state</span><span class="p">[</span><span class="s2">"static_polygons"</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
 
         <span class="c1"># Set the snapshots to None to avoid pickling them (ie, avoids slowing down the pickling).</span>
         <span class="c1">#</span>
         <span class="c1"># These will get rebuilt when/if user requestes snapshots from the pickled PlateReconstruction object.</span>
-        <span class="n">state</span><span class="p">[</span><span class="s2">&quot;_topological_snapshot&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="n">state</span><span class="p">[</span><span class="s2">&quot;_static_polygons_snapshot&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">state</span><span class="p">[</span><span class="s2">"_topological_snapshot"</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">state</span><span class="p">[</span><span class="s2">"_static_polygons_snapshot"</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
 
         <span class="c1"># Remove the unpicklable entries.</span>
         <span class="c1">#</span>
@@ -269,16 +269,16 @@
         <span class="k">return</span> <span class="n">state</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">__setstate__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">):</span>
-        <span class="c1"># Extract the anchor plate ID and remove it so that we don&#39;t get a &#39;self._anchor_plate_id_pickle&#39; attribute.</span>
-        <span class="n">anchor_plate_id</span> <span class="o">=</span> <span class="n">state</span><span class="p">[</span><span class="s2">&quot;_anchor_plate_id_pickle&quot;</span><span class="p">]</span>
-        <span class="k">del</span> <span class="n">state</span><span class="p">[</span><span class="s2">&quot;_anchor_plate_id_pickle&quot;</span><span class="p">]</span>
+        <span class="c1"># Extract the anchor plate ID and remove it so that we don't get a 'self._anchor_plate_id_pickle' attribute.</span>
+        <span class="n">anchor_plate_id</span> <span class="o">=</span> <span class="n">state</span><span class="p">[</span><span class="s2">"_anchor_plate_id_pickle"</span><span class="p">]</span>
+        <span class="k">del</span> <span class="n">state</span><span class="p">[</span><span class="s2">"_anchor_plate_id_pickle"</span><span class="p">]</span>
 
         <span class="c1"># Restore the instance data variables.</span>
         <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">state</span><span class="p">)</span>
 
-        <span class="c1"># Rebuild the pygplates.RotationModel from &#39;self._rotation_model_pickle&#39;.</span>
+        <span class="c1"># Rebuild the pygplates.RotationModel from 'self._rotation_model_pickle'.</span>
         <span class="c1">#</span>
-        <span class="c1"># If &#39;self._rotation_model_pickle&#39; is just rotation filenames then it&#39;s faster to</span>
+        <span class="c1"># If 'self._rotation_model_pickle' is just rotation filenames then it's faster to</span>
         <span class="c1"># reload a RotationModel from files than it is to pickle/unpickle a RotationModel.</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rotation_model_pickle</span><span class="p">:</span>
             <span class="k">if</span> <span class="p">(</span>
@@ -286,24 +286,24 @@
                 <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rotation_model_pickle</span><span class="o">.</span><span class="n">get_default_anchor_plate_id</span><span class="p">()</span>
                 <span class="o">==</span> <span class="n">anchor_plate_id</span>
             <span class="p">):</span>
-                <span class="c1"># &#39;self._rotation_model_pickle&#39; is already a &#39;pygplates.RotationModel&#39; with the correct anchor plate ID.</span>
+                <span class="c1"># 'self._rotation_model_pickle' is already a 'pygplates.RotationModel' with the correct anchor plate ID.</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">rotation_model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rotation_model_pickle</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="c1"># &#39;self._rotation_model_pickle&#39; is either rotation features/files or a RotationModel with a different anchor plate ID.</span>
+                <span class="c1"># 'self._rotation_model_pickle' is either rotation features/files or a RotationModel with a different anchor plate ID.</span>
                 <span class="c1"># In either case we need to create a new RotationModel and give it the correct anchor plate ID.</span>
                 <span class="c1">#</span>
-                <span class="c1"># This single call works when &#39;self._rotation_model_pickle&#39; is a RotationModel or rotation features/files.</span>
+                <span class="c1"># This single call works when 'self._rotation_model_pickle' is a RotationModel or rotation features/files.</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">rotation_model</span> <span class="o">=</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">RotationModel</span><span class="p">(</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">_rotation_model_pickle</span><span class="p">,</span>
                     <span class="n">default_anchor_plate_id</span><span class="o">=</span><span class="n">anchor_plate_id</span><span class="p">,</span>
                 <span class="p">)</span>
-        <span class="c1"># else &#39;self.rotation_model&#39; is None.</span>
+        <span class="c1"># else 'self.rotation_model' is None.</span>
 
         <span class="c1"># Load the topology features and static polygons.</span>
         <span class="c1">#</span>
         <span class="c1"># The pickled attributes could be features and/or filesnames.</span>
-        <span class="c1"># If they are just filenames then it&#39;s faster to reload FeatureCollection&#39;s</span>
-        <span class="c1"># from files than it is to pickle/unpickle FeatureCollection&#39;s.</span>
+        <span class="c1"># If they are just filenames then it's faster to reload FeatureCollection's</span>
+        <span class="c1"># from files than it is to pickle/unpickle FeatureCollection's.</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">topology_features</span> <span class="o">=</span> <span class="n">_load_FeatureCollection</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_topology_features_pickle</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">static_polygons</span> <span class="o">=</span> <span class="n">_load_FeatureCollection</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_static_polygons_pickle</span><span class="p">)</span>
 
@@ -316,23 +316,23 @@
 <div class="viewcode-block" id="PlateReconstruction.copy">
 <a class="viewcode-back" href="../../generated/gplately.PlateReconstruction.html#gplately.PlateReconstruction.copy">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return a copy of the :py:class:`PlateReconstruction` object.</span>
+<span class="w">        </span><span class="sd">"""Return a copy of the :py:class:`PlateReconstruction` object.</span>
 <span class="sd">        This is a pure shallow copy, so the copy shares the same underlying data as the original.</span>
 <span class="sd">        For example, if you modify the rotation model of the copy, it will also modify the rotation model of the original.</span>
 <span class="sd">        However, if you assign a new rotation model to the copy, it will not affect the original.</span>
 <span class="sd">        I need this function for a less expensive way to create a copy of the PlateReconstruction object.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">cls</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
         <span class="n">new_obj</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="fm">__new__</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span>
 
         <span class="c1"># copy __dict__-based attributes, if present</span>
-        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;__dict__&quot;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"__dict__"</span><span class="p">):</span>
             <span class="n">new_obj</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">)</span>
 
         <span class="c1"># copy __slots__-based attributes, if present (walk the MRO in case</span>
         <span class="c1"># slots are defined across multiple base classes)</span>
         <span class="k">for</span> <span class="n">klass</span> <span class="ow">in</span> <span class="bp">cls</span><span class="o">.</span><span class="vm">__mro__</span><span class="p">:</span>
-            <span class="k">for</span> <span class="n">slot</span> <span class="ow">in</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">klass</span><span class="p">,</span> <span class="s2">&quot;__slots__&quot;</span><span class="p">,</span> <span class="p">()):</span>
+            <span class="k">for</span> <span class="n">slot</span> <span class="ow">in</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">klass</span><span class="p">,</span> <span class="s2">"__slots__"</span><span class="p">,</span> <span class="p">()):</span>
                 <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">slot</span><span class="p">):</span>
                     <span class="nb">setattr</span><span class="p">(</span><span class="n">new_obj</span><span class="p">,</span> <span class="n">slot</span><span class="p">,</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">slot</span><span class="p">))</span>
 
@@ -341,7 +341,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">anchor_plate_id</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Default anchor plate ID for reconstruction. Must be an integer &gt;= 0.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Default anchor plate ID for reconstruction. Must be an integer &gt;= 0."""</span>
         <span class="c1"># The default anchor plate comes from the RotationModel.</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">rotation_model</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">rotation_model</span><span class="o">.</span><span class="n">get_default_anchor_plate_id</span><span class="p">()</span>
@@ -362,13 +362,13 @@
     <span class="k">def</span><span class="w"> </span><span class="nf">_check_anchor_plate_id</span><span class="p">(</span><span class="nb">id</span><span class="p">):</span>
         <span class="nb">id</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">id</span><span class="p">)</span>
         <span class="k">if</span> <span class="nb">id</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Invalid anchor plate ID: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">id</span><span class="p">))</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Invalid anchor plate ID: </span><span class="si">{}</span><span class="s2">"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">id</span><span class="p">))</span>
         <span class="k">return</span> <span class="nb">id</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_check_topology_features</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">include_topological_slab_boundaries</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">topology_features</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="s2">&quot;Topology features have not been set in this PlateReconstruction.&quot;</span>
+                <span class="s2">"Topology features have not been set in this PlateReconstruction."</span>
             <span class="p">)</span>
 
         <span class="c1"># If not including topological slab boundaries then remove them.</span>
@@ -387,7 +387,7 @@
     <span class="k">def</span><span class="w"> </span><span class="nf">topological_snapshot</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">time</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">anchor_plate_id</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">include_topological_slab_boundaries</span><span class="o">=</span><span class="kc">True</span>
     <span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a snapshot of resolved topologies at the specified reconstruction time.</span>
+<span class="w">        </span><span class="sd">"""Create a snapshot of resolved topologies at the specified reconstruction time.</span>
 
 <span class="sd">        This returns a `pygplates.TopologicalSnapshot &lt;https://www.gplates.org/docs/pygplates/generated/pygplates.TopologicalSnapshot&gt;`__</span>
 <span class="sd">        from which you can extract resolved topologies, calculate velocities at point locations, calculate plate boundary statistics, etc.</span>
@@ -402,7 +402,7 @@
 <span class="sd">        include_topological_slab_boundaries : bool, default=True</span>
 <span class="sd">            Include topological boundary features of type ``gpml:TopologicalSlabBoundary``.</span>
 <span class="sd">            By default all features passed into constructor ``__init__()`` are included in the snapshot.</span>
-<span class="sd">            However setting this to False is useful when you&#39;re only interested in plate boundaries.</span>
+<span class="sd">            However setting this to False is useful when you're only interested in plate boundaries.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
@@ -414,11 +414,11 @@
 <span class="sd">        ------</span>
 <span class="sd">        ValueError</span>
 <span class="sd">            If topology features have not been set in this :py:class:`PlateReconstruction` object.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="n">anchor_plate_id</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">anchor_plate_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">anchor_plate_id</span>
 
-        <span class="c1"># Only need to create a new snapshot if we don&#39;t have one, or if any of the following have changed since the last snapshot:</span>
+        <span class="c1"># Only need to create a new snapshot if we don't have one, or if any of the following have changed since the last snapshot:</span>
         <span class="c1"># - the reconstruction time,</span>
         <span class="c1"># - the anchor plate,</span>
         <span class="c1"># - whether to include topological slab boundaries or not.</span>
@@ -449,9 +449,9 @@
             <span class="c1">#</span>
             <span class="c1"># The snapshot time and anchor plate are stored in the snapshot itself (so not added here).</span>
             <span class="c1">#</span>
-            <span class="c1"># Note: These don&#39;t need to be initialised in &#39;__init__()&#39; as long as it sets &quot;self._topological_snapshot = None&quot;.</span>
+            <span class="c1"># Note: These don't need to be initialised in '__init__()' as long as it sets "self._topological_snapshot = None".</span>
             <span class="c1">#</span>
-            <span class="c1"># Note: If we add more parameters then perhaps create a single nested private (leading &#39;_&#39;) class for them.</span>
+            <span class="c1"># Note: If we add more parameters then perhaps create a single nested private (leading '_') class for them.</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_topological_snapshot_includes_topological_slab_boundaries</span> <span class="o">=</span> <span class="p">(</span>
                 <span class="n">include_topological_slab_boundaries</span>
             <span class="p">)</span>
@@ -462,10 +462,10 @@
     <span class="k">def</span><span class="w"> </span><span class="nf">_check_static_polygons</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="c1"># Check we have static polygons.</span>
         <span class="c1">#</span>
-        <span class="c1"># Currently all available models have them, but it&#39;s possible for a user to create a PlateReconstruction without them.</span>
+        <span class="c1"># Currently all available models have them, but it's possible for a user to create a PlateReconstruction without them.</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">static_polygons</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="s2">&quot;Static polygons have not been set in this PlateReconstruction.&quot;</span>
+                <span class="s2">"Static polygons have not been set in this PlateReconstruction."</span>
             <span class="p">)</span>
 
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">static_polygons</span>
@@ -473,7 +473,7 @@
 <div class="viewcode-block" id="PlateReconstruction.static_polygons_snapshot">
 <a class="viewcode-back" href="../../generated/gplately.PlateReconstruction.html#gplately.PlateReconstruction.static_polygons_snapshot">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">static_polygons_snapshot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">time</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">anchor_plate_id</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a reconstructed snapshot of the static polygons at the specified reconstruction time.</span>
+<span class="w">        </span><span class="sd">"""Create a reconstructed snapshot of the static polygons at the specified reconstruction time.</span>
 
 <span class="sd">        Return a `pygplates.ReconstructSnapshot &lt;https://www.gplates.org/docs/pygplates/generated/pygplates.ReconstructSnapshot&gt;`__</span>
 <span class="sd">        from which you can extract reconstructed static polygons, find reconstructed polygons containing points and calculate velocities at point locations, etc.</span>
@@ -496,11 +496,11 @@
 <span class="sd">        ------</span>
 <span class="sd">        ValueError</span>
 <span class="sd">            If static polygons have not been set in this :py:class:`PlateReconstruction` object.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="n">anchor_plate_id</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">anchor_plate_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">anchor_plate_id</span>
 
-        <span class="c1"># Only need to create a new snapshot if we don&#39;t have one, or if any of the following have changed since the last snapshot:</span>
+        <span class="c1"># Only need to create a new snapshot if we don't have one, or if any of the following have changed since the last snapshot:</span>
         <span class="c1"># - the reconstruction time,</span>
         <span class="c1"># - the anchor plate.</span>
         <span class="k">if</span> <span class="p">(</span>
@@ -543,7 +543,7 @@
         <span class="n">include_topological_slab_boundaries</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
         <span class="n">boundary_section_filter</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Samples points uniformly along plate boundaries and calculates statistics at diverging/converging locations at a particular geological time.</span>
+<span class="w">        </span><span class="sd">"""Samples points uniformly along plate boundaries and calculates statistics at diverging/converging locations at a particular geological time.</span>
 
 <span class="sd">        Resolves topologies at ``time``, uniformly samples all plate boundaries into points and returns two lists of</span>
 <span class="sd">        `pygplates.PlateBoundaryStatistic &lt;https://www.gplates.org/docs/pygplates/generated/pygplates.PlateBoundaryStatistic&gt;`__.</span>
@@ -560,13 +560,13 @@
 <span class="sd">            Points with an orthogonal ``diverging`` velocity above this value will be returned in ``diverging_data``.</span>
 <span class="sd">            The default is 0.0 which removes all converging sample points (leaving only diverging points).</span>
 <span class="sd">            This value can be negative which means a small amount of convergence is allowed for the diverging points.</span>
-<span class="sd">            The units should match the units of ``velocity_units`` (eg, if that&#39;s cm/yr then this threshold should also be in cm/yr).</span>
+<span class="sd">            The units should match the units of ``velocity_units`` (eg, if that's cm/yr then this threshold should also be in cm/yr).</span>
 <span class="sd">        convergence_velocity_threshold : float, default=0.0</span>
 <span class="sd">            Orthogonal (ie, in the direction of boundary normal) velocity threshold for ``converging`` sample points.</span>
 <span class="sd">            Points with an orthogonal ``converging`` velocity above this value will be returned in ``converging_data``.</span>
 <span class="sd">            The default is 0.0 which removes all diverging sample points (leaving only converging points).</span>
 <span class="sd">            This value can be negative which means a small amount of divergence is allowed for the converging points.</span>
-<span class="sd">            The units should match the units of ``velocity_units`` (eg, if that&#39;s cm/yr then this threshold should also be in cm/yr).</span>
+<span class="sd">            The units should match the units of ``velocity_units`` (eg, if that's cm/yr then this threshold should also be in cm/yr).</span>
 <span class="sd">        first_uniform_point_spacing_radians : float, optional</span>
 <span class="sd">            Spacing of first uniform point in each resolved topological section (in radians) - see</span>
 <span class="sd">            `pygplates.TopologicalSnapshot.calculate_plate_boundary_statistics() &lt;https://www.gplates.org/docs/pygplates/generated/pygplates.topologicalsnapshot#pygplates.TopologicalSnapshot.calculate_plate_boundary_statistics&gt;`__</span>
@@ -584,7 +584,7 @@
 <span class="sd">            This is only used to calculate velocities (strain rates always use ``pygplates.Earth.equatorial_radius_in_kms``).</span>
 <span class="sd">        include_network_boundaries : bool, default=False</span>
 <span class="sd">            Whether to sample along network boundaries that are not also plate boundaries (defaults to False).</span>
-<span class="sd">            If a deforming network shares a boundary with a plate then it&#39;ll get included regardless of this option.</span>
+<span class="sd">            If a deforming network shares a boundary with a plate then it'll get included regardless of this option.</span>
 <span class="sd">        include_topological_slab_boundaries : bool, default=False</span>
 <span class="sd">            Whether to sample along slab boundaries (features of type ``gpml:TopologicalSlabBoundary``).</span>
 <span class="sd">            By default they are not sampled since they are not plate boundaries.</span>
@@ -652,12 +652,12 @@
 <span class="sd">                        continue  # missing left or right plate</span>
 <span class="sd">                    latitude, longitude = stat.boundary_point.to_lat_lon()</span>
 
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="c1"># Generate statistics at uniformly spaced points along plate boundaries.</span>
         <span class="n">plate_boundary_statistics</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">topological_snapshot</span><span class="p">(</span>
             <span class="n">time</span><span class="p">,</span>
-            <span class="n">anchor_plate_id</span><span class="o">=</span><span class="n">anchor_plate_id</span><span class="p">,</span>  <span class="c1"># if None then uses &#39;self.anchor_plate_id&#39;</span>
+            <span class="n">anchor_plate_id</span><span class="o">=</span><span class="n">anchor_plate_id</span><span class="p">,</span>  <span class="c1"># if None then uses 'self.anchor_plate_id'</span>
             <span class="n">include_topological_slab_boundaries</span><span class="o">=</span><span class="n">include_topological_slab_boundaries</span><span class="p">,</span>
         <span class="p">)</span><span class="o">.</span><span class="n">calculate_plate_boundary_statistics</span><span class="p">(</span>
             <span class="n">uniform_point_spacing_radians</span><span class="p">,</span>
@@ -677,7 +677,7 @@
 
             <span class="c1"># Convergence velocity.</span>
             <span class="c1">#</span>
-            <span class="c1"># Note: We use the &#39;orthogonal&#39; component of velocity vector.</span>
+            <span class="c1"># Note: We use the 'orthogonal' component of velocity vector.</span>
             <span class="n">convergence_velocity_orthogonal</span> <span class="o">=</span> <span class="n">stat</span><span class="o">.</span><span class="n">convergence_velocity_orthogonal</span>
             <span class="c1"># Skip current point if missing left or right plate (cannot calculate convergence).</span>
             <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">convergence_velocity_orthogonal</span><span class="p">):</span>
@@ -710,7 +710,7 @@
         <span class="n">include_topological_slab_boundaries</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
         <span class="n">boundary_section_filter</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculates the total crustal production and destruction rates (in km\\ :sup:`2`/yr) of divergent and convergent</span>
+<span class="w">        </span><span class="sd">"""Calculates the total crustal production and destruction rates (in km\\ :sup:`2`/yr) of divergent and convergent</span>
 <span class="sd">        plate boundaries at the specified geological time (Ma).</span>
 
 <span class="sd">        Resolves topologies at ``time`` and uniformly samples all plate boundaries into divergent and convergent boundary points.</span>
@@ -746,7 +746,7 @@
 <span class="sd">            How the two velocity times are calculated relative to ``time`` (defaults to ``[time + velocity_delta_time, time]``).</span>
 <span class="sd">        include_network_boundaries : bool, default=False</span>
 <span class="sd">            Whether to sample along network boundaries that are not also plate boundaries (defaults to False).</span>
-<span class="sd">            If a deforming network shares a boundary with a plate then it&#39;ll get included regardless of this option.</span>
+<span class="sd">            If a deforming network shares a boundary with a plate then it'll get included regardless of this option.</span>
 <span class="sd">        include_topological_slab_boundaries : bool, default=False</span>
 <span class="sd">            Whether to sample along slab boundaries (features of type ``gpml:TopologicalSlabBoundary``).</span>
 <span class="sd">            By default they are **not** sampled since they are *not* plate boundaries.</span>
@@ -790,7 +790,7 @@
 <span class="sd">            ) = plate_reconstruction.crustal_production_destruction_rate(</span>
 <span class="sd">                50, convergence_velocity_threshold_in_cms_per_yr=0.2</span>
 <span class="sd">            )</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="c1"># Generate statistics at uniformly spaced points along plate boundaries.</span>
         <span class="n">diverging_data</span><span class="p">,</span> <span class="n">converging_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">divergent_convergent_plate_boundaries</span><span class="p">(</span>
@@ -816,7 +816,7 @@
             <span class="n">earth_radius_kms</span> <span class="o">=</span> <span class="n">_tools</span><span class="o">.</span><span class="n">geocentric_radius</span><span class="p">(</span><span class="n">boundary_lat</span><span class="p">)</span> <span class="o">/</span> <span class="mf">1e3</span>
 
             <span class="c1"># Convergence velocity was calculated using pygplates.Earth.mean_radius_in_kms,</span>
-            <span class="c1"># so adjust for actual Earth radius &#39;earth_radius_kms&#39; at current latitude.</span>
+            <span class="c1"># so adjust for actual Earth radius 'earth_radius_kms' at current latitude.</span>
             <span class="n">convergence_velocity_orthogonal</span> <span class="o">=</span> <span class="n">stat</span><span class="o">.</span><span class="n">convergence_velocity_orthogonal</span> <span class="o">*</span> <span class="p">(</span>
                 <span class="n">earth_radius_kms</span> <span class="o">/</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">Earth</span><span class="o">.</span><span class="n">mean_radius_in_kms</span>
             <span class="p">)</span>
@@ -841,7 +841,7 @@
             <span class="n">earth_radius_kms</span> <span class="o">=</span> <span class="n">_tools</span><span class="o">.</span><span class="n">geocentric_radius</span><span class="p">(</span><span class="n">boundary_lat</span><span class="p">)</span> <span class="o">/</span> <span class="mf">1e3</span>
 
             <span class="c1"># Convergence velocity was calculated using pygplates.Earth.mean_radius_in_kms,</span>
-            <span class="c1"># so adjust for actual Earth radius &#39;earth_radius_kms&#39; at current latitude.</span>
+            <span class="c1"># so adjust for actual Earth radius 'earth_radius_kms' at current latitude.</span>
             <span class="n">convergence_velocity_orthogonal</span> <span class="o">=</span> <span class="n">stat</span><span class="o">.</span><span class="n">convergence_velocity_orthogonal</span> <span class="o">*</span> <span class="p">(</span>
                 <span class="n">earth_radius_kms</span> <span class="o">/</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">Earth</span><span class="o">.</span><span class="n">mean_radius_in_kms</span>
             <span class="p">)</span>
@@ -879,18 +879,18 @@
         <span class="n">output_trench_normal</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="c1">#</span>
-        <span class="c1"># This is essentially a replacement for &#39;ptt.subduction_convergence.subduction_convergence()&#39;.</span>
+        <span class="c1"># This is essentially a replacement for 'ptt.subduction_convergence.subduction_convergence()'.</span>
         <span class="c1">#</span>
         <span class="c1"># Instead of calculating convergence along subduction zones using subducting and overriding plate IDs,</span>
         <span class="c1"># it uses pyGPlates 1.0 functionality that calculates statistics along plate boundaries</span>
         <span class="c1"># (such as plate velocities, from which convergence velocity can be obtained).</span>
         <span class="c1">#</span>
-        <span class="c1"># Note that this function has an advantage over &#39;ptt.subduction_convergence.subduction_convergence()&#39;:</span>
+        <span class="c1"># Note that this function has an advantage over 'ptt.subduction_convergence.subduction_convergence()':</span>
         <span class="c1">#   It does not reject subducting boundaries that have more than one (or even zero) subducting plates (or subducting networks),</span>
         <span class="c1">#   which can happen if the topological model was built incorrectly (eg, mislabelled plate boundaries).</span>
-        <span class="c1">#   As long as there&#39;s at least one plate (or network) on the subducting side then it can find it</span>
-        <span class="c1">#   (even if the plate is not directly attached to the subduction zone, ie, doesn&#39;t specify it as part of its boundary).</span>
-        <span class="c1"># However, like &#39;ptt.subduction_convergence.subduction_convergence()&#39;, it only samples subducting plate boundaries</span>
+        <span class="c1">#   As long as there's at least one plate (or network) on the subducting side then it can find it</span>
+        <span class="c1">#   (even if the plate is not directly attached to the subduction zone, ie, doesn't specify it as part of its boundary).</span>
+        <span class="c1"># However, like 'ptt.subduction_convergence.subduction_convergence()', it only samples subducting plate boundaries</span>
         <span class="c1"># (eg, subduction zones) since we still need to know which plates are subducting and overriding,</span>
         <span class="c1"># and hence cannot calculate convergence over all plate boundaries.</span>
 
@@ -913,7 +913,7 @@
         <span class="c1"># Generate statistics at uniformly spaced points along plate boundaries.</span>
         <span class="n">plate_boundary_statistics_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">topological_snapshot</span><span class="p">(</span>
             <span class="n">time</span><span class="p">,</span>
-            <span class="n">anchor_plate_id</span><span class="o">=</span><span class="n">anchor_plate_id</span><span class="p">,</span>  <span class="c1"># if None then uses &#39;self.anchor_plate_id&#39; (default anchor plate of &#39;self.rotation_model&#39;)</span>
+            <span class="n">anchor_plate_id</span><span class="o">=</span><span class="n">anchor_plate_id</span><span class="p">,</span>  <span class="c1"># if None then uses 'self.anchor_plate_id' (default anchor plate of 'self.rotation_model')</span>
             <span class="c1"># Ignore topological slab boundaries since they are not *plate* boundaries</span>
             <span class="c1"># (a slab edge could have a subduction polarity, and would otherwise get included)...</span>
             <span class="n">include_topological_slab_boundaries</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
@@ -940,16 +940,16 @@
                 <span class="n">return_subduction_polarity</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                 <span class="n">enforce_single_plate</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
             <span class="p">)</span>
-            <span class="c1"># Skip current shared boundary sub-segment if it doesn&#39;t have a valid subduction polarity.</span>
+            <span class="c1"># Skip current shared boundary sub-segment if it doesn't have a valid subduction polarity.</span>
             <span class="c1">#</span>
-            <span class="c1"># Note: There might not even be a subducting plate directly attached, but that&#39;s fine because</span>
-            <span class="c1">#       we&#39;re only interested in the subduction polarity. Later we&#39;ll get the subducting plate</span>
-            <span class="c1">#       from the plate boundary statistics instead (since that&#39;s more reliable).</span>
+            <span class="c1"># Note: There might not even be a subducting plate directly attached, but that's fine because</span>
+            <span class="c1">#       we're only interested in the subduction polarity. Later we'll get the subducting plate</span>
+            <span class="c1">#       from the plate boundary statistics instead (since that's more reliable).</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">subducting_plate_and_polarity</span><span class="p">:</span>
                 <span class="k">continue</span>
             <span class="n">_</span><span class="p">,</span> <span class="n">subduction_polarity</span> <span class="o">=</span> <span class="n">subducting_plate_and_polarity</span>
 
-            <span class="k">if</span> <span class="n">subduction_polarity</span> <span class="o">==</span> <span class="s2">&quot;Left&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">subduction_polarity</span> <span class="o">==</span> <span class="s2">"Left"</span><span class="p">:</span>
                 <span class="n">overriding_plate_is_on_left</span> <span class="o">=</span> <span class="kc">True</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">overriding_plate_is_on_left</span> <span class="o">=</span> <span class="kc">False</span>
@@ -961,12 +961,12 @@
                     <span class="n">subducting_plate_velocity</span> <span class="o">=</span> <span class="n">stat</span><span class="o">.</span><span class="n">right_plate_velocity</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="n">subducting_plate_velocity</span> <span class="o">=</span> <span class="n">stat</span><span class="o">.</span><span class="n">left_plate_velocity</span>
-                <span class="c1"># Reject point if there&#39;s no subducting plate (or network).</span>
+                <span class="c1"># Reject point if there's no subducting plate (or network).</span>
                 <span class="k">if</span> <span class="n">subducting_plate_velocity</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                     <span class="k">continue</span>
 
                 <span class="c1"># The convergence velocity is actually that of the subducting plate relative to the trench line.</span>
-                <span class="c1"># It&#39;s not the right plate relative to the left (or vice versa).</span>
+                <span class="c1"># It's not the right plate relative to the left (or vice versa).</span>
                 <span class="n">convergence_velocity</span> <span class="o">=</span> <span class="p">(</span>
                     <span class="n">subducting_plate_velocity</span> <span class="o">-</span> <span class="n">stat</span><span class="o">.</span><span class="n">boundary_velocity</span>
                 <span class="p">)</span>
@@ -983,9 +983,9 @@
                     <span class="k">if</span> <span class="n">trench_normal_azimuth</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
                         <span class="n">trench_normal_azimuth</span> <span class="o">+=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span>
 
-                <span class="c1"># If requested, reject point if it&#39;s not converging within specified threshold.</span>
+                <span class="c1"># If requested, reject point if it's not converging within specified threshold.</span>
                 <span class="k">if</span> <span class="n">convergence_threshold_in_cm_per_yr</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                    <span class="c1"># Note that we use the &#39;orthogonal&#39; component of velocity vector.</span>
+                    <span class="c1"># Note that we use the 'orthogonal' component of velocity vector.</span>
                     <span class="k">if</span> <span class="p">(</span>
                         <span class="n">pygplates</span><span class="o">.</span><span class="n">Vector3D</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">convergence_velocity</span><span class="p">,</span> <span class="n">trench_normal</span><span class="p">)</span>
                         <span class="o">&lt;</span> <span class="n">convergence_threshold_in_cm_per_yr</span>
@@ -1022,7 +1022,7 @@
                     <span class="c1"># velocity magnitude negative to indicate this. This could be inferred from</span>
                     <span class="c1"># the obliquity but it seems this is the standard way to output convergence rate.</span>
                     <span class="c1">#</span>
-                    <span class="c1"># Note: This is the same as done in &#39;ptt.subduction_convergence.subduction_convergence()&#39;.</span>
+                    <span class="c1"># Note: This is the same as done in 'ptt.subduction_convergence.subduction_convergence()'.</span>
                     <span class="k">if</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">Vector3D</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">convergence_velocity</span><span class="p">,</span> <span class="n">trench_normal</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
                         <span class="n">convergence_velocity_magnitude</span> <span class="o">=</span> <span class="o">-</span><span class="n">convergence_velocity_magnitude</span>
 
@@ -1031,7 +1031,7 @@
                 <span class="n">trench_absolute_velocity_obliquity</span> <span class="o">=</span> <span class="n">stat</span><span class="o">.</span><span class="n">boundary_velocity_obliquity</span>
 
                 <span class="c1"># If the trench normal (in direction of overriding plate) is opposite the boundary line normal (which is to the left)</span>
-                <span class="c1"># then we need to flip the obliquity of the trench absolute velocity vector. This is because it&#39;s currently relative</span>
+                <span class="c1"># then we need to flip the obliquity of the trench absolute velocity vector. This is because it's currently relative</span>
                 <span class="c1"># to the boundary line normal but needs to be relative to the trench normal.</span>
                 <span class="k">if</span> <span class="ow">not</span> <span class="n">overriding_plate_is_on_left</span><span class="p">:</span>
                     <span class="n">trench_absolute_velocity_obliquity</span> <span class="o">-=</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span>
@@ -1046,9 +1046,9 @@
                 <span class="c1">#</span>
                 <span class="c1"># Note that we are not calculating the motion of the trench</span>
                 <span class="c1"># relative to the overriding plate - they are usually attached to each other</span>
-                <span class="c1"># and hence wouldn&#39;t move relative to each other.</span>
+                <span class="c1"># and hence wouldn't move relative to each other.</span>
                 <span class="c1">#</span>
-                <span class="c1"># Note: This is the same as done in &#39;ptt.subduction_convergence.subduction_convergence()&#39;.</span>
+                <span class="c1"># Note: This is the same as done in 'ptt.subduction_convergence.subduction_convergence()'.</span>
                 <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">trench_absolute_velocity_obliquity</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">:</span>
                     <span class="n">trench_absolute_velocity_magnitude</span> <span class="o">=</span> <span class="p">(</span>
                         <span class="o">-</span><span class="n">trench_absolute_velocity_magnitude</span>
@@ -1063,11 +1063,11 @@
                 <span class="c1">#       plate being modelled - and the trench line having plate IDs of the smaller plates near them.</span>
                 <span class="c1">#       For that reason we use the plate IDs of the trench line (rather than the overriding plate ID).</span>
                 <span class="c1">#</span>
-                <span class="c1"># Note: Using &#39;pygplates.PlateBoundaryStatistic.boundary_feature&#39; means that if the current shared sub-segment</span>
+                <span class="c1"># Note: Using 'pygplates.PlateBoundaryStatistic.boundary_feature' means that if the current shared sub-segment</span>
                 <span class="c1">#       is part of a topological line then this will obtain a plate ID from whichever sub-segment, of the current</span>
                 <span class="c1">#       shared sub-segment, the current boundary point lies on (rather than obtaining a plate ID from the</span>
                 <span class="c1">#       shared sub-segment itself). This is because a trench line that is a topological line might actually be</span>
-                <span class="c1">#       deforming (or intended to be deforming) and hence its plate ID is not meaningful, or at least we can&#39;t</span>
+                <span class="c1">#       deforming (or intended to be deforming) and hence its plate ID is not meaningful, or at least we can't</span>
                 <span class="c1">#       be sure whether it will be zero or the overriding plate (or something else).</span>
                 <span class="c1">#</span>
                 <span class="n">trench_plate_id</span> <span class="o">=</span> <span class="n">stat</span><span class="o">.</span><span class="n">boundary_feature</span><span class="o">.</span><span class="n">get_reconstruction_plate_id</span><span class="p">()</span>
@@ -1236,7 +1236,7 @@
         <span class="n">output_subducting_absolute_velocity_components</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
         <span class="n">output_trench_normal</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Samples points along subduction zone trenches and obtains subduction data at a particular geological time.</span>
+<span class="w">        </span><span class="sd">"""Samples points along subduction zone trenches and obtains subduction data at a particular geological time.</span>
 
 <span class="sd">        Resolves topologies at ``time`` and tessellates all resolved subducting features into points.</span>
 
@@ -1275,14 +1275,14 @@
 <span class="sd">            feature types with a subduction polarity (such as orogenic belts) via ``include_all_subducting_boundary_types``.</span>
 <span class="sd">        include_network_boundaries : bool, default=False</span>
 <span class="sd">            Whether to calculate subduction convergence along network boundaries that are not also plate boundaries (defaults to False).</span>
-<span class="sd">            If a deforming network shares a boundary with a plate then it&#39;ll get included regardless of this option.</span>
+<span class="sd">            If a deforming network shares a boundary with a plate then it'll get included regardless of this option.</span>
 <span class="sd">            Since subduction zones occur along *plate* boundaries this would only be an issue if an intra-plate network boundary was incorrectly labelled as subducting.</span>
 <span class="sd">        include_all_subducting_boundary_types : bool, default=False</span>
 <span class="sd">            If ``False`` (the default), only features of type ``SubductionZone`` that have a subduction polarity are sampled.</span>
 <span class="sd">            If ``True``, all features that have a subduction polarity are sampled regardless of feature type</span>
 <span class="sd">            (e.g. also includes ``OrogenicBelt`` features that have a subduction polarity).</span>
 <span class="sd">        convergence_threshold_in_cm_per_yr : float, optional</span>
-<span class="sd">            Only return sample points with an orthogonal (ie, in the subducting geometry&#39;s normal direction) converging velocity above this value (in cm/yr).</span>
+<span class="sd">            Only return sample points with an orthogonal (ie, in the subducting geometry's normal direction) converging velocity above this value (in cm/yr).</span>
 <span class="sd">            For example, setting this to ``0.0`` would remove all diverging sample points (leaving only converging points).</span>
 <span class="sd">            This value can be negative which means a small amount of divergence is allowed.</span>
 <span class="sd">            If ``None`` then all (converging and diverging) sample points are returned. This is the default.</span>
@@ -1376,7 +1376,7 @@
 
 <span class="sd">            subduction_data = plate_reconstruction.tessellate_subduction_zones(50)</span>
 
-<span class="sd">        To sample points along subduction zones at 50Ma, but only where there&#39;s convergence:</span>
+<span class="sd">        To sample points along subduction zones at 50Ma, but only where there's convergence:</span>
 
 <span class="sd">        .. code-block:: python</span>
 <span class="sd">            :linenos:</span>
@@ -1384,31 +1384,31 @@
 <span class="sd">            subduction_data = plate_reconstruction.tessellate_subduction_zones(</span>
 <span class="sd">                50, convergence_threshold_in_cm_per_yr=0.0</span>
 <span class="sd">            )</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="k">if</span> <span class="n">use_ptt</span><span class="p">:</span>
             <span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">ptt</span> <span class="k">as</span> <span class="n">_ptt</span>
 
             <span class="k">if</span> <span class="n">convergence_threshold_in_cm_per_yr</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                    <span class="s2">&quot;Can only specify &#39;convergence_threshold_in_cm_per_yr&#39; if &#39;use_ptt&#39; is False.&quot;</span>
+                    <span class="s2">"Can only specify 'convergence_threshold_in_cm_per_yr' if 'use_ptt' is False."</span>
                 <span class="p">)</span>
 
             <span class="k">with</span> <span class="n">warnings</span><span class="o">.</span><span class="n">catch_warnings</span><span class="p">():</span>
                 <span class="k">if</span> <span class="n">ignore_warnings</span><span class="p">:</span>
-                    <span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="s2">&quot;ignore&quot;</span><span class="p">)</span>
+                    <span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="s2">"ignore"</span><span class="p">)</span>
 
                 <span class="n">subduction_data</span> <span class="o">=</span> <span class="n">_ptt</span><span class="o">.</span><span class="n">subduction_convergence</span><span class="o">.</span><span class="n">subduction_convergence</span><span class="p">(</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">rotation_model</span><span class="p">,</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">_check_topology_features</span><span class="p">(</span>
                         <span class="c1"># Ignore topological slab boundaries since they are not *plate* boundaries</span>
-                        <span class="c1"># (actually they get ignored by default in &#39;ptt.subduction_convergence&#39; anyway)...</span>
+                        <span class="c1"># (actually they get ignored by default in 'ptt.subduction_convergence' anyway)...</span>
                         <span class="n">include_topological_slab_boundaries</span><span class="o">=</span><span class="kc">False</span>
                     <span class="p">),</span>
                     <span class="n">tessellation_threshold_radians</span><span class="p">,</span>
                     <span class="n">time</span><span class="p">,</span>
                     <span class="n">velocity_delta_time</span><span class="o">=</span><span class="n">velocity_delta_time</span><span class="p">,</span>
-                    <span class="n">anchor_plate_id</span><span class="o">=</span><span class="n">anchor_plate_id</span><span class="p">,</span>  <span class="c1"># if None then uses &#39;self.anchor_plate_id&#39; (default anchor plate of &#39;self.rotation_model&#39;)</span>
+                    <span class="n">anchor_plate_id</span><span class="o">=</span><span class="n">anchor_plate_id</span><span class="p">,</span>  <span class="c1"># if None then uses 'self.anchor_plate_id' (default anchor plate of 'self.rotation_model')</span>
                     <span class="n">include_network_boundaries</span><span class="o">=</span><span class="n">include_network_boundaries</span><span class="p">,</span>
                     <span class="n">include_all_subducting_boundary_types</span><span class="o">=</span><span class="n">include_all_subducting_boundary_types</span><span class="p">,</span>
                     <span class="n">output_distance_to_nearest_edge_of_trench</span><span class="o">=</span><span class="n">output_distance_to_nearest_edge_of_trench</span><span class="p">,</span>
@@ -1425,7 +1425,7 @@
                 <span class="n">time</span><span class="p">,</span>
                 <span class="n">uniform_point_spacing_radians</span><span class="o">=</span><span class="n">tessellation_threshold_radians</span><span class="p">,</span>
                 <span class="n">velocity_delta_time</span><span class="o">=</span><span class="n">velocity_delta_time</span><span class="p">,</span>
-                <span class="n">anchor_plate_id</span><span class="o">=</span><span class="n">anchor_plate_id</span><span class="p">,</span>  <span class="c1"># if None then uses &#39;self.anchor_plate_id&#39; (default anchor plate of &#39;self.rotation_model&#39;)</span>
+                <span class="n">anchor_plate_id</span><span class="o">=</span><span class="n">anchor_plate_id</span><span class="p">,</span>  <span class="c1"># if None then uses 'self.anchor_plate_id' (default anchor plate of 'self.rotation_model')</span>
                 <span class="n">include_network_boundaries</span><span class="o">=</span><span class="n">include_network_boundaries</span><span class="p">,</span>
                 <span class="n">convergence_threshold_in_cm_per_yr</span><span class="o">=</span><span class="n">convergence_threshold_in_cm_per_yr</span><span class="p">,</span>
                 <span class="n">include_all_subducting_boundary_types</span><span class="o">=</span><span class="n">include_all_subducting_boundary_types</span><span class="p">,</span>
@@ -1469,15 +1469,15 @@
             <span class="p">]</span>
             <span class="c1"># Required data.</span>
             <span class="n">gdf_data</span> <span class="o">=</span> <span class="p">{</span>
-                <span class="s2">&quot;geometry&quot;</span><span class="p">:</span> <span class="n">points</span><span class="p">,</span>
-                <span class="s2">&quot;convergence velocity (cm/yr)&quot;</span><span class="p">:</span> <span class="n">subduction_data</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">],</span>
-                <span class="s2">&quot;convergence obliquity angle (degrees)&quot;</span><span class="p">:</span> <span class="n">subduction_data</span><span class="p">[:,</span> <span class="mi">3</span><span class="p">],</span>
-                <span class="s2">&quot;trench velocity (cm/yr)&quot;</span><span class="p">:</span> <span class="n">subduction_data</span><span class="p">[:,</span> <span class="mi">4</span><span class="p">],</span>
-                <span class="s2">&quot;trench obliquity angle (degrees)&quot;</span><span class="p">:</span> <span class="n">subduction_data</span><span class="p">[:,</span> <span class="mi">5</span><span class="p">],</span>
-                <span class="s2">&quot;length (degrees)&quot;</span><span class="p">:</span> <span class="n">subduction_data</span><span class="p">[:,</span> <span class="mi">6</span><span class="p">],</span>
-                <span class="s2">&quot;trench normal angle (degrees)&quot;</span><span class="p">:</span> <span class="n">subduction_data</span><span class="p">[:,</span> <span class="mi">7</span><span class="p">],</span>
-                <span class="s2">&quot;subducting plate ID&quot;</span><span class="p">:</span> <span class="n">subduction_data</span><span class="p">[:,</span> <span class="mi">8</span><span class="p">],</span>
-                <span class="s2">&quot;trench plate ID&quot;</span><span class="p">:</span> <span class="n">subduction_data</span><span class="p">[:,</span> <span class="mi">9</span><span class="p">],</span>
+                <span class="s2">"geometry"</span><span class="p">:</span> <span class="n">points</span><span class="p">,</span>
+                <span class="s2">"convergence velocity (cm/yr)"</span><span class="p">:</span> <span class="n">subduction_data</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">],</span>
+                <span class="s2">"convergence obliquity angle (degrees)"</span><span class="p">:</span> <span class="n">subduction_data</span><span class="p">[:,</span> <span class="mi">3</span><span class="p">],</span>
+                <span class="s2">"trench velocity (cm/yr)"</span><span class="p">:</span> <span class="n">subduction_data</span><span class="p">[:,</span> <span class="mi">4</span><span class="p">],</span>
+                <span class="s2">"trench obliquity angle (degrees)"</span><span class="p">:</span> <span class="n">subduction_data</span><span class="p">[:,</span> <span class="mi">5</span><span class="p">],</span>
+                <span class="s2">"length (degrees)"</span><span class="p">:</span> <span class="n">subduction_data</span><span class="p">[:,</span> <span class="mi">6</span><span class="p">],</span>
+                <span class="s2">"trench normal angle (degrees)"</span><span class="p">:</span> <span class="n">subduction_data</span><span class="p">[:,</span> <span class="mi">7</span><span class="p">],</span>
+                <span class="s2">"subducting plate ID"</span><span class="p">:</span> <span class="n">subduction_data</span><span class="p">[:,</span> <span class="mi">8</span><span class="p">],</span>
+                <span class="s2">"trench plate ID"</span><span class="p">:</span> <span class="n">subduction_data</span><span class="p">[:,</span> <span class="mi">9</span><span class="p">],</span>
             <span class="p">}</span>
 
             <span class="c1"># Optional data.</span>
@@ -1485,60 +1485,60 @@
             <span class="c1"># Note: The order must match the output order.</span>
             <span class="n">optional_gdf_data_index</span> <span class="o">=</span> <span class="mi">10</span>
             <span class="k">if</span> <span class="n">output_distance_to_nearest_edge_of_trench</span><span class="p">:</span>
-                <span class="n">gdf_data</span><span class="p">[</span><span class="s2">&quot;distance to nearest trench edge (degrees)&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">subduction_data</span><span class="p">[</span>
+                <span class="n">gdf_data</span><span class="p">[</span><span class="s2">"distance to nearest trench edge (degrees)"</span><span class="p">]</span> <span class="o">=</span> <span class="n">subduction_data</span><span class="p">[</span>
                     <span class="p">:,</span> <span class="n">optional_gdf_data_index</span>
                 <span class="p">]</span>
                 <span class="n">optional_gdf_data_index</span> <span class="o">+=</span> <span class="mi">1</span>
             <span class="k">if</span> <span class="n">output_distance_to_start_edge_of_trench</span><span class="p">:</span>
-                <span class="n">gdf_data</span><span class="p">[</span><span class="s2">&quot;distance to start of trench edge (degrees)&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">gdf_data</span><span class="p">[</span><span class="s2">"distance to start of trench edge (degrees)"</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
                     <span class="n">subduction_data</span><span class="p">[:,</span> <span class="n">optional_gdf_data_index</span><span class="p">]</span>
                 <span class="p">)</span>
                 <span class="n">optional_gdf_data_index</span> <span class="o">+=</span> <span class="mi">1</span>
             <span class="k">if</span> <span class="n">output_convergence_velocity_components</span><span class="p">:</span>
-                <span class="n">gdf_data</span><span class="p">[</span><span class="s2">&quot;convergence velocity orthogonal component (cm/yr)&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">gdf_data</span><span class="p">[</span><span class="s2">"convergence velocity orthogonal component (cm/yr)"</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
                     <span class="n">subduction_data</span><span class="p">[:,</span> <span class="n">optional_gdf_data_index</span><span class="p">]</span>
                 <span class="p">)</span>
-                <span class="n">gdf_data</span><span class="p">[</span><span class="s2">&quot;convergence velocity parallel component (cm/yr)&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">gdf_data</span><span class="p">[</span><span class="s2">"convergence velocity parallel component (cm/yr)"</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
                     <span class="n">subduction_data</span><span class="p">[:,</span> <span class="n">optional_gdf_data_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
                 <span class="p">)</span>
                 <span class="n">optional_gdf_data_index</span> <span class="o">+=</span> <span class="mi">2</span>
             <span class="k">if</span> <span class="n">output_trench_absolute_velocity_components</span><span class="p">:</span>
-                <span class="n">gdf_data</span><span class="p">[</span><span class="s2">&quot;trench absolute velocity orthogonal component (cm/yr)&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">gdf_data</span><span class="p">[</span><span class="s2">"trench absolute velocity orthogonal component (cm/yr)"</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
                     <span class="n">subduction_data</span><span class="p">[:,</span> <span class="n">optional_gdf_data_index</span><span class="p">]</span>
                 <span class="p">)</span>
-                <span class="n">gdf_data</span><span class="p">[</span><span class="s2">&quot;trench absolute velocity parallel component (cm/yr)&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">gdf_data</span><span class="p">[</span><span class="s2">"trench absolute velocity parallel component (cm/yr)"</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
                     <span class="n">subduction_data</span><span class="p">[:,</span> <span class="n">optional_gdf_data_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
                 <span class="p">)</span>
                 <span class="n">optional_gdf_data_index</span> <span class="o">+=</span> <span class="mi">2</span>
             <span class="k">if</span> <span class="n">output_subducting_absolute_velocity</span><span class="p">:</span>
-                <span class="n">gdf_data</span><span class="p">[</span><span class="s2">&quot;subducting absolute velocity (cm/yr)&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">subduction_data</span><span class="p">[</span>
+                <span class="n">gdf_data</span><span class="p">[</span><span class="s2">"subducting absolute velocity (cm/yr)"</span><span class="p">]</span> <span class="o">=</span> <span class="n">subduction_data</span><span class="p">[</span>
                     <span class="p">:,</span> <span class="n">optional_gdf_data_index</span>
                 <span class="p">]</span>
-                <span class="n">gdf_data</span><span class="p">[</span><span class="s2">&quot;subducting absolute obliquity angle (degrees)&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">gdf_data</span><span class="p">[</span><span class="s2">"subducting absolute obliquity angle (degrees)"</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
                     <span class="n">subduction_data</span><span class="p">[:,</span> <span class="n">optional_gdf_data_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
                 <span class="p">)</span>
                 <span class="n">optional_gdf_data_index</span> <span class="o">+=</span> <span class="mi">2</span>
             <span class="k">if</span> <span class="n">output_subducting_absolute_velocity_components</span><span class="p">:</span>
                 <span class="n">gdf_data</span><span class="p">[</span>
-                    <span class="s2">&quot;subducting absolute velocity orthogonal component (cm/yr)&quot;</span>
+                    <span class="s2">"subducting absolute velocity orthogonal component (cm/yr)"</span>
                 <span class="p">]</span> <span class="o">=</span> <span class="n">subduction_data</span><span class="p">[:,</span> <span class="n">optional_gdf_data_index</span><span class="p">]</span>
-                <span class="n">gdf_data</span><span class="p">[</span><span class="s2">&quot;subducting absolute velocity parallel component (cm/yr)&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">gdf_data</span><span class="p">[</span><span class="s2">"subducting absolute velocity parallel component (cm/yr)"</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
                     <span class="n">subduction_data</span><span class="p">[:,</span> <span class="n">optional_gdf_data_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
                 <span class="p">)</span>
                 <span class="n">optional_gdf_data_index</span> <span class="o">+=</span> <span class="mi">2</span>
             <span class="k">if</span> <span class="n">output_trench_normal</span><span class="p">:</span>
-                <span class="n">gdf_data</span><span class="p">[</span><span class="s2">&quot;trench normal (unit-length 3D vector) x component&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">gdf_data</span><span class="p">[</span><span class="s2">"trench normal (unit-length 3D vector) x component"</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
                     <span class="n">subduction_data</span><span class="p">[:,</span> <span class="n">optional_gdf_data_index</span><span class="p">]</span>
                 <span class="p">)</span>
-                <span class="n">gdf_data</span><span class="p">[</span><span class="s2">&quot;trench normal (unit-length 3D vector) y component&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">gdf_data</span><span class="p">[</span><span class="s2">"trench normal (unit-length 3D vector) y component"</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
                     <span class="n">subduction_data</span><span class="p">[:,</span> <span class="n">optional_gdf_data_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
                 <span class="p">)</span>
-                <span class="n">gdf_data</span><span class="p">[</span><span class="s2">&quot;trench normal (unit-length 3D vector) z component&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">gdf_data</span><span class="p">[</span><span class="s2">"trench normal (unit-length 3D vector) z component"</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
                     <span class="n">subduction_data</span><span class="p">[:,</span> <span class="n">optional_gdf_data_index</span> <span class="o">+</span> <span class="mi">2</span><span class="p">]</span>
                 <span class="p">)</span>
                 <span class="n">optional_gdf_data_index</span> <span class="o">+=</span> <span class="mi">3</span>
 
-            <span class="n">gdf</span> <span class="o">=</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span><span class="p">(</span><span class="n">gdf_data</span><span class="p">,</span> <span class="n">geometry</span><span class="o">=</span><span class="s2">&quot;geometry&quot;</span><span class="p">)</span>
+            <span class="n">gdf</span> <span class="o">=</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span><span class="p">(</span><span class="n">gdf_data</span><span class="p">,</span> <span class="n">geometry</span><span class="o">=</span><span class="s2">"geometry"</span><span class="p">)</span>
             <span class="k">return</span> <span class="n">gdf</span>
 
         <span class="k">else</span><span class="p">:</span>
@@ -1556,7 +1556,7 @@
         <span class="n">include_network_boundaries</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
         <span class="n">convergence_threshold_in_cm_per_yr</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculates the total length of all subduction zones (km) at the specified geological time (Ma).</span>
+<span class="w">        </span><span class="sd">"""Calculates the total length of all subduction zones (km) at the specified geological time (Ma).</span>
 
 <span class="sd">        Resolves topologies at ``time`` and tessellates all resolved subducting features into points (see :py:meth:`tessellate_subduction_zones`).</span>
 
@@ -1575,10 +1575,10 @@
 <span class="sd">            Choose to ignore warnings from :py:func:`gplately.subduction_convergence` (if ``use_ptt`` is ``True``).</span>
 <span class="sd">        include_network_boundaries : bool, default=False</span>
 <span class="sd">            Whether to count lengths along network boundaries that are not also plate boundaries (defaults to False).</span>
-<span class="sd">            If a deforming network shares a boundary with a plate then it&#39;ll get included regardless of this option.</span>
+<span class="sd">            If a deforming network shares a boundary with a plate then it'll get included regardless of this option.</span>
 <span class="sd">            Since subduction zones occur along plate boundaries this would only be an issue if an intra-plate network boundary was incorrectly labelled as subducting.</span>
 <span class="sd">        convergence_threshold_in_cm_per_yr : float, optional</span>
-<span class="sd">            Only count lengths associated with sample points that have an orthogonal (ie, in the subducting geometry&#39;s normal direction) converging velocity above this value (in cm/yr).</span>
+<span class="sd">            Only count lengths associated with sample points that have an orthogonal (ie, in the subducting geometry's normal direction) converging velocity above this value (in cm/yr).</span>
 <span class="sd">            For example, setting this to ``0.0`` would remove all diverging sample points (leaving only converging points).</span>
 <span class="sd">            This value can be negative which means a small amount of divergence is allowed.</span>
 <span class="sd">            If ``None`` then all (converging and diverging) sample points are counted. This is the default.</span>
@@ -1605,14 +1605,14 @@
 
 <span class="sd">            total_subduction_zone_length_kms = plate_reconstruction.total_subduction_zone_length(50)</span>
 
-<span class="sd">        To calculate the total length of subduction zones at 50Ma, but only where there&#39;s actual convergence:</span>
+<span class="sd">        To calculate the total length of subduction zones at 50Ma, but only where there's actual convergence:</span>
 
 <span class="sd">        .. code-block:: python</span>
 <span class="sd">            :linenos:</span>
 
 <span class="sd">            total_subduction_zone_length_kms = plate_reconstruction.total_subduction_zone_length(50,</span>
 <span class="sd">                    convergence_threshold_in_cm_per_yr=0.0)</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">subduction_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tessellate_subduction_zones</span><span class="p">(</span>
             <span class="n">time</span><span class="p">,</span>
             <span class="n">ignore_warnings</span><span class="o">=</span><span class="n">ignore_warnings</span><span class="p">,</span>
@@ -1645,7 +1645,7 @@
         <span class="n">include_network_boundaries</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
         <span class="n">convergence_threshold_in_cm_per_yr</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculates the total length of all global continental arcs (km) at the specified geological time (Ma).</span>
+<span class="w">        </span><span class="sd">"""Calculates the total length of all global continental arcs (km) at the specified geological time (Ma).</span>
 
 <span class="sd">        Resolves topologies at ``time`` and tessellates all resolved subducting features into points (see :py:meth:`tessellate_subduction_zones`).</span>
 <span class="sd">        The resolved points then are projected out by the ``trench_arc_distance`` (towards overriding plate) and their new locations are</span>
@@ -1673,10 +1673,10 @@
 <span class="sd">            Plate convergence is the more general approach that works along all plate boundaries (not just subduction zones).</span>
 <span class="sd">        include_network_boundaries : bool, default=False</span>
 <span class="sd">            Whether to sample subducting features along network boundaries that are not also plate boundaries (defaults to False).</span>
-<span class="sd">            If a deforming network shares a boundary with a plate then it&#39;ll get included regardless of this option.</span>
+<span class="sd">            If a deforming network shares a boundary with a plate then it'll get included regardless of this option.</span>
 <span class="sd">            Since subduction zones occur along plate boundaries this would only be an issue if an intra-plate network boundary was incorrectly labelled as subducting.</span>
 <span class="sd">        convergence_threshold_in_cm_per_yr : float, optional</span>
-<span class="sd">            Only sample points with an orthogonal (ie, in the subducting geometry&#39;s normal direction) converging velocity above this value (in cm/yr).</span>
+<span class="sd">            Only sample points with an orthogonal (ie, in the subducting geometry's normal direction) converging velocity above this value (in cm/yr).</span>
 <span class="sd">            For example, setting this to ``0.0`` would remove all diverging sample points (leaving only converging points).</span>
 <span class="sd">            This value can be negative which means a small amount of divergence is allowed.</span>
 <span class="sd">            If ``None`` then all (converging and diverging) points are sampled. This is the default.</span>
@@ -1703,7 +1703,7 @@
 
 <span class="sd">            total_continental_arc_length_kms = plate_reconstruction.total_continental_arc_length(50)</span>
 
-<span class="sd">        To calculate the total length of subduction zones adjacent to continents at 50Ma, but only where there&#39;s actual convergence:</span>
+<span class="sd">        To calculate the total length of subduction zones adjacent to continents at 50Ma, but only where there's actual convergence:</span>
 
 <span class="sd">        .. code-block:: python</span>
 <span class="sd">            :linenos:</span>
@@ -1713,7 +1713,7 @@
 <span class="sd">                    50, convergence_threshold_in_cm_per_yr=0.0</span>
 <span class="sd">                )</span>
 <span class="sd">            )</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">grids</span> <span class="k">as</span> <span class="n">_grids</span>
 
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">continental_grid</span><span class="p">,</span> <span class="n">_grids</span><span class="o">.</span><span class="n">Raster</span><span class="p">):</span>
@@ -1736,13 +1736,13 @@
                 <span class="p">)</span>
             <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
-                    <span class="s2">&quot;Invalid type for `continental_grid` (must be Raster,&quot;</span>
-                    <span class="o">+</span> <span class="s2">&quot; str, or array_like)&quot;</span>
+                    <span class="s2">"Invalid type for `continental_grid` (must be Raster,"</span>
+                    <span class="o">+</span> <span class="s2">" str, or array_like)"</span>
                 <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
         <span class="k">if</span> <span class="p">(</span><span class="n">time</span> <span class="o">!=</span> <span class="n">graster</span><span class="o">.</span><span class="n">time</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="ow">not</span> <span class="n">ignore_warnings</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">RuntimeWarning</span><span class="p">(</span>
-                <span class="s2">&quot;`continental_grid.time` (</span><span class="si">{}</span><span class="s2">) &quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">graster</span><span class="o">.</span><span class="n">time</span><span class="p">)</span>
-                <span class="o">+</span> <span class="s2">&quot;does not match `time` (</span><span class="si">{}</span><span class="s2">)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">time</span><span class="p">)</span>
+                <span class="s2">"`continental_grid.time` (</span><span class="si">{}</span><span class="s2">) "</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">graster</span><span class="o">.</span><span class="n">time</span><span class="p">)</span>
+                <span class="o">+</span> <span class="s2">"does not match `time` (</span><span class="si">{}</span><span class="s2">)"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">time</span><span class="p">)</span>
             <span class="p">)</span>
 
         <span class="c1"># Obtain trench data.</span>
@@ -1776,7 +1776,7 @@
         <span class="n">sampled_points</span> <span class="o">=</span> <span class="n">graster</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span>
             <span class="n">ilon</span><span class="p">,</span>
             <span class="n">ilat</span><span class="p">,</span>
-            <span class="n">method</span><span class="o">=</span><span class="s2">&quot;linear&quot;</span><span class="p">,</span>
+            <span class="n">method</span><span class="o">=</span><span class="s2">"linear"</span><span class="p">,</span>
             <span class="n">return_indices</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="c1"># the code below will not work if graster.interpolate() returned a tuple</span>
@@ -1804,13 +1804,13 @@
         <span class="n">output_obliquity_and_normal_and_left_right_plates</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="c1">#</span>
-        <span class="c1"># This is essentially a replacement for &#39;ptt.ridge_spreading_rate.spreading_rates()&#39;.</span>
+        <span class="c1"># This is essentially a replacement for 'ptt.ridge_spreading_rate.spreading_rates()'.</span>
         <span class="c1">#</span>
         <span class="c1"># Instead of calculating spreading rates along mid-ocean ridges using left/right plate IDs,</span>
         <span class="c1"># it uses pyGPlates 1.0 functionality that calculates statistics along plate boundaries</span>
         <span class="c1"># (such as plate velocities, from which divergence spreading velocity can be obtained).</span>
         <span class="c1">#</span>
-        <span class="c1"># Note that this function has an advantage over &#39;ptt.ridge_spreading_rate.spreading_rates()&#39;.</span>
+        <span class="c1"># Note that this function has an advantage over 'ptt.ridge_spreading_rate.spreading_rates()'.</span>
         <span class="c1"># It can work on all plate boundaries, not just those that are spreading (eg, have left/right plate IDs).</span>
         <span class="c1"># This is because it uses plate velocities to calculate divergence (and hence spreading rates).</span>
         <span class="c1">#</span>
@@ -1818,9 +1818,9 @@
         <span class="c1"># Generate statistics at uniformly spaced points along plate boundaries.</span>
         <span class="n">plate_boundary_statistics</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">topological_snapshot</span><span class="p">(</span>
             <span class="n">time</span><span class="p">,</span>
-            <span class="n">anchor_plate_id</span><span class="o">=</span><span class="n">anchor_plate_id</span><span class="p">,</span>  <span class="c1"># if None then uses &#39;self.anchor_plate_id&#39; (default anchor plate of &#39;self.rotation_model&#39;)</span>
+            <span class="n">anchor_plate_id</span><span class="o">=</span><span class="n">anchor_plate_id</span><span class="p">,</span>  <span class="c1"># if None then uses 'self.anchor_plate_id' (default anchor plate of 'self.rotation_model')</span>
             <span class="c1"># Ignore topological slab boundaries since they are not *plate* boundaries</span>
-            <span class="c1"># (useful when &#39;spreading_feature_types&#39; is None, and hence all plate boundaries are considered)...</span>
+            <span class="c1"># (useful when 'spreading_feature_types' is None, and hence all plate boundaries are considered)...</span>
             <span class="n">include_topological_slab_boundaries</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
         <span class="p">)</span><span class="o">.</span><span class="n">calculate_plate_boundary_statistics</span><span class="p">(</span>
             <span class="n">uniform_point_spacing_radians</span><span class="p">,</span>
@@ -1834,15 +1834,15 @@
         <span class="n">ridge_data</span> <span class="o">=</span> <span class="p">[]</span>
 
         <span class="k">for</span> <span class="n">stat</span> <span class="ow">in</span> <span class="n">plate_boundary_statistics</span><span class="p">:</span>
-            <span class="c1"># Reject point if there&#39;s not a plate (or network) on both the left and right sides.</span>
+            <span class="c1"># Reject point if there's not a plate (or network) on both the left and right sides.</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">stat</span><span class="o">.</span><span class="n">convergence_velocity</span><span class="p">:</span>
                 <span class="k">continue</span>
 
             <span class="n">spreading_obliquity</span> <span class="o">=</span> <span class="n">stat</span><span class="o">.</span><span class="n">convergence_velocity_obliquity</span>
 
-            <span class="c1"># If requested, reject point if it&#39;s not diverging within specified threshold.</span>
+            <span class="c1"># If requested, reject point if it's not diverging within specified threshold.</span>
             <span class="k">if</span> <span class="n">divergence_threshold_in_cm_per_yr</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="c1"># Note that we use the &#39;orthogonal&#39; component of velocity vector.</span>
+                <span class="c1"># Note that we use the 'orthogonal' component of velocity vector.</span>
                 <span class="k">if</span> <span class="p">(</span>
                     <span class="o">-</span><span class="n">stat</span><span class="o">.</span><span class="n">convergence_velocity_orthogonal</span>
                     <span class="o">&lt;</span> <span class="n">divergence_threshold_in_cm_per_yr</span>
@@ -1854,7 +1854,7 @@
                 <span class="ow">or</span> <span class="n">transform_segment_deviation_in_radians</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
             <span class="p">):</span>
                 <span class="c1"># Convert obliquity from the range [-pi, pi] to [0, pi/2].</span>
-                <span class="c1"># We&#39;re only interested in the deviation angle from the normal line (positive or negative normal direction).</span>
+                <span class="c1"># We're only interested in the deviation angle from the normal line (positive or negative normal direction).</span>
                 <span class="c1"># not interested in clockwise vs anti-clockwise</span>
                 <span class="n">spreading_obliquity</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">stat</span><span class="o">.</span><span class="n">convergence_velocity_obliquity</span><span class="p">)</span>
                 <span class="c1"># angle relative to negative normal direction</span>
@@ -1865,9 +1865,9 @@
                 <span class="k">if</span> <span class="n">transform_segment_deviation_in_radians</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                     <span class="c1"># Reject if spreading direction is too oblique compared to the plate boundary normal.</span>
                     <span class="c1">#</span>
-                    <span class="c1"># Note: If there is zero spreading then we don&#39;t actually have an obliquity.</span>
+                    <span class="c1"># Note: If there is zero spreading then we don't actually have an obliquity.</span>
                     <span class="c1">#       In which case we reject the current point to match the behaviour of</span>
-                    <span class="c1">#       &#39;ptt.ridge_spreading_rate.spreading_rates()&#39; which rejects zero spreading stage rotations.</span>
+                    <span class="c1">#       'ptt.ridge_spreading_rate.spreading_rates()' which rejects zero spreading stage rotations.</span>
                     <span class="k">if</span> <span class="p">(</span>
                         <span class="n">stat</span><span class="o">.</span><span class="n">convergence_velocity</span><span class="o">.</span><span class="n">is_zero_magnitude</span><span class="p">()</span>
                         <span class="ow">or</span> <span class="n">spreading_obliquity</span> <span class="o">&gt;</span> <span class="n">transform_segment_deviation_in_radians</span>
@@ -1947,7 +1947,7 @@
         <span class="n">anchor_plate_id</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">velocity_delta_time</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
     <span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Samples points along resolved spreading features (e.g. mid-ocean ridges) and calculates spreading rates and</span>
+<span class="w">        </span><span class="sd">"""Samples points along resolved spreading features (e.g. mid-ocean ridges) and calculates spreading rates and</span>
 <span class="sd">        lengths of ridge segments at a particular geological time.</span>
 
 <span class="sd">        Resolves topologies at time and tessellates all resolved spreading features into points.</span>
@@ -1982,11 +1982,11 @@
 <span class="sd">        tessellation_threshold_radians : float, default=0.001</span>
 <span class="sd">            The threshold sampling distance along the plate boundaries (in radians).</span>
 <span class="sd">        ignore_warnings : bool, default=False</span>
-<span class="sd">            Choose to ignore warnings from Plate Tectonic Tools&#39; :py:func:`gplately.ridge_spreading_rate` workflow (if ``use_ptt`` is True).</span>
+<span class="sd">            Choose to ignore warnings from Plate Tectonic Tools' :py:func:`gplately.ridge_spreading_rate` workflow (if ``use_ptt`` is True).</span>
 <span class="sd">        return_geodataframe : bool, default=False</span>
 <span class="sd">            Choose to return data in a ``geopandas.GeoDataFrame``.</span>
 <span class="sd">        use_ptt : bool, default=False</span>
-<span class="sd">            If set to True then uses Plate Tectonic Tools&#39; :py:func:`gplately.ridge_spreading_rate` workflow to calculate ridge spreading rates</span>
+<span class="sd">            If set to True then uses Plate Tectonic Tools' :py:func:`gplately.ridge_spreading_rate` workflow to calculate ridge spreading rates</span>
 <span class="sd">            (which uses the spreading stage rotation of the left/right plate IDs calculate spreading velocities).</span>
 <span class="sd">            If set to False then uses plate divergence to calculate ridge spreading rates</span>
 <span class="sd">            (which samples velocities of the two adjacent boundary plates at each sampled point to calculate spreading velocities).</span>
@@ -1998,15 +1998,15 @@
 <span class="sd">            then only plate boundaries that are spreading feature types are sampled</span>
 <span class="sd">            (since Plate Tectonic Tools only works on spreading plate boundaries, eg, mid-ocean ridges).</span>
 <span class="sd">        transform_segment_deviation_in_radians : float, default=&lt;implementation-defined&gt;</span>
-<span class="sd">            How much a spreading direction can deviate from the segment normal before it&#39;s considered a transform segment (in radians).</span>
+<span class="sd">            How much a spreading direction can deviate from the segment normal before it's considered a transform segment (in radians).</span>
 <span class="sd">            The default value has been empirically determined to give the best results for typical models.</span>
 <span class="sd">            If ``None`` then the full feature geometry is used (ie, it is not split into ridge and transform segments with the transform segments getting ignored).</span>
 <span class="sd">        include_network_boundaries : bool, default=False</span>
 <span class="sd">            Whether to calculate spreading rate along network boundaries that are not also plate boundaries (defaults to False).</span>
-<span class="sd">            If a deforming network shares a boundary with a plate then it&#39;ll get included regardless of this option.</span>
+<span class="sd">            If a deforming network shares a boundary with a plate then it'll get included regardless of this option.</span>
 <span class="sd">            Since spreading features occur along *plate* boundaries this would only be an issue if an intra-plate network boundary was incorrectly labelled as spreading.</span>
 <span class="sd">        divergence_threshold_in_cm_per_yr : float, optional</span>
-<span class="sd">            Only return sample points with an orthogonal (ie, in the spreading geometry&#39;s normal direction) diverging velocity above this value (in cm/yr).</span>
+<span class="sd">            Only return sample points with an orthogonal (ie, in the spreading geometry's normal direction) diverging velocity above this value (in cm/yr).</span>
 <span class="sd">            For example, setting this to ``0.0`` would remove all converging sample points (leaving only diverging points).</span>
 <span class="sd">            This value can be negative which means a small amount of convergence is allowed.</span>
 <span class="sd">            If ``None`` then all (diverging and converging) sample points are returned.</span>
@@ -2083,26 +2083,26 @@
 <span class="sd">            )</span>
 
 <span class="sd">        .. _pygplates.FeatureType: https://www.gplates.org/docs/pygplates/generated/pygplates.featuretype</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="k">if</span> <span class="n">use_ptt</span><span class="p">:</span>
             <span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">ptt</span> <span class="k">as</span> <span class="n">_ptt</span>
 
             <span class="k">if</span> <span class="n">divergence_threshold_in_cm_per_yr</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                    <span class="s2">&quot;Can only specify &#39;divergence_threshold_in_cm_per_yr&#39; if &#39;use_ptt&#39; is False.&quot;</span>
+                    <span class="s2">"Can only specify 'divergence_threshold_in_cm_per_yr' if 'use_ptt' is False."</span>
                 <span class="p">)</span>
 
             <span class="k">with</span> <span class="n">warnings</span><span class="o">.</span><span class="n">catch_warnings</span><span class="p">():</span>
                 <span class="k">if</span> <span class="n">ignore_warnings</span><span class="p">:</span>
-                    <span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="s2">&quot;ignore&quot;</span><span class="p">)</span>
+                    <span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="s2">"ignore"</span><span class="p">)</span>
 
                 <span class="n">ridge_data</span> <span class="o">=</span> <span class="n">_ptt</span><span class="o">.</span><span class="n">ridge_spreading_rate</span><span class="o">.</span><span class="n">spreading_rates</span><span class="p">(</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">rotation_model</span><span class="p">,</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">_check_topology_features</span><span class="p">(</span>
                         <span class="c1"># Ignore topological slab boundaries since they are not *plate* boundaries</span>
                         <span class="c1"># (not really needed since only *spreading* feature types are considered, and</span>
-                        <span class="c1"># they typically wouldn&#39;t get used for a slab&#39;s boundary)...</span>
+                        <span class="c1"># they typically wouldn't get used for a slab's boundary)...</span>
                         <span class="n">include_topological_slab_boundaries</span><span class="o">=</span><span class="kc">False</span>
                     <span class="p">),</span>
                     <span class="n">time</span><span class="p">,</span>
@@ -2110,7 +2110,7 @@
                     <span class="n">spreading_feature_types</span><span class="o">=</span><span class="n">spreading_feature_types</span><span class="p">,</span>
                     <span class="n">transform_segment_deviation_in_radians</span><span class="o">=</span><span class="n">transform_segment_deviation_in_radians</span><span class="p">,</span>
                     <span class="n">velocity_delta_time</span><span class="o">=</span><span class="n">velocity_delta_time</span><span class="p">,</span>
-                    <span class="n">anchor_plate_id</span><span class="o">=</span><span class="n">anchor_plate_id</span><span class="p">,</span>  <span class="c1"># if None then uses &#39;self.anchor_plate_id&#39; (default anchor plate of &#39;self.rotation_model&#39;)</span>
+                    <span class="n">anchor_plate_id</span><span class="o">=</span><span class="n">anchor_plate_id</span><span class="p">,</span>  <span class="c1"># if None then uses 'self.anchor_plate_id' (default anchor plate of 'self.rotation_model')</span>
                     <span class="n">include_network_boundaries</span><span class="o">=</span><span class="n">include_network_boundaries</span><span class="p">,</span>
                     <span class="n">output_obliquity_and_normal_and_left_right_plates</span><span class="o">=</span><span class="n">output_obliquity_and_normal_and_left_right_plates</span><span class="p">,</span>
                 <span class="p">)</span>
@@ -2120,7 +2120,7 @@
                 <span class="n">time</span><span class="p">,</span>
                 <span class="n">uniform_point_spacing_radians</span><span class="o">=</span><span class="n">tessellation_threshold_radians</span><span class="p">,</span>
                 <span class="n">velocity_delta_time</span><span class="o">=</span><span class="n">velocity_delta_time</span><span class="p">,</span>
-                <span class="n">anchor_plate_id</span><span class="o">=</span><span class="n">anchor_plate_id</span><span class="p">,</span>  <span class="c1"># if None then uses &#39;self.anchor_plate_id&#39; (default anchor plate of &#39;self.rotation_model&#39;)</span>
+                <span class="n">anchor_plate_id</span><span class="o">=</span><span class="n">anchor_plate_id</span><span class="p">,</span>  <span class="c1"># if None then uses 'self.anchor_plate_id' (default anchor plate of 'self.rotation_model')</span>
                 <span class="n">spreading_feature_types</span><span class="o">=</span><span class="n">spreading_feature_types</span><span class="p">,</span>
                 <span class="n">transform_segment_deviation_in_radians</span><span class="o">=</span><span class="n">transform_segment_deviation_in_radians</span><span class="p">,</span>
                 <span class="n">include_network_boundaries</span><span class="o">=</span><span class="n">include_network_boundaries</span><span class="p">,</span>
@@ -2146,18 +2146,18 @@
                 <span class="k">for</span> <span class="n">lon</span><span class="p">,</span> <span class="n">lat</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">ridge_data</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">ridge_data</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">])</span>
             <span class="p">]</span>
             <span class="n">gdf_data</span> <span class="o">=</span> <span class="p">{</span>
-                <span class="s2">&quot;geometry&quot;</span><span class="p">:</span> <span class="n">points</span><span class="p">,</span>
-                <span class="s2">&quot;velocity (cm/yr)&quot;</span><span class="p">:</span> <span class="n">ridge_data</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">],</span>
+                <span class="s2">"geometry"</span><span class="p">:</span> <span class="n">points</span><span class="p">,</span>
+                <span class="s2">"velocity (cm/yr)"</span><span class="p">:</span> <span class="n">ridge_data</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">],</span>
             <span class="p">}</span>
             <span class="k">if</span> <span class="n">output_obliquity_and_normal_and_left_right_plates</span><span class="p">:</span>
-                <span class="n">gdf_data</span><span class="p">[</span><span class="s2">&quot;obliquity (degrees)&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ridge_data</span><span class="p">[:,</span> <span class="mi">3</span><span class="p">]</span>
-                <span class="n">gdf_data</span><span class="p">[</span><span class="s2">&quot;length (degrees)&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ridge_data</span><span class="p">[:,</span> <span class="mi">4</span><span class="p">]</span>
-                <span class="n">gdf_data</span><span class="p">[</span><span class="s2">&quot;normal azimuth (degrees)&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ridge_data</span><span class="p">[:,</span> <span class="mi">5</span><span class="p">]</span>
-                <span class="n">gdf_data</span><span class="p">[</span><span class="s2">&quot;left plate ID&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ridge_data</span><span class="p">[:,</span> <span class="mi">6</span><span class="p">]</span>
-                <span class="n">gdf_data</span><span class="p">[</span><span class="s2">&quot;right plate ID&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ridge_data</span><span class="p">[:,</span> <span class="mi">7</span><span class="p">]</span>
+                <span class="n">gdf_data</span><span class="p">[</span><span class="s2">"obliquity (degrees)"</span><span class="p">]</span> <span class="o">=</span> <span class="n">ridge_data</span><span class="p">[:,</span> <span class="mi">3</span><span class="p">]</span>
+                <span class="n">gdf_data</span><span class="p">[</span><span class="s2">"length (degrees)"</span><span class="p">]</span> <span class="o">=</span> <span class="n">ridge_data</span><span class="p">[:,</span> <span class="mi">4</span><span class="p">]</span>
+                <span class="n">gdf_data</span><span class="p">[</span><span class="s2">"normal azimuth (degrees)"</span><span class="p">]</span> <span class="o">=</span> <span class="n">ridge_data</span><span class="p">[:,</span> <span class="mi">5</span><span class="p">]</span>
+                <span class="n">gdf_data</span><span class="p">[</span><span class="s2">"left plate ID"</span><span class="p">]</span> <span class="o">=</span> <span class="n">ridge_data</span><span class="p">[:,</span> <span class="mi">6</span><span class="p">]</span>
+                <span class="n">gdf_data</span><span class="p">[</span><span class="s2">"right plate ID"</span><span class="p">]</span> <span class="o">=</span> <span class="n">ridge_data</span><span class="p">[:,</span> <span class="mi">7</span><span class="p">]</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="n">gdf_data</span><span class="p">[</span><span class="s2">&quot;length (degrees)&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ridge_data</span><span class="p">[:,</span> <span class="mi">3</span><span class="p">]</span>
-            <span class="k">return</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span><span class="p">(</span><span class="n">gdf_data</span><span class="p">,</span> <span class="n">geometry</span><span class="o">=</span><span class="s2">&quot;geometry&quot;</span><span class="p">)</span>
+                <span class="n">gdf_data</span><span class="p">[</span><span class="s2">"length (degrees)"</span><span class="p">]</span> <span class="o">=</span> <span class="n">ridge_data</span><span class="p">[:,</span> <span class="mi">3</span><span class="p">]</span>
+            <span class="k">return</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span><span class="p">(</span><span class="n">gdf_data</span><span class="p">,</span> <span class="n">geometry</span><span class="o">=</span><span class="s2">"geometry"</span><span class="p">)</span>
 
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">ridge_data</span></div>
@@ -2176,7 +2176,7 @@
         <span class="n">include_network_boundaries</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
         <span class="n">divergence_threshold_in_cm_per_yr</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculates the total length of all resolved spreading features (e.g. mid-ocean ridges) at the specified geological time (Ma).</span>
+<span class="w">        </span><span class="sd">"""Calculates the total length of all resolved spreading features (e.g. mid-ocean ridges) at the specified geological time (Ma).</span>
 
 <span class="sd">        Resolves topologies at ``time`` and tessellates all resolved spreading features into points (see :py:meth:`tessellate_mid_ocean_ridges`).</span>
 
@@ -2204,15 +2204,15 @@
 <span class="sd">            then only plate boundaries that are spreading feature types are sampled</span>
 <span class="sd">            (since Plate Tectonic Tools only works on **spreading** plate boundaries, eg, mid-ocean ridges).</span>
 <span class="sd">        transform_segment_deviation_in_radians : float, default=&lt;implementation-defined&gt;</span>
-<span class="sd">            How much a spreading direction can deviate from the segment normal before it&#39;s considered a transform segment (in radians).</span>
+<span class="sd">            How much a spreading direction can deviate from the segment normal before it's considered a transform segment (in radians).</span>
 <span class="sd">            The default value has been empirically determined to give the best results for typical models.</span>
 <span class="sd">            If ``None`` then the full feature geometry is used (ie, it is not split into ridge and transform segments with the transform segments getting ignored).</span>
 <span class="sd">        include_network_boundaries : bool, default=False</span>
 <span class="sd">            Whether to count lengths along network boundaries that are not also plate boundaries (defaults to False).</span>
-<span class="sd">            If a deforming network shares a boundary with a plate then it&#39;ll get included regardless of this option.</span>
+<span class="sd">            If a deforming network shares a boundary with a plate then it'll get included regardless of this option.</span>
 <span class="sd">            Since spreading features occur along plate boundaries this would only be an issue if an intra-plate network boundary was incorrectly labelled as spreading.</span>
 <span class="sd">        divergence_threshold_in_cm_per_yr : float, optional</span>
-<span class="sd">            Only count lengths associated with sample points that have an orthogonal (ie, in the spreading geometry&#39;s normal direction) diverging velocity above this value (in cm/yr).</span>
+<span class="sd">            Only count lengths associated with sample points that have an orthogonal (ie, in the spreading geometry's normal direction) diverging velocity above this value (in cm/yr).</span>
 <span class="sd">            For example, setting this to ``0.0`` would remove all converging sample points (leaving only diverging points).</span>
 <span class="sd">            This value can be negative which means a small amount of convergence is allowed.</span>
 <span class="sd">            If ``None`` then all (diverging and converging) sample points are counted.</span>
@@ -2251,7 +2251,7 @@
 <span class="sd">            total_ridge_length_kms = plate_reconstruction.total_ridge_length(50,</span>
 <span class="sd">                    transform_segment_deviation_in_radians=None,</span>
 <span class="sd">                    divergence_threshold_in_cm_per_yr=0.2)</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">ridge_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tessellate_mid_ocean_ridges</span><span class="p">(</span>
             <span class="n">time</span><span class="p">,</span>
             <span class="n">ignore_warnings</span><span class="o">=</span><span class="n">ignore_warnings</span><span class="p">,</span>
@@ -2283,7 +2283,7 @@
         <span class="n">anchor_plate_id</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">from_time</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
     <span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a snapshot of reconstructed regular features (including motion paths and flowlines) at a specific geological time.</span>
+<span class="w">        </span><span class="sd">"""Create a snapshot of reconstructed regular features (including motion paths and flowlines) at a specific geological time.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -2310,31 +2310,31 @@
 <span class="sd">        reconstruct_snapshot : pygplates.ReconstructSnapshot</span>
 <span class="sd">            A `pygplates.ReconstructSnapshot &lt;https://www.gplates.org/docs/pygplates/generated/pygplates.ReconstructSnapshot&gt;`__</span>
 <span class="sd">            of the specified reconstructable features reconstructed using the internal rotation model to the specified reconstruction time.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="c1"># If the features represent a snapshot at a *past* geological time then we need to reverse reconstruct them</span>
         <span class="c1"># such that they contain present-day geometry (not reconstructed geometry).</span>
         <span class="k">if</span> <span class="n">from_time</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="c1"># Extract the reconstructed features and clone them so we don&#39;t modify the caller&#39;s features.</span>
+            <span class="c1"># Extract the reconstructed features and clone them so we don't modify the caller's features.</span>
             <span class="n">reconstructable_features</span> <span class="o">=</span> <span class="p">[</span>
                 <span class="n">feature</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span>
                 <span class="k">for</span> <span class="n">feature</span> <span class="ow">in</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">FeaturesFunctionArgument</span><span class="p">(</span>
                     <span class="n">reconstructable_features</span>
                 <span class="p">)</span><span class="o">.</span><span class="n">get_features</span><span class="p">()</span>
             <span class="p">]</span>
-            <span class="c1"># Reverse reconstruct in-place (modifies each feature&#39;s geometry).</span>
+            <span class="c1"># Reverse reconstruct in-place (modifies each feature's geometry).</span>
             <span class="n">pygplates</span><span class="o">.</span><span class="n">reverse_reconstruct</span><span class="p">(</span>  <span class="c1"># type: ignore</span>
                 <span class="n">reconstructable_features</span><span class="p">,</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">rotation_model</span><span class="p">,</span>
                 <span class="n">from_time</span><span class="p">,</span>
-                <span class="n">anchor_plate_id</span><span class="o">=</span><span class="n">anchor_plate_id</span><span class="p">,</span>  <span class="c1"># if None then uses &#39;self.anchor_plate_id&#39; (default anchor plate of &#39;self.rotation_model&#39;)</span>
+                <span class="n">anchor_plate_id</span><span class="o">=</span><span class="n">anchor_plate_id</span><span class="p">,</span>  <span class="c1"># if None then uses 'self.anchor_plate_id' (default anchor plate of 'self.rotation_model')</span>
             <span class="p">)</span>
 
         <span class="k">return</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">ReconstructSnapshot</span><span class="p">(</span>
             <span class="n">reconstructable_features</span><span class="p">,</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">rotation_model</span><span class="p">,</span>
             <span class="n">time</span><span class="p">,</span>
-            <span class="n">anchor_plate_id</span><span class="o">=</span><span class="n">anchor_plate_id</span><span class="p">,</span>  <span class="c1"># if None then uses &#39;self.anchor_plate_id&#39; (default anchor plate of &#39;self.rotation_model&#39;)</span>
+            <span class="n">anchor_plate_id</span><span class="o">=</span><span class="n">anchor_plate_id</span><span class="p">,</span>  <span class="c1"># if None then uses 'self.anchor_plate_id' (default anchor plate of 'self.rotation_model')</span>
         <span class="p">)</span></div>
 
 
@@ -2350,7 +2350,7 @@
         <span class="n">reconstruct_type</span><span class="o">=</span><span class="n">pygplates</span><span class="o">.</span><span class="n">ReconstructType</span><span class="o">.</span><span class="n">feature_geometry</span><span class="p">,</span>
         <span class="n">group_with_feature</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Reconstructs regular geological features, motion paths or flowlines to a specific geological time.</span>
+<span class="w">        </span><span class="sd">"""Reconstructs regular geological features, motion paths or flowlines to a specific geological time.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -2395,11 +2395,11 @@
 <span class="sd">        See Also</span>
 <span class="sd">        --------</span>
 <span class="sd">        reconstruct_snapshot</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">reconstruct_snapshot</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">reconstruct_snapshot</span><span class="p">(</span>
             <span class="n">feature</span><span class="p">,</span>
             <span class="n">to_time</span><span class="p">,</span>
-            <span class="n">anchor_plate_id</span><span class="o">=</span><span class="n">anchor_plate_id</span><span class="p">,</span>  <span class="c1"># if None then uses &#39;self.anchor_plate_id&#39; (default anchor plate of &#39;self.rotation_model&#39;)</span>
+            <span class="n">anchor_plate_id</span><span class="o">=</span><span class="n">anchor_plate_id</span><span class="p">,</span>  <span class="c1"># if None then uses 'self.anchor_plate_id' (default anchor plate of 'self.rotation_model')</span>
             <span class="n">from_time</span><span class="o">=</span><span class="n">from_time</span><span class="p">,</span>
         <span class="p">)</span>
 
@@ -2429,16 +2429,16 @@
         <span class="n">anchor_plate_id</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">return_east_north_arrays</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculates the north and east components of the velocity vector (in kms/myr) for each specified point</span>
+<span class="w">        </span><span class="sd">"""Calculates the north and east components of the velocity vector (in kms/myr) for each specified point</span>
 <span class="sd">        (from ``lons`` and ``lats``) at a particular geological ``time``.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        lons : array</span>
-<span class="sd">            A 1D array of point data&#39;s longitudes.</span>
+<span class="sd">            A 1D array of point data's longitudes.</span>
 
 <span class="sd">        lats : array</span>
-<span class="sd">            A 1D array of point data&#39;s latitudes.</span>
+<span class="sd">            A 1D array of point data's latitudes.</span>
 
 <span class="sd">        time : float</span>
 <span class="sd">            The specific geological time (Ma) at which to calculate plate velocities.</span>
@@ -2496,14 +2496,14 @@
 <span class="sd">            For each velocity, the ``north`` component is first followed by the ``east`` component.</span>
 <span class="sd">            This is different to :py:meth:`Points.plate_velocity` where the ``east`` component is first.</span>
 <span class="sd">            This difference is maintained for backward compatibility.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># Add points to a multipoint geometry</span>
 
         <span class="n">points</span> <span class="o">=</span> <span class="p">[</span><span class="n">pygplates</span><span class="o">.</span><span class="n">PointOnSphere</span><span class="p">(</span><span class="n">lat</span><span class="p">,</span> <span class="n">lon</span><span class="p">)</span> <span class="k">for</span> <span class="n">lat</span><span class="p">,</span> <span class="n">lon</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">lats</span><span class="p">,</span> <span class="n">lons</span><span class="p">)]</span>
 
         <span class="n">topological_snapshot</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">topological_snapshot</span><span class="p">(</span>
             <span class="n">time</span><span class="p">,</span>
-            <span class="n">anchor_plate_id</span><span class="o">=</span><span class="n">anchor_plate_id</span><span class="p">,</span>  <span class="c1"># if None then uses &#39;self.anchor_plate_id&#39; (default anchor plate of &#39;self.rotation_model&#39;)</span>
+            <span class="n">anchor_plate_id</span><span class="o">=</span><span class="n">anchor_plate_id</span><span class="p">,</span>  <span class="c1"># if None then uses 'self.anchor_plate_id' (default anchor plate of 'self.rotation_model')</span>
             <span class="n">include_topological_slab_boundaries</span><span class="o">=</span><span class="n">include_topological_slab_boundaries</span><span class="p">,</span>
         <span class="p">)</span>
 
@@ -2568,7 +2568,7 @@
         <span class="n">return_times</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
         <span class="n">return_rate_of_motion</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a path of points to mark the trajectory of a plate&#39;s motion through geological time.</span>
+<span class="w">        </span><span class="sd">"""Create a path of points to mark the trajectory of a plate's motion through geological time.</span>
 
 <span class="sd">        One motion path is created for each point using its plate ID (either given or assigned using :py:attr:`topology_features`).</span>
 <span class="sd">        Each motion path is reconstructed to ``to_time`` (defaults to ``from_time`` which defaults to present day).</span>
@@ -2674,7 +2674,7 @@
 
 <span class="sd">        Examples</span>
 <span class="sd">        --------</span>
-<span class="sd">        To access the latitudes and longitudes of each seed point&#39;s motion path:</span>
+<span class="sd">        To access the latitudes and longitudes of each seed point's motion path:</span>
 
 <span class="sd">        .. code-block:: python</span>
 <span class="sd">            :linenos:</span>
@@ -2688,7 +2688,7 @@
 <span class="sd">            for i in range(len(rlons)):</span>
 <span class="sd">                current_lons = rlons[i]</span>
 <span class="sd">                current_lats = rlats[i]</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># If the anchor plate is None then use default anchor plate.</span>
         <span class="k">if</span> <span class="n">anchor_plate_id</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">anchor_plate_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">anchor_plate_id</span>
@@ -2696,8 +2696,8 @@
         <span class="k">if</span> <span class="n">relative_plate_id</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">relative_plate_id</span> <span class="o">=</span> <span class="n">anchor_plate_id</span>
 
-        <span class="c1"># The reconstruction time (&#39;to_time&#39;) defaults to the</span>
-        <span class="c1"># initial time (&#39;from_time&#39;) of the seed point locations.</span>
+        <span class="c1"># The reconstruction time ('to_time') defaults to the</span>
+        <span class="c1"># initial time ('from_time') of the seed point locations.</span>
         <span class="k">if</span> <span class="n">to_time</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">to_time</span> <span class="o">=</span> <span class="n">from_time</span>
 
@@ -2711,7 +2711,7 @@
             <span class="n">lats</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">lats</span><span class="p">)</span>
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">lons</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">lats</span><span class="p">):</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                    <span class="s2">&quot;&#39;lons&#39; and &#39;lats&#39; must be of equal length (</span><span class="si">{}</span><span class="s2"> != </span><span class="si">{}</span><span class="s2">)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                    <span class="s2">"'lons' and 'lats' must be of equal length (</span><span class="si">{}</span><span class="s2"> != </span><span class="si">{}</span><span class="s2">)"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
                         <span class="nb">len</span><span class="p">(</span><span class="n">lons</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">lats</span><span class="p">)</span>
                     <span class="p">)</span>
                 <span class="p">)</span>
@@ -2721,7 +2721,7 @@
             <span class="n">lats</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">(</span><span class="n">lats</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="s2">&quot;Both &#39;lats&#39; and &#39;lons&#39; must both be a sequence or both a scalar&quot;</span>
+                <span class="s2">"Both 'lats' and 'lons' must both be a sequence or both a scalar"</span>
             <span class="p">)</span>
 
         <span class="n">points</span> <span class="o">=</span> <span class="p">[</span><span class="n">pygplates</span><span class="o">.</span><span class="n">PointOnSphere</span><span class="p">(</span><span class="n">lat</span><span class="p">,</span> <span class="n">lon</span><span class="p">)</span> <span class="k">for</span> <span class="n">lon</span><span class="p">,</span> <span class="n">lat</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">lons</span><span class="p">,</span> <span class="n">lats</span><span class="p">)]</span>
@@ -2737,17 +2737,17 @@
                 <span class="n">point_plate_ids</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">plate_id</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
                 <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">point_plate_ids</span><span class="p">)</span> <span class="o">!=</span> <span class="n">num_points</span><span class="p">:</span>
                     <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                        <span class="s2">&quot;&#39;plate_id&#39; must be same length as &#39;lons&#39; and &#39;lats&#39; (</span><span class="si">{}</span><span class="s2"> != </span><span class="si">{}</span><span class="s2">)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                        <span class="s2">"'plate_id' must be same length as 'lons' and 'lats' (</span><span class="si">{}</span><span class="s2"> != </span><span class="si">{}</span><span class="s2">)"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
                             <span class="nb">len</span><span class="p">(</span><span class="n">point_plate_ids</span><span class="p">),</span> <span class="n">num_points</span>
                         <span class="p">)</span>
                     <span class="p">)</span>
-        <span class="c1"># Else assign a plate ID to each point based on which resolved topology it&#39;s inside.</span>
+        <span class="c1"># Else assign a plate ID to each point based on which resolved topology it's inside.</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">point_plate_ids</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">num_points</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
 
             <span class="k">if</span> <span class="n">assign_plate_id_using_static_polygons</span><span class="p">:</span>
                 <span class="c1">#</span>
-                <span class="c1"># Assign a plate ID to each point based on which reconstructed static polygon it&#39;s inside.</span>
+                <span class="c1"># Assign a plate ID to each point based on which reconstructed static polygon it's inside.</span>
                 <span class="c1">#</span>
                 <span class="n">static_polygons_snapshot</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">static_polygons_snapshot</span><span class="p">(</span>
                     <span class="c1"># The initial time of the seed point locations...</span>
@@ -2773,7 +2773,7 @@
 
             <span class="k">else</span><span class="p">:</span>
                 <span class="c1">#</span>
-                <span class="c1"># Assign a plate ID to each point based on which resolved topology it&#39;s inside.</span>
+                <span class="c1"># Assign a plate ID to each point based on which resolved topology it's inside.</span>
                 <span class="c1">#</span>
                 <span class="n">topological_snapshot</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">topological_snapshot</span><span class="p">(</span>
                     <span class="c1"># The initial time of the seed point locations...</span>
@@ -2809,7 +2809,7 @@
                         <span class="p">)</span>
                     <span class="k">else</span><span class="p">:</span>  <span class="c1"># point is not in any resolved topologies</span>
                         <span class="c1"># Assign the anchor plate ID to indicate we could NOT assign a proper plate ID.</span>
-                        <span class="c1"># This generally shouldn&#39;t happen if the topologies have global coverage.</span>
+                        <span class="c1"># This generally shouldn't happen if the topologies have global coverage.</span>
                         <span class="n">point_plate_ids</span><span class="p">[</span><span class="n">point_index</span><span class="p">]</span> <span class="o">=</span> <span class="n">anchor_plate_id</span>
 
         <span class="c1"># Need to query the first reconstructed motion path before we can size the return arrays.</span>
@@ -2823,7 +2823,7 @@
                 <span class="n">point</span><span class="p">,</span>
                 <span class="n">time_array</span><span class="p">,</span>
                 <span class="c1"># We want the motion path to get reconstructed all the way to present day, even if the</span>
-                <span class="c1"># time array doesn&#39;t include present day. The motion path should only disappear when</span>
+                <span class="c1"># time array doesn't include present day. The motion path should only disappear when</span>
                 <span class="c1"># reconstructed further back in time than the oldest time in the time array...</span>
                 <span class="n">valid_time</span><span class="o">=</span><span class="p">(</span><span class="n">time_array</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="mf">0.0</span><span class="p">),</span>  <span class="c1"># max(time_array), present-day</span>
                 <span class="n">relative_plate</span><span class="o">=</span><span class="n">relative_plate_id</span><span class="p">,</span>
@@ -2832,20 +2832,20 @@
 
             <span class="c1"># Reconstruct the motion path feature.</span>
             <span class="c1">#</span>
-            <span class="c1"># This involves *reverse* reconstructing it from &#39;from_time&#39; to present day</span>
+            <span class="c1"># This involves *reverse* reconstructing it from 'from_time' to present day</span>
             <span class="c1"># (since all pygplates.Feature must have present day coordinates) and then</span>
-            <span class="c1"># reconstructing the motion path feature from present day to &#39;to_time&#39;.</span>
+            <span class="c1"># reconstructing the motion path feature from present day to 'to_time'.</span>
             <span class="n">reconstructed_motion_paths</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">reconstruct</span><span class="p">(</span>
                 <span class="n">motion_path_feature</span><span class="p">,</span>
-                <span class="n">to_time</span><span class="o">=</span><span class="n">to_time</span><span class="p">,</span>  <span class="c1"># reconstruct to &#39;to_time&#39;</span>
-                <span class="n">from_time</span><span class="o">=</span><span class="n">from_time</span><span class="p">,</span>  <span class="c1"># initial seed point locations correspond to &#39;from_time&#39;</span>
+                <span class="n">to_time</span><span class="o">=</span><span class="n">to_time</span><span class="p">,</span>  <span class="c1"># reconstruct to 'to_time'</span>
+                <span class="n">from_time</span><span class="o">=</span><span class="n">from_time</span><span class="p">,</span>  <span class="c1"># initial seed point locations correspond to 'from_time'</span>
                 <span class="n">anchor_plate_id</span><span class="o">=</span><span class="n">anchor_plate_id</span><span class="p">,</span>
                 <span class="n">reconstruct_type</span><span class="o">=</span><span class="n">pygplates</span><span class="o">.</span><span class="n">ReconstructType</span><span class="o">.</span><span class="n">motion_path</span><span class="p">,</span>
             <span class="p">)</span>
 
             <span class="k">if</span> <span class="ow">not</span> <span class="n">reconstructed_motion_paths</span><span class="p">:</span>
                 <span class="c1"># If we get here then there are not enough points to form a polyline (needs 2 points) for the reconstructed motion path.</span>
-                <span class="c1"># This can be because &#39;time_array.max() &lt;= to_time&#39; and hence there&#39;s only zero or one point in the motion path.</span>
+                <span class="c1"># This can be because 'time_array.max() &lt;= to_time' and hence there's only zero or one point in the motion path.</span>
                 <span class="c1">#</span>
                 <span class="c1"># Return arrays with zero columns (ie, no history).</span>
                 <span class="n">rlons</span> <span class="o">=</span> <span class="n">rlats</span> <span class="o">=</span> <span class="n">rtimes</span> <span class="o">=</span> <span class="n">rate_of_motion</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">num_points</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
@@ -2860,17 +2860,17 @@
 
             <span class="c1"># There should be only one reconstructed motion path since it was created from only one seed point.</span>
             <span class="n">reconstructed_motion_path</span> <span class="o">=</span> <span class="n">reconstructed_motion_paths</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-            <span class="k">del</span> <span class="n">reconstructed_motion_paths</span>  <span class="c1"># so we don&#39;t accidentally use it</span>
+            <span class="k">del</span> <span class="n">reconstructed_motion_paths</span>  <span class="c1"># so we don't accidentally use it</span>
 
             <span class="c1"># Turn the motion path in to lat-lon coordinates.</span>
             <span class="n">trail_lat_lon</span> <span class="o">=</span> <span class="p">(</span>
                 <span class="n">reconstructed_motion_path</span><span class="o">.</span><span class="n">get_motion_path</span><span class="p">()</span><span class="o">.</span><span class="n">to_lat_lon_array</span><span class="p">()</span>
             <span class="p">)</span>
             <span class="c1"># Note that the motion path coordinates come out starting with the oldest time and working forwards.</span>
-            <span class="c1"># So, to match our &#39;times&#39; array, we flip the order.</span>
+            <span class="c1"># So, to match our 'times' array, we flip the order.</span>
             <span class="n">trail_lat_lon</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">flipud</span><span class="p">(</span><span class="n">trail_lat_lon</span><span class="p">)</span>
 
-            <span class="c1"># Create the return arrays (if haven&#39;t already).</span>
+            <span class="c1"># Create the return arrays (if haven't already).</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">created_return_arrays</span><span class="p">:</span>
                 <span class="c1"># All motion paths will have the same times in the motion path because they</span>
                 <span class="c1"># were all created with the same time array (and same begin/end valid time).</span>
@@ -2878,12 +2878,12 @@
                 <span class="c1"># So we can assume all motion paths (one per seed point) will have the same size.</span>
                 <span class="n">num_rtimes</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">trail_lat_lon</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">return_times</span> <span class="ow">or</span> <span class="n">return_rate_of_motion</span><span class="p">:</span>
-                    <span class="c1"># These are the *last* &#39;num_rtimes&#39; times in the time array.</span>
+                    <span class="c1"># These are the *last* 'num_rtimes' times in the time array.</span>
                     <span class="c1">#</span>
                     <span class="c1"># Note: We only need one time array for *all* the motion paths</span>
                     <span class="c1">#       (unlike the rate-of-motion that requires one array *per* motion path).</span>
                     <span class="n">rtimes</span> <span class="o">=</span> <span class="n">time_array</span><span class="p">[</span><span class="o">-</span><span class="n">num_rtimes</span><span class="p">:]</span>
-                    <span class="c1"># Also change the youngest time to the reconstruction time if it&#39;s within the time array range.</span>
+                    <span class="c1"># Also change the youngest time to the reconstruction time if it's within the time array range.</span>
                     <span class="c1">#</span>
                     <span class="c1"># This is a subtle point that unfortunately we need to handle.</span>
                     <span class="c1"># It would be better for pygplates.ReconstructedMotionPath to add a method</span>
@@ -2921,7 +2921,7 @@
                 <span class="p">]</span>
 
                 <span class="c1"># Note that the motion path coordinates come out starting with the oldest time and working forwards.</span>
-                <span class="c1"># So, to match our &#39;times&#39; array, we flip the order.</span>
+                <span class="c1"># So, to match our 'times' array, we flip the order.</span>
                 <span class="n">distance</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">flipud</span><span class="p">(</span><span class="n">distance</span><span class="p">)</span>
 
                 <span class="c1"># Get rate of motion as cm/yr (from metres/Myr by multiplying with 1e-4).</span>
@@ -2954,7 +2954,7 @@
         <span class="n">return_times</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
         <span class="n">return_rate_of_motion</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a path of points to track plate motion away from spreading ridges over time using half-stage rotations.</span>
+<span class="w">        </span><span class="sd">"""Create a path of points to track plate motion away from spreading ridges over time using half-stage rotations.</span>
 
 <span class="sd">        One flowline is created for each point using the left and right plate IDs.</span>
 <span class="sd">        Each flowline is reconstructed to ``to_time`` (defaults to ``from_time`` which defaults to present day).</span>
@@ -3045,7 +3045,7 @@
 
 <span class="sd">        Examples</span>
 <span class="sd">        --------</span>
-<span class="sd">        To access the latitudes and longitudes of each point&#39;s flowline:</span>
+<span class="sd">        To access the latitudes and longitudes of each point's flowline:</span>
 
 <span class="sd">        .. code-block:: python</span>
 <span class="sd">            :linenos:</span>
@@ -3068,26 +3068,26 @@
 <span class="sd">            for i in range(len(right_rlons)):</span>
 <span class="sd">                current_right_lons = right_rlons[i]</span>
 <span class="sd">                current_right_lats = right_rlats[i]</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># The left/right plate IDs should be integers.</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">left_plate_id</span><span class="p">,</span> <span class="n">numbers</span><span class="o">.</span><span class="n">Integral</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span>
             <span class="n">right_plate_id</span><span class="p">,</span> <span class="n">numbers</span><span class="o">.</span><span class="n">Integral</span>
         <span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;&#39;left_plate_id&#39; and &#39;right_plate_id&#39; should be integers&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"'left_plate_id' and 'right_plate_id' should be integers"</span><span class="p">)</span>
 
         <span class="c1"># If the anchor plate is None then use default anchor plate.</span>
         <span class="k">if</span> <span class="n">anchor_plate_id</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">anchor_plate_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">anchor_plate_id</span>
 
-        <span class="c1"># The reconstruction time (&#39;to_time&#39;) defaults to the</span>
-        <span class="c1"># initial time (&#39;from_time&#39;) of the seed point locations.</span>
+        <span class="c1"># The reconstruction time ('to_time') defaults to the</span>
+        <span class="c1"># initial time ('from_time') of the seed point locations.</span>
         <span class="k">if</span> <span class="n">to_time</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">to_time</span> <span class="o">=</span> <span class="n">from_time</span>
 
         <span class="c1"># Make sure time array is ascending.</span>
         <span class="n">time_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">(</span><span class="n">time_array</span><span class="p">))</span>
-        <span class="c1"># If the reconstruction time (&#39;to_time&#39;) is younger than the youngest time in the input time array</span>
-        <span class="c1"># then it&#39;ll still get included in the reconstructed flowline. Since we only want to see flowline points</span>
+        <span class="c1"># If the reconstruction time ('to_time') is younger than the youngest time in the input time array</span>
+        <span class="c1"># then it'll still get included in the reconstructed flowline. Since we only want to see flowline points</span>
         <span class="c1"># within the time array we will need to ignore it in the reconstructed left/right flowlines.</span>
         <span class="c1"># This is not a problem for motion paths though.</span>
         <span class="k">if</span> <span class="n">to_time</span> <span class="o">&lt;</span> <span class="n">time_array</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
@@ -3095,7 +3095,7 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="n">ignore_youngest_time_sample</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="c1"># Unfortunately a flowline will not get reconstructed properly unless present day is included in the input time array.</span>
-        <span class="c1"># So insert &#39;to_time&#39; into &#39;time_array&#39; if present day is not included.</span>
+        <span class="c1"># So insert 'to_time' into 'time_array' if present day is not included.</span>
         <span class="k">if</span> <span class="n">time_array</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
             <span class="n">time_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">time_array</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
 
@@ -3106,7 +3106,7 @@
             <span class="n">lats</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">lats</span><span class="p">)</span>
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">lons</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">lats</span><span class="p">):</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                    <span class="s2">&quot;&#39;lons&#39; and &#39;lats&#39; must be of equal length (</span><span class="si">{}</span><span class="s2"> != </span><span class="si">{}</span><span class="s2">)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                    <span class="s2">"'lons' and 'lats' must be of equal length (</span><span class="si">{}</span><span class="s2"> != </span><span class="si">{}</span><span class="s2">)"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
                         <span class="nb">len</span><span class="p">(</span><span class="n">lons</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">lats</span><span class="p">)</span>
                     <span class="p">)</span>
                 <span class="p">)</span>
@@ -3116,7 +3116,7 @@
             <span class="n">lats</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">(</span><span class="n">lats</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="s2">&quot;Both &#39;lats&#39; and &#39;lons&#39; must both be a sequence or both a scalar&quot;</span>
+                <span class="s2">"Both 'lats' and 'lons' must both be a sequence or both a scalar"</span>
             <span class="p">)</span>
 
         <span class="n">points</span> <span class="o">=</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">MultiPointOnSphere</span><span class="p">(</span>
@@ -3130,7 +3130,7 @@
             <span class="n">points</span><span class="p">,</span>
             <span class="n">time_array</span><span class="p">,</span>
             <span class="c1"># We want the flowline to get reconstructed all the way to present day, even if the</span>
-            <span class="c1"># time array doesn&#39;t include present day. The flowline should only disappear when</span>
+            <span class="c1"># time array doesn't include present day. The flowline should only disappear when</span>
             <span class="c1"># reconstructed further back in time than the oldest time in the time array...</span>
             <span class="n">valid_time</span><span class="o">=</span><span class="p">(</span><span class="n">time_array</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="mf">0.0</span><span class="p">),</span>  <span class="c1"># max(time_array), present-day</span>
             <span class="n">left_plate</span><span class="o">=</span><span class="n">left_plate_id</span><span class="p">,</span>
@@ -3139,13 +3139,13 @@
 
         <span class="c1"># Reconstruct the flowline feature.</span>
         <span class="c1">#</span>
-        <span class="c1"># This involves *reverse* reconstructing it from &#39;from_time&#39; to present day</span>
+        <span class="c1"># This involves *reverse* reconstructing it from 'from_time' to present day</span>
         <span class="c1"># (since all pygplates.Feature must have present day coordinates) and then</span>
-        <span class="c1"># reconstructing the flowline feature from present day to &#39;to_time&#39;.</span>
+        <span class="c1"># reconstructing the flowline feature from present day to 'to_time'.</span>
         <span class="n">reconstructed_flowlines</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">reconstruct</span><span class="p">(</span>
             <span class="n">flowline_feature</span><span class="p">,</span>
-            <span class="n">to_time</span><span class="o">=</span><span class="n">to_time</span><span class="p">,</span>  <span class="c1"># reconstruct to &#39;to_time&#39;</span>
-            <span class="n">from_time</span><span class="o">=</span><span class="n">from_time</span><span class="p">,</span>  <span class="c1"># initial seed point locations correspond to &#39;from_time&#39;</span>
+            <span class="n">to_time</span><span class="o">=</span><span class="n">to_time</span><span class="p">,</span>  <span class="c1"># reconstruct to 'to_time'</span>
+            <span class="n">from_time</span><span class="o">=</span><span class="n">from_time</span><span class="p">,</span>  <span class="c1"># initial seed point locations correspond to 'from_time'</span>
             <span class="n">anchor_plate_id</span><span class="o">=</span><span class="n">anchor_plate_id</span><span class="p">,</span>
             <span class="n">reconstruct_type</span><span class="o">=</span><span class="n">pygplates</span><span class="o">.</span><span class="n">ReconstructType</span><span class="o">.</span><span class="n">flowline</span><span class="p">,</span>
         <span class="p">)</span>
@@ -3154,7 +3154,7 @@
             <span class="c1"># If we get here then there are not enough points to form a polyline (needs 2 points) for</span>
             <span class="c1"># the left/right sides of the reconstructed flowlines.</span>
             <span class="c1">#</span>
-            <span class="c1"># This can be because &#39;time_array.max() &lt;= to_time&#39; and hence there&#39;s only zero or one point</span>
+            <span class="c1"># This can be because 'time_array.max() &lt;= to_time' and hence there's only zero or one point</span>
             <span class="c1"># in each left/right flowline.</span>
             <span class="c1">#</span>
             <span class="c1"># Return arrays with zero columns (ie, no history).</span>
@@ -3192,7 +3192,7 @@
                 <span class="n">left_trail_lat_lon</span> <span class="o">=</span> <span class="n">left_trail_lat_lon</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
                 <span class="n">right_trail_lat_lon</span> <span class="o">=</span> <span class="n">right_trail_lat_lon</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
 
-            <span class="c1"># Create the return arrays (if haven&#39;t already).</span>
+            <span class="c1"># Create the return arrays (if haven't already).</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">created_return_arrays</span><span class="p">:</span>
                 <span class="c1"># All flowline will have the same times in the left/right flowline because they were all created</span>
                 <span class="c1"># with the same time array and left/right plate IDs (and same begin/end valid time).</span>
@@ -3200,12 +3200,12 @@
                 <span class="c1"># So we can assume all flowline (one per seed point) will have the same size.</span>
                 <span class="n">num_rtimes</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">left_trail_lat_lon</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">return_times</span> <span class="ow">or</span> <span class="n">return_rate_of_motion</span><span class="p">:</span>
-                    <span class="c1"># These are the *last* &#39;num_rtimes&#39; times in the time array.</span>
+                    <span class="c1"># These are the *last* 'num_rtimes' times in the time array.</span>
                     <span class="c1">#</span>
                     <span class="c1"># Note: We only need one array for *all* the flowlines</span>
                     <span class="c1">#       (unlike the rate-of-motion that requires one left and right array *per* flowline).</span>
                     <span class="n">rtimes</span> <span class="o">=</span> <span class="n">time_array</span><span class="p">[</span><span class="o">-</span><span class="n">num_rtimes</span><span class="p">:]</span>
-                    <span class="c1"># Also change the youngest time to the reconstruction time (unless we&#39;ve already ignored it).</span>
+                    <span class="c1"># Also change the youngest time to the reconstruction time (unless we've already ignored it).</span>
                     <span class="c1">#</span>
                     <span class="c1"># This is a subtle point that unfortunately we need to handle.</span>
                     <span class="c1"># It would be better for pygplates.ReconstructedFlowline to add a method that returns these times.</span>

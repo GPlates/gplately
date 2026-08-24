@@ -142,7 +142,7 @@ unchanged files.</p>
 <p class="rubric">Example</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">gplately</span>
 
-<span class="n">data_server</span> <span class="o">=</span> <span class="n">gplately</span><span class="o">.</span><span class="n">DataServer</span><span class="p">(</span><span class="s2">&quot;Muller2025&quot;</span><span class="p">)</span>
+<span class="n">data_server</span> <span class="o">=</span> <span class="n">gplately</span><span class="o">.</span><span class="n">DataServer</span><span class="p">(</span><span class="s2">"Muller2025"</span><span class="p">)</span>
 <span class="n">rotation_model</span><span class="p">,</span> <span class="n">topology_features</span><span class="p">,</span> <span class="n">static_polygons</span> <span class="o">=</span> <span class="p">(</span>
     <span class="n">data_server</span><span class="o">.</span><span class="n">get_plate_reconstruction_files</span><span class="p">()</span>
 <span class="p">)</span>
@@ -176,7 +176,7 @@ used.</p></li>
 <p class="rubric">Example</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">gplately</span>
 
-<span class="n">data_server</span> <span class="o">=</span> <span class="n">gplately</span><span class="o">.</span><span class="n">DataServer</span><span class="p">(</span><span class="s2">&quot;Muller2025&quot;</span><span class="p">)</span>
+<span class="n">data_server</span> <span class="o">=</span> <span class="n">gplately</span><span class="o">.</span><span class="n">DataServer</span><span class="p">(</span><span class="s2">"Muller2025"</span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -303,7 +303,7 @@ Save the grids in the <code class="docutils literal notranslate"><span class="pr
 <p>The age grid data can be accessed as a numpy ndarray or MaskedArray via
 the <a class="reference internal" href="gplately.Raster.html#gplately.Raster.data" title="gplately.Raster.data"><code class="xref py py-attr docutils literal notranslate"><span class="pre">gplately.Raster.data</span></code></a> attribute.</p>
 <p>For example:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span><span class="n">data_server</span> <span class="o">=</span> <span class="n">gplately</span><span class="o">.</span><span class="n">DataServer</span><span class="p">(</span><span class="s2">&quot;zahirovic2022&quot;</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span><span class="n">data_server</span> <span class="o">=</span> <span class="n">gplately</span><span class="o">.</span><span class="n">DataServer</span><span class="p">(</span><span class="s2">"zahirovic2022"</span><span class="p">)</span>
 <span class="linenos">2</span><span class="n">graster</span> <span class="o">=</span> <span class="n">data_server</span><span class="o">.</span><span class="n">get_age_grid</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>
 <span class="linenos">3</span><span class="n">graster_data</span> <span class="o">=</span> <span class="n">graster</span><span class="o">.</span><span class="n">data</span>
 </pre></div>
@@ -318,7 +318,7 @@ the <a class="reference internal" href="gplately.Raster.html#gplately.Raster.dat
 <p class="rubric">Example</p>
 <p>To download  Zahirovic et al. (2022) seafloor age grids for 0Ma, 1Ma and 100 Ma:</p>
 <blockquote>
-<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span><span class="n">data_server</span> <span class="o">=</span> <span class="n">gplately</span><span class="o">.</span><span class="n">DataServer</span><span class="p">(</span><span class="s2">&quot;zahirovic2022&quot;</span><span class="p">)</span>
+<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span><span class="n">data_server</span> <span class="o">=</span> <span class="n">gplately</span><span class="o">.</span><span class="n">DataServer</span><span class="p">(</span><span class="s2">"zahirovic2022"</span><span class="p">)</span>
 <span class="linenos">2</span><span class="n">age_grids</span> <span class="o">=</span> <span class="n">data_server</span><span class="o">.</span><span class="n">get_age_grid</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">100</span><span class="p">])</span>
 </pre></div>
 </div>
@@ -331,9 +331,9 @@ the <a class="reference internal" href="gplately.Raster.html#gplately.Raster.dat
 </ul>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span><span class="kn">from</span><span class="w"> </span><span class="nn">gplately</span><span class="w"> </span><span class="kn">import</span> <span class="n">PlateModelManager</span>
 <span class="linenos">2</span>
-<span class="linenos">3</span><span class="n">model</span> <span class="o">=</span> <span class="n">PlateModelManager</span><span class="p">()</span><span class="o">.</span><span class="n">get_model</span><span class="p">(</span><span class="s2">&quot;zahirovic2022&quot;</span><span class="p">)</span>
-<span class="hll"><span class="linenos">4</span><span class="nb">print</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">get_rasters</span><span class="p">(</span><span class="s2">&quot;AgeGrids&quot;</span><span class="p">,</span> <span class="n">times</span><span class="o">=</span><span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">30</span><span class="p">]))</span>
-</span><span class="hll"><span class="linenos">5</span><span class="nb">print</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">get_raster</span><span class="p">(</span><span class="s2">&quot;AgeGrids&quot;</span><span class="p">,</span> <span class="n">time</span><span class="o">=</span><span class="mi">100</span><span class="p">))</span>
+<span class="linenos">3</span><span class="n">model</span> <span class="o">=</span> <span class="n">PlateModelManager</span><span class="p">()</span><span class="o">.</span><span class="n">get_model</span><span class="p">(</span><span class="s2">"zahirovic2022"</span><span class="p">)</span>
+<span class="hll"><span class="linenos">4</span><span class="nb">print</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">get_rasters</span><span class="p">(</span><span class="s2">"AgeGrids"</span><span class="p">,</span> <span class="n">times</span><span class="o">=</span><span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">30</span><span class="p">]))</span>
+</span><span class="hll"><span class="linenos">5</span><span class="nb">print</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">get_raster</span><span class="p">(</span><span class="s2">"AgeGrids"</span><span class="p">,</span> <span class="n">time</span><span class="o">=</span><span class="mi">100</span><span class="p">))</span>
 </span></pre></div>
 </div>
 </div>
@@ -467,7 +467,7 @@ The plate IDs are essential to tectonic plate reconstruction.</p></li>
 Muller et al. (2019) plate reconstruction model and create a <a class="reference internal" href="gplately.PlateReconstruction.html#gplately.PlateReconstruction" title="gplately.PlateReconstruction"><code class="xref py py-class docutils literal notranslate"><span class="pre">gplately.PlateReconstruction</span></code></a> object.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="kn">import</span><span class="w"> </span><span class="nn">gplately</span>
 <span class="linenos"> 2</span>
-<span class="linenos"> 3</span><span class="n">data_server</span> <span class="o">=</span> <span class="n">gplately</span><span class="o">.</span><span class="n">DataServer</span><span class="p">(</span><span class="s2">&quot;Muller2025&quot;</span><span class="p">)</span>
+<span class="linenos"> 3</span><span class="n">data_server</span> <span class="o">=</span> <span class="n">gplately</span><span class="o">.</span><span class="n">DataServer</span><span class="p">(</span><span class="s2">"Muller2025"</span><span class="p">)</span>
 <span class="linenos"> 4</span><span class="n">rotation_model</span><span class="p">,</span> <span class="n">topology_features</span><span class="p">,</span> <span class="n">static_polygons</span> <span class="o">=</span> <span class="p">(</span>
 <span class="linenos"> 5</span>    <span class="n">data_server</span><span class="o">.</span><span class="n">get_plate_reconstruction_files</span><span class="p">()</span>
 <span class="linenos"> 6</span><span class="p">)</span>
@@ -508,7 +508,7 @@ Store the rasters in the <code class="docutils literal notranslate"><span class=
 <dd class="field-even"><p><p>A <a class="reference internal" href="gplately.Raster.html#gplately.Raster" title="gplately.Raster"><code class="xref py py-class docutils literal notranslate"><span class="pre">gplately.Raster</span></code></a> object containing the raster data which can be accessed as
 a <code class="docutils literal notranslate"><span class="pre">numpy</span> <span class="pre">ndarray</span></code> or <code class="docutils literal notranslate"><span class="pre">MaskedArray</span></code> via <a class="reference internal" href="gplately.Raster.html#gplately.Raster.data" title="gplately.Raster.data"><code class="xref py py-attr docutils literal notranslate"><span class="pre">gplately.Raster.data</span></code></a> attribute.</p>
 <p>For example:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span><span class="n">graster</span> <span class="o">=</span> <span class="n">gplately</span><span class="o">.</span><span class="n">DataServer</span><span class="o">.</span><span class="n">get_raster</span><span class="p">(</span><span class="s2">&quot;ETOPO1_tif&quot;</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span><span class="n">graster</span> <span class="o">=</span> <span class="n">gplately</span><span class="o">.</span><span class="n">DataServer</span><span class="o">.</span><span class="n">get_raster</span><span class="p">(</span><span class="s2">"ETOPO1_tif"</span><span class="p">)</span>
 <span class="linenos">2</span><span class="n">graster_data</span> <span class="o">=</span> <span class="n">graster</span><span class="o">.</span><span class="n">data</span>
 </pre></div>
 </div>
@@ -529,7 +529,7 @@ a <code class="docutils literal notranslate"><span class="pre">numpy</span> <spa
 <span class="linenos">3</span>
 <span class="linenos">4</span><span class="kn">import</span><span class="w"> </span><span class="nn">gplately</span>
 <span class="linenos">5</span>
-<span class="linenos">6</span><span class="n">etopo1</span> <span class="o">=</span> <span class="n">gplately</span><span class="o">.</span><span class="n">DataServer</span><span class="o">.</span><span class="n">get_raster</span><span class="p">(</span><span class="s2">&quot;ETOPO1_tif&quot;</span><span class="p">)</span>
+<span class="linenos">6</span><span class="n">etopo1</span> <span class="o">=</span> <span class="n">gplately</span><span class="o">.</span><span class="n">DataServer</span><span class="o">.</span><span class="n">get_raster</span><span class="p">(</span><span class="s2">"ETOPO1_tif"</span><span class="p">)</span>
 <span class="linenos">7</span><span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">18</span><span class="p">,</span> <span class="mi">14</span><span class="p">),</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">300</span><span class="p">)</span>
 <span class="linenos">8</span><span class="n">ax</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">111</span><span class="p">,</span> <span class="n">projection</span><span class="o">=</span><span class="n">ccrs</span><span class="o">.</span><span class="n">Mollweide</span><span class="p">(</span><span class="n">central_longitude</span><span class="o">=-</span><span class="mi">150</span><span class="p">))</span>
 <span class="linenos">9</span><span class="n">ax</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">etopo1</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">extent</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">180</span><span class="p">,</span> <span class="mi">180</span><span class="p">,</span> <span class="o">-</span><span class="mi">90</span><span class="p">,</span> <span class="mi">90</span><span class="p">),</span> <span class="n">transform</span><span class="o">=</span><span class="n">ccrs</span><span class="o">.</span><span class="n">PlateCarree</span><span class="p">())</span>
@@ -581,7 +581,7 @@ be reconstructed to a particular geological time.</p></li>
 <p class="admonition-title">Note</p>
 <p>The example code below will attempt to download <code class="docutils literal notranslate"><span class="pre">coastlines</span></code>, <code class="docutils literal notranslate"><span class="pre">continents</span></code> and <code class="docutils literal notranslate"><span class="pre">COBs</span></code> from the Muller
 et al. (2025) plate reconstruction model and create a <a class="reference internal" href="gplately.PlotTopologies.html#gplately.PlotTopologies" title="gplately.PlotTopologies"><code class="xref py py-class docutils literal notranslate"><span class="pre">gplately.PlotTopologies</span></code></a> object.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="n">data_server</span> <span class="o">=</span> <span class="n">gplately</span><span class="o">.</span><span class="n">download</span><span class="o">.</span><span class="n">DataServer</span><span class="p">(</span><span class="s2">&quot;Muller2025&quot;</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="n">data_server</span> <span class="o">=</span> <span class="n">gplately</span><span class="o">.</span><span class="n">download</span><span class="o">.</span><span class="n">DataServer</span><span class="p">(</span><span class="s2">"Muller2025"</span><span class="p">)</span>
 <span class="linenos"> 2</span><span class="n">rotation_model</span><span class="p">,</span> <span class="n">topology_features</span><span class="p">,</span> <span class="n">static_polygons</span> <span class="o">=</span> <span class="p">(</span>
 <span class="linenos"> 3</span>    <span class="n">data_server</span><span class="o">.</span><span class="n">get_plate_reconstruction_files</span><span class="p">()</span>
 <span class="linenos"> 4</span><span class="p">)</span>

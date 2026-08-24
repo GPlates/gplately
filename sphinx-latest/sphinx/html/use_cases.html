@@ -117,7 +117,7 @@ To simply access plate model files, you can use the <a class="reference external
 </div>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="kn">from</span><span class="w"> </span><span class="nn">gplately</span><span class="w"> </span><span class="kn">import</span> <span class="n">DataServer</span>
 <span class="linenos"> 2</span>
-<span class="hll"><span class="linenos"> 3</span><span class="n">data_server</span> <span class="o">=</span> <span class="n">DataServer</span><span class="p">(</span><span class="s2">&quot;Muller2019&quot;</span><span class="p">)</span>
+<span class="hll"><span class="linenos"> 3</span><span class="n">data_server</span> <span class="o">=</span> <span class="n">DataServer</span><span class="p">(</span><span class="s2">"Muller2019"</span><span class="p">)</span>
 </span><span class="linenos"> 4</span>
 <span class="linenos"> 5</span><span class="c1"># Download plate reconstruction files and geometries from the Müller et al. 2019 model</span>
 <span class="linenos"> 6</span><span class="n">rotation_model</span><span class="p">,</span> <span class="n">topology_features</span><span class="p">,</span> <span class="n">static_polygons</span> <span class="o">=</span> <span class="p">(</span>
@@ -129,7 +129,7 @@ To simply access plate model files, you can use the <a class="reference external
 <span class="linenos">12</span><span class="n">age_grid</span> <span class="o">=</span> <span class="n">data_server</span><span class="o">.</span><span class="n">get_age_grid</span><span class="p">(</span><span class="n">times</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
 <span class="linenos">13</span>
 <span class="linenos">14</span><span class="c1"># Download the ETOPO1 geotiff raster</span>
-<span class="linenos">15</span><span class="n">etopo</span> <span class="o">=</span> <span class="n">data_server</span><span class="o">.</span><span class="n">get_raster</span><span class="p">(</span><span class="s2">&quot;ETOPO1_tif&quot;</span><span class="p">)</span>
+<span class="linenos">15</span><span class="n">etopo</span> <span class="o">=</span> <span class="n">data_server</span><span class="o">.</span><span class="n">get_raster</span><span class="p">(</span><span class="s2">"ETOPO1_tif"</span><span class="p">)</span>
 </pre></div>
 </div>
 <div class="admonition seealso">
@@ -143,13 +143,13 @@ To simply access plate model files, you can use the <a class="reference external
 and to interrogate plate kinematic data like plate motion velocities, and rates of subduction and seafloor spreading.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="kn">from</span><span class="w"> </span><span class="nn">gplately</span><span class="w"> </span><span class="kn">import</span> <span class="n">PlateReconstruction</span><span class="p">,</span> <span class="n">PlateModelManager</span>
 <span class="linenos"> 2</span>
-<span class="linenos"> 3</span><span class="n">model</span> <span class="o">=</span> <span class="n">PlateModelManager</span><span class="p">()</span><span class="o">.</span><span class="n">get_model</span><span class="p">(</span><span class="s2">&quot;Muller2019&quot;</span><span class="p">)</span>
+<span class="linenos"> 3</span><span class="n">model</span> <span class="o">=</span> <span class="n">PlateModelManager</span><span class="p">()</span><span class="o">.</span><span class="n">get_model</span><span class="p">(</span><span class="s2">"Muller2019"</span><span class="p">)</span>
 <span class="linenos"> 4</span>
 <span class="linenos"> 5</span><span class="c1"># Build a plate reconstruction model using a rotation model, a set of topology features and static polygons</span>
 <span class="hll"><span class="linenos"> 6</span><span class="n">recon_model</span> <span class="o">=</span> <span class="n">PlateReconstruction</span><span class="p">(</span>
 </span><span class="linenos"> 7</span>   <span class="n">model</span><span class="o">.</span><span class="n">get_rotation_model</span><span class="p">(),</span>
-<span class="linenos"> 8</span>   <span class="n">topology_features</span><span class="o">=</span><span class="n">model</span><span class="o">.</span><span class="n">get_layer</span><span class="p">(</span><span class="s2">&quot;Topologies&quot;</span><span class="p">),</span>
-<span class="linenos"> 9</span>   <span class="n">static_polygons</span><span class="o">=</span><span class="n">model</span><span class="o">.</span><span class="n">get_layer</span><span class="p">(</span><span class="s2">&quot;StaticPolygons&quot;</span><span class="p">),</span>
+<span class="linenos"> 8</span>   <span class="n">topology_features</span><span class="o">=</span><span class="n">model</span><span class="o">.</span><span class="n">get_layer</span><span class="p">(</span><span class="s2">"Topologies"</span><span class="p">),</span>
+<span class="linenos"> 9</span>   <span class="n">static_polygons</span><span class="o">=</span><span class="n">model</span><span class="o">.</span><span class="n">get_layer</span><span class="p">(</span><span class="s2">"StaticPolygons"</span><span class="p">),</span>
 <span class="linenos">10</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -157,7 +157,7 @@ and to interrogate plate kinematic data like plate motion velocities, and rates 
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span><span class="kn">from</span><span class="w"> </span><span class="nn">gplately.auxiliary</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_plate_reconstruction</span>
 <span class="linenos">2</span>
 <span class="linenos">3</span><span class="c1"># use the auxiliary function to create a PlateReconstruction object</span>
-<span class="hll"><span class="linenos">4</span><span class="n">plate_reconstruction_instance</span> <span class="o">=</span> <span class="n">get_plate_reconstruction</span><span class="p">(</span><span class="s2">&quot;Muller2019&quot;</span><span class="p">)</span>
+<span class="hll"><span class="linenos">4</span><span class="n">plate_reconstruction_instance</span> <span class="o">=</span> <span class="n">get_plate_reconstruction</span><span class="p">(</span><span class="s2">"Muller2019"</span><span class="p">)</span>
 </span></pre></div>
 </div>
 <p>The <a class="reference external" href="../../notebook-html/02-PlateReconstructions.html">PlateReconstructions example</a> demonstrates in detail how to use the <a class="reference internal" href="generated/gplately.PlateReconstruction.html#gplately.PlateReconstruction" title="gplately.PlateReconstruction"><code class="xref py py-class docutils literal notranslate"><span class="pre">gplately.PlateReconstruction</span></code></a> class.
@@ -172,7 +172,7 @@ through geologic time. This motion can be visualised using flowlines or motion p
 <span class="linenos"> 3</span><span class="kn">from</span><span class="w"> </span><span class="nn">gplately</span><span class="w"> </span><span class="kn">import</span> <span class="n">Points</span><span class="p">,</span> <span class="n">auxiliary</span>
 <span class="linenos"> 4</span>
 <span class="linenos"> 5</span><span class="c1"># Create a plate reconstruction model using a rotation model, a set of topology features and static polygons</span>
-<span class="linenos"> 6</span><span class="n">recon_model</span> <span class="o">=</span> <span class="n">auxiliary</span><span class="o">.</span><span class="n">get_plate_reconstruction</span><span class="p">(</span><span class="s2">&quot;Muller2019&quot;</span><span class="p">)</span>
+<span class="linenos"> 6</span><span class="n">recon_model</span> <span class="o">=</span> <span class="n">auxiliary</span><span class="o">.</span><span class="n">get_plate_reconstruction</span><span class="p">(</span><span class="s2">"Muller2019"</span><span class="p">)</span>
 <span class="linenos"> 7</span>
 <span class="linenos"> 8</span><span class="c1"># Define some points using their latitude and longitude coordinates so we can track them through time!</span>
 <span class="linenos"> 9</span><span class="n">pt_lons</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">140.0</span><span class="p">,</span> <span class="mf">150.0</span><span class="p">,</span> <span class="mf">160.0</span><span class="p">])</span>
@@ -198,22 +198,22 @@ resized, resampled, and reconstructed back and forwards through geologic time. O
 interpolated onto Raster grids.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="kn">from</span><span class="w"> </span><span class="nn">gplately</span><span class="w"> </span><span class="kn">import</span> <span class="n">PresentDayRasterManager</span><span class="p">,</span> <span class="n">Raster</span><span class="p">,</span> <span class="n">auxiliary</span>
 <span class="linenos"> 2</span>
-<span class="linenos"> 3</span><span class="n">model</span> <span class="o">=</span> <span class="n">auxiliary</span><span class="o">.</span><span class="n">get_plate_model</span><span class="p">(</span><span class="s2">&quot;Muller2019&quot;</span><span class="p">)</span>
+<span class="linenos"> 3</span><span class="n">model</span> <span class="o">=</span> <span class="n">auxiliary</span><span class="o">.</span><span class="n">get_plate_model</span><span class="p">(</span><span class="s2">"Muller2019"</span><span class="p">)</span>
 <span class="linenos"> 4</span><span class="c1"># Create a plate reconstruction model using a rotation model, a set of topology features and static polygons</span>
 <span class="linenos"> 5</span><span class="n">recon_model</span> <span class="o">=</span> <span class="n">auxiliary</span><span class="o">.</span><span class="n">get_plate_reconstruction</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
 <span class="linenos"> 6</span>
 <span class="linenos"> 7</span><span class="c1"># Any numpy array can be turned into a Raster object!</span>
 <span class="hll"><span class="linenos"> 8</span><span class="n">raster</span> <span class="o">=</span> <span class="n">Raster</span><span class="p">(</span>
 </span><span class="linenos"> 9</span>   <span class="n">plate_reconstruction</span><span class="o">=</span><span class="n">recon_model</span><span class="p">,</span>
-<span class="linenos">10</span>   <span class="n">data</span><span class="o">=</span><span class="n">PresentDayRasterManager</span><span class="p">()</span><span class="o">.</span><span class="n">get_raster</span><span class="p">(</span><span class="s2">&quot;topography&quot;</span><span class="p">),</span>
-<span class="linenos">11</span>   <span class="n">extent</span><span class="o">=</span><span class="s2">&quot;global&quot;</span><span class="p">,</span>  <span class="c1"># equivalent to (-180, 180, -90, 90)</span>
-<span class="linenos">12</span>   <span class="n">origin</span><span class="o">=</span><span class="s2">&quot;lower&quot;</span><span class="p">,</span>  <span class="c1"># or set extent to (-180, 180, -90, 90)</span>
+<span class="linenos">10</span>   <span class="n">data</span><span class="o">=</span><span class="n">PresentDayRasterManager</span><span class="p">()</span><span class="o">.</span><span class="n">get_raster</span><span class="p">(</span><span class="s2">"topography"</span><span class="p">),</span>
+<span class="linenos">11</span>   <span class="n">extent</span><span class="o">=</span><span class="s2">"global"</span><span class="p">,</span>  <span class="c1"># equivalent to (-180, 180, -90, 90)</span>
+<span class="linenos">12</span>   <span class="n">origin</span><span class="o">=</span><span class="s2">"lower"</span><span class="p">,</span>  <span class="c1"># or set extent to (-180, 180, -90, 90)</span>
 <span class="linenos">13</span><span class="p">)</span>
 <span class="linenos">14</span>
 <span class="linenos">15</span><span class="c1"># Reconstruct the raster data to 50 million years ago!</span>
 <span class="hll"><span class="linenos">16</span><span class="n">reconstructed_raster</span> <span class="o">=</span> <span class="n">raster</span><span class="o">.</span><span class="n">reconstruct</span><span class="p">(</span>
 </span><span class="linenos">17</span>   <span class="n">time</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span>
-<span class="linenos">18</span>   <span class="n">partitioning_features</span><span class="o">=</span><span class="n">model</span><span class="o">.</span><span class="n">get_layer</span><span class="p">(</span><span class="s2">&quot;ContinentalPolygons&quot;</span><span class="p">),</span>
+<span class="linenos">18</span>   <span class="n">partitioning_features</span><span class="o">=</span><span class="n">model</span><span class="o">.</span><span class="n">get_layer</span><span class="p">(</span><span class="s2">"ContinentalPolygons"</span><span class="p">),</span>
 <span class="linenos">19</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -228,14 +228,14 @@ The latest <a class="reference external" href="https://github.com/GPlates/gplate
 geologic features of different types, such as coastlines, continents and continent-ocean boundaries reconstructed through time using pyGPlates.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="kn">from</span><span class="w"> </span><span class="nn">gplately</span><span class="w"> </span><span class="kn">import</span> <span class="n">PlotTopologies</span><span class="p">,</span> <span class="n">auxiliary</span>
 <span class="linenos"> 2</span>
-<span class="linenos"> 3</span><span class="n">model</span> <span class="o">=</span> <span class="n">auxiliary</span><span class="o">.</span><span class="n">get_plate_model</span><span class="p">(</span><span class="s2">&quot;Muller2019&quot;</span><span class="p">)</span>
+<span class="linenos"> 3</span><span class="n">model</span> <span class="o">=</span> <span class="n">auxiliary</span><span class="o">.</span><span class="n">get_plate_model</span><span class="p">(</span><span class="s2">"Muller2019"</span><span class="p">)</span>
 <span class="linenos"> 4</span><span class="n">recon_model</span> <span class="o">=</span> <span class="n">auxiliary</span><span class="o">.</span><span class="n">get_plate_reconstruction</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
 <span class="linenos"> 5</span>
 <span class="hll"><span class="linenos"> 6</span><span class="n">gplot</span> <span class="o">=</span> <span class="n">PlotTopologies</span><span class="p">(</span>
 </span><span class="linenos"> 7</span>   <span class="n">recon_model</span><span class="p">,</span>
-<span class="linenos"> 8</span>   <span class="n">coastlines</span><span class="o">=</span><span class="n">model</span><span class="o">.</span><span class="n">get_layer</span><span class="p">(</span><span class="s2">&quot;Coastlines&quot;</span><span class="p">),</span>
-<span class="linenos"> 9</span>   <span class="n">COBs</span><span class="o">=</span><span class="n">model</span><span class="o">.</span><span class="n">get_layer</span><span class="p">(</span><span class="s2">&quot;COBs&quot;</span><span class="p">),</span>
-<span class="linenos">10</span>   <span class="n">continents</span><span class="o">=</span><span class="n">model</span><span class="o">.</span><span class="n">get_layer</span><span class="p">(</span><span class="s2">&quot;ContinentalPolygons&quot;</span><span class="p">),</span>
+<span class="linenos"> 8</span>   <span class="n">coastlines</span><span class="o">=</span><span class="n">model</span><span class="o">.</span><span class="n">get_layer</span><span class="p">(</span><span class="s2">"Coastlines"</span><span class="p">),</span>
+<span class="linenos"> 9</span>   <span class="n">COBs</span><span class="o">=</span><span class="n">model</span><span class="o">.</span><span class="n">get_layer</span><span class="p">(</span><span class="s2">"COBs"</span><span class="p">),</span>
+<span class="linenos">10</span>   <span class="n">continents</span><span class="o">=</span><span class="n">model</span><span class="o">.</span><span class="n">get_layer</span><span class="p">(</span><span class="s2">"ContinentalPolygons"</span><span class="p">),</span>
 <span class="linenos">11</span>   <span class="n">time</span><span class="o">=</span><span class="mi">55</span><span class="p">,</span>
 <span class="linenos">12</span><span class="p">)</span>
 </pre></div>
@@ -244,7 +244,7 @@ geologic features of different types, such as coastlines, continents and contine
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span><span class="kn">from</span><span class="w"> </span><span class="nn">gplately.auxiliary</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_gplot</span>
 <span class="linenos">2</span>
 <span class="linenos">3</span><span class="c1"># use the auxiliary function to create a PlotTopologies object</span>
-<span class="hll"><span class="linenos">4</span><span class="n">plot_topologies_obj</span> <span class="o">=</span> <span class="n">get_gplot</span><span class="p">(</span><span class="s2">&quot;Muller2019&quot;</span><span class="p">,</span> <span class="n">time</span><span class="o">=</span><span class="mi">55</span><span class="p">)</span>
+<span class="hll"><span class="linenos">4</span><span class="n">plot_topologies_obj</span> <span class="o">=</span> <span class="n">get_gplot</span><span class="p">(</span><span class="s2">"Muller2019"</span><span class="p">,</span> <span class="n">time</span><span class="o">=</span><span class="mi">55</span><span class="p">)</span>
 </span></pre></div>
 </div>
 <p>The <a class="reference external" href="../../notebook-html/02-PlateReconstructions.html">PlateReconstructions example</a> demonstrates in detail how to use the <a class="reference internal" href="generated/gplately.PlotTopologies.html#gplately.PlotTopologies" title="gplately.PlotTopologies"><code class="xref py py-class docutils literal notranslate"><span class="pre">gplately.PlotTopologies</span></code></a> class.
@@ -258,11 +258,11 @@ The <a class="reference external" href="https://github.com/GPlates/gplately/blob
 as encoded by a plate reconstruction model.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 <span class="linenos"> 2</span>
-<span class="linenos"> 3</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;DISABLE_GPLATELY_DEV_WARNING&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;true&quot;</span>
+<span class="linenos"> 3</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">"DISABLE_GPLATELY_DEV_WARNING"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"true"</span>
 <span class="linenos"> 4</span>
 <span class="linenos"> 5</span><span class="kn">from</span><span class="w"> </span><span class="nn">gplately</span><span class="w"> </span><span class="kn">import</span> <span class="n">SeafloorGrid</span><span class="p">,</span> <span class="n">auxiliary</span>
 <span class="linenos"> 6</span>
-<span class="linenos"> 7</span><span class="n">model</span> <span class="o">=</span> <span class="n">auxiliary</span><span class="o">.</span><span class="n">get_plate_model</span><span class="p">(</span><span class="s2">&quot;Muller2019&quot;</span><span class="p">)</span>
+<span class="linenos"> 7</span><span class="n">model</span> <span class="o">=</span> <span class="n">auxiliary</span><span class="o">.</span><span class="n">get_plate_model</span><span class="p">(</span><span class="s2">"Muller2019"</span><span class="p">)</span>
 <span class="linenos"> 8</span><span class="n">plate_reconstruction</span> <span class="o">=</span> <span class="n">auxiliary</span><span class="o">.</span><span class="n">get_plate_reconstruction</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
 <span class="linenos"> 9</span>
 <span class="linenos">10</span><span class="c1"># Set up automatic gridding from 5Ma to present day</span>
@@ -271,7 +271,7 @@ as encoded by a plate reconstruction model.</p>
 <span class="linenos">13</span>   <span class="n">max_time</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>  <span class="c1"># start time (Ma)</span>
 <span class="linenos">14</span>   <span class="n">min_time</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>  <span class="c1"># end time (Ma)</span>
 <span class="linenos">15</span>   <span class="n">ridge_time_step</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>  <span class="c1"># time increment (Myr)</span>
-<span class="linenos">16</span>   <span class="n">continent_polygon_features</span><span class="o">=</span><span class="n">model</span><span class="o">.</span><span class="n">get_layer</span><span class="p">(</span><span class="s2">&quot;ContinentalPolygons&quot;</span><span class="p">),</span>  <span class="c1"># the continent polygons</span>
+<span class="linenos">16</span>   <span class="n">continent_polygon_features</span><span class="o">=</span><span class="n">model</span><span class="o">.</span><span class="n">get_layer</span><span class="p">(</span><span class="s2">"ContinentalPolygons"</span><span class="p">),</span>  <span class="c1"># the continent polygons</span>
 <span class="linenos">17</span><span class="p">)</span>
 <span class="linenos">18</span>
 <span class="linenos">19</span> <span class="c1"># Begin automatic gridding!</span>

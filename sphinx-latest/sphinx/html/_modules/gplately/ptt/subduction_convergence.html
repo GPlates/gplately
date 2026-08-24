@@ -84,7 +84,7 @@
              
   <h1>Source code for gplately.ptt.subduction_convergence</h1><div class="highlight"><pre>
 <span></span><span class="c1">#</span>
-<span class="c1">#    Copyright (C) 2016-2025 The University of Sydney, Australia</span>
+<span class="c1">#    Copyright (C) 2016-2026 The University of Sydney, Australia</span>
 <span class="c1">#</span>
 <span class="c1">#    This program is free software; you can redistribute it and/or modify it under</span>
 <span class="c1">#    the terms of the GNU General Public License, version 2, as published by</span>
@@ -100,7 +100,7 @@
 <span class="c1">#    51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.</span>
 <span class="c1">#</span>
 
-<span class="sd">&quot;&quot;&quot;Find the convergence rate of trenches (subduction zones).&quot;&quot;&quot;</span>
+<span class="sd">"""Find the convergence rate of trenches (subduction zones)."""</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">print_function</span>
 
@@ -133,12 +133,12 @@
     <span class="n">subduction_shared_sub_segment</span><span class="p">,</span>
     <span class="n">include_slab_topologies</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
 <span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Determine the subducting plate of the subduction shared sub-segment.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Determine the subducting plate of the subduction shared sub-segment."""</span>
     <span class="c1"># Get the subduction polarity of the subducting line.</span>
     <span class="n">subduction_polarity</span> <span class="o">=</span> <span class="n">subduction_shared_sub_segment</span><span class="o">.</span><span class="n">get_feature</span><span class="p">()</span><span class="o">.</span><span class="n">get_enumeration</span><span class="p">(</span>
         <span class="n">pygplates</span><span class="o">.</span><span class="n">PropertyName</span><span class="o">.</span><span class="n">gpml_subduction_polarity</span>
     <span class="p">)</span>
-    <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="n">subduction_polarity</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">subduction_polarity</span> <span class="o">==</span> <span class="s2">&quot;Unknown&quot;</span><span class="p">):</span>
+    <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="n">subduction_polarity</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">subduction_polarity</span> <span class="o">==</span> <span class="s2">"Unknown"</span><span class="p">):</span>
         <span class="k">return</span> <span class="kc">None</span>
 
     <span class="n">subducting_plate</span> <span class="o">=</span> <span class="kc">None</span>
@@ -148,7 +148,7 @@
     <span class="c1"># one network.</span>
     <span class="c1">#</span>
     <span class="c1"># There can be zero, one or more overriding plates but that does not affect us (since only looking for subducting plate).</span>
-    <span class="c1"># This actually makes things more robust because it&#39;s possible the topologies were built in such a way that a subduction line</span>
+    <span class="c1"># This actually makes things more robust because it's possible the topologies were built in such a way that a subduction line</span>
     <span class="c1"># is inadvertently duplicated such that the subducting plate uses one of the subduction lines as its boundary and the overriding plate</span>
     <span class="c1"># uses the other. In this case the subducting line attached to the subducting plate will not also be attached to the overriding plate</span>
     <span class="c1"># and hence there will be zero overriding plates here.</span>
@@ -156,7 +156,7 @@
     <span class="c1">#</span>
     <span class="c1"># So all these overriding cases do not affect us, which means we will actually get a more accurate total subduction zone length in this script</span>
     <span class="c1"># because we are not forced to ignore these overriding cases (normally we would be forced to find *one* overriding plate if we were looking for</span>
-    <span class="c1"># both the subducting and overriding plates). And also we&#39;re not counting duplicate subduction lines because we only count one of the duplicate</span>
+    <span class="c1"># both the subducting and overriding plates). And also we're not counting duplicate subduction lines because we only count one of the duplicate</span>
     <span class="c1"># subduction lines (the one attached to the subducting plate). However we will still have a problem if too many subducting plates are found.</span>
     <span class="n">sharing_resolved_topologies</span> <span class="o">=</span> <span class="p">(</span>
         <span class="n">subduction_shared_sub_segment</span><span class="o">.</span><span class="n">get_sharing_resolved_topologies</span><span class="p">()</span>
@@ -166,7 +166,7 @@
     <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">key</span><span class="p">(</span><span class="n">t</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Boundaries first, then networks - boundaries will be replaced by networks.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Boundaries first, then networks - boundaries will be replaced by networks."""</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">t</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">ResolvedTopologicalBoundary</span><span class="p">):</span>
             <span class="k">return</span> <span class="mi">0</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">t</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">ResolvedTopologicalNetwork</span><span class="p">):</span>
@@ -187,7 +187,7 @@
             <span class="n">sharing_resolved_topology</span><span class="o">.</span><span class="n">get_feature</span><span class="p">()</span>
             <span class="o">.</span><span class="n">get_feature_type</span><span class="p">()</span>
             <span class="o">.</span><span class="n">to_qualified_string</span><span class="p">()</span>
-            <span class="o">==</span> <span class="s2">&quot;gpml:TopologicalSlabBoundary&quot;</span>
+            <span class="o">==</span> <span class="s2">"gpml:TopologicalSlabBoundary"</span>
         <span class="p">):</span>
             <span class="c1"># Ignore slab topologies (e.g. flat slabs)</span>
             <span class="k">continue</span>
@@ -196,11 +196,11 @@
             <span class="o">==</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">PolygonOnSphere</span><span class="o">.</span><span class="n">Orientation</span><span class="o">.</span><span class="n">clockwise</span>
         <span class="p">):</span>
             <span class="c1"># The current topology sharing the subducting line has clockwise orientation (when viewed from above the Earth).</span>
-            <span class="c1"># If the overriding plate (subduction polarity) is to the &#39;left&#39; of the subducting line (when following its vertices in order)</span>
+            <span class="c1"># If the overriding plate (subduction polarity) is to the 'left' of the subducting line (when following its vertices in order)</span>
             <span class="c1"># and the subducting line is not reversed when contributing to the topology then that topology is the subducting plate.</span>
-            <span class="c1"># A similar test applies to the &#39;right&#39; but with the subducting line reversed in the topology.</span>
-            <span class="k">if</span> <span class="p">(</span><span class="n">subduction_polarity</span> <span class="o">==</span> <span class="s2">&quot;Left&quot;</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">geometry_reversal_flag</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span>
-                <span class="n">subduction_polarity</span> <span class="o">==</span> <span class="s2">&quot;Right&quot;</span> <span class="ow">and</span> <span class="n">geometry_reversal_flag</span>
+            <span class="c1"># A similar test applies to the 'right' but with the subducting line reversed in the topology.</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">subduction_polarity</span> <span class="o">==</span> <span class="s2">"Left"</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">geometry_reversal_flag</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span>
+                <span class="n">subduction_polarity</span> <span class="o">==</span> <span class="s2">"Right"</span> <span class="ow">and</span> <span class="n">geometry_reversal_flag</span>
             <span class="p">):</span>
                 <span class="n">n_subducting_plates</span> <span class="o">+=</span> <span class="mi">1</span>
                 <span class="n">subducting_topology_types</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">sharing_resolved_topology</span><span class="p">))</span>
@@ -213,11 +213,11 @@
                 <span class="n">subducting_plate</span> <span class="o">=</span> <span class="n">sharing_resolved_topology</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="c1"># The current topology sharing the subducting line has counter-clockwise orientation (when viewed from above the Earth).</span>
-            <span class="c1"># If the overriding plate (subduction polarity) is to the &#39;left&#39; of the subducting line (when following its vertices in order)</span>
+            <span class="c1"># If the overriding plate (subduction polarity) is to the 'left' of the subducting line (when following its vertices in order)</span>
             <span class="c1"># and the subducting line is reversed when contributing to the topology then that topology is the subducting plate.</span>
-            <span class="c1"># A similar test applies to the &#39;right&#39; but with the subducting line not reversed in the topology.</span>
-            <span class="k">if</span> <span class="p">(</span><span class="n">subduction_polarity</span> <span class="o">==</span> <span class="s2">&quot;Left&quot;</span> <span class="ow">and</span> <span class="n">geometry_reversal_flag</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span>
-                <span class="n">subduction_polarity</span> <span class="o">==</span> <span class="s2">&quot;Right&quot;</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">geometry_reversal_flag</span>
+            <span class="c1"># A similar test applies to the 'right' but with the subducting line not reversed in the topology.</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">subduction_polarity</span> <span class="o">==</span> <span class="s2">"Left"</span> <span class="ow">and</span> <span class="n">geometry_reversal_flag</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span>
+                <span class="n">subduction_polarity</span> <span class="o">==</span> <span class="s2">"Right"</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">geometry_reversal_flag</span>
             <span class="p">):</span>
                 <span class="n">n_subducting_plates</span> <span class="o">+=</span> <span class="mi">1</span>
                 <span class="n">subducting_topology_types</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">sharing_resolved_topology</span><span class="p">))</span>
@@ -253,7 +253,7 @@
     <span class="n">include_all_subducting_boundary_types</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
 <span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Find the convergence and absolute velocities sampled along trenches (subduction zones) at a particular geological time.</span>
+<span class="w">    </span><span class="sd">"""Find the convergence and absolute velocities sampled along trenches (subduction zones) at a particular geological time.</span>
 
 <span class="sd">    Each sampled point along trench returns the following information:</span>
 
@@ -300,12 +300,12 @@
 <span class="sd">        The delta time interval used for velocity calculations. Defaults to 1My.</span>
 <span class="sd">    anchor_plate_id: int, optional</span>
 <span class="sd">        Anchor plate ID for reconstruction.</span>
-<span class="sd">        If not specified then uses the default anchor plate of ``rotation_model`` if it&#39;s a `pygplates.RotationModel`_ (otherwise uses zero).</span>
+<span class="sd">        If not specified then uses the default anchor plate of ``rotation_model`` if it's a `pygplates.RotationModel`_ (otherwise uses zero).</span>
 <span class="sd">    include_slab_topologies : bool, default False</span>
 <span class="sd">        Include slab topologies (``gpml:TopologicalSlabBoundary``) in analysis.</span>
 <span class="sd">    include_network_boundaries : bool, default False</span>
 <span class="sd">        Whether to calculate subduction convergence along network boundaries that are not also plate boundaries (defaults to False).</span>
-<span class="sd">        If a deforming network shares a boundary with a plate then it&#39;ll get included regardless of this option.</span>
+<span class="sd">        If a deforming network shares a boundary with a plate then it'll get included regardless of this option.</span>
 <span class="sd">    include_all_subducting_boundary_types : bool, default False</span>
 <span class="sd">        If ``False`` (the default), only features of type ``SubductionZone`` that have a subduction polarity are sampled.</span>
 <span class="sd">        If ``True``, all features that have a subduction polarity are sampled regardless of feature type</span>
@@ -375,7 +375,7 @@
 <span class="sd">    .. _pygplates.Feature: https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature</span>
 <span class="sd">    .. _pygplates.FeatureCollection: https://www.gplates.org/docs/pygplates/generated/pygplates.featurecollection#pygplates.FeatureCollection</span>
 <span class="sd">    .. _pygplates.FeatureType: https://www.gplates.org/docs/pygplates/generated/pygplates.featuretype</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">time</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">time</span><span class="p">)</span>
 
     <span class="c1"># Turn rotation data into a RotationModel (if not already).</span>
@@ -391,7 +391,7 @@
             <span class="n">i</span>
             <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">topology_features</span>
             <span class="k">if</span> <span class="n">i</span><span class="o">.</span><span class="n">get_feature_type</span><span class="p">()</span><span class="o">.</span><span class="n">to_qualified_string</span><span class="p">()</span>
-            <span class="o">!=</span> <span class="s2">&quot;gpml:TopologicalSlabBoundary&quot;</span>
+            <span class="o">!=</span> <span class="s2">"gpml:TopologicalSlabBoundary"</span>
         <span class="p">]</span>
 
     <span class="c1"># If requested, exclude resolved topological *networks*.</span>
@@ -402,7 +402,7 @@
             <span class="n">resolve_topology_types</span> <span class="o">|</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">ResolveTopologyType</span><span class="o">.</span><span class="n">network</span>
         <span class="p">)</span>
 
-    <span class="c1"># Resolve our topological plate polygons (and deforming networks) to the current &#39;time&#39;.</span>
+    <span class="c1"># Resolve our topological plate polygons (and deforming networks) to the current 'time'.</span>
     <span class="c1"># We generate both the resolved topology boundaries and the boundary sections between them.</span>
     <span class="n">resolved_topologies</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="n">shared_boundary_sections</span> <span class="o">=</span> <span class="p">[]</span>
@@ -417,14 +417,17 @@
     <span class="p">)</span>
 
     <span class="c1"># List of tesselated subduction zone (trench) shared subsegment points and associated convergence parameters</span>
-    <span class="c1"># for the current &#39;time&#39;.</span>
+    <span class="c1"># for the current 'time'.</span>
     <span class="n">output_data</span> <span class="o">=</span> <span class="p">[]</span>
 
     <span class="c1"># Iterate over the shared boundary sections of all resolved topologies.</span>
     <span class="k">for</span> <span class="n">shared_boundary_section</span> <span class="ow">in</span> <span class="n">shared_boundary_sections</span><span class="p">:</span>
         <span class="n">feature</span> <span class="o">=</span> <span class="n">shared_boundary_section</span><span class="o">.</span><span class="n">get_feature</span><span class="p">()</span>
         <span class="c1"># Skip sections that do not have a subduction polarity.</span>
-        <span class="k">if</span> <span class="n">feature</span><span class="o">.</span><span class="n">get_enumeration</span><span class="p">(</span><span class="n">pygplates</span><span class="o">.</span><span class="n">PropertyName</span><span class="o">.</span><span class="n">gpml_subduction_polarity</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="p">(</span>
+            <span class="n">feature</span><span class="o">.</span><span class="n">get_enumeration</span><span class="p">(</span><span class="n">pygplates</span><span class="o">.</span><span class="n">PropertyName</span><span class="o">.</span><span class="n">gpml_subduction_polarity</span><span class="p">)</span>
+            <span class="ow">is</span> <span class="kc">None</span>
+        <span class="p">):</span>
             <span class="k">continue</span>
         <span class="c1"># By default only include SubductionZone features (not other types such as OrogenicBelt that can also have a subduction polarity).</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">include_all_subducting_boundary_types</span> <span class="ow">and</span> <span class="p">(</span>
@@ -448,11 +451,11 @@
         <span class="k">for</span> <span class="n">shared_sub_segment</span> <span class="ow">in</span> <span class="n">shared_boundary_section</span><span class="o">.</span><span class="n">get_shared_sub_segments</span><span class="p">():</span>
             <span class="c1"># Find the subducting plate of the shared sub-segment.</span>
             <span class="c1">#</span>
-            <span class="c1"># Note that prior to pyGPlates 0.22 we also looked for the overriding plate since it couldn&#39;t extract the individual trench plate IDs</span>
-            <span class="c1"># from a &quot;resolved topological line&quot; trench (now we use the trench plate IDs since our minimum requirement is above version 0.28).</span>
+            <span class="c1"># Note that prior to pyGPlates 0.22 we also looked for the overriding plate since it couldn't extract the individual trench plate IDs</span>
+            <span class="c1"># from a "resolved topological line" trench (now we use the trench plate IDs since our minimum requirement is above version 0.28).</span>
             <span class="c1"># Not having to find the overriding plate means we actually get a more accurate total subduction zone length in this script.</span>
-            <span class="c1"># This is because we are not forced to ignore trench sections where there&#39;s not exactly one overriding plate</span>
-            <span class="c1"># (and optionally a deforming network overlapping it). And also we&#39;re not counting duplicate subduction lines</span>
+            <span class="c1"># This is because we are not forced to ignore trench sections where there's not exactly one overriding plate</span>
+            <span class="c1"># (and optionally a deforming network overlapping it). And also we're not counting duplicate subduction lines</span>
             <span class="c1"># (where one duplicate is attached only to the overriding plate and the other attached only to the subducting plate)</span>
             <span class="c1"># because we only count the subduction line attached to the subducting plate.</span>
             <span class="n">subducting_plate_and_polarity</span> <span class="o">=</span> <span class="n">find_subducting_plate</span><span class="p">(</span>
@@ -461,10 +464,10 @@
             <span class="p">)</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">subducting_plate_and_polarity</span><span class="p">:</span>
                 <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
-                    <span class="s1">&#39;Unable to find the subducting plate of the subducting sub-segment &quot;</span><span class="si">{0}</span><span class="s1">&quot; at </span><span class="si">{1}</span><span class="s1">Ma.</span><span class="se">\n</span><span class="s1">&#39;</span>
-                    <span class="s2">&quot;    Either the subduction polarity is not properly set or there&quot;</span>
-                    <span class="s2">&quot; are too many subducting plates sharing the sub-segment.</span><span class="se">\n</span><span class="s2">&quot;</span>
-                    <span class="s2">&quot;    Ignoring current sub-segment.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                    <span class="s1">'Unable to find the subducting plate of the subducting sub-segment "</span><span class="si">{0}</span><span class="s1">" at </span><span class="si">{1}</span><span class="s1">Ma.</span><span class="se">\n</span><span class="s1">'</span>
+                    <span class="s2">"    Either the subduction polarity is not properly set or there"</span>
+                    <span class="s2">" are too many subducting plates sharing the sub-segment.</span><span class="se">\n</span><span class="s2">"</span>
+                    <span class="s2">"    Ignoring current sub-segment."</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
                         <span class="n">shared_sub_segment</span><span class="o">.</span><span class="n">get_feature</span><span class="p">()</span><span class="o">.</span><span class="n">get_name</span><span class="p">(),</span> <span class="n">time</span>
                     <span class="p">),</span>
                     <span class="ne">RuntimeWarning</span><span class="p">,</span>
@@ -477,7 +480,7 @@
 
             <span class="c1"># We need to reverse the trench normal direction if overriding plate is to</span>
             <span class="c1"># the right of the subducting line since great circle arc normal is always to the left.</span>
-            <span class="k">if</span> <span class="n">subduction_polarity</span> <span class="o">==</span> <span class="s2">&quot;Left&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">subduction_polarity</span> <span class="o">==</span> <span class="s2">"Left"</span><span class="p">:</span>
                 <span class="n">trench_normal_reversal</span> <span class="o">=</span> <span class="mi">1</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">trench_normal_reversal</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
@@ -493,7 +496,7 @@
             <span class="c1"># If the current shared sub-segment is part of a topological line then we obtain</span>
             <span class="c1"># its sub-sub-segments. This is because trench lines that are topological lines might</span>
             <span class="c1"># actually be deforming (or intended to be deforming) and hence their</span>
-            <span class="c1"># plate ID is not meaningful or at least we can&#39;t be sure whether it will be zero or the</span>
+            <span class="c1"># plate ID is not meaningful or at least we can't be sure whether it will be zero or the</span>
             <span class="c1"># overriding plate (or something else). In this case we look at the plate IDs of the</span>
             <span class="c1"># sub-sub-segments.</span>
             <span class="n">sub_segments_of_topological_line_sub_segment</span> <span class="o">=</span> <span class="p">(</span>
@@ -536,7 +539,7 @@
                         <span class="n">sub_sub_segment_geometry</span><span class="o">.</span><span class="n">get_arc_length</span><span class="p">()</span>
                     <span class="p">)</span>
 
-            <span class="k">else</span><span class="p">:</span>  <span class="c1"># It&#39;s not a topological line...</span>
+            <span class="k">else</span><span class="p">:</span>  <span class="c1"># It's not a topological line...</span>
                 <span class="n">trench_plate_id</span> <span class="o">=</span> <span class="p">(</span>
                     <span class="n">shared_sub_segment</span><span class="o">.</span><span class="n">get_feature</span><span class="p">()</span><span class="o">.</span><span class="n">get_reconstruction_plate_id</span><span class="p">()</span>
                 <span class="p">)</span>
@@ -583,27 +586,27 @@
     <span class="c1"># Process keyword arguments.</span>
     <span class="c1">#</span>
     <span class="n">output_distance_to_nearest_edge_of_trench</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
-        <span class="s2">&quot;output_distance_to_nearest_edge_of_trench&quot;</span><span class="p">,</span> <span class="kc">False</span>
+        <span class="s2">"output_distance_to_nearest_edge_of_trench"</span><span class="p">,</span> <span class="kc">False</span>
     <span class="p">)</span>
     <span class="n">output_distance_to_start_edge_of_trench</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
-        <span class="s2">&quot;output_distance_to_start_edge_of_trench&quot;</span><span class="p">,</span> <span class="kc">False</span>
+        <span class="s2">"output_distance_to_start_edge_of_trench"</span><span class="p">,</span> <span class="kc">False</span>
     <span class="p">)</span>
     <span class="n">output_convergence_velocity_components</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
-        <span class="s2">&quot;output_convergence_velocity_components&quot;</span><span class="p">,</span> <span class="kc">False</span>
+        <span class="s2">"output_convergence_velocity_components"</span><span class="p">,</span> <span class="kc">False</span>
     <span class="p">)</span>
     <span class="n">output_trench_absolute_velocity_components</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
-        <span class="s2">&quot;output_trench_absolute_velocity_components&quot;</span><span class="p">,</span> <span class="kc">False</span>
+        <span class="s2">"output_trench_absolute_velocity_components"</span><span class="p">,</span> <span class="kc">False</span>
     <span class="p">)</span>
     <span class="n">output_subducting_absolute_velocity</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
-        <span class="s2">&quot;output_subducting_absolute_velocity&quot;</span><span class="p">,</span> <span class="kc">False</span>
+        <span class="s2">"output_subducting_absolute_velocity"</span><span class="p">,</span> <span class="kc">False</span>
     <span class="p">)</span>
     <span class="n">output_subducting_absolute_velocity_components</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
-        <span class="s2">&quot;output_subducting_absolute_velocity_components&quot;</span><span class="p">,</span> <span class="kc">False</span>
+        <span class="s2">"output_subducting_absolute_velocity_components"</span><span class="p">,</span> <span class="kc">False</span>
     <span class="p">)</span>
-    <span class="n">output_trench_normal</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;output_trench_normal&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+    <span class="n">output_trench_normal</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"output_trench_normal"</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
 
     <span class="c1"># Get the rotation of the subducting plate relative to the trench line</span>
-    <span class="c1"># from &#39;time + velocity_delta_time&#39; to &#39;time&#39;.</span>
+    <span class="c1"># from 'time + velocity_delta_time' to 'time'.</span>
     <span class="n">convergence_relative_stage_rotation</span> <span class="o">=</span> <span class="n">rotation_model</span><span class="o">.</span><span class="n">get_rotation</span><span class="p">(</span>
         <span class="n">time</span><span class="p">,</span>
         <span class="n">subducting_plate_id</span><span class="p">,</span>
@@ -617,11 +620,11 @@
     <span class="c1">#   * S is subducting plate</span>
     <span class="c1">#   * A is anchor plate</span>
     <span class="c1">#</span>
-    <span class="c1"># The trenches have been reconstructed using the rotation &quot;R(0-&gt;t,A-&gt;T)&quot;:</span>
+    <span class="c1"># The trenches have been reconstructed using the rotation "R(0-&gt;t,A-&gt;T)":</span>
     <span class="c1">#</span>
     <span class="c1">#   reconstructed_geometry = R(0-&gt;t,A-&gt;T) * present_day_geometry</span>
     <span class="c1">#</span>
-    <span class="c1"># We can write &quot;R(0-&gt;t,A-&gt;T)&quot; in terms of the convergence stage rotation &quot;R(t+dt-&gt;t,T-&gt;S)&quot; as:</span>
+    <span class="c1"># We can write "R(0-&gt;t,A-&gt;T)" in terms of the convergence stage rotation "R(t+dt-&gt;t,T-&gt;S)" as:</span>
     <span class="c1">#</span>
     <span class="c1">#   R(0-&gt;t,A-&gt;T)  = R(0-&gt;t,A-&gt;S) * R(0-&gt;t,S-&gt;T)</span>
     <span class="c1">#                 = R(0-&gt;t,A-&gt;S) * inverse[R(0-&gt;t,T-&gt;S)]</span>
@@ -631,15 +634,15 @@
     <span class="c1">#                 = R(0-&gt;t,A-&gt;S) * R(0-&gt;t+dt,S-&gt;T) * inverse[stage_rotation]</span>
     <span class="c1">#</span>
     <span class="c1"># So to get the *reconstructed* subduction line geometry into the stage rotation reference frame</span>
-    <span class="c1"># we need to rotate it by &quot;inverse[R(0-&gt;t,A-&gt;S) * R(0-&gt;t+dt,S-&gt;T)]&quot;:</span>
+    <span class="c1"># we need to rotate it by "inverse[R(0-&gt;t,A-&gt;S) * R(0-&gt;t+dt,S-&gt;T)]":</span>
     <span class="c1">#</span>
     <span class="c1">#   reconstructed_geometry = R(0-&gt;t,A-&gt;T) * present_day_geometry</span>
     <span class="c1">#                          = R(0-&gt;t,A-&gt;S) * R(0-&gt;t+dt,S-&gt;T) * inverse[stage_rotation] * present_day_geometry</span>
     <span class="c1">#   inverse[R(0-&gt;t,A-&gt;S) * R(0-&gt;t+dt,S-&gt;T)] * reconstructed_geometry = inverse[stage_rotation] * present_day_geometry</span>
     <span class="c1">#</span>
-    <span class="c1"># Once we&#39;ve done that we can calculate the velocities of those geometry points</span>
+    <span class="c1"># Once we've done that we can calculate the velocities of those geometry points</span>
     <span class="c1"># using the stage rotation. Then the velocities need to be rotated back from the</span>
-    <span class="c1"># stage rotation reference frame using the rotation &quot;R(0-&gt;t,A-&gt;S) * R(0-&gt;t+dt,S-&gt;T)&quot;.</span>
+    <span class="c1"># stage rotation reference frame using the rotation "R(0-&gt;t,A-&gt;S) * R(0-&gt;t+dt,S-&gt;T)".</span>
     <span class="c1">#</span>
     <span class="n">from_convergence_stage_frame</span> <span class="o">=</span> <span class="n">rotation_model</span><span class="o">.</span><span class="n">get_rotation</span><span class="p">(</span>
         <span class="n">time</span><span class="p">,</span> <span class="n">subducting_plate_id</span><span class="p">,</span> <span class="n">anchor_plate_id</span><span class="o">=</span><span class="n">anchor_plate_id</span>
@@ -652,9 +655,9 @@
     <span class="n">to_convergence_stage_frame</span> <span class="o">=</span> <span class="n">from_convergence_stage_frame</span><span class="o">.</span><span class="n">get_inverse</span><span class="p">()</span>
 
     <span class="c1"># Get the rotation of the trench relative to the anchor plate</span>
-    <span class="c1"># from &#39;time + velocity_delta_time&#39; to &#39;time&#39;.</span>
+    <span class="c1"># from 'time + velocity_delta_time' to 'time'.</span>
     <span class="c1">#</span>
-    <span class="c1"># Note: We don&#39;t need to convert to and from the stage rotation reference frame</span>
+    <span class="c1"># Note: We don't need to convert to and from the stage rotation reference frame</span>
     <span class="c1"># like the above convergence because...</span>
     <span class="c1">#</span>
     <span class="c1">#   R(0-&gt;t,A-&gt;T)  = R(t+dt-&gt;t,A-&gt;T) * R(0-&gt;t+dt,A-&gt;T)</span>
@@ -662,7 +665,7 @@
     <span class="c1">#   reconstructed_geometry = R(0-&gt;t,A-&gt;T) * present_day_geometry</span>
     <span class="c1">#                          = R(t+dt-&gt;t,A-&gt;T) * R(0-&gt;t+dt,A-&gt;T) * present_day_geometry</span>
     <span class="c1">#</span>
-    <span class="c1"># ...where *reconstructed* subduction line geometry is already in the frame of the stage rotation &quot;R(t+dt-&gt;t,A-&gt;T)&quot;.</span>
+    <span class="c1"># ...where *reconstructed* subduction line geometry is already in the frame of the stage rotation "R(t+dt-&gt;t,A-&gt;T)".</span>
     <span class="n">trench_equivalent_stage_rotation</span> <span class="o">=</span> <span class="n">rotation_model</span><span class="o">.</span><span class="n">get_rotation</span><span class="p">(</span>
         <span class="n">time</span><span class="p">,</span>
         <span class="n">trench_plate_id</span><span class="p">,</span>
@@ -675,9 +678,9 @@
         <span class="ow">or</span> <span class="n">output_subducting_absolute_velocity_components</span>
     <span class="p">):</span>
         <span class="c1"># Get the rotation of the subducting plate relative to the anchor plate</span>
-        <span class="c1"># from &#39;time + velocity_delta_time&#39; to &#39;time&#39;.</span>
+        <span class="c1"># from 'time + velocity_delta_time' to 'time'.</span>
         <span class="c1">#</span>
-        <span class="c1"># Note: We don&#39;t need to convert to and from the stage rotation reference frame</span>
+        <span class="c1"># Note: We don't need to convert to and from the stage rotation reference frame</span>
         <span class="c1"># like the above convergence because...</span>
         <span class="c1">#</span>
         <span class="c1">#   R(0-&gt;t,A-&gt;T)  = R(0-&gt;t,A-&gt;S) * R(0-&gt;t,S-&gt;T)</span>
@@ -686,7 +689,7 @@
         <span class="c1">#   reconstructed_geometry = R(0-&gt;t,A-&gt;T) * present_day_geometry</span>
         <span class="c1">#                          = R(t+dt-&gt;t,A-&gt;S) * R(0-&gt;t+dt,A-&gt;S) * R(0-&gt;t,S-&gt;T) * present_day_geometry</span>
         <span class="c1">#</span>
-        <span class="c1"># ...where *reconstructed* subduction line geometry is already in the frame of the stage rotation &quot;R(t+dt-&gt;t,A-&gt;S)&quot;.</span>
+        <span class="c1"># ...where *reconstructed* subduction line geometry is already in the frame of the stage rotation "R(t+dt-&gt;t,A-&gt;S)".</span>
         <span class="n">subducting_equivalent_stage_rotation</span> <span class="o">=</span> <span class="n">rotation_model</span><span class="o">.</span><span class="n">get_rotation</span><span class="p">(</span>
             <span class="n">time</span><span class="p">,</span>
             <span class="n">subducting_plate_id</span><span class="p">,</span>
@@ -714,7 +717,7 @@
                 <span class="n">trench_normal_reversal</span> <span class="o">*</span> <span class="n">arc</span><span class="o">.</span><span class="n">get_great_circle_normal</span><span class="p">()</span>
             <span class="p">)</span>
 
-    <span class="c1"># Shouldn&#39;t happen, but just in case the shared sub-segment polyline coincides with a point.</span>
+    <span class="c1"># Shouldn't happen, but just in case the shared sub-segment polyline coincides with a point.</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">arc_midpoints</span><span class="p">:</span>
         <span class="k">return</span>
 
@@ -833,7 +836,7 @@
             <span class="c1">#</span>
             <span class="c1"># Note that we are not calculating the motion of the trench</span>
             <span class="c1"># relative to the overriding plate - they are usually attached to each other</span>
-            <span class="c1"># and hence wouldn&#39;t move relative to each other.</span>
+            <span class="c1"># and hence wouldn't move relative to each other.</span>
             <span class="k">if</span> <span class="n">math</span><span class="o">.</span><span class="n">fabs</span><span class="p">(</span><span class="n">trench_absolute_obliquity_degrees</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">90</span><span class="p">:</span>
                 <span class="n">trench_absolute_velocity_magnitude</span> <span class="o">=</span> <span class="o">-</span><span class="n">trench_absolute_velocity_magnitude</span>
 
@@ -990,15 +993,15 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">write_output_file</span><span class="p">(</span><span class="n">output_filename</span><span class="p">,</span> <span class="n">output_data</span><span class="p">):</span>
-    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">output_filename</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">output_file</span><span class="p">:</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">output_filename</span><span class="p">,</span> <span class="s2">"w"</span><span class="p">)</span> <span class="k">as</span> <span class="n">output_file</span><span class="p">:</span>
         <span class="k">for</span> <span class="n">output_line</span> <span class="ow">in</span> <span class="n">output_data</span><span class="p">:</span>
-            <span class="n">output_file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">item</span><span class="p">)</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">output_line</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">output_file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">" "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">item</span><span class="p">)</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">output_line</span><span class="p">)</span> <span class="o">+</span> <span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="p">)</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">create_coverage_feature_from_convergence_data</span><span class="p">(</span>
     <span class="n">subduction_convergence_data</span><span class="p">,</span> <span class="n">time</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
 <span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Create a feature with a coverage geometry containing the calculated convergence and absolute velocity data.</span>
+<span class="w">    </span><span class="sd">"""Create a feature with a coverage geometry containing the calculated convergence and absolute velocity data.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -1039,32 +1042,32 @@
 
 <span class="sd">    Notes</span>
 <span class="sd">    -----</span>
-<span class="sd">    The optional &#39;output_*&#39; parameters are the same as that of the `subduction_convergence` function , which is used to append extra data</span>
+<span class="sd">    The optional 'output_*' parameters are the same as that of the `subduction_convergence` function , which is used to append extra data</span>
 <span class="sd">    to the output of each sample point. Here it is used to interpret the same output data and create scalar coverages.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="c1">#</span>
     <span class="c1"># Process keyword arguments.</span>
     <span class="c1">#</span>
     <span class="n">output_distance_to_nearest_edge_of_trench</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
-        <span class="s2">&quot;output_distance_to_nearest_edge_of_trench&quot;</span><span class="p">,</span> <span class="kc">False</span>
+        <span class="s2">"output_distance_to_nearest_edge_of_trench"</span><span class="p">,</span> <span class="kc">False</span>
     <span class="p">)</span>
     <span class="n">output_distance_to_start_edge_of_trench</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
-        <span class="s2">&quot;output_distance_to_start_edge_of_trench&quot;</span><span class="p">,</span> <span class="kc">False</span>
+        <span class="s2">"output_distance_to_start_edge_of_trench"</span><span class="p">,</span> <span class="kc">False</span>
     <span class="p">)</span>
     <span class="n">output_convergence_velocity_components</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
-        <span class="s2">&quot;output_convergence_velocity_components&quot;</span><span class="p">,</span> <span class="kc">False</span>
+        <span class="s2">"output_convergence_velocity_components"</span><span class="p">,</span> <span class="kc">False</span>
     <span class="p">)</span>
     <span class="n">output_trench_absolute_velocity_components</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
-        <span class="s2">&quot;output_trench_absolute_velocity_components&quot;</span><span class="p">,</span> <span class="kc">False</span>
+        <span class="s2">"output_trench_absolute_velocity_components"</span><span class="p">,</span> <span class="kc">False</span>
     <span class="p">)</span>
     <span class="n">output_subducting_absolute_velocity</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
-        <span class="s2">&quot;output_subducting_absolute_velocity&quot;</span><span class="p">,</span> <span class="kc">False</span>
+        <span class="s2">"output_subducting_absolute_velocity"</span><span class="p">,</span> <span class="kc">False</span>
     <span class="p">)</span>
     <span class="n">output_subducting_absolute_velocity_components</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
-        <span class="s2">&quot;output_subducting_absolute_velocity_components&quot;</span><span class="p">,</span> <span class="kc">False</span>
+        <span class="s2">"output_subducting_absolute_velocity_components"</span><span class="p">,</span> <span class="kc">False</span>
     <span class="p">)</span>
-    <span class="n">output_trench_normal</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;output_trench_normal&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+    <span class="n">output_trench_normal</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"output_trench_normal"</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
 
     <span class="c1"># Convert the list of tuples (one tuple per sample point) into a tuple of lists (one list per data parameter).</span>
     <span class="n">parameter_lists</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="o">*</span><span class="n">subduction_convergence_data</span><span class="p">))</span>
@@ -1072,7 +1075,7 @@
     <span class="c1"># Put all convergence data for the current reconstruction time into a single feature.</span>
     <span class="n">coverage_feature</span> <span class="o">=</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">Feature</span><span class="p">()</span>
 
-    <span class="c1"># Make it only appear at &#39;time&#39;.</span>
+    <span class="c1"># Make it only appear at 'time'.</span>
     <span class="n">coverage_feature</span><span class="o">.</span><span class="n">set_valid_time</span><span class="p">(</span><span class="n">time</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">time</span> <span class="o">-</span> <span class="mf">0.5</span><span class="p">)</span>
 
     <span class="c1"># Extract the non-optional parameters.</span>
@@ -1091,25 +1094,25 @@
     <span class="n">coverage_geometry</span> <span class="o">=</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">MultiPointOnSphere</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">all_lat</span><span class="p">,</span> <span class="n">all_lon</span><span class="p">))</span>
     <span class="n">coverage_scalars</span> <span class="o">=</span> <span class="p">{</span>
         <span class="n">pygplates</span><span class="o">.</span><span class="n">ScalarType</span><span class="o">.</span><span class="n">create_gpml</span><span class="p">(</span>
-            <span class="s2">&quot;ConvergenceVelocityMagnitude&quot;</span>
+            <span class="s2">"ConvergenceVelocityMagnitude"</span>
         <span class="p">):</span> <span class="n">all_convergence_velocity_magnitude</span><span class="p">,</span>
         <span class="n">pygplates</span><span class="o">.</span><span class="n">ScalarType</span><span class="o">.</span><span class="n">create_gpml</span><span class="p">(</span>
-            <span class="s2">&quot;ConvergenceObliquityDegrees&quot;</span>
+            <span class="s2">"ConvergenceObliquityDegrees"</span>
         <span class="p">):</span> <span class="n">all_convergence_obliquity_degrees</span><span class="p">,</span>
         <span class="n">pygplates</span><span class="o">.</span><span class="n">ScalarType</span><span class="o">.</span><span class="n">create_gpml</span><span class="p">(</span>
-            <span class="s2">&quot;TrenchAbsoluteVelocityMagnitude&quot;</span>
+            <span class="s2">"TrenchAbsoluteVelocityMagnitude"</span>
         <span class="p">):</span> <span class="n">all_trench_absolute_velocity_magnitude</span><span class="p">,</span>
         <span class="n">pygplates</span><span class="o">.</span><span class="n">ScalarType</span><span class="o">.</span><span class="n">create_gpml</span><span class="p">(</span>
-            <span class="s2">&quot;TrenchAbsoluteObliquityDegrees&quot;</span>
+            <span class="s2">"TrenchAbsoluteObliquityDegrees"</span>
         <span class="p">):</span> <span class="n">all_trench_absolute_obliquity_degrees</span><span class="p">,</span>
         <span class="n">pygplates</span><span class="o">.</span><span class="n">ScalarType</span><span class="o">.</span><span class="n">create_gpml</span><span class="p">(</span>
-            <span class="s2">&quot;SubductingLengthDegrees&quot;</span>
+            <span class="s2">"SubductingLengthDegrees"</span>
         <span class="p">):</span> <span class="n">all_subducting_length_degrees</span><span class="p">,</span>
         <span class="n">pygplates</span><span class="o">.</span><span class="n">ScalarType</span><span class="o">.</span><span class="n">create_gpml</span><span class="p">(</span>
-            <span class="s2">&quot;TrenchNormalAzimuthDegrees&quot;</span>
+            <span class="s2">"TrenchNormalAzimuthDegrees"</span>
         <span class="p">):</span> <span class="n">all_trench_normal_azimuth_degrees</span><span class="p">,</span>
-        <span class="n">pygplates</span><span class="o">.</span><span class="n">ScalarType</span><span class="o">.</span><span class="n">create_gpml</span><span class="p">(</span><span class="s2">&quot;SubductingPlateId&quot;</span><span class="p">):</span> <span class="n">all_subducting_plate_id</span><span class="p">,</span>
-        <span class="n">pygplates</span><span class="o">.</span><span class="n">ScalarType</span><span class="o">.</span><span class="n">create_gpml</span><span class="p">(</span><span class="s2">&quot;TrenchPlateId&quot;</span><span class="p">):</span> <span class="n">all_trench_plate_id</span><span class="p">,</span>
+        <span class="n">pygplates</span><span class="o">.</span><span class="n">ScalarType</span><span class="o">.</span><span class="n">create_gpml</span><span class="p">(</span><span class="s2">"SubductingPlateId"</span><span class="p">):</span> <span class="n">all_subducting_plate_id</span><span class="p">,</span>
+        <span class="n">pygplates</span><span class="o">.</span><span class="n">ScalarType</span><span class="o">.</span><span class="n">create_gpml</span><span class="p">(</span><span class="s2">"TrenchPlateId"</span><span class="p">):</span> <span class="n">all_trench_plate_id</span><span class="p">,</span>
     <span class="p">}</span>
 
     <span class="c1"># Extract the optional parameters.</span>
@@ -1120,7 +1123,7 @@
             <span class="n">optional_parameter_index</span>
         <span class="p">]</span>
         <span class="n">coverage_scalars</span><span class="p">[</span>
-            <span class="n">pygplates</span><span class="o">.</span><span class="n">ScalarType</span><span class="o">.</span><span class="n">create_gpml</span><span class="p">(</span><span class="s2">&quot;DistanceToNearestEdgeOfTrenchDegrees&quot;</span><span class="p">)</span>
+            <span class="n">pygplates</span><span class="o">.</span><span class="n">ScalarType</span><span class="o">.</span><span class="n">create_gpml</span><span class="p">(</span><span class="s2">"DistanceToNearestEdgeOfTrenchDegrees"</span><span class="p">)</span>
         <span class="p">]</span> <span class="o">=</span> <span class="n">all_distance_to_nearest_edge_of_trench_degrees</span>
         <span class="n">optional_parameter_index</span> <span class="o">+=</span> <span class="mi">1</span>
     <span class="k">if</span> <span class="n">output_distance_to_start_edge_of_trench</span><span class="p">:</span>
@@ -1128,18 +1131,18 @@
             <span class="n">optional_parameter_index</span>
         <span class="p">]</span>
         <span class="n">coverage_scalars</span><span class="p">[</span>
-            <span class="n">pygplates</span><span class="o">.</span><span class="n">ScalarType</span><span class="o">.</span><span class="n">create_gpml</span><span class="p">(</span><span class="s2">&quot;DistanceToStartEdgeOfTrenchDegrees&quot;</span><span class="p">)</span>
+            <span class="n">pygplates</span><span class="o">.</span><span class="n">ScalarType</span><span class="o">.</span><span class="n">create_gpml</span><span class="p">(</span><span class="s2">"DistanceToStartEdgeOfTrenchDegrees"</span><span class="p">)</span>
         <span class="p">]</span> <span class="o">=</span> <span class="n">all_distance_to_start_edge_of_trench_degrees</span>
         <span class="n">optional_parameter_index</span> <span class="o">+=</span> <span class="mi">1</span>
     <span class="k">if</span> <span class="n">output_convergence_velocity_components</span><span class="p">:</span>
         <span class="n">all_convergence_velocity_orthogonal</span> <span class="o">=</span> <span class="n">parameter_lists</span><span class="p">[</span><span class="n">optional_parameter_index</span><span class="p">]</span>
         <span class="n">coverage_scalars</span><span class="p">[</span>
-            <span class="n">pygplates</span><span class="o">.</span><span class="n">ScalarType</span><span class="o">.</span><span class="n">create_gpml</span><span class="p">(</span><span class="s2">&quot;ConvergenceVelocityOrthogonal&quot;</span><span class="p">)</span>
+            <span class="n">pygplates</span><span class="o">.</span><span class="n">ScalarType</span><span class="o">.</span><span class="n">create_gpml</span><span class="p">(</span><span class="s2">"ConvergenceVelocityOrthogonal"</span><span class="p">)</span>
         <span class="p">]</span> <span class="o">=</span> <span class="n">all_convergence_velocity_orthogonal</span>
         <span class="n">optional_parameter_index</span> <span class="o">+=</span> <span class="mi">1</span>
         <span class="n">all_convergence_velocity_parallel</span> <span class="o">=</span> <span class="n">parameter_lists</span><span class="p">[</span><span class="n">optional_parameter_index</span><span class="p">]</span>
         <span class="n">coverage_scalars</span><span class="p">[</span>
-            <span class="n">pygplates</span><span class="o">.</span><span class="n">ScalarType</span><span class="o">.</span><span class="n">create_gpml</span><span class="p">(</span><span class="s2">&quot;ConvergenceVelocityParallel&quot;</span><span class="p">)</span>
+            <span class="n">pygplates</span><span class="o">.</span><span class="n">ScalarType</span><span class="o">.</span><span class="n">create_gpml</span><span class="p">(</span><span class="s2">"ConvergenceVelocityParallel"</span><span class="p">)</span>
         <span class="p">]</span> <span class="o">=</span> <span class="n">all_convergence_velocity_parallel</span>
         <span class="n">optional_parameter_index</span> <span class="o">+=</span> <span class="mi">1</span>
     <span class="k">if</span> <span class="n">output_trench_absolute_velocity_components</span><span class="p">:</span>
@@ -1147,14 +1150,14 @@
             <span class="n">optional_parameter_index</span>
         <span class="p">]</span>
         <span class="n">coverage_scalars</span><span class="p">[</span>
-            <span class="n">pygplates</span><span class="o">.</span><span class="n">ScalarType</span><span class="o">.</span><span class="n">create_gpml</span><span class="p">(</span><span class="s2">&quot;TrenchAbsoluteVelocityOrthogonal&quot;</span><span class="p">)</span>
+            <span class="n">pygplates</span><span class="o">.</span><span class="n">ScalarType</span><span class="o">.</span><span class="n">create_gpml</span><span class="p">(</span><span class="s2">"TrenchAbsoluteVelocityOrthogonal"</span><span class="p">)</span>
         <span class="p">]</span> <span class="o">=</span> <span class="n">all_trench_absolute_velocity_orthogonal</span>
         <span class="n">optional_parameter_index</span> <span class="o">+=</span> <span class="mi">1</span>
         <span class="n">all_trench_absolute_velocity_parallel</span> <span class="o">=</span> <span class="n">parameter_lists</span><span class="p">[</span>
             <span class="n">optional_parameter_index</span>
         <span class="p">]</span>
         <span class="n">coverage_scalars</span><span class="p">[</span>
-            <span class="n">pygplates</span><span class="o">.</span><span class="n">ScalarType</span><span class="o">.</span><span class="n">create_gpml</span><span class="p">(</span><span class="s2">&quot;TrenchAbsoluteVelocityParallel&quot;</span><span class="p">)</span>
+            <span class="n">pygplates</span><span class="o">.</span><span class="n">ScalarType</span><span class="o">.</span><span class="n">create_gpml</span><span class="p">(</span><span class="s2">"TrenchAbsoluteVelocityParallel"</span><span class="p">)</span>
         <span class="p">]</span> <span class="o">=</span> <span class="n">all_trench_absolute_velocity_parallel</span>
         <span class="n">optional_parameter_index</span> <span class="o">+=</span> <span class="mi">1</span>
     <span class="k">if</span> <span class="n">output_subducting_absolute_velocity</span><span class="p">:</span>
@@ -1162,14 +1165,14 @@
             <span class="n">optional_parameter_index</span>
         <span class="p">]</span>
         <span class="n">coverage_scalars</span><span class="p">[</span>
-            <span class="n">pygplates</span><span class="o">.</span><span class="n">ScalarType</span><span class="o">.</span><span class="n">create_gpml</span><span class="p">(</span><span class="s2">&quot;SubductingAbsoluteVelocityMagnitude&quot;</span><span class="p">)</span>
+            <span class="n">pygplates</span><span class="o">.</span><span class="n">ScalarType</span><span class="o">.</span><span class="n">create_gpml</span><span class="p">(</span><span class="s2">"SubductingAbsoluteVelocityMagnitude"</span><span class="p">)</span>
         <span class="p">]</span> <span class="o">=</span> <span class="n">all_subducting_absolute_velocity_magnitude</span>
         <span class="n">optional_parameter_index</span> <span class="o">+=</span> <span class="mi">1</span>
         <span class="n">all_subducting_absolute_obliquity_degrees</span> <span class="o">=</span> <span class="n">parameter_lists</span><span class="p">[</span>
             <span class="n">optional_parameter_index</span>
         <span class="p">]</span>
         <span class="n">coverage_scalars</span><span class="p">[</span>
-            <span class="n">pygplates</span><span class="o">.</span><span class="n">ScalarType</span><span class="o">.</span><span class="n">create_gpml</span><span class="p">(</span><span class="s2">&quot;SubductingAbsoluteObliquityDegrees&quot;</span><span class="p">)</span>
+            <span class="n">pygplates</span><span class="o">.</span><span class="n">ScalarType</span><span class="o">.</span><span class="n">create_gpml</span><span class="p">(</span><span class="s2">"SubductingAbsoluteObliquityDegrees"</span><span class="p">)</span>
         <span class="p">]</span> <span class="o">=</span> <span class="n">all_subducting_absolute_obliquity_degrees</span>
         <span class="n">optional_parameter_index</span> <span class="o">+=</span> <span class="mi">1</span>
     <span class="k">if</span> <span class="n">output_subducting_absolute_velocity_components</span><span class="p">:</span>
@@ -1177,29 +1180,29 @@
             <span class="n">optional_parameter_index</span>
         <span class="p">]</span>
         <span class="n">coverage_scalars</span><span class="p">[</span>
-            <span class="n">pygplates</span><span class="o">.</span><span class="n">ScalarType</span><span class="o">.</span><span class="n">create_gpml</span><span class="p">(</span><span class="s2">&quot;SubductingAbsoluteVelocityOrthogonal&quot;</span><span class="p">)</span>
+            <span class="n">pygplates</span><span class="o">.</span><span class="n">ScalarType</span><span class="o">.</span><span class="n">create_gpml</span><span class="p">(</span><span class="s2">"SubductingAbsoluteVelocityOrthogonal"</span><span class="p">)</span>
         <span class="p">]</span> <span class="o">=</span> <span class="n">all_subducting_absolute_velocity_orthogonal</span>
         <span class="n">optional_parameter_index</span> <span class="o">+=</span> <span class="mi">1</span>
         <span class="n">all_subducting_absolute_velocity_parallel</span> <span class="o">=</span> <span class="n">parameter_lists</span><span class="p">[</span>
             <span class="n">optional_parameter_index</span>
         <span class="p">]</span>
         <span class="n">coverage_scalars</span><span class="p">[</span>
-            <span class="n">pygplates</span><span class="o">.</span><span class="n">ScalarType</span><span class="o">.</span><span class="n">create_gpml</span><span class="p">(</span><span class="s2">&quot;SubductingAbsoluteVelocityParallel&quot;</span><span class="p">)</span>
+            <span class="n">pygplates</span><span class="o">.</span><span class="n">ScalarType</span><span class="o">.</span><span class="n">create_gpml</span><span class="p">(</span><span class="s2">"SubductingAbsoluteVelocityParallel"</span><span class="p">)</span>
         <span class="p">]</span> <span class="o">=</span> <span class="n">all_subducting_absolute_velocity_parallel</span>
         <span class="n">optional_parameter_index</span> <span class="o">+=</span> <span class="mi">1</span>
     <span class="k">if</span> <span class="n">output_trench_normal</span><span class="p">:</span>
         <span class="n">all_trench_normal_x</span> <span class="o">=</span> <span class="n">parameter_lists</span><span class="p">[</span><span class="n">optional_parameter_index</span><span class="p">]</span>
-        <span class="n">coverage_scalars</span><span class="p">[</span><span class="n">pygplates</span><span class="o">.</span><span class="n">ScalarType</span><span class="o">.</span><span class="n">create_gpml</span><span class="p">(</span><span class="s2">&quot;TrenchNormalX&quot;</span><span class="p">)]</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">coverage_scalars</span><span class="p">[</span><span class="n">pygplates</span><span class="o">.</span><span class="n">ScalarType</span><span class="o">.</span><span class="n">create_gpml</span><span class="p">(</span><span class="s2">"TrenchNormalX"</span><span class="p">)]</span> <span class="o">=</span> <span class="p">(</span>
             <span class="n">all_trench_normal_x</span>
         <span class="p">)</span>
         <span class="n">optional_parameter_index</span> <span class="o">+=</span> <span class="mi">1</span>
         <span class="n">all_trench_normal_y</span> <span class="o">=</span> <span class="n">parameter_lists</span><span class="p">[</span><span class="n">optional_parameter_index</span><span class="p">]</span>
-        <span class="n">coverage_scalars</span><span class="p">[</span><span class="n">pygplates</span><span class="o">.</span><span class="n">ScalarType</span><span class="o">.</span><span class="n">create_gpml</span><span class="p">(</span><span class="s2">&quot;TrenchNormalY&quot;</span><span class="p">)]</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">coverage_scalars</span><span class="p">[</span><span class="n">pygplates</span><span class="o">.</span><span class="n">ScalarType</span><span class="o">.</span><span class="n">create_gpml</span><span class="p">(</span><span class="s2">"TrenchNormalY"</span><span class="p">)]</span> <span class="o">=</span> <span class="p">(</span>
             <span class="n">all_trench_normal_y</span>
         <span class="p">)</span>
         <span class="n">optional_parameter_index</span> <span class="o">+=</span> <span class="mi">1</span>
         <span class="n">all_trench_normal_z</span> <span class="o">=</span> <span class="n">parameter_lists</span><span class="p">[</span><span class="n">optional_parameter_index</span><span class="p">]</span>
-        <span class="n">coverage_scalars</span><span class="p">[</span><span class="n">pygplates</span><span class="o">.</span><span class="n">ScalarType</span><span class="o">.</span><span class="n">create_gpml</span><span class="p">(</span><span class="s2">&quot;TrenchNormalZ&quot;</span><span class="p">)]</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">coverage_scalars</span><span class="p">[</span><span class="n">pygplates</span><span class="o">.</span><span class="n">ScalarType</span><span class="o">.</span><span class="n">create_gpml</span><span class="p">(</span><span class="s2">"TrenchNormalZ"</span><span class="p">)]</span> <span class="o">=</span> <span class="p">(</span>
             <span class="n">all_trench_normal_z</span>
         <span class="p">)</span>
         <span class="n">optional_parameter_index</span> <span class="o">+=</span> <span class="mi">1</span>
@@ -1224,24 +1227,24 @@
     <span class="n">include_slab_topologies</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
 <span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;calculate subduction convergence over time&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""calculate subduction convergence over time"""</span>
     <span class="k">if</span> <span class="n">time_increment</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-            <span class="s1">&#39;The time increment &quot;</span><span class="si">{0}</span><span class="s1">&quot; is not positive and non-zero.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="s1">'The time increment "</span><span class="si">{0}</span><span class="s1">" is not positive and non-zero.'</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
                 <span class="n">time_increment</span>
             <span class="p">)</span>
         <span class="p">)</span>
 
     <span class="k">if</span> <span class="n">time_young</span> <span class="o">&gt;</span> <span class="n">time_old</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-            <span class="s2">&quot;The young time </span><span class="si">{0}</span><span class="s2"> is older (larger) than the old time </span><span class="si">{1}</span><span class="s2">.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="s2">"The young time </span><span class="si">{0}</span><span class="s2"> is older (larger) than the old time </span><span class="si">{1}</span><span class="s2">."</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
                 <span class="n">time_young</span><span class="p">,</span> <span class="n">time_old</span>
             <span class="p">)</span>
         <span class="p">)</span>
 
     <span class="n">rotation_model</span> <span class="o">=</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">RotationModel</span><span class="p">(</span><span class="n">rotation_filenames</span><span class="p">)</span>
 
-    <span class="c1"># Read/parse the topological features once so we&#39;re not doing at each time iteration.</span>
+    <span class="c1"># Read/parse the topological features once so we're not doing at each time iteration.</span>
     <span class="n">topology_features</span> <span class="o">=</span> <span class="p">[</span>
         <span class="n">pygplates</span><span class="o">.</span><span class="n">FeatureCollection</span><span class="p">(</span><span class="n">topology_filename</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">topology_filename</span> <span class="ow">in</span> <span class="n">topology_filenames</span>
@@ -1253,10 +1256,10 @@
     <span class="c1"># Iterate over the time rage.</span>
     <span class="n">time</span> <span class="o">=</span> <span class="n">time_young</span>
     <span class="k">while</span> <span class="n">time</span> <span class="o">&lt;=</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">GeoTimeInstant</span><span class="p">(</span><span class="n">time_old</span><span class="p">):</span>
-        <span class="c1"># print(&#39;Time {0}&#39;.format(time))</span>
+        <span class="c1"># print('Time {0}'.format(time))</span>
 
         <span class="c1"># Returns a list of tesselated trench points and associated convergence parameters</span>
-        <span class="c1"># to write to the output file for the current &#39;time&#39;.</span>
+        <span class="c1"># to write to the output file for the current 'time'.</span>
         <span class="n">output_data</span> <span class="o">=</span> <span class="n">subduction_convergence</span><span class="p">(</span>
             <span class="n">rotation_model</span><span class="p">,</span>
             <span class="n">topology_features</span><span class="p">,</span>
@@ -1269,7 +1272,7 @@
         <span class="p">)</span>
 
         <span class="k">if</span> <span class="n">output_data</span><span class="p">:</span>
-            <span class="n">output_filename</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{0}</span><span class="s2">_</span><span class="si">{1:0.2f}</span><span class="s2">.</span><span class="si">{2}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="n">output_filename</span> <span class="o">=</span> <span class="s2">"</span><span class="si">{0}</span><span class="s2">_</span><span class="si">{1:0.2f}</span><span class="s2">.</span><span class="si">{2}</span><span class="s2">"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
                 <span class="n">output_filename_prefix</span><span class="p">,</span> <span class="n">time</span><span class="p">,</span> <span class="n">output_filename_extension</span>
             <span class="p">)</span>
             <span class="n">write_output_file</span><span class="p">(</span><span class="n">output_filename</span><span class="p">,</span> <span class="n">output_data</span><span class="p">)</span>
@@ -1299,16 +1302,16 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">convert_old_convergence_output</span><span class="p">(</span><span class="n">old_convergence_data</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Converts the output of the old &quot;convergence.py&quot; script to the current output format of the `subduction_convergence` function.</span>
+<span class="w">    </span><span class="sd">"""Converts the output of the old "convergence.py" script to the current output format of the `subduction_convergence` function.</span>
 
-<span class="sd">    This function&#39;s purpose is to help transition workflows that use &quot;convergence.py&quot; to use this script instead.</span>
+<span class="sd">    This function's purpose is to help transition workflows that use "convergence.py" to use this script instead.</span>
 <span class="sd">    At the time this function was implemented, both scripts have essentially the same output with just minor format differences (as seen below).</span>
 <span class="sd">    However in the future this script will generate additional outputs (such as deformation strain rates) that the old script will not.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    old_convergence_data : list of tuples</span>
-<span class="sd">        The subduction convergence data output from the old &quot;convergence.py&quot; script.</span>
+<span class="sd">        The subduction convergence data output from the old "convergence.py" script.</span>
 <span class="sd">        Each tuple in the list contains the data for a single sample point on a trench line.</span>
 <span class="sd">    output_distance_to_nearest_edge_of_trench : bool, default=False</span>
 <span class="sd">        Append the distance (in degrees) along the trench line to the nearest trench edge to each returned sample point.</span>
@@ -1338,7 +1341,7 @@
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    list of tuples</span>
-<span class="sd">        The converted results for all input points from the old &quot;convergence.py&quot; script.</span>
+<span class="sd">        The converted results for all input points from the old "convergence.py" script.</span>
 <span class="sd">        The size of the returned list is equal to the number of input points.</span>
 <span class="sd">        Each tuple in the list corresponds to a point and has the following tuple items:</span>
 
@@ -1353,37 +1356,37 @@
 <span class="sd">        * subducting plate ID</span>
 <span class="sd">        * trench plate ID</span>
 
-<span class="sd">        The optional &#39;output_*&#39; parameters can be used to append extra data to the tuple of each sampled trench point.</span>
+<span class="sd">        The optional 'output_*' parameters can be used to append extra data to the tuple of each sampled trench point.</span>
 <span class="sd">        The order of any extra data is the same order in which the parameters are listed in this function.</span>
 
 <span class="sd">    Notes</span>
 <span class="sd">    -----</span>
-<span class="sd">    The optional &#39;output_*&#39; parameters are the same as that of the `subduction_convergence` function , which is used to append extra data</span>
+<span class="sd">    The optional 'output_*' parameters are the same as that of the `subduction_convergence` function , which is used to append extra data</span>
 <span class="sd">    to the output of each sample point.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="c1">#</span>
     <span class="c1"># Process keyword arguments.</span>
     <span class="c1">#</span>
     <span class="n">output_distance_to_nearest_edge_of_trench</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
-        <span class="s2">&quot;output_distance_to_nearest_edge_of_trench&quot;</span><span class="p">,</span> <span class="kc">False</span>
+        <span class="s2">"output_distance_to_nearest_edge_of_trench"</span><span class="p">,</span> <span class="kc">False</span>
     <span class="p">)</span>
     <span class="n">output_distance_to_start_edge_of_trench</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
-        <span class="s2">&quot;output_distance_to_start_edge_of_trench&quot;</span><span class="p">,</span> <span class="kc">False</span>
+        <span class="s2">"output_distance_to_start_edge_of_trench"</span><span class="p">,</span> <span class="kc">False</span>
     <span class="p">)</span>
     <span class="n">output_convergence_velocity_components</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
-        <span class="s2">&quot;output_convergence_velocity_components&quot;</span><span class="p">,</span> <span class="kc">False</span>
+        <span class="s2">"output_convergence_velocity_components"</span><span class="p">,</span> <span class="kc">False</span>
     <span class="p">)</span>
     <span class="n">output_trench_absolute_velocity_components</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
-        <span class="s2">&quot;output_trench_absolute_velocity_components&quot;</span><span class="p">,</span> <span class="kc">False</span>
+        <span class="s2">"output_trench_absolute_velocity_components"</span><span class="p">,</span> <span class="kc">False</span>
     <span class="p">)</span>
     <span class="n">output_subducting_absolute_velocity</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
-        <span class="s2">&quot;output_subducting_absolute_velocity&quot;</span><span class="p">,</span> <span class="kc">False</span>
+        <span class="s2">"output_subducting_absolute_velocity"</span><span class="p">,</span> <span class="kc">False</span>
     <span class="p">)</span>
     <span class="n">output_subducting_absolute_velocity_components</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
-        <span class="s2">&quot;output_subducting_absolute_velocity_components&quot;</span><span class="p">,</span> <span class="kc">False</span>
+        <span class="s2">"output_subducting_absolute_velocity_components"</span><span class="p">,</span> <span class="kc">False</span>
     <span class="p">)</span>
-    <span class="n">output_trench_normal</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;output_trench_normal&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+    <span class="n">output_trench_normal</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"output_trench_normal"</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
 
     <span class="n">new_convergence_data</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">for</span> <span class="n">old_convergence_data_sample</span> <span class="ow">in</span> <span class="n">old_convergence_data</span><span class="p">:</span>
@@ -1407,34 +1410,34 @@
             <span class="c1"># Subduction line polarity (degrees).</span>
             <span class="c1"># Angle from North (-180 to 180 degrees) along subduction line</span>
             <span class="c1"># in order of its points (ie, first to last).</span>
-            <span class="c1"># Note that the subduction line&#39;s points are reversed (if necessary)</span>
+            <span class="c1"># Note that the subduction line's points are reversed (if necessary)</span>
             <span class="c1"># so that the overriding plate is always on its right.</span>
             <span class="n">old_subPolarity</span><span class="p">,</span>
             <span class="c1"># Distance (km) to start of subduction line, where start is the first point along</span>
             <span class="c1"># subduction line where subducting/overriding plate IDs are same as current location.</span>
-            <span class="c1"># Note that the subduction line&#39;s points are reversed (if necessary)</span>
+            <span class="c1"># Note that the subduction line's points are reversed (if necessary)</span>
             <span class="c1"># so that the overriding plate is always on its right.</span>
             <span class="n">old_distEdge</span><span class="p">,</span>
             <span class="c1"># Convergence velocity orthogonal to the trench in direction of overriding plate (mm/yr).</span>
             <span class="n">old_convPerp</span><span class="p">,</span>
             <span class="c1"># Convergence velocity parallel to the trench (mm/yr) along subduction line</span>
             <span class="c1"># in order of its points (ie, first to last).</span>
-            <span class="c1"># Note that the subduction line&#39;s points are reversed (if necessary)</span>
+            <span class="c1"># Note that the subduction line's points are reversed (if necessary)</span>
             <span class="c1"># so that the overriding plate is always on its right.</span>
             <span class="n">old_convPar</span><span class="p">,</span>
             <span class="c1"># Subducting plate velocity parallel to the trench (mm/yr) along subduction line</span>
             <span class="c1"># in order of its points (ie, first to last).</span>
-            <span class="c1"># Note that the subduction line&#39;s points are reversed (if necessary)</span>
+            <span class="c1"># Note that the subduction line's points are reversed (if necessary)</span>
             <span class="c1"># so that the overriding plate is always on its right.</span>
             <span class="n">old_parAbs</span><span class="p">,</span>
             <span class="c1"># Overriding plate velocity parallel to the trench (mm/yr) along subduction line</span>
             <span class="c1"># in order of its points (ie, first to last).</span>
-            <span class="c1"># Note that the subduction line&#39;s points are reversed (if necessary)</span>
+            <span class="c1"># Note that the subduction line's points are reversed (if necessary)</span>
             <span class="c1"># so that the overriding plate is always on its right.</span>
             <span class="n">old_parOP</span><span class="p">,</span>
             <span class="c1"># Trench velocity parallel to the trench (mm/yr) along subduction line</span>
             <span class="c1"># in order of its points (ie, first to last).</span>
-            <span class="c1"># Note that the subduction line&#39;s points are reversed (if necessary)</span>
+            <span class="c1"># Note that the subduction line's points are reversed (if necessary)</span>
             <span class="c1"># so that the overriding plate is always on its right.</span>
             <span class="n">old_parTrench</span><span class="p">,</span>
             <span class="c1"># Distance (km) to edge of subduction line, where edge is nearest location along</span>
@@ -1638,13 +1641,13 @@
 <span class="c1">#</span>
 <span class="c1"># NOTE: This should be in the same order as output parameters are actually added.</span>
 <span class="n">_OUTPUT_PARAMETER_NAME_LIST</span> <span class="o">=</span> <span class="p">[</span>
-    <span class="s2">&quot;output_distance_to_nearest_edge_of_trench&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;output_distance_to_start_edge_of_trench&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;output_convergence_velocity_components&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;output_trench_absolute_velocity_components&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;output_subducting_absolute_velocity&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;output_subducting_absolute_velocity_components&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;output_trench_normal&quot;</span><span class="p">,</span>
+    <span class="s2">"output_distance_to_nearest_edge_of_trench"</span><span class="p">,</span>
+    <span class="s2">"output_distance_to_start_edge_of_trench"</span><span class="p">,</span>
+    <span class="s2">"output_convergence_velocity_components"</span><span class="p">,</span>
+    <span class="s2">"output_trench_absolute_velocity_components"</span><span class="p">,</span>
+    <span class="s2">"output_subducting_absolute_velocity"</span><span class="p">,</span>
+    <span class="s2">"output_subducting_absolute_velocity_components"</span><span class="p">,</span>
+    <span class="s2">"output_trench_normal"</span><span class="p">,</span>
 <span class="p">]</span>
 
 
@@ -1654,15 +1657,15 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">warning_format</span><span class="p">(</span><span class="n">message</span><span class="p">,</span> <span class="n">category</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">lineno</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">line</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-    <span class="c1"># return &#39;{0}:{1}: {1}:{1}\n&#39;.format(filename, lineno, category.__name__, message)</span>
-    <span class="k">return</span> <span class="s2">&quot;</span><span class="si">{0}</span><span class="s2">: </span><span class="si">{1}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">category</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="n">message</span><span class="p">)</span>
+    <span class="c1"># return '{0}:{1}: {1}:{1}\n'.format(filename, lineno, category.__name__, message)</span>
+    <span class="k">return</span> <span class="s2">"</span><span class="si">{0}</span><span class="s2">: </span><span class="si">{1}</span><span class="se">\n</span><span class="s2">"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">category</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="n">message</span><span class="p">)</span>
 
 
 <span class="c1"># Print the warnings without the filename and line number.</span>
 <span class="c1"># Users are not going to want to see that.</span>
 <span class="n">warnings</span><span class="o">.</span><span class="n">formatwarning</span> <span class="o">=</span> <span class="n">warning_format</span>
 
-<span class="n">__description__</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;Find the convergence rates along trenches (subduction zones) over time.</span>
+<span class="n">__description__</span> <span class="o">=</span> <span class="s2">"""Find the convergence rates along trenches (subduction zones) over time.</span>
 
 <span class="s2">For each time (over a range of times) an output xy file is generated containing the resolved trenches</span>
 <span class="s2">(with point locations as the first two columns x and y) and the following convergence rate parameters in subsequent columns:</span>
@@ -1676,7 +1679,7 @@
 <span class="s2">    - subducting plate ID</span>
 <span class="s2">    - trench plate ID</span>
 <span class="s2">    </span>
-<span class="s2">    - extra data can be appended by specifying optional extra output parameters using the &#39;-x&#39; command-line option.</span>
+<span class="s2">    - extra data can be appended by specifying optional extra output parameters using the '-x' command-line option.</span>
 <span class="s2">    </span>
 <span class="s2">    The order of any extra data is the same order in which the parameters are listed below.</span>
 <span class="s2">    But note that all parameters are optional, you only need to specify the ones you want.</span>
@@ -1724,7 +1727,7 @@
 <span class="s2">is greater than 90 or less than -90). And note that the absolute velocity magnitude is negative if the trench</span>
 <span class="s2">is moving towards the overriding plate (if absolute obliquity angle is less than 90 or greater than -90) - note that this</span>
 <span class="s2">ignores the kinematics of the subducting plate. Similiarly for the subducting plate absolute velocity magnitude</span>
-<span class="s2">(if extra output parameter &#39;output_subducting_absolute_velocity&#39; is specified).</span>
+<span class="s2">(if extra output parameter 'output_subducting_absolute_velocity' is specified).</span>
 
 <span class="s2">Each point in the output is the midpoint of a great circle arc between two adjacent points in the trench polyline.</span>
 <span class="s2">The trench normal vector used in the obliquity calculations is perpendicular to the great circle arc of each point (arc midpoint)</span>
@@ -1738,15 +1741,15 @@
 
 <span class="s2">The trench normal (at each arc segment mid-point) always points *towards* the overriding plate.</span>
 
-<span class="s2">NOTE: Separate the positional and optional arguments with &#39;--&#39; (workaround for bug in argparse module).</span>
+<span class="s2">NOTE: Separate the positional and optional arguments with '--' (workaround for bug in argparse module).</span>
 <span class="s2">For example...</span>
 
 <span class="si">%(prog)s</span><span class="s2"> -r rotations.rot -m topologies.gpml -t 0 200 -i 1 -v 1 -d 0.5 -e xy -- convergence</span>
-<span class="s2">    &quot;&quot;&quot;</span>
+<span class="s2">    """</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">add_arguments</span><span class="p">(</span><span class="n">parser</span><span class="p">:</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;add command line argument parser&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""add command line argument parser"""</span>
 
     <span class="n">parser</span><span class="o">.</span><span class="n">formatter_class</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">RawDescriptionHelpFormatter</span>
     <span class="n">parser</span><span class="o">.</span><span class="n">description</span> <span class="o">=</span> <span class="n">__description__</span>
@@ -1754,61 +1757,61 @@
     <span class="n">parser</span><span class="o">.</span><span class="n">set_defaults</span><span class="p">(</span><span class="n">func</span><span class="o">=</span><span class="n">main</span><span class="p">)</span>
 
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
-        <span class="s2">&quot;-r&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;--rotation_filenames&quot;</span><span class="p">,</span>
+        <span class="s2">"-r"</span><span class="p">,</span>
+        <span class="s2">"--rotation_filenames"</span><span class="p">,</span>
         <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
-        <span class="n">nargs</span><span class="o">=</span><span class="s2">&quot;+&quot;</span><span class="p">,</span>
+        <span class="n">nargs</span><span class="o">=</span><span class="s2">"+"</span><span class="p">,</span>
         <span class="n">required</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-        <span class="n">metavar</span><span class="o">=</span><span class="s2">&quot;rotation_filename&quot;</span><span class="p">,</span>
-        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;One or more rotation files.&quot;</span><span class="p">,</span>
+        <span class="n">metavar</span><span class="o">=</span><span class="s2">"rotation_filename"</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">"One or more rotation files."</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
-        <span class="s2">&quot;-m&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;--topology_filenames&quot;</span><span class="p">,</span>
+        <span class="s2">"-m"</span><span class="p">,</span>
+        <span class="s2">"--topology_filenames"</span><span class="p">,</span>
         <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
-        <span class="n">nargs</span><span class="o">=</span><span class="s2">&quot;+&quot;</span><span class="p">,</span>
+        <span class="n">nargs</span><span class="o">=</span><span class="s2">"+"</span><span class="p">,</span>
         <span class="n">required</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-        <span class="n">metavar</span><span class="o">=</span><span class="s2">&quot;topology_filename&quot;</span><span class="p">,</span>
-        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;One or more topology files to generate resolved subducting lines.&quot;</span><span class="p">,</span>
+        <span class="n">metavar</span><span class="o">=</span><span class="s2">"topology_filename"</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">"One or more topology files to generate resolved subducting lines."</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
-        <span class="s2">&quot;-a&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;--anchor&quot;</span><span class="p">,</span>
+        <span class="s2">"-a"</span><span class="p">,</span>
+        <span class="s2">"--anchor"</span><span class="p">,</span>
         <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span>
         <span class="n">default</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
-        <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;anchor_plate_id&quot;</span><span class="p">,</span>
-        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Anchor plate id used for reconstructing. Defaults to zero.&quot;</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">"anchor_plate_id"</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">"Anchor plate id used for reconstructing. Defaults to zero."</span><span class="p">,</span>
     <span class="p">)</span>
 
-    <span class="c1"># Can specify only one of &#39;-i&#39;, &#39;-l&#39; or &#39;-t&#39;.</span>
+    <span class="c1"># Can specify only one of '-i', '-l' or '-t'.</span>
     <span class="n">threshold_sampling_distance_group</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">add_mutually_exclusive_group</span><span class="p">()</span>
     <span class="n">threshold_sampling_distance_group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
-        <span class="s2">&quot;-d&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;--threshold_sampling_distance_degrees&quot;</span><span class="p">,</span>
+        <span class="s2">"-d"</span><span class="p">,</span>
+        <span class="s2">"--threshold_sampling_distance_degrees"</span><span class="p">,</span>
         <span class="nb">type</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
-        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Threshold sampling distance along trenches (in degrees). &quot;</span>
-        <span class="s2">&quot;Defaults to </span><span class="si">{0}</span><span class="s2"> degrees.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">DEFAULT_THRESHOLD_SAMPLING_DISTANCE_DEGREES</span><span class="p">),</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">"Threshold sampling distance along trenches (in degrees). "</span>
+        <span class="s2">"Defaults to </span><span class="si">{0}</span><span class="s2"> degrees."</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">DEFAULT_THRESHOLD_SAMPLING_DISTANCE_DEGREES</span><span class="p">),</span>
     <span class="p">)</span>
     <span class="n">threshold_sampling_distance_group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
-        <span class="s2">&quot;-k&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;--threshold_sampling_distance_kms&quot;</span><span class="p">,</span>
+        <span class="s2">"-k"</span><span class="p">,</span>
+        <span class="s2">"--threshold_sampling_distance_kms"</span><span class="p">,</span>
         <span class="nb">type</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
-        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Threshold sampling distance along trenches (in Kms). &quot;</span>
-        <span class="s2">&quot;Defaults to </span><span class="si">{0:.2f}</span><span class="s2"> Kms (which is equivalent to </span><span class="si">{1}</span><span class="s2"> degrees).&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">"Threshold sampling distance along trenches (in Kms). "</span>
+        <span class="s2">"Defaults to </span><span class="si">{0:.2f}</span><span class="s2"> Kms (which is equivalent to </span><span class="si">{1}</span><span class="s2"> degrees)."</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
             <span class="n">DEFAULT_THRESHOLD_SAMPLING_DISTANCE_KMS</span><span class="p">,</span>
             <span class="n">DEFAULT_THRESHOLD_SAMPLING_DISTANCE_DEGREES</span><span class="p">,</span>
         <span class="p">),</span>
     <span class="p">)</span>
 
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
-        <span class="s2">&quot;-t&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;--time_range&quot;</span><span class="p">,</span>
+        <span class="s2">"-t"</span><span class="p">,</span>
+        <span class="s2">"--time_range"</span><span class="p">,</span>
         <span class="nb">type</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
         <span class="n">nargs</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
-        <span class="n">metavar</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;young_time&quot;</span><span class="p">,</span> <span class="s2">&quot;old_time&quot;</span><span class="p">),</span>
+        <span class="n">metavar</span><span class="o">=</span><span class="p">(</span><span class="s2">"young_time"</span><span class="p">,</span> <span class="s2">"old_time"</span><span class="p">),</span>
         <span class="n">default</span><span class="o">=</span><span class="p">[</span><span class="n">DEFAULT_TIME_RANGE_YOUNG_TIME</span><span class="p">,</span> <span class="n">DEFAULT_TIME_RANGE_OLD_TIME</span><span class="p">],</span>
-        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;The time range (in Ma) from young time to old time. &quot;</span>
-        <span class="s2">&quot;Defaults to </span><span class="si">{0}</span><span class="s2"> -&gt; </span><span class="si">{1}</span><span class="s2"> Ma.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">"The time range (in Ma) from young time to old time. "</span>
+        <span class="s2">"Defaults to </span><span class="si">{0}</span><span class="s2"> -&gt; </span><span class="si">{1}</span><span class="s2"> Ma."</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
             <span class="n">DEFAULT_TIME_RANGE_YOUNG_TIME</span><span class="p">,</span> <span class="n">DEFAULT_TIME_RANGE_OLD_TIME</span>
         <span class="p">),</span>
     <span class="p">)</span>
@@ -1817,85 +1820,85 @@
         <span class="k">try</span><span class="p">:</span>
             <span class="n">value</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">value_string</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentTypeError</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> is not a number&quot;</span> <span class="o">%</span> <span class="n">value_string</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentTypeError</span><span class="p">(</span><span class="s2">"</span><span class="si">%s</span><span class="s2"> is not a number"</span> <span class="o">%</span> <span class="n">value_string</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">value</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentTypeError</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%g</span><span class="s2"> is not a positive number&quot;</span> <span class="o">%</span> <span class="n">value</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentTypeError</span><span class="p">(</span><span class="s2">"</span><span class="si">%g</span><span class="s2"> is not a positive number"</span> <span class="o">%</span> <span class="n">value</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">value</span>
 
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
-        <span class="s2">&quot;-i&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;--time_increment&quot;</span><span class="p">,</span>
+        <span class="s2">"-i"</span><span class="p">,</span>
+        <span class="s2">"--time_increment"</span><span class="p">,</span>
         <span class="nb">type</span><span class="o">=</span><span class="n">parse_positive_number</span><span class="p">,</span>
         <span class="n">default</span><span class="o">=</span><span class="n">DEFAULT_TIME_INCREMENT</span><span class="p">,</span>
-        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;The time increment in My. Defaults to </span><span class="si">{0}</span><span class="s2"> My.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">"The time increment in My. Defaults to </span><span class="si">{0}</span><span class="s2"> My."</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
             <span class="n">DEFAULT_TIME_INCREMENT</span>
         <span class="p">),</span>
     <span class="p">)</span>
 
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
-        <span class="s2">&quot;-v&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;--velocity_delta_time&quot;</span><span class="p">,</span>
+        <span class="s2">"-v"</span><span class="p">,</span>
+        <span class="s2">"--velocity_delta_time"</span><span class="p">,</span>
         <span class="nb">type</span><span class="o">=</span><span class="n">parse_positive_number</span><span class="p">,</span>
         <span class="n">default</span><span class="o">=</span><span class="n">DEFAULT_VELOCITY_DELTA_TIME</span><span class="p">,</span>
-        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;The delta time interval used to calculate velocities in My. &quot;</span>
-        <span class="s2">&quot;Defaults to </span><span class="si">{0}</span><span class="s2"> My.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">DEFAULT_VELOCITY_DELTA_TIME</span><span class="p">),</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">"The delta time interval used to calculate velocities in My. "</span>
+        <span class="s2">"Defaults to </span><span class="si">{0}</span><span class="s2"> My."</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">DEFAULT_VELOCITY_DELTA_TIME</span><span class="p">),</span>
     <span class="p">)</span>
 
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
-        <span class="s2">&quot;-x&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;--extra_output_parameters&quot;</span><span class="p">,</span>
+        <span class="s2">"-x"</span><span class="p">,</span>
+        <span class="s2">"--extra_output_parameters"</span><span class="p">,</span>
         <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
-        <span class="n">nargs</span><span class="o">=</span><span class="s2">&quot;+&quot;</span><span class="p">,</span>
-        <span class="n">metavar</span><span class="o">=</span><span class="s2">&quot;output_parameter&quot;</span><span class="p">,</span>
-        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Optional extra output parameters to be appended to the usual (non-optional) &quot;</span>
-        <span class="s2">&quot;output parameters for each sample point. &quot;</span>
-        <span class="s2">&quot;Choices include </span><span class="si">{0}</span><span class="s2">. &quot;</span>
-        <span class="s2">&quot;The order in which they are output is in the same order as those choices.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-            <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">_OUTPUT_PARAMETER_NAME_LIST</span><span class="p">)</span>
+        <span class="n">nargs</span><span class="o">=</span><span class="s2">"+"</span><span class="p">,</span>
+        <span class="n">metavar</span><span class="o">=</span><span class="s2">"output_parameter"</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">"Optional extra output parameters to be appended to the usual (non-optional) "</span>
+        <span class="s2">"output parameters for each sample point. "</span>
+        <span class="s2">"Choices include </span><span class="si">{0}</span><span class="s2">. "</span>
+        <span class="s2">"The order in which they are output is in the same order as those choices."</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="s2">", "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">_OUTPUT_PARAMETER_NAME_LIST</span><span class="p">)</span>
         <span class="p">),</span>
     <span class="p">)</span>
 
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
-        <span class="s2">&quot;-g&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;--output_gpml_filename&quot;</span><span class="p">,</span>
+        <span class="s2">"-g"</span><span class="p">,</span>
+        <span class="s2">"--output_gpml_filename"</span><span class="p">,</span>
         <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
-        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Optional GPML output filename to contain the subduction convergence data for all specified times. &quot;</span>
-        <span class="s2">&quot;This can then be loaded into GPlates to display the data as scalar coverages.&quot;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">"Optional GPML output filename to contain the subduction convergence data for all specified times. "</span>
+        <span class="s2">"This can then be loaded into GPlates to display the data as scalar coverages."</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
-        <span class="s2">&quot;output_filename_prefix&quot;</span><span class="p">,</span>
+        <span class="s2">"output_filename_prefix"</span><span class="p">,</span>
         <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
-        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;The output filename prefix. An output file is created for each geological time in the sequence where &quot;</span>
-        <span class="s2">&quot;the filename suffix contains the time and the filename extension.&quot;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">"The output filename prefix. An output file is created for each geological time in the sequence where "</span>
+        <span class="s2">"the filename suffix contains the time and the filename extension."</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
-        <span class="s2">&quot;-e&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;--output_filename_extension&quot;</span><span class="p">,</span>
+        <span class="s2">"-e"</span><span class="p">,</span>
+        <span class="s2">"--output_filename_extension"</span><span class="p">,</span>
         <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
-        <span class="n">default</span><span class="o">=</span><span class="s2">&quot;xy&quot;</span><span class="p">,</span>
-        <span class="n">help</span><span class="o">=</span><span class="s1">&#39;The output xy filename extension. Defaults to &quot;xy&quot;.&#39;</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="s2">"xy"</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s1">'The output xy filename extension. Defaults to "xy".'</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
-        <span class="s2">&quot;-w&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;--ignore_topology_warnings&quot;</span><span class="p">,</span>
-        <span class="n">action</span><span class="o">=</span><span class="s2">&quot;store_true&quot;</span><span class="p">,</span>
-        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;If specified then topology warnings are ignored (not output). &quot;</span>
-        <span class="s2">&quot;These are the warnings about not finding the overriding and subducting plates.&quot;</span><span class="p">,</span>
+        <span class="s2">"-w"</span><span class="p">,</span>
+        <span class="s2">"--ignore_topology_warnings"</span><span class="p">,</span>
+        <span class="n">action</span><span class="o">=</span><span class="s2">"store_true"</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">"If specified then topology warnings are ignored (not output). "</span>
+        <span class="s2">"These are the warnings about not finding the overriding and subducting plates."</span><span class="p">,</span>
     <span class="p">)</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">(</span><span class="n">args</span><span class="p">):</span>
-    <span class="c1"># Topology warnings correspond to calls to &quot;warnings.warn(... , RuntimeWarning)&quot;.</span>
+    <span class="c1"># Topology warnings correspond to calls to "warnings.warn(... , RuntimeWarning)".</span>
     <span class="c1"># Ignore them if requested.</span>
     <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">ignore_topology_warnings</span><span class="p">:</span>
-        <span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="s2">&quot;ignore&quot;</span><span class="p">,</span> <span class="ne">RuntimeWarning</span><span class="p">)</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="s2">"ignore"</span><span class="p">,</span> <span class="ne">RuntimeWarning</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">time_range</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">args</span><span class="o">.</span><span class="n">time_range</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
         <span class="k">raise</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentTypeError</span><span class="p">(</span>
-            <span class="s2">&quot;First (young) value in time range is greater than second (old) value&quot;</span>
+            <span class="s2">"First (young) value in time range is greater than second (old) value"</span>
         <span class="p">)</span>
 
     <span class="c1"># Determine threshold sampling distance.</span>
@@ -1923,7 +1926,7 @@
                 <span class="n">kwargs</span><span class="p">[</span><span class="n">extra_output_parameter</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                    <span class="s2">&quot;</span><span class="si">{0}</span><span class="s2"> is not a valid output parameter&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">extra_output_parameter</span><span class="p">)</span>
+                    <span class="s2">"</span><span class="si">{0}</span><span class="s2"> is not a valid output parameter"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">extra_output_parameter</span><span class="p">)</span>
                 <span class="p">)</span>
 
     <span class="n">return_code</span> <span class="o">=</span> <span class="n">subduction_convergence_over_time</span><span class="p">(</span>
@@ -1946,7 +1949,7 @@
     <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
 
 
-<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">"__main__"</span><span class="p">:</span>
     <span class="c1"># The command-line parser.</span>
     <span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">(</span>
         <span class="n">description</span><span class="o">=</span><span class="n">__description__</span><span class="p">,</span>
@@ -1964,7 +1967,7 @@
         <span class="n">main</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
     <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
         <span class="nb">print</span><span class="p">(</span>
-            <span class="s2">&quot;ERROR: </span><span class="si">{0}</span><span class="s2">: </span><span class="si">{1}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="vm">__file__</span><span class="p">),</span> <span class="n">exc</span><span class="p">),</span> <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span>
+            <span class="s2">"ERROR: </span><span class="si">{0}</span><span class="s2">: </span><span class="si">{1}</span><span class="s2">"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="vm">__file__</span><span class="p">),</span> <span class="n">exc</span><span class="p">),</span> <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span>
         <span class="p">)</span>
         <span class="c1"># Uncomment this to print traceback to location of raised exception.</span>
         <span class="c1"># import traceback</span>

@@ -107,12 +107,12 @@
 <div class="viewcode-block" id="FeatureTransformer">
 <a class="viewcode-back" href="../../../filters_and_transformers.html#gplately.utils.feature_transformer.FeatureTransformer">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">FeatureTransformer</span><span class="p">(</span><span class="n">metaclass</span><span class="o">=</span><span class="n">abc</span><span class="o">.</span><span class="n">ABCMeta</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Abstract base class for feature transformers.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Abstract base class for feature transformers."""</span>
 
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">__subclasshook__</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">subclass</span><span class="p">):</span>
         <span class="k">return</span> <span class="p">(</span>
-            <span class="nb">hasattr</span><span class="p">(</span><span class="n">subclass</span><span class="p">,</span> <span class="s2">&quot;transform&quot;</span><span class="p">)</span>
+            <span class="nb">hasattr</span><span class="p">(</span><span class="n">subclass</span><span class="p">,</span> <span class="s2">"transform"</span><span class="p">)</span>
             <span class="ow">and</span> <span class="nb">callable</span><span class="p">(</span><span class="n">subclass</span><span class="o">.</span><span class="n">transform</span><span class="p">)</span>
             <span class="ow">or</span> <span class="bp">NotImplemented</span>
         <span class="p">)</span>
@@ -121,7 +121,7 @@
 <a class="viewcode-back" href="../../../filters_and_transformers.html#gplately.utils.feature_transformer.FeatureTransformer.transform">[docs]</a>
     <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">feature</span><span class="p">:</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">Feature</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">Feature</span><span class="p">:</span>  <span class="c1"># type: ignore</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Transform a single feature.</span>
+<span class="w">        </span><span class="sd">"""Transform a single feature.</span>
 
 <span class="sd">        This abstract method must be implemented by all subclasses.</span>
 <span class="sd">        Implementations may modify the feature in place and/or return</span>
@@ -136,7 +136,7 @@
 <span class="sd">        -------</span>
 <span class="sd">        pygplates.Feature</span>
 <span class="sd">            The transformed feature (may be the same object or a new instance).</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
 </div>
@@ -146,7 +146,7 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">transform_feature_collection</span><span class="p">(</span>
     <span class="n">feature_collection</span><span class="p">:</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">FeatureCollection</span><span class="p">,</span> <span class="n">transformers</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">FeatureTransformer</span><span class="p">]</span>  <span class="c1"># type: ignore</span>
 <span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Transform a feature collection with a list of transformers.</span>
+<span class="w">    </span><span class="sd">"""Transform a feature collection with a list of transformers.</span>
 
 <span class="sd">    Apply a sequence of transformers to each feature in the collection.</span>
 <span class="sd">    Transformers are applied sequentially and update features in place.</span>
@@ -163,7 +163,7 @@
 <span class="sd">    -------</span>
 <span class="sd">    pygplates.FeatureCollection</span>
 <span class="sd">        The transformed feature collection (same object, modified in place).</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">transformed_feature_collection</span> <span class="o">=</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">FeatureCollection</span><span class="p">()</span>  <span class="c1"># type: ignore</span>
     <span class="k">for</span> <span class="n">feature</span> <span class="ow">in</span> <span class="n">feature_collection</span><span class="p">:</span>
         <span class="k">for</span> <span class="n">transformer</span> <span class="ow">in</span> <span class="n">transformers</span><span class="p">:</span>
@@ -180,7 +180,7 @@
 <div class="viewcode-block" id="SetReconstructionPlateIDTransformer">
 <a class="viewcode-back" href="../../../filters_and_transformers.html#gplately.utils.feature_transformer.SetReconstructionPlateIDTransformer">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">SetReconstructionPlateIDTransformer</span><span class="p">(</span><span class="n">FeatureTransformer</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Set the reconstruction plate ID of a feature to a specified value.</span>
+<span class="w">    </span><span class="sd">"""Set the reconstruction plate ID of a feature to a specified value.</span>
 
 <span class="sd">    This transformer updates the reconstruction plate ID property of features,</span>
 <span class="sd">    which is essential for plate kinematic reconstructions.</span>
@@ -200,7 +200,7 @@
 <span class="sd">    See Also</span>
 <span class="sd">    --------</span>
 <span class="sd">    SetValidTimeTransformer : Transformer for setting valid time intervals</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">plate_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_plate_id</span> <span class="o">=</span> <span class="n">plate_id</span>
@@ -217,7 +217,7 @@
 <div class="viewcode-block" id="SetValidTimeTransformer">
 <a class="viewcode-back" href="../../../filters_and_transformers.html#gplately.utils.feature_transformer.SetValidTimeTransformer">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">SetValidTimeTransformer</span><span class="p">(</span><span class="n">FeatureTransformer</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Set the valid time of a feature to specified begin and end times.</span>
+<span class="w">    </span><span class="sd">"""Set the valid time of a feature to specified begin and end times.</span>
 
 <span class="sd">    This transformer allows partial updates to feature valid time intervals.</span>
 <span class="sd">    If only one time bound is specified, the existing bound is preserved.</span>
@@ -244,7 +244,7 @@
 <span class="sd">    See Also</span>
 <span class="sd">    --------</span>
 <span class="sd">    SetReconstructionPlateIDTransformer : Transformer for setting reconstruction plate ID</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">begin_time</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">end_time</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>  <span class="c1"># type: ignore</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_begin_time</span> <span class="o">=</span> <span class="n">begin_time</span>
@@ -255,8 +255,8 @@
     <span class="k">def</span><span class="w"> </span><span class="nf">transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">feature</span><span class="p">:</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">Feature</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">Feature</span><span class="p">:</span>  <span class="c1"># type: ignore</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_begin_time</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_end_time</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">feature</span>
-        <span class="n">begin_time</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="s2">&quot;inf&quot;</span><span class="p">)</span>
-        <span class="n">end_time</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="s2">&quot;-inf&quot;</span><span class="p">)</span>
+        <span class="n">begin_time</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="s2">"inf"</span><span class="p">)</span>
+        <span class="n">end_time</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="s2">"-inf"</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_begin_time</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">valid_time</span> <span class="o">=</span> <span class="n">feature</span><span class="o">.</span><span class="n">get_valid_time</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
             <span class="k">if</span> <span class="n">valid_time</span><span class="p">:</span>

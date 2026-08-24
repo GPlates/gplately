@@ -94,6 +94,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#gplately.Raster.resize"><code class="docutils literal notranslate"><span class="pre">Raster.resize()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#gplately.Raster.rotate_reference_frames"><code class="docutils literal notranslate"><span class="pre">Raster.rotate_reference_frames()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#gplately.Raster.sample_values"><code class="docutils literal notranslate"><span class="pre">Raster.sample_values()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gplately.Raster.save_as_image"><code class="docutils literal notranslate"><span class="pre">Raster.save_as_image()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#gplately.Raster.save_to_netcdf4"><code class="docutils literal notranslate"><span class="pre">Raster.save_to_netcdf4()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#gplately.Raster.shape"><code class="docutils literal notranslate"><span class="pre">Raster.shape</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#gplately.Raster.size"><code class="docutils literal notranslate"><span class="pre">Raster.size</span></code></a></li>
@@ -258,19 +259,22 @@ Otherwise, GPlately’s guess may/may not be correct.</p></li>
 <tr class="row-odd"><td><p><a class="reference internal" href="#gplately.Raster.sample_values" title="gplately.Raster.sample_values"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sample_values</span></code></a>(*, lons, lats[, method])</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#gplately.Raster.save_to_netcdf4" title="gplately.Raster.save_to_netcdf4"><code class="xref py py-obj docutils literal notranslate"><span class="pre">save_to_netcdf4</span></code></a>(filename[, ...])</p></td>
-<td><p>Saves the grid attributed to the <a class="reference internal" href="#gplately.Raster" title="gplately.Raster"><code class="xref py py-class docutils literal notranslate"><span class="pre">Raster</span></code></a> object to the given <code class="docutils literal notranslate"><span class="pre">filename</span></code> (including the &quot;.nc&quot; extension) in netCDF4 format.</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#gplately.Raster.save_as_image" title="gplately.Raster.save_as_image"><code class="xref py py-obj docutils literal notranslate"><span class="pre">save_as_image</span></code></a>(filename[, projection, cmap, ...])</p></td>
+<td><p>Saves the <a class="reference internal" href="#gplately.Raster" title="gplately.Raster"><code class="xref py py-class docutils literal notranslate"><span class="pre">Raster</span></code></a> object as a image.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#gplately.Raster.to_data_array" title="gplately.Raster.to_data_array"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_data_array</span></code></a>([name])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#gplately.Raster.save_to_netcdf4" title="gplately.Raster.save_to_netcdf4"><code class="xref py py-obj docutils literal notranslate"><span class="pre">save_to_netcdf4</span></code></a>(filename[, ...])</p></td>
+<td><p>Saves the <a class="reference internal" href="#gplately.Raster" title="gplately.Raster"><code class="xref py py-class docutils literal notranslate"><span class="pre">Raster</span></code></a> object as a netCDF4 file.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#gplately.Raster.to_data_array" title="gplately.Raster.to_data_array"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_data_array</span></code></a>([name])</p></td>
 <td><p>Convert the raster to an xarray DataArray with spatial coordinates.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#gplately.Raster.to_longitude_positive_360" title="gplately.Raster.to_longitude_positive_360"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_longitude_positive_360</span></code></a>([inplace])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#gplately.Raster.to_longitude_positive_360" title="gplately.Raster.to_longitude_positive_360"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_longitude_positive_360</span></code></a>([inplace])</p></td>
 <td><p>Convert a grid's longitude coordinates to the [0, 360] convention.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#gplately.Raster.to_longitude_signed_180" title="gplately.Raster.to_longitude_signed_180"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_longitude_signed_180</span></code></a>([inplace])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#gplately.Raster.to_longitude_signed_180" title="gplately.Raster.to_longitude_signed_180"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_longitude_signed_180</span></code></a>([inplace])</p></td>
 <td><p>Convert a grid's longitude coordinates to the [-180, 180] convention.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#gplately.Raster.unwrap_longitude" title="gplately.Raster.unwrap_longitude"><code class="xref py py-obj docutils literal notranslate"><span class="pre">unwrap_longitude</span></code></a>()</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#gplately.Raster.unwrap_longitude" title="gplately.Raster.unwrap_longitude"><code class="xref py py-obj docutils literal notranslate"><span class="pre">unwrap_longitude</span></code></a>()</p></td>
 <td><p>Unwrap the longitude coordinates around the antimeridian.</p></td>
 </tr>
 </tbody>
@@ -504,7 +508,7 @@ to skip and pass points to <cite>surface</cite> directly. Default
 <span class="gp">&gt;&gt;&gt; </span><span class="n">lon</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mi">120</span><span class="p">,</span> <span class="mi">130</span><span class="p">,</span> <span class="mi">500</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">lat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mi">30</span><span class="p">,</span> <span class="mi">40</span><span class="p">,</span> <span class="mi">500</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">val</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">500</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">raster</span> <span class="o">=</span> <span class="n">Raster</span><span class="o">.</span><span class="n">from_points</span><span class="p">(</span><span class="n">lon</span><span class="p">,</span> <span class="n">lat</span><span class="p">,</span> <span class="n">val</span><span class="p">,</span> <span class="n">spacing</span><span class="o">=</span><span class="s2">&quot;0.05d&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">raster</span> <span class="o">=</span> <span class="n">Raster</span><span class="o">.</span><span class="n">from_points</span><span class="p">(</span><span class="n">lon</span><span class="p">,</span> <span class="n">lat</span><span class="p">,</span> <span class="n">val</span><span class="p">,</span> <span class="n">spacing</span><span class="o">=</span><span class="s2">"0.05d"</span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -915,10 +919,15 @@ to define the “from” and “to” reference frames.</p></li>
 <dd></dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="gplately.Raster.save_as_image">
+<span class="sig-name descname"><span class="pre">save_as_image</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">projection</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cmap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'viridis'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vmin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vmax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dpi</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">300</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">colorbar_label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_only</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/raster.html#Raster.save_as_image"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.Raster.save_as_image" title="Link to this definition"></a></dt>
+<dd><p>Saves the <a class="reference internal" href="#gplately.Raster" title="gplately.Raster"><code class="xref py py-class docutils literal notranslate"><span class="pre">Raster</span></code></a> object as a image.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="gplately.Raster.save_to_netcdf4">
 <span class="sig-name descname"><span class="pre">save_to_netcdf4</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">significant_digits</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fill_value</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/raster.html#Raster.save_to_netcdf4"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.Raster.save_to_netcdf4" title="Link to this definition"></a></dt>
-<dd><p>Saves the grid attributed to the <a class="reference internal" href="#gplately.Raster" title="gplately.Raster"><code class="xref py py-class docutils literal notranslate"><span class="pre">Raster</span></code></a> object to the given <code class="docutils literal notranslate"><span class="pre">filename</span></code> (including
-the “.nc” extension) in netCDF4 format.</p>
+<dd><p>Saves the <a class="reference internal" href="#gplately.Raster" title="gplately.Raster"><code class="xref py py-class docutils literal notranslate"><span class="pre">Raster</span></code></a> object as a netCDF4 file.</p>
 </dd></dl>
 
 <dl class="py property">

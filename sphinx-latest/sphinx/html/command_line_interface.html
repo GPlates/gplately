@@ -163,7 +163,7 @@ If a model name is given, show the details about this model.</p>
 <h2><a class="toc-backref" href="#id3" role="doc-backlink">filter</a><a class="headerlink" href="#filter" title="Link to this heading"></a></h2>
 <p>Filter feature collection by various criteria and save the result to the <cite>output_file</cite>.</p>
 <p>👉 only keep features whose name contains “Africa” or “North America”</p>
-<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>gplately<span class="w"> </span>filter<span class="w"> </span>input_file<span class="w"> </span>output_file<span class="w"> </span>-n<span class="w"> </span>Africa<span class="w"> </span><span class="s2">&quot;North America&quot;</span>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>gplately<span class="w"> </span>filter<span class="w"> </span>input_file<span class="w"> </span>output_file<span class="w"> </span>-n<span class="w"> </span>Africa<span class="w"> </span><span class="s2">"North America"</span>
 </pre></div>
 </div>
 <p>👉 only keep features whose plate ID is one of “701 714 715 101”</p>
@@ -179,7 +179,7 @@ If a model name is given, show the details about this model.</p>
 </pre></div>
 </div>
 <p>👉 only keep features whose name contains “Africa” or “North America” and plate ID is one of “701 714 715 101” and birth age is older than 500 Myr</p>
-<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>gplately<span class="w"> </span>filter<span class="w"> </span>input_file<span class="w"> </span>output_file<span class="w"> </span>-n<span class="w"> </span>Africa<span class="w"> </span><span class="s2">&quot;North America&quot;</span><span class="w"> </span>-p<span class="w"> </span><span class="m">701</span><span class="w"> </span><span class="m">714</span><span class="w"> </span><span class="m">715</span><span class="w"> </span><span class="m">101</span><span class="w"> </span>--min-birth-age<span class="w"> </span><span class="m">500</span>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>gplately<span class="w"> </span>filter<span class="w"> </span>input_file<span class="w"> </span>output_file<span class="w"> </span>-n<span class="w"> </span>Africa<span class="w"> </span><span class="s2">"North America"</span><span class="w"> </span>-p<span class="w"> </span><span class="m">701</span><span class="w"> </span><span class="m">714</span><span class="w"> </span><span class="m">715</span><span class="w"> </span><span class="m">101</span><span class="w"> </span>--min-birth-age<span class="w"> </span><span class="m">500</span>
 </pre></div>
 </div>
 <p>👉 only keep gpml:Basin features</p>
@@ -187,7 +187,7 @@ If a model name is given, show the details about this model.</p>
 </pre></div>
 </div>
 <p>👉 only keep gpml:Basin and gpml:IslandArc features</p>
-<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>gplately<span class="w"> </span>filter<span class="w"> </span>input_file<span class="w"> </span>output_file<span class="w"> </span>-t<span class="w"> </span><span class="s2">&quot;gpml:IslandArc|gpml:Basin&quot;</span>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>gplately<span class="w"> </span>filter<span class="w"> </span>input_file<span class="w"> </span>output_file<span class="w"> </span>-t<span class="w"> </span><span class="s2">"gpml:IslandArc|gpml:Basin"</span>
 </pre></div>
 </div>
 <div class="admonition note">
@@ -207,11 +207,11 @@ If a model name is given, show the details about this model.</p>
 </pre></div>
 </div>
 <p>👉 change all gpml:ContinentalFragment and gpml:Coastline to gpml:UnclassifiedFeature</p>
-<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>gplately<span class="w"> </span>reset_feature_type<span class="w"> </span>-s<span class="w"> </span><span class="s2">&quot;gpml:ContinentalFragment|gpml:Coastline&quot;</span><span class="w"> </span>-t<span class="w"> </span>gpml:UnclassifiedFeature<span class="w"> </span>input_file<span class="w"> </span>output_file
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>gplately<span class="w"> </span>reset_feature_type<span class="w"> </span>-s<span class="w"> </span><span class="s2">"gpml:ContinentalFragment|gpml:Coastline"</span><span class="w"> </span>-t<span class="w"> </span>gpml:UnclassifiedFeature<span class="w"> </span>input_file<span class="w"> </span>output_file
 </pre></div>
 </div>
 <p>👉 change all feature types to gpml:UnclassifiedFeature</p>
-<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>gplately<span class="w"> </span>reset_feature_type<span class="w"> </span>-s<span class="w"> </span><span class="s2">&quot;.*&quot;</span><span class="w"> </span>-t<span class="w"> </span>gpml:UnclassifiedFeature<span class="w"> </span>input_file<span class="w"> </span>output_file
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>gplately<span class="w"> </span>reset_feature_type<span class="w"> </span>-s<span class="w"> </span><span class="s2">".*"</span><span class="w"> </span>-t<span class="w"> </span>gpml:UnclassifiedFeature<span class="w"> </span>input_file<span class="w"> </span>output_file
 </pre></div>
 </div>
 <div class="admonition note">

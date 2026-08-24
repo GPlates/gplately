@@ -111,15 +111,15 @@
 <div class="viewcode-block" id="PlotEngine">
 <a class="viewcode-back" href="../../../generated/gplately.PlotEngine.html#gplately.PlotEngine">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">PlotEngine</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Abstract base class for map plotting.</span>
+<span class="w">    </span><span class="sd">"""Abstract base class for map plotting.</span>
 <span class="sd">    Do not use this base class directly. Use subclasses instead, such as :class:`CartopyPlotEngine` or :class:`PygmtPlotEngine`.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
 <div class="viewcode-block" id="PlotEngine.plot_geo_data_frame">
 <a class="viewcode-back" href="../../../generated/gplately.PlotEngine.html#gplately.PlotEngine.plot_geo_data_frame">[docs]</a>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">plot_geo_data_frame</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ax_or_fig</span><span class="p">,</span> <span class="n">gdf</span><span class="p">:</span> <span class="n">GeoDataFrame</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Plot GeoPandas GeoDataFrame object (abstract method)&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Plot GeoPandas GeoDataFrame object (abstract method)"""</span>
         <span class="k">pass</span>  <span class="c1"># This is an abstract method, no implementation here.</span></div>
 
 
@@ -127,7 +127,7 @@
 <a class="viewcode-back" href="../../../generated/gplately.PlotEngine.html#gplately.PlotEngine.plot_pygplates_features">[docs]</a>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">plot_pygplates_features</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ax_or_fig</span><span class="p">,</span> <span class="n">features</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Plot one or more pygplates feature(s) (abstract method)&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Plot one or more pygplates feature(s) (abstract method)"""</span>
         <span class="k">pass</span>  <span class="c1"># This is an abstract method, no implementation here.</span></div>
 
 
@@ -139,10 +139,10 @@
         <span class="n">ax_or_fig</span><span class="p">,</span>
         <span class="n">gdf_subduction_left</span><span class="p">:</span> <span class="n">GeoDataFrame</span><span class="p">,</span>
         <span class="n">gdf_subduction_right</span><span class="p">:</span> <span class="n">GeoDataFrame</span><span class="p">,</span>
-        <span class="n">color</span><span class="o">=</span><span class="s2">&quot;blue&quot;</span><span class="p">,</span>
+        <span class="n">color</span><span class="o">=</span><span class="s2">"blue"</span><span class="p">,</span>
         <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
     <span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Plot subduction zones with &quot;teeth&quot;(abstract method)&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Plot subduction zones with "teeth"(abstract method)"""</span>
         <span class="k">pass</span>  <span class="c1"># This is an abstract method, no implementation here.</span></div>
 
 
@@ -152,7 +152,7 @@
     <span class="k">def</span><span class="w"> </span><span class="nf">plot_grid</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">ax_or_fig</span><span class="p">,</span> <span class="n">grid</span><span class="p">,</span> <span class="n">projection</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">extent</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">180</span><span class="p">,</span> <span class="mi">180</span><span class="p">,</span> <span class="o">-</span><span class="mi">90</span><span class="p">,</span> <span class="mi">90</span><span class="p">),</span> <span class="o">**</span><span class="n">kwargs</span>
     <span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Plot a grid (abstract method). See :meth:`CartopyPlotEngine.plot_grid()` and :meth:`PygmtPlotEngine.plot_grid()` for details.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Plot a grid (abstract method). See :meth:`CartopyPlotEngine.plot_grid()` and :meth:`PygmtPlotEngine.plot_grid()` for details."""</span>
         <span class="k">pass</span>  <span class="c1"># This is an abstract method, no implementation here.</span></div>
 
 
@@ -165,18 +165,18 @@
         <span class="n">gdf_motion_vectors</span><span class="p">:</span> <span class="n">GeoDataFrame</span><span class="p">,</span>
         <span class="n">projection</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">scale_factor</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
-        <span class="n">color</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">,</span>
+        <span class="n">color</span><span class="o">=</span><span class="s2">"black"</span><span class="p">,</span>
         <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
     <span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Plot plate motion vectors (abstract method)&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Plot plate motion vectors (abstract method)"""</span>
         <span class="k">pass</span>  <span class="c1"># This is an abstract method, no implementation here.</span></div>
 
 
 <div class="viewcode-block" id="PlotEngine.plot_pole">
 <a class="viewcode-back" href="../../../generated/gplately.PlotEngine.html#gplately.PlotEngine.plot_pole">[docs]</a>
     <span class="nd">@abstractmethod</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">plot_pole</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ax_or_fig</span><span class="p">,</span> <span class="n">lon</span><span class="p">,</span> <span class="n">lat</span><span class="p">,</span> <span class="n">a95</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;green&quot;</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Plot a pole with given longitude, latitude and a95 (abstract method)&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">plot_pole</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ax_or_fig</span><span class="p">,</span> <span class="n">lon</span><span class="p">,</span> <span class="n">lat</span><span class="p">,</span> <span class="n">a95</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">"green"</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Plot a pole with given longitude, latitude and a95 (abstract method)"""</span>
         <span class="k">pass</span>  <span class="c1"># This is an abstract method, no implementation here.</span></div>
 </div>
 
