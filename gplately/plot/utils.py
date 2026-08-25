@@ -19,8 +19,6 @@ from importlib.metadata import files
 import logging
 import re
 
-# pyright: reportMissingImports=false
-# pyright: reportMissingModuleSource=false
 import pygplates
 import cartopy.crs as ccrs
 import geopandas as gpd
@@ -32,15 +30,21 @@ from shapely.ops import linemerge
 
 from ..utils.io_utils import get_geometries as _get_geometries
 from ..geometry import pygplates_to_shapely
+from .gmt_cpt import get_cmap_from_gmt_cpt
 
 logger = logging.getLogger("gplately")
 
 
 def get_age_grid_cmap():
-    from .gmt_cpt import get_cmap_from_gmt_cpt
-    from importlib.resources import files
-
+    """Return a matplotlib colormap object from the GMT agegrid.cpt file."""
     return get_cmap_from_gmt_cpt(files("gplately").joinpath("data", "agegrid.cpt"))
+
+
+def get_spreading_rate_cmap():
+    """Return a matplotlib colormap object from the GMT spreading_full_rate.cpt file."""
+    return get_cmap_from_gmt_cpt(
+        files("gplately").joinpath("data", "spreading_full_rate.cpt")
+    )
 
 
 PLOT_DOCSTRING = """
