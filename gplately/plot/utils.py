@@ -15,7 +15,7 @@
 #    51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 
-from importlib.metadata import files
+from importlib.resources import files
 import logging
 import re
 
