@@ -45,7 +45,6 @@ from scipy.spatial import (
 from scipy.spatial.transform import Rotation as _Rotation
 
 from ..geometry import pygplates_to_shapely
-from ..raster import Raster
 
 logger = logging.getLogger("gplately")
 
@@ -835,17 +834,18 @@ def sample_grid(
     if order not in {0, 1, 2, 3, 4, 5}:
         raise ValueError(f"Invalid `method` parameter: {method}")
 
-    if isinstance(grid, Raster):
-        extent = grid.extent
-        if np.ma.isMaskedArray(grid.data):
-            grid = np.ma.asarray(grid.data, dtype=float).filled(np.nan)
-        else:
-            grid = np.array(grid.data)
-    else:
+    try:
+        extent, data = grid.extent, grid.data
+    except AttributeError:
         extent = _parse_extent(extent, origin)
         if np.ma.isMaskedArray(grid):
             grid = np.ma.asarray(grid, dtype=float).filled(np.nan)
         grid = _check_grid(grid)
+    else:
+        if np.ma.isMaskedArray(data):
+            grid = np.ma.asarray(data, dtype=float).filled(np.nan)
+        else:
+            grid = np.array(data)
 
     # Do not wrap from North to South Pole (or vice versa)
     if np.any(np.abs(lat) > 90.0):

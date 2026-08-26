@@ -24,11 +24,11 @@ import warnings
 from pathlib import Path
 from typing import List, Union
 
-from plate_model_manager import PlateModel, PlateModelManager, plate_model
+from plate_model_manager import PlateModel, PlateModelManager
 from pygplates import FeaturesFunctionArgument
 
 from ..reconstruction import PlateReconstruction
-from ..grids import (
+from .. import (
     SeafloorGrid,
     IsochronSeafloorGrid,
     TopologySeafloorGrid,

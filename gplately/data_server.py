@@ -21,7 +21,7 @@ import logging
 from pathlib import Path
 from typing import List, Union
 
-from .grids import Raster
+from .raster import Raster
 from .gpml import (
     load_feature_collection_from_files,
 )

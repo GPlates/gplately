@@ -15,8 +15,7 @@
 #    51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 
-import logging
-import os
+import logging, os, warnings
 
 logger = logging.getLogger("gplately")
 
@@ -28,38 +27,44 @@ disable_dev_warning = (
 
 def print_dev_warning(version: str):
     if not disable_dev_warning:
-        print()
-        print(
-            "##################################################################################################"
-        )
-        print(f"""
-            WARNING:  
-            You are using a DEV version ({version}) GPlately.     
-            Some functionalities in the DEV version have not been tested thoroughly, 
-            and may break your code or produce wrong results due to 
-            its unstable nature(DEV in progress). Proceed With Caution!!!
-            You might also need to install the DEV version plate_model_manager 
-            from https://github.com/gplates/plate-model-manager.
+        _warn_if_dev_version(version)
 
-            To disable this warning, 
-                set USING_DEV_VERSION to False in __init__.py 
-            or
-                set DISABLE_GPLATELY_DEV_WARNING environment variable to true. 
-            
-            For example,
-                os.environ["DISABLE_GPLATELY_DEV_WARNING"] = "true" (in Python)
-            or
-                export DISABLE_GPLATELY_DEV_WARNING=true (in Shell)
-            or 
-                $env:DISABLE_GPLATELY_DEV_WARNING = "true" (in PowerShell)
-            
-            If you prefer not seeing this warning always, you may set the environment variable 
-            in your boot scripts, such as .bashrc, .profile, autoexec.bat, etc.
-            """)
-        print(
-            "##################################################################################################"
-        )
-        print()
+
+class GPlatelyDevWarning(UserWarning):
+    """Raised when importing/using a DEV build of GPlately."""
+
+
+def _warn_if_dev_version(version: str) -> None:
+    if os.environ.get("DISABLE_GPLATELY_DEV_WARNING", "").lower() == "true":
+        return
+
+    message = f"""\
+    
+
+        You are using a development version of GPlately ({version}).
+
+        Some functionality in DEV builds is not yet fully tested and may break
+        your code or produce incorrect results. Proceed with caution.
+
+        You likely also need the DEV version of plate_model_manager to work
+        with this GPlately build:
+            https://github.com/gplates/plate-model-manager
+
+        To silence this warning, set the DISABLE_GPLATELY_DEV_WARNING
+        environment variable to "true" before importing GPlately:
+
+            Python:      os.environ["DISABLE_GPLATELY_DEV_WARNING"] = "true"
+            bash/zsh:    export DISABLE_GPLATELY_DEV_WARNING=true
+            PowerShell:  $env:DISABLE_GPLATELY_DEV_WARNING = "true"
+
+        To make this permanent, add the shell command above to your shell
+        startup file (e.g. .bashrc, .zshrc, or your PowerShell profile).
+
+        Alternatively, you can filter this warning in your code with:
+            import warnings
+            warnings.filterwarnings("ignore", category=UserWarning, module="gplately.utils.dev_warning")
+        """
+    warnings.warn(message, category=GPlatelyDevWarning, stacklevel=2)
 
 
 def print_using_source_code_warning(version: str):

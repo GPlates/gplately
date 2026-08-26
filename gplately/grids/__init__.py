@@ -16,25 +16,17 @@
 #
 
 from ._grids import *
-from .isochron_seafloor_grid import IsochronSeafloorGrid, OutputScalarType
-from .oceans import SeafloorGrid
-from .topology_seafloor_grid import TopologySeafloorGrid
+from ._utils import num_grid_points
 from ..raster import Raster
-from ..lib.regular_grid_interpolator import RegularGridInterpolator
 
 __all__ = [
     "fill_raster",
     "read_netcdf_grid",
     "write_netcdf_grid",
     "default_netcdf_fill_value",
-    "RegularGridInterpolator",
     "sample_grid",
     "reconstruct_grid",
     "rasterise",
     "rasterize",
-    "Raster",
-    "IsochronSeafloorGrid",
-    "TopologySeafloorGrid",
-    "SeafloorGrid",
-    "OutputScalarType",
+    "num_grid_points",
 ]
