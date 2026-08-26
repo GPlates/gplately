@@ -111,9 +111,6 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">pygmt</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">xarray.core.types</span><span class="w"> </span><span class="kn">import</span> <span class="n">InterpOptions</span>
 
-<span class="c1"># pyright: reportMissingImports=false</span>
-<span class="c1"># pyright: reportMissingModuleSource=false</span>
-
 <span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
@@ -145,7 +142,7 @@
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">.geometry</span><span class="w"> </span><span class="kn">import</span> <span class="n">pygplates_to_shapely</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.reconstruction</span><span class="w"> </span><span class="kn">import</span> <span class="n">PlateReconstruction</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">.tools</span><span class="w"> </span><span class="kn">import</span> <span class="n">_deg2pixels</span><span class="p">,</span> <span class="n">griddata_sphere</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.tools</span><span class="w"> </span><span class="kn">import</span> <span class="n">griddata_sphere</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.utils.io_utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_feature_collection</span><span class="p">,</span> <span class="n">load_data_array_from_netcdf</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">"gplately"</span><span class="p">)</span>
@@ -1678,12 +1675,15 @@
 
             <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">6</span><span class="p">),</span> <span class="n">dpi</span><span class="o">=</span><span class="n">dpi</span><span class="p">)</span>
             <span class="n">ax</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">111</span><span class="p">,</span> <span class="n">projection</span><span class="o">=</span><span class="n">projection</span><span class="p">)</span>
-
             <span class="n">im</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="n">cmap</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=</span><span class="n">vmin</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="n">vmax</span><span class="p">)</span>
-
-            <span class="n">fig</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span>
-                <span class="n">im</span><span class="p">,</span> <span class="n">orientation</span><span class="o">=</span><span class="s2">"horizontal"</span><span class="p">,</span> <span class="n">shrink</span><span class="o">=</span><span class="mf">0.4</span><span class="p">,</span> <span class="n">pad</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">colorbar_label</span>
-            <span class="p">)</span>
+            <span class="k">if</span> <span class="n">im</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">fig</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span>
+                    <span class="n">im</span><span class="p">,</span>
+                    <span class="n">orientation</span><span class="o">=</span><span class="s2">"horizontal"</span><span class="p">,</span>
+                    <span class="n">shrink</span><span class="o">=</span><span class="mf">0.4</span><span class="p">,</span>
+                    <span class="n">pad</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span>
+                    <span class="n">label</span><span class="o">=</span><span class="n">colorbar_label</span><span class="p">,</span>
+                <span class="p">)</span>
             <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="n">dpi</span><span class="p">,</span> <span class="n">bbox_inches</span><span class="o">=</span><span class="s2">"tight"</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">plt</span><span class="o">.</span><span class="n">imsave</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">flipud</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">),</span> <span class="n">cmap</span><span class="o">=</span><span class="n">cmap</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=</span><span class="n">vmin</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="n">vmax</span><span class="p">)</span>
@@ -1695,10 +1695,10 @@
 <a class="viewcode-back" href="../../generated/gplately.Raster.html#gplately.Raster.rotate_reference_frames">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">rotate_reference_frames</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">grid_spacing_degrees</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">reconstruction_time</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">from_rotation_features_or_model</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">to_rotation_features_or_model</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">grid_spacing_degrees</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">from_rotation_reference_plate</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
         <span class="n">to_rotation_reference_plate</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
         <span class="n">non_reference_plate</span><span class="o">=</span><span class="mi">701</span><span class="p">,</span>
@@ -1709,9 +1709,6 @@
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        grid_spacing_degrees : float, optional</span>
-<span class="sd">            The spacing (in degrees) for the output rotated grid.</span>
-<span class="sd">            If not specified, the output grid keeps the input raster shape.</span>
 <span class="sd">        reconstruction_time : float</span>
 <span class="sd">            The time at which to rotate the input grid.</span>
 <span class="sd">        from_rotation_features_or_model : str, list of str, instance of pygplates.RotationModel, filename(s), or pyGPlates feature(s)/collection(s)</span>
@@ -1722,6 +1719,9 @@
 <span class="sd">            A filename, or a list of filenames, or a pyGPlates</span>
 <span class="sd">            RotationModel object that defines the rotation model</span>
 <span class="sd">            that the input grid shall be rotated with.</span>
+<span class="sd">        grid_spacing_degrees : float, optional</span>
+<span class="sd">            The spacing (in degrees) for the output rotated grid.</span>
+<span class="sd">            If not specified, the output grid keeps the input raster shape.</span>
 <span class="sd">        from_rotation_reference_plate : int, default = 0</span>
 <span class="sd">            The current reference plate for the plate model the grid</span>
 <span class="sd">            is defined in. Defaults to the anchor plate 0.</span>
@@ -1774,9 +1774,17 @@
             <span class="n">resY</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lats</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">grid_spacing_degrees</span><span class="p">)</span> <span class="ow">or</span> <span class="n">grid_spacing_degrees</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"`grid_spacing_degrees` must be a positive finite number."</span><span class="p">)</span>
-            <span class="n">resX</span> <span class="o">=</span> <span class="n">_deg2pixels</span><span class="p">(</span><span class="n">grid_spacing_degrees</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">extent</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">extent</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
-            <span class="n">resY</span> <span class="o">=</span> <span class="n">_deg2pixels</span><span class="p">(</span><span class="n">grid_spacing_degrees</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">extent</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">extent</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="s2">"`grid_spacing_degrees` must be a positive finite number."</span>
+                <span class="p">)</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">.grids</span><span class="w"> </span><span class="kn">import</span> <span class="n">num_grid_points</span> <span class="k">as</span> <span class="n">_num_grid_points</span>
+
+            <span class="n">resX</span> <span class="o">=</span> <span class="n">_num_grid_points</span><span class="p">(</span>
+                <span class="n">grid_spacing_degrees</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">extent</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">extent</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="p">)</span>
+            <span class="n">resY</span> <span class="o">=</span> <span class="n">_num_grid_points</span><span class="p">(</span>
+                <span class="n">grid_spacing_degrees</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">extent</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">extent</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span>
+            <span class="p">)</span>
         <span class="n">resized_input_grid</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">resize</span><span class="p">(</span><span class="n">resX</span><span class="p">,</span> <span class="n">resY</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 
         <span class="c1"># Get the flattened lons, lats</span>

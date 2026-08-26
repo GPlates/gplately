@@ -105,8 +105,6 @@
 <span class="sd">working with point data, and calculating plate velocities at specific geological times.</span>
 <span class="sd">"""</span>
 
-<span class="c1"># pyright: reportMissingTypeStubs=true</span>
-
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">numbers</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
@@ -114,7 +112,7 @@
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pygplates</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">plate_model_manager</span><span class="w"> </span><span class="kn">import</span> <span class="n">PlateModel</span>  <span class="c1"># type: ignore</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">plate_model_manager</span><span class="w"> </span><span class="kn">import</span> <span class="n">PlateModel</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">tools</span> <span class="k">as</span> <span class="n">_tools</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.gpml</span><span class="w"> </span><span class="kn">import</span> <span class="n">_load_FeatureCollection</span>
@@ -1714,13 +1712,14 @@
 <span class="sd">                )</span>
 <span class="sd">            )</span>
 <span class="sd">        """</span>
-        <span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">grids</span> <span class="k">as</span> <span class="n">_grids</span>
+        <span class="c1"># import inside the function to avoid circular import issues</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">.raster</span><span class="w"> </span><span class="kn">import</span> <span class="n">Raster</span>
 
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">continental_grid</span><span class="p">,</span> <span class="n">_grids</span><span class="o">.</span><span class="n">Raster</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">continental_grid</span><span class="p">,</span> <span class="n">Raster</span><span class="p">):</span>
             <span class="n">graster</span> <span class="o">=</span> <span class="n">continental_grid</span>
         <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">continental_grid</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
             <span class="c1"># Process the continental grid directory</span>
-            <span class="n">graster</span> <span class="o">=</span> <span class="n">_grids</span><span class="o">.</span><span class="n">Raster</span><span class="p">(</span>
+            <span class="n">graster</span> <span class="o">=</span> <span class="n">Raster</span><span class="p">(</span>
                 <span class="n">data</span><span class="o">=</span><span class="n">continental_grid</span><span class="p">,</span>
                 <span class="n">realign</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                 <span class="n">time</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="n">time</span><span class="p">),</span>
@@ -1729,7 +1728,7 @@
             <span class="c1"># Process the masked continental grid</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="n">continental_grid</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">continental_grid</span><span class="p">)</span>
-                <span class="n">graster</span> <span class="o">=</span> <span class="n">_grids</span><span class="o">.</span><span class="n">Raster</span><span class="p">(</span>
+                <span class="n">graster</span> <span class="o">=</span> <span class="n">Raster</span><span class="p">(</span>
                     <span class="n">data</span><span class="o">=</span><span class="n">continental_grid</span><span class="p">,</span>
                     <span class="n">extent</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">180</span><span class="p">,</span> <span class="mi">180</span><span class="p">,</span> <span class="o">-</span><span class="mi">90</span><span class="p">,</span> <span class="mi">90</span><span class="p">),</span>
                     <span class="n">time</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="n">time</span><span class="p">),</span>

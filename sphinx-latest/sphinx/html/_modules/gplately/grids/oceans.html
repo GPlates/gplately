@@ -113,7 +113,12 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pygplates</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">grids</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">._grids</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">read_netcdf_grid</span><span class="p">,</span>
+    <span class="n">write_netcdf_grid</span><span class="p">,</span>
+    <span class="n">default_netcdf_fill_value</span><span class="p">,</span>
+    <span class="n">rasterise</span><span class="p">,</span>
+<span class="p">)</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">..</span><span class="w"> </span><span class="kn">import</span> <span class="n">tools</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">..lib.reconstruct_by_topologies</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">_ContinentCollision</span><span class="p">,</span>
@@ -125,8 +130,9 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">..lib.icosahedron</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_mesh</span><span class="p">,</span> <span class="n">xyz2lonlat</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">..ptt</span><span class="w"> </span><span class="kn">import</span> <span class="n">continent_contours</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">..ptt.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">points_in_polygons</span><span class="p">,</span> <span class="n">points_spatial_tree</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">..tools</span><span class="w"> </span><span class="kn">import</span> <span class="n">_deg2pixels</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">._utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">num_grid_points</span> <span class="k">as</span> <span class="n">_num_grid_points</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">..utils.log_utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_debug_level</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..raster</span><span class="w"> </span><span class="kn">import</span> <span class="n">Raster</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">"gplately"</span><span class="p">)</span>
 
@@ -420,8 +426,8 @@
 
         <span class="c1"># Gridding parameters</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">extent</span> <span class="o">=</span> <span class="n">extent</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">spacingX</span> <span class="o">=</span> <span class="n">_deg2pixels</span><span class="p">(</span><span class="n">grid_spacing</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">extent</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">extent</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">spacingY</span> <span class="o">=</span> <span class="n">_deg2pixels</span><span class="p">(</span><span class="n">grid_spacing</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">extent</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">extent</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">spacingX</span> <span class="o">=</span> <span class="n">_num_grid_points</span><span class="p">(</span><span class="n">grid_spacing</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">extent</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">extent</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">spacingY</span> <span class="o">=</span> <span class="n">_num_grid_points</span><span class="p">(</span><span class="n">grid_spacing</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">extent</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">extent</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">resume_from_checkpoints</span> <span class="o">=</span> <span class="n">resume_from_checkpoints</span>
 
@@ -438,7 +444,7 @@
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_map_res_to_node_percentage</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">continent_mask_filename</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">"""Determine which percentage to use to scale the continent mask resolution at max time."""</span>
-        <span class="n">maskY</span><span class="p">,</span> <span class="n">maskX</span> <span class="o">=</span> <span class="n">grids</span><span class="o">.</span><span class="n">read_netcdf_grid</span><span class="p">(</span>
+        <span class="n">maskY</span><span class="p">,</span> <span class="n">maskX</span> <span class="o">=</span> <span class="n">read_netcdf_grid</span><span class="p">(</span>
             <span class="n">continent_mask_filename</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_max_time</span><span class="p">)</span>
         <span class="p">)</span><span class="o">.</span><span class="n">shape</span>  <span class="c1"># pyright: ignore[reportAttributeAccessIssue]</span>
 
@@ -701,9 +707,7 @@
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_generate_initial_ocean_points_from_provided_continent_mask</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">"""Get the ocean points from the user-provided continent mask grid."""</span>
-        <span class="n">max_time_cont_mask</span> <span class="o">=</span> <span class="n">grids</span><span class="o">.</span><span class="n">Raster</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">continent_mask_filepath</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_max_time</span><span class="p">)</span>
-        <span class="p">)</span>
+        <span class="n">max_time_cont_mask</span> <span class="o">=</span> <span class="n">Raster</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">continent_mask_filepath</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_max_time</span><span class="p">))</span>
         <span class="c1"># If the user provides a continental mask filename, we need to downsize the mask</span>
         <span class="c1"># resolution for when we create the initial ocean mesh. The mesh does not need to be high-res.</span>
         <span class="c1"># If the input grid is at 0.5 degree uniform spacing, then the input</span>
@@ -911,7 +915,7 @@
             <span class="p">)</span>
         <span class="p">)</span>
 
-        <span class="n">final_grid</span> <span class="o">=</span> <span class="n">grids</span><span class="o">.</span><span class="n">rasterise</span><span class="p">(</span>
+        <span class="n">final_grid</span> <span class="o">=</span> <span class="n">rasterise</span><span class="p">(</span>
             <span class="n">reconstructed_continents</span><span class="p">,</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">plate_reconstruction</span><span class="o">.</span><span class="n">rotation_model</span><span class="p">,</span>
             <span class="n">key</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
@@ -922,7 +926,7 @@
         <span class="k">assert</span> <span class="n">final_grid</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
         <span class="n">final_grid</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">final_grid</span><span class="p">)]</span> <span class="o">=</span> <span class="mf">0.0</span>
 
-        <span class="n">grids</span><span class="o">.</span><span class="n">write_netcdf_grid</span><span class="p">(</span>
+        <span class="n">write_netcdf_grid</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">continent_mask_filepath</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">time</span><span class="p">),</span>
             <span class="n">final_grid</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">"i1"</span><span class="p">),</span>
             <span class="n">extent</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">180</span><span class="p">,</span> <span class="mi">180</span><span class="p">,</span> <span class="o">-</span><span class="mi">90</span><span class="p">,</span> <span class="mi">90</span><span class="p">),</span>
@@ -951,7 +955,7 @@
             <span class="n">continent_contouring</span><span class="o">.</span><span class="n">get_continent_mask_and_contoured_continents</span><span class="p">(</span><span class="n">time</span><span class="p">)</span>
         <span class="p">)</span>
 
-        <span class="n">grids</span><span class="o">.</span><span class="n">write_netcdf_grid</span><span class="p">(</span>
+        <span class="n">write_netcdf_grid</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">continent_mask_filepath</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">time</span><span class="p">),</span>
             <span class="n">continent_mask</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">"i1"</span><span class="p">),</span>
             <span class="n">extent</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">180</span><span class="p">,</span> <span class="mi">180</span><span class="p">,</span> <span class="o">-</span><span class="mi">90</span><span class="p">,</span> <span class="mi">90</span><span class="p">),</span>
@@ -2040,7 +2044,7 @@
         <span class="n">significant_digits</span> <span class="o">=</span> <span class="mi">3</span>
 
     <span class="k">if</span> <span class="n">unmasked</span><span class="p">:</span>
-        <span class="n">grids</span><span class="o">.</span><span class="n">write_netcdf_grid</span><span class="p">(</span>
+        <span class="n">write_netcdf_grid</span><span class="p">(</span>
             <span class="n">grid_output_unmasked</span><span class="p">,</span>
             <span class="n">Z</span><span class="p">,</span>
             <span class="n">extent</span><span class="o">=</span><span class="n">extent</span><span class="p">,</span>
@@ -2053,17 +2057,17 @@
     <span class="c1"># We need the continental mask to match the number of nodes</span>
     <span class="c1"># in the uniform grid defined above. This is important if we</span>
     <span class="c1"># pass our own continental mask to SeafloorGrid</span>
-    <span class="n">cont_mask</span> <span class="o">=</span> <span class="n">grids</span><span class="o">.</span><span class="n">read_netcdf_grid</span><span class="p">(</span>
+    <span class="n">cont_mask</span> <span class="o">=</span> <span class="n">read_netcdf_grid</span><span class="p">(</span>
         <span class="n">continent_mask_filename</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">time</span><span class="p">),</span> <span class="n">resize</span><span class="o">=</span><span class="p">(</span><span class="n">resX</span><span class="p">,</span> <span class="n">resY</span><span class="p">)</span>
     <span class="p">)</span>
 
     <span class="c1"># The fill value to use for masking out continents.</span>
-    <span class="n">masked_fill_value</span> <span class="o">=</span> <span class="n">grids</span><span class="o">.</span><span class="n">default_netcdf_fill_value</span><span class="p">(</span><span class="n">Z</span><span class="p">,</span> <span class="n">significant_digits</span><span class="p">)</span>
+    <span class="n">masked_fill_value</span> <span class="o">=</span> <span class="n">default_netcdf_fill_value</span><span class="p">(</span><span class="n">Z</span><span class="p">,</span> <span class="n">significant_digits</span><span class="p">)</span>
 
     <span class="c1"># Use the continental mask to mask out continents</span>
     <span class="n">Z</span><span class="p">[</span><span class="n">cont_mask</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">bool</span><span class="p">)]</span> <span class="o">=</span> <span class="n">masked_fill_value</span>  <span class="c1"># type: ignore</span>
 
-    <span class="n">grids</span><span class="o">.</span><span class="n">write_netcdf_grid</span><span class="p">(</span>
+    <span class="n">write_netcdf_grid</span><span class="p">(</span>
         <span class="n">grid_output</span><span class="p">,</span>
         <span class="n">Z</span><span class="p">,</span>
         <span class="n">extent</span><span class="o">=</span><span class="n">extent</span><span class="p">,</span>

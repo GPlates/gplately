@@ -104,11 +104,10 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">xarray</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">xr</span>
 
-<span class="c1"># pyright: reportMissingImports=false</span>
-<span class="c1"># pyright: reportMissingModuleSource=false</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">geopandas.geodataframe</span><span class="w"> </span><span class="kn">import</span> <span class="n">GeoDataFrame</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pygplates</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">..grids</span><span class="w"> </span><span class="kn">import</span> <span class="n">Raster</span><span class="p">,</span> <span class="n">sample_grid</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..grids</span><span class="w"> </span><span class="kn">import</span> <span class="n">sample_grid</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..raster</span><span class="w"> </span><span class="kn">import</span> <span class="n">Raster</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">..geometry</span><span class="w"> </span><span class="kn">import</span> <span class="n">geographic_circle</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.plot_engine</span><span class="w"> </span><span class="kn">import</span> <span class="n">PlotEngine</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">..utils.io_utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">to_geographic_data_array</span><span class="p">,</span> <span class="n">load_data_array_from_netcdf</span>
