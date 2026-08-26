@@ -174,6 +174,21 @@ def test_rotate_reference_frames_ignores_masked_fill_values():
     assert not np.any(np.abs(rotated_data) > 1e20)
 
 
+def test_rotate_reference_frames_defaults_to_input_resolution():
+    data = np.arange(24, dtype=float).reshape(4, 6)
+    raster = gplately.Raster(data=data, extent=(10.0, 40.0, -20.0, 20.0))
+    empty_rotation_model = pygplates.FeatureCollection()
+
+    rotated = raster.rotate_reference_frames(
+        reconstruction_time=0,
+        from_rotation_features_or_model=empty_rotation_model,
+        to_rotation_features_or_model=empty_rotation_model,
+    )
+
+    assert rotated.data.shape == raster.data.shape
+    assert np.allclose(rotated.extent, raster.extent)
+
+
 # TEST AGE GRID RESIZING (AT RESOLUTIONS OF RES_X = 1000, RES_Y = 400)
 def test_resizing(graster):
     resized_agegrid = graster.resize(1000, 400, return_array=True)

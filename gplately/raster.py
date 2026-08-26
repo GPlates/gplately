@@ -1549,8 +1549,8 @@ class Raster(object):
 
     def rotate_reference_frames(
         self,
-        grid_spacing_degrees,
-        reconstruction_time,
+        grid_spacing_degrees=None,
+        reconstruction_time=None,
         from_rotation_features_or_model=None,
         to_rotation_features_or_model=None,
         from_rotation_reference_plate=0,
@@ -1563,8 +1563,9 @@ class Raster(object):
 
         Parameters
         ----------
-        grid_spacing_degrees : float
+        grid_spacing_degrees : float, optional
             The spacing (in degrees) for the output rotated grid.
+            If not specified, the output grid keeps the input raster shape.
         reconstruction_time : float
             The time at which to rotate the input grid.
         from_rotation_features_or_model : str, list of str, instance of pygplates.RotationModel, filename(s), or pyGPlates feature(s)/collection(s)
@@ -1593,6 +1594,9 @@ class Raster(object):
             An instance of the :class:`Raster` object containing the rotated grid.
         """
 
+        if reconstruction_time is None:
+            raise ValueError("`reconstruction_time` is required.")
+
         if from_rotation_features_or_model is None:
             if self.plate_reconstruction is None:
                 raise ValueError("Set a plate reconstruction model")
@@ -1618,9 +1622,15 @@ class Raster(object):
         )
         reference_frame_conversion_rotation = to_rotation * from_rotation.get_inverse()
 
-        # Resize the input grid to the specified output resolution before rotating
-        resX = _deg2pixels(grid_spacing_degrees, self.extent[0], self.extent[1])
-        resY = _deg2pixels(grid_spacing_degrees, self.extent[2], self.extent[3])
+        # Resize the input grid to the specified output resolution before rotating.
+        if grid_spacing_degrees is None:
+            resX = len(self.lons)
+            resY = len(self.lats)
+        else:
+            if not np.isfinite(grid_spacing_degrees) or grid_spacing_degrees <= 0:
+                raise ValueError("`grid_spacing_degrees` must be a positive finite number.")
+            resX = _deg2pixels(grid_spacing_degrees, self.extent[0], self.extent[1])
+            resY = _deg2pixels(grid_spacing_degrees, self.extent[2], self.extent[3])
         resized_input_grid = self.resize(resX, resY, inplace=False)
 
         # Get the flattened lons, lats
@@ -1648,15 +1658,6 @@ class Raster(object):
         # Use the extent of the original Raster object
         extent_globe = self.extent
 
-        resX = (
-            int(np.floor((extent_globe[1] - extent_globe[0]) / grid_spacing_degrees))
-            + 1
-        )
-        resY = (
-            int(np.floor((extent_globe[3] - extent_globe[2]) / grid_spacing_degrees))
-            + 1
-        )
-
         grid_lon = np.linspace(extent_globe[0], extent_globe[1], resX)
         grid_lat = np.linspace(extent_globe[2], extent_globe[3], resY)
 
@@ -1670,7 +1671,7 @@ class Raster(object):
         if output_name:
             self._write_netcdf_grid(output_name, Z, extent=extent_globe)
 
-        return Raster(data=Z)
+        return Raster(data=Z, extent=extent_globe)
 
     def sample_values(self, *, lons, lats, method="linear"):
         order = {

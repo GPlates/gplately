@@ -16,15 +16,15 @@
 - [x] Enhance how `fill_value` is handled in `Raster` ([#419](https://github.com/GPlates/gplately/pull/419))
 - [ ] Improve seed point reconstruction in seafloor gridding ([#413](https://github.com/GPlates/gplately/pull/413)) — milestone: release 2.1 (still open/draft; depends on pyGPlates ≥ 1.1)
 - [ ] Deform continental polygons in seafloor gridding ([#414](https://github.com/GPlates/gplately/pull/414)) — milestone: release 2.1 (still open/draft; depends on #413)
-- [ ] Support regional raster reconstruction ([#417](https://github.com/GPlates/gplately/issues/417)) — several open design questions need to be answered
-- [ ] Create a new `plot` sub-folder and reorganise plotting code ([#409](https://github.com/GPlates/gplately/issues/409)) — decision needed; backward compatibility via re-exports required
-- [ ] Fix `PlateModel.__getstate__` `KeyError: 'executor'` during pickling ([#386](https://github.com/GPlates/gplately/issues/386)) — simple `pop(…, None)` fix in `plate_model_manager`; decide whether to fix upstream or work around in gplately
+- [ ] ~~Support regional raster reconstruction ([#417](https://github.com/GPlates/gplately/issues/417)) — several open design questions need to be answered~~ Not in this release.
+- [x] Create a new `plot` sub-folder and reorganise plotting code ([#409](https://github.com/GPlates/gplately/issues/409)) — decision needed; backward compatibility via re-exports required
+- [x] Fix `PlateModel.__getstate__` `KeyError: 'executor'` during pickling ([#386](https://github.com/GPlates/gplately/issues/386)) — simple `pop(…, None)` fix in `plate_model_manager`; decide whether to fix upstream or work around in gplately
 - [ ] Fix runtime error for incomplete pickle support ([#366](https://github.com/GPlates/gplately/issues/366))
-- [ ] Document return-tuple order of `Points.reconstruct(time, return_array=True)` ([#398](https://github.com/GPlates/gplately/issues/398))
-- [ ] Clarify `get_layer` vs `get_raster` for time-dependent rasters ([#397](https://github.com/GPlates/gplately/issues/397))
-- [ ] Update example notebooks in `Notebooks/Examples` ([#420](https://github.com/GPlates/gplately/issues/420) / [#421](https://github.com/GPlates/gplately/pull/421))
-- [ ] Fix misspellings across the codebase ([#394](https://github.com/GPlates/gplately/issues/394))
-- [ ] Add CONTRIBUTING and CODE_OF_CONDUCT files ([#395](https://github.com/GPlates/gplately/issues/395)) — optional for this release
+- [x] Document return-tuple order of `Points.reconstruct(time, return_array=True)` ([#398](https://github.com/GPlates/gplately/issues/398))
+- [x] Clarify `get_layer` vs `get_raster` for time-dependent rasters ([#397](https://github.com/GPlates/gplately/issues/397))
+- [x] Update example notebooks in `Notebooks/Examples` ([#420](https://github.com/GPlates/gplately/issues/420) / [#421](https://github.com/GPlates/gplately/pull/421))
+- [ ] ~~Fix misspellings across the codebase ([#394](https://github.com/GPlates/gplately/issues/394))~~
+- [ ] ~~Add CONTRIBUTING and CODE_OF_CONDUCT files ([#395](https://github.com/GPlates/gplately/issues/395)) — optional for this release~~
 
 #### Documentation
 
