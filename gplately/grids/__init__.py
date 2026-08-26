@@ -15,11 +15,12 @@
 #    51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 
-from .grids import *
+from ._grids import *
 from .isochron_seafloor_grid import IsochronSeafloorGrid, OutputScalarType
 from .oceans import SeafloorGrid
 from .topology_seafloor_grid import TopologySeafloorGrid
 from ..raster import Raster
+from ..lib.regular_grid_interpolator import RegularGridInterpolator
 
 __all__ = [
     "fill_raster",
@@ -32,4 +33,8 @@ __all__ = [
     "rasterise",
     "rasterize",
     "Raster",
+    "IsochronSeafloorGrid",
+    "TopologySeafloorGrid",
+    "SeafloorGrid",
+    "OutputScalarType",
 ]

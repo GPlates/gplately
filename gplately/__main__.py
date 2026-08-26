@@ -101,6 +101,10 @@ def main():
         description=combine_feature_collections.__doc__,
     )
     combine_cmd.formatter_class = argparse.RawDescriptionHelpFormatter
+    combine_cmd.set_defaults(func=_run_combine_feature_collections)
+    combine_cmd.add_argument("combine_first_input_file", type=str)
+    combine_cmd.add_argument("combine_other_input_files", nargs="+", type=str)
+    combine_cmd.add_argument("combine_output_file", type=str)
 
     # add "feature filter" sub-command
     feature_filter_cmd.add_parser(subparser)
@@ -141,7 +145,7 @@ def main():
     )
     cleanup_topologies.add_arguments(cleanup_topologies_cmd)
 
-    # add convert_xy_to_gplates sub-command
+    # add "convert_xy_to_gplates" sub-command
     convert_xy_to_gplates_cmd = subparser.add_parser(
         "convert_xy_to_gplates",
         help="Converts geometry in one or more input ascii files (such as '.xy' files) to output files suitable for loading into GPlates.",
@@ -149,7 +153,7 @@ def main():
     )
     convert_xy_to_gplates.add_arguments(convert_xy_to_gplates_cmd)
 
-    # add diagnose_rotations sub-command
+    # add "diagnose_rotations" sub-command
     diagnose_rotations_cmd = subparser.add_parser(
         "diagnose_rotations",
         help="Diagnose one or more rotation files to check for inconsistencies.",
@@ -157,7 +161,7 @@ def main():
     )
     diagnose_rotations.add_arguments(diagnose_rotations_cmd)
 
-    # add resolve_topologies sub-command
+    # add "resolve_topologies" sub-command
     resolve_topologies_cmd = subparser.add_parser(
         "resolve_topologies",
         help="Resolve topological plate polygons (and deforming networks) and saves (to separate files) the resolved topologies, and their boundary sections as subduction zones, mid-ocean ridges (ridge/transform) and others (not subduction zones or mid-ocean ridges).",
@@ -165,7 +169,7 @@ def main():
     )
     resolve_topologies.add_arguments(resolve_topologies_cmd)
 
-    # add rotation_tools sub-command
+    # add "rotation_tools" sub-command
     rotation_tools_cmd = subparser.add_parser(
         "rotation_tools",
         help="Calculate stage rotations between consecutive finite rotations in plate pairs.",
@@ -173,7 +177,7 @@ def main():
     )
     rotation_tools.add_arguments(rotation_tools_cmd)
 
-    # add separate_ridge_transform_segments sub-command
+    # add "separate_ridge_transform_segments" sub-command
     separate_ridge_transform_segments_cmd = subparser.add_parser(
         "separate_ridge_transform_segments",
         help="Split the geometries of isochrons and mid-ocean ridges into ridge and transform segments.",
@@ -183,7 +187,7 @@ def main():
         separate_ridge_transform_segments_cmd
     )
 
-    # add subduction_convergence sub-command
+    # add "subduction_convergence" sub-command
     subduction_convergence_cmd = subparser.add_parser(
         "subduction_convergence",
         help="Find the convergence rates along trenches (subduction zones) over time.",
@@ -191,7 +195,7 @@ def main():
     )
     subduction_convergence.add_arguments(subduction_convergence_cmd)
 
-    # add gpmdb sub-command
+    # add "gpmdb" sub-command
     gpmdb_cmd = subparser.add_parser(
         "gpmdb",
         help="Retrieve paleomagnetic data from https://www.gpmdb.net, create GPlates-compatible VGP features and save the VGP features in a .gpmlz file.",
@@ -199,16 +203,10 @@ def main():
     )
     gpmdb.add_arguments(gpmdb_cmd)
 
-    # combine command arguments
-    combine_cmd.set_defaults(func=_run_combine_feature_collections)
-    combine_cmd.add_argument("combine_first_input_file", type=str)
-    combine_cmd.add_argument("combine_other_input_files", nargs="+", type=str)
-    combine_cmd.add_argument("combine_output_file", type=str)
-
-    # get_cli_config_example sub-command
+    # add "get_cli_config_example" sub-command
     get_cli_config_example_cmd = subparser.add_parser(
         "get_cli_config_example",
-        help="Print an example TOML configuration to stdout (for use with --config); "
+        help="Print an example CLI configuration in TOML format to stdout (for use with --config); "
         "redirect it to save, e.g. 'gplately get_cli_config_example > my-gplately-cli-config.toml'",
         add_help=True,
     )

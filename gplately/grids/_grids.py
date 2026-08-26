@@ -45,9 +45,7 @@ from scipy.spatial import (
 from scipy.spatial.transform import Rotation as _Rotation
 
 from ..geometry import pygplates_to_shapely
-
-# re-export, for backward compatibility, don't remove
-from ..lib.regular_grid_interpolator import RegularGridInterpolator
+from ..raster import Raster
 
 logger = logging.getLogger("gplately")
 
@@ -857,8 +855,8 @@ def sample_grid(
         )
         lat = np.clip(lat, -90.0, 90.0)
 
-    dx = (extent[1] - extent[0]) / (np.shape(grid)[1] - 1)
-    dy = (extent[3] - extent[2]) / (np.shape(grid)[0] - 1)
+    dx = (extent[1] - extent[0]) / (np.shape(grid)[1] - 1)  # type: ignore
+    dy = (extent[3] - extent[2]) / (np.shape(grid)[0] - 1)  # type: ignore
     point_i = (lat - extent[2]) / dy
     point_j = (lon - extent[0]) / dx
 
