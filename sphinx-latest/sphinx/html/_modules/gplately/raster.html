@@ -1695,8 +1695,8 @@
 <a class="viewcode-back" href="../../generated/gplately.Raster.html#gplately.Raster.rotate_reference_frames">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">rotate_reference_frames</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">grid_spacing_degrees</span><span class="p">,</span>
-        <span class="n">reconstruction_time</span><span class="p">,</span>
+        <span class="n">grid_spacing_degrees</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">reconstruction_time</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">from_rotation_features_or_model</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">to_rotation_features_or_model</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">from_rotation_reference_plate</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
@@ -1709,8 +1709,9 @@
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        grid_spacing_degrees : float</span>
+<span class="sd">        grid_spacing_degrees : float, optional</span>
 <span class="sd">            The spacing (in degrees) for the output rotated grid.</span>
+<span class="sd">            If not specified, the output grid keeps the input raster shape.</span>
 <span class="sd">        reconstruction_time : float</span>
 <span class="sd">            The time at which to rotate the input grid.</span>
 <span class="sd">        from_rotation_features_or_model : str, list of str, instance of pygplates.RotationModel, filename(s), or pyGPlates feature(s)/collection(s)</span>
@@ -1739,6 +1740,9 @@
 <span class="sd">            An instance of the :class:`Raster` object containing the rotated grid.</span>
 <span class="sd">        """</span>
 
+        <span class="k">if</span> <span class="n">reconstruction_time</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"`reconstruction_time` is required."</span><span class="p">)</span>
+
         <span class="k">if</span> <span class="n">from_rotation_features_or_model</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">plate_reconstruction</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Set a plate reconstruction model"</span><span class="p">)</span>
@@ -1764,9 +1768,15 @@
         <span class="p">)</span>
         <span class="n">reference_frame_conversion_rotation</span> <span class="o">=</span> <span class="n">to_rotation</span> <span class="o">*</span> <span class="n">from_rotation</span><span class="o">.</span><span class="n">get_inverse</span><span class="p">()</span>
 
-        <span class="c1"># Resize the input grid to the specified output resolution before rotating</span>
-        <span class="n">resX</span> <span class="o">=</span> <span class="n">_deg2pixels</span><span class="p">(</span><span class="n">grid_spacing_degrees</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">extent</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">extent</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
-        <span class="n">resY</span> <span class="o">=</span> <span class="n">_deg2pixels</span><span class="p">(</span><span class="n">grid_spacing_degrees</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">extent</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">extent</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span>
+        <span class="c1"># Resize the input grid to the specified output resolution before rotating.</span>
+        <span class="k">if</span> <span class="n">grid_spacing_degrees</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">resX</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lons</span><span class="p">)</span>
+            <span class="n">resY</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lats</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">grid_spacing_degrees</span><span class="p">)</span> <span class="ow">or</span> <span class="n">grid_spacing_degrees</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"`grid_spacing_degrees` must be a positive finite number."</span><span class="p">)</span>
+            <span class="n">resX</span> <span class="o">=</span> <span class="n">_deg2pixels</span><span class="p">(</span><span class="n">grid_spacing_degrees</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">extent</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">extent</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+            <span class="n">resY</span> <span class="o">=</span> <span class="n">_deg2pixels</span><span class="p">(</span><span class="n">grid_spacing_degrees</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">extent</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">extent</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span>
         <span class="n">resized_input_grid</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">resize</span><span class="p">(</span><span class="n">resX</span><span class="p">,</span> <span class="n">resY</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 
         <span class="c1"># Get the flattened lons, lats</span>
@@ -1794,15 +1804,6 @@
         <span class="c1"># Use the extent of the original Raster object</span>
         <span class="n">extent_globe</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">extent</span>
 
-        <span class="n">resX</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">((</span><span class="n">extent_globe</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">extent_globe</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">/</span> <span class="n">grid_spacing_degrees</span><span class="p">))</span>
-            <span class="o">+</span> <span class="mi">1</span>
-        <span class="p">)</span>
-        <span class="n">resY</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">((</span><span class="n">extent_globe</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">-</span> <span class="n">extent_globe</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span> <span class="o">/</span> <span class="n">grid_spacing_degrees</span><span class="p">))</span>
-            <span class="o">+</span> <span class="mi">1</span>
-        <span class="p">)</span>
-
         <span class="n">grid_lon</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">extent_globe</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">extent_globe</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">resX</span><span class="p">)</span>
         <span class="n">grid_lat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">extent_globe</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">extent_globe</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="n">resY</span><span class="p">)</span>
 
@@ -1816,7 +1817,7 @@
         <span class="k">if</span> <span class="n">output_name</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_write_netcdf_grid</span><span class="p">(</span><span class="n">output_name</span><span class="p">,</span> <span class="n">Z</span><span class="p">,</span> <span class="n">extent</span><span class="o">=</span><span class="n">extent_globe</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="n">Raster</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">Z</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="n">Raster</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">Z</span><span class="p">,</span> <span class="n">extent</span><span class="o">=</span><span class="n">extent_globe</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="Raster.sample_values">
