@@ -46,9 +46,6 @@ from scipy.spatial.transform import Rotation as _Rotation
 
 from ..geometry import pygplates_to_shapely
 
-# re-export, for backward compatibility, don't remove
-from ..lib.regular_grid_interpolator import RegularGridInterpolator
-
 logger = logging.getLogger("gplately")
 
 
@@ -837,17 +834,18 @@ def sample_grid(
     if order not in {0, 1, 2, 3, 4, 5}:
         raise ValueError(f"Invalid `method` parameter: {method}")
 
-    if isinstance(grid, Raster):
-        extent = grid.extent
-        if np.ma.isMaskedArray(grid.data):
-            grid = np.ma.asarray(grid.data, dtype=float).filled(np.nan)
-        else:
-            grid = np.array(grid.data)
-    else:
+    try:
+        extent, data = grid.extent, grid.data
+    except AttributeError:
         extent = _parse_extent(extent, origin)
         if np.ma.isMaskedArray(grid):
             grid = np.ma.asarray(grid, dtype=float).filled(np.nan)
         grid = _check_grid(grid)
+    else:
+        if np.ma.isMaskedArray(data):
+            grid = np.ma.asarray(data, dtype=float).filled(np.nan)
+        else:
+            grid = np.array(data)
 
     # Do not wrap from North to South Pole (or vice versa)
     if np.any(np.abs(lat) > 90.0):
@@ -857,8 +855,8 @@ def sample_grid(
         )
         lat = np.clip(lat, -90.0, 90.0)
 
-    dx = (extent[1] - extent[0]) / (np.shape(grid)[1] - 1)
-    dy = (extent[3] - extent[2]) / (np.shape(grid)[0] - 1)
+    dx = (extent[1] - extent[0]) / (np.shape(grid)[1] - 1)  # type: ignore
+    dy = (extent[3] - extent[2]) / (np.shape(grid)[0] - 1)  # type: ignore
     point_i = (lat - extent[2]) / dy
     point_j = (lon - extent[0]) / dx
 

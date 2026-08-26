@@ -7,6 +7,10 @@ on:
     branches:
       - master
   pull_request:
+    types:
+      - opened
+      - synchronize
+      - ready_for_review
     branches:
       - master
   workflow_dispatch:
@@ -73,12 +77,24 @@ jobs:
     name: GPlately required check
     needs:
       [detect-relevant-changes, test-gplately-automatic, test-gplately-manual]
-    if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
+    if: always()
     runs-on: ubuntu-latest
     steps:
       - name: Evaluate required check
         shell: bash
         run: |
+          detect_result="${{ needs.detect-relevant-changes.result }}"
+
+          if [[ "$detect_result" == "skipped" ]]; then
+            echo "Change-detection job did not run (e.g. draft PR); passing status check."
+            exit 0
+          fi
+
+          if [[ "$detect_result" == "failure" || "$detect_result" == "cancelled" ]]; then
+            echo "Change-detection job did not complete successfully: $detect_result"
+            exit 1
+          fi
+
           if [[ "${{ needs.detect-relevant-changes.outputs.run_tests }}" != "true" ]]; then
             echo "No relevant changes detected; passing status check without running expensive tests."
             exit 0

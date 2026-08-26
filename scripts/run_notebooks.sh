@@ -38,6 +38,8 @@ src_dir="${NOTEBOOKS_SRC_DIR:-Notebooks}"
 run_dir="${NOTEBOOK_RUN_DIR:-/tmp/notebook-run}"
 html_dir="${NOTEBOOK_HTML_DIR:-notebook-html}"
 
+export DISABLE_GPLATELY_DEV_WARNING=true
+
 if ! command -v jupyter >/dev/null 2>&1; then
   echo "Error: 'jupyter' not found on PATH. Activate your environment first." >&2
   exit 1

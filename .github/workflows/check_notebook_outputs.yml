@@ -2,25 +2,50 @@ name: Check Notebook Outputs
 
 on:
   pull_request:
+    types:
+      - opened
+      - synchronize
+      - ready_for_review
     branches:
       - master
-    paths:
-      - "**/*.ipynb"
   push:
     branches:
       - master
-    paths:
-      - "**/*.ipynb"
 
 jobs:
   check-outputs:
     name: Fail if notebooks contain output cells
-    if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
     runs-on: ubuntu-latest
-
+    outputs:
+      notebooks_changed: ${{ steps.filter.outputs.notebooks }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Detect notebook changes
+        id: filter
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            notebooks:
+              - '**/*.ipynb'
+
       - name: Check for output cells
+        if: |
+          steps.filter.outputs.notebooks == 'true' &&
+          (github.event_name != 'pull_request' || github.event.pull_request.draft == false)
         run: python3 scripts/check_notebook_outputs.py
+
+  check-outputs-status:
+    name: Check Notebook Outputs
+    needs: check-outputs
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fail if check-outputs did not succeed
+        run: |
+          result="${{ needs.check-outputs.result }}"
+          echo "check-outputs result: $result"
+          if [ "$result" != "success" ]; then
+            exit 1
+          fi

@@ -20,8 +20,3 @@ from .polyline import discretize_polyline
 __all__ = [
     "discretize_polyline",
 ]
-
-__pdoc__ = {
-    "quaternions": False,
-    "rotation": False,
-}

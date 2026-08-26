@@ -26,9 +26,6 @@ from typing import List, Tuple, Union, cast, overload, Literal
 import pygmt
 from xarray.core.types import InterpOptions
 
-# pyright: reportMissingImports=false
-# pyright: reportMissingModuleSource=false
-
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
@@ -60,7 +57,7 @@ from .lib.enums import GridRegistration, LongitudeConvention, InterpMethod
 
 from .geometry import pygplates_to_shapely
 from .reconstruction import PlateReconstruction
-from .tools import _deg2pixels, griddata_sphere
+from .tools import griddata_sphere
 from .utils.io_utils import load_feature_collection, load_data_array_from_netcdf
 
 logger = logging.getLogger("gplately")
@@ -1535,12 +1532,15 @@ class Raster(object):
 
             fig = plt.figure(figsize=(12, 6), dpi=dpi)
             ax = fig.add_subplot(111, projection=projection)
-
             im = self.plot(ax=ax, cmap=cmap, vmin=vmin, vmax=vmax)
-
-            fig.colorbar(
-                im, orientation="horizontal", shrink=0.4, pad=0.05, label=colorbar_label
-            )
+            if im is not None:
+                fig.colorbar(
+                    im,
+                    orientation="horizontal",
+                    shrink=0.4,
+                    pad=0.05,
+                    label=colorbar_label,
+                )
             plt.savefig(filename, dpi=dpi, bbox_inches="tight")
         else:
             plt.imsave(filename, np.flipud(self.data), cmap=cmap, vmin=vmin, vmax=vmax)
@@ -1549,10 +1549,10 @@ class Raster(object):
 
     def rotate_reference_frames(
         self,
-        grid_spacing_degrees=None,
         reconstruction_time=None,
         from_rotation_features_or_model=None,
         to_rotation_features_or_model=None,
+        grid_spacing_degrees=None,
         from_rotation_reference_plate=0,
         to_rotation_reference_plate=0,
         non_reference_plate=701,
@@ -1563,9 +1563,6 @@ class Raster(object):
 
         Parameters
         ----------
-        grid_spacing_degrees : float, optional
-            The spacing (in degrees) for the output rotated grid.
-            If not specified, the output grid keeps the input raster shape.
         reconstruction_time : float
             The time at which to rotate the input grid.
         from_rotation_features_or_model : str, list of str, instance of pygplates.RotationModel, filename(s), or pyGPlates feature(s)/collection(s)
@@ -1576,6 +1573,9 @@ class Raster(object):
             A filename, or a list of filenames, or a pyGPlates
             RotationModel object that defines the rotation model
             that the input grid shall be rotated with.
+        grid_spacing_degrees : float, optional
+            The spacing (in degrees) for the output rotated grid.
+            If not specified, the output grid keeps the input raster shape.
         from_rotation_reference_plate : int, default = 0
             The current reference plate for the plate model the grid
             is defined in. Defaults to the anchor plate 0.
@@ -1628,9 +1628,17 @@ class Raster(object):
             resY = len(self.lats)
         else:
             if not np.isfinite(grid_spacing_degrees) or grid_spacing_degrees <= 0:
-                raise ValueError("`grid_spacing_degrees` must be a positive finite number.")
-            resX = _deg2pixels(grid_spacing_degrees, self.extent[0], self.extent[1])
-            resY = _deg2pixels(grid_spacing_degrees, self.extent[2], self.extent[3])
+                raise ValueError(
+                    "`grid_spacing_degrees` must be a positive finite number."
+                )
+            from .grids import num_grid_points as _num_grid_points
+
+            resX = _num_grid_points(
+                grid_spacing_degrees, self.extent[0], self.extent[1]
+            )
+            resY = _num_grid_points(
+                grid_spacing_degrees, self.extent[2], self.extent[3]
+            )
         resized_input_grid = self.resize(resX, resY, inplace=False)
 
         # Get the flattened lons, lats

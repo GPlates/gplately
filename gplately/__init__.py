@@ -23,8 +23,6 @@ from .utils.check_pmm import (
 from .utils.log_utils import setup_logging
 from .utils.version import get_distribution_version
 
-USING_DEV_VERSION = False  ## change this to False before official release
-
 setup_logging()
 del setup_logging
 
@@ -32,6 +30,11 @@ REQUIRED_PMM_VERSION = get_required_pmm_version()
 
 __version__ = get_distribution_version()
 
+
+if any(s in __version__ for s in ["post", "git", "dirty"]):
+    USING_DEV_VERSION = True
+else:
+    USING_DEV_VERSION = False
 
 if USING_DEV_VERSION:
     dev_warning.print_dev_warning(__version__)
@@ -63,12 +66,10 @@ from .plot.cartopy_plot import CartopyPlotEngine
 from .plot.plot_engine import PlotEngine
 from .plot.pygmt_plot import PygmtPlotEngine
 from .plot.hillshade import get_topo_cmap
-from .grids import (
-    SeafloorGrid,
-    IsochronSeafloorGrid,
-    OutputScalarType,
-    TopologySeafloorGrid,
-)
+from .grids.oceans import SeafloorGrid
+from .grids.topology_seafloor_grid import TopologySeafloorGrid
+from .grids.isochron_seafloor_grid import IsochronSeafloorGrid, OutputScalarType
+
 from .plot import PlotTopologies
 from .points import Points
 from .ptt.resolve_topologies import (

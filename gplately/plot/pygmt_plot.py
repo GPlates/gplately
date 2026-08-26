@@ -19,11 +19,10 @@ from pathlib import Path
 from typing import Any
 import xarray as xr
 
-# pyright: reportMissingImports=false
-# pyright: reportMissingModuleSource=false
 from geopandas.geodataframe import GeoDataFrame
 import pygplates
-from ..grids import Raster, sample_grid
+from ..grids import sample_grid
+from ..raster import Raster
 from ..geometry import geographic_circle
 from .plot_engine import PlotEngine
 from ..utils.io_utils import to_geographic_data_array, load_data_array_from_netcdf

@@ -28,7 +28,12 @@ import numpy as np
 import pandas as pd
 import pygplates
 
-from . import grids
+from ._grids import (
+    read_netcdf_grid,
+    write_netcdf_grid,
+    default_netcdf_fill_value,
+    rasterise,
+)
 from .. import tools
 from ..lib.reconstruct_by_topologies import (
     _ContinentCollision,
@@ -40,8 +45,9 @@ from ..lib.reconstruct_continents import ReconstructContinents
 from ..lib.icosahedron import get_mesh, xyz2lonlat
 from ..ptt import continent_contours
 from ..ptt.utils import points_in_polygons, points_spatial_tree
-from ..tools import _deg2pixels
+from ._utils import num_grid_points as _num_grid_points
 from ..utils.log_utils import get_debug_level
+from ..raster import Raster
 
 logger = logging.getLogger("gplately")
 
@@ -331,8 +337,8 @@ class SeafloorGrid(object):
 
         # Gridding parameters
         self.extent = extent
-        self.spacingX = _deg2pixels(grid_spacing, self.extent[0], self.extent[1])
-        self.spacingY = _deg2pixels(grid_spacing, self.extent[2], self.extent[3])
+        self.spacingX = _num_grid_points(grid_spacing, self.extent[0], self.extent[1])
+        self.spacingY = _num_grid_points(grid_spacing, self.extent[2], self.extent[3])
 
         self.resume_from_checkpoints = resume_from_checkpoints
 
@@ -348,7 +354,7 @@ class SeafloorGrid(object):
 
     def _map_res_to_node_percentage(self, continent_mask_filename):
         """Determine which percentage to use to scale the continent mask resolution at max time."""
-        maskY, maskX = grids.read_netcdf_grid(
+        maskY, maskX = read_netcdf_grid(
             continent_mask_filename.format(self._max_time)
         ).shape  # pyright: ignore[reportAttributeAccessIssue]
 
@@ -611,9 +617,7 @@ class SeafloorGrid(object):
 
     def _generate_initial_ocean_points_from_provided_continent_mask(self):
         """Get the ocean points from the user-provided continent mask grid."""
-        max_time_cont_mask = grids.Raster(
-            self.continent_mask_filepath.format(self._max_time)
-        )
+        max_time_cont_mask = Raster(self.continent_mask_filepath.format(self._max_time))
         # If the user provides a continental mask filename, we need to downsize the mask
         # resolution for when we create the initial ocean mesh. The mesh does not need to be high-res.
         # If the input grid is at 0.5 degree uniform spacing, then the input
@@ -821,7 +825,7 @@ class SeafloorGrid(object):
             )
         )
 
-        final_grid = grids.rasterise(
+        final_grid = rasterise(
             reconstructed_continents,
             self.plate_reconstruction.rotation_model,
             key=1.0,
@@ -832,7 +836,7 @@ class SeafloorGrid(object):
         assert final_grid is not None
         final_grid[np.isnan(final_grid)] = 0.0
 
-        grids.write_netcdf_grid(
+        write_netcdf_grid(
             self.continent_mask_filepath.format(time),
             final_grid.astype("i1"),
             extent=(-180, 180, -90, 90),
@@ -861,7 +865,7 @@ class SeafloorGrid(object):
             continent_contouring.get_continent_mask_and_contoured_continents(time)
         )
 
-        grids.write_netcdf_grid(
+        write_netcdf_grid(
             self.continent_mask_filepath.format(time),
             continent_mask.astype("i1"),
             extent=(-180, 180, -90, 90),
@@ -1940,7 +1944,7 @@ def _lat_lon_z_to_netCDF_time(
         significant_digits = 3
 
     if unmasked:
-        grids.write_netcdf_grid(
+        write_netcdf_grid(
             grid_output_unmasked,
             Z,
             extent=extent,
@@ -1953,17 +1957,17 @@ def _lat_lon_z_to_netCDF_time(
     # We need the continental mask to match the number of nodes
     # in the uniform grid defined above. This is important if we
     # pass our own continental mask to SeafloorGrid
-    cont_mask = grids.read_netcdf_grid(
+    cont_mask = read_netcdf_grid(
         continent_mask_filename.format(time), resize=(resX, resY)
     )
 
     # The fill value to use for masking out continents.
-    masked_fill_value = grids.default_netcdf_fill_value(Z, significant_digits)
+    masked_fill_value = default_netcdf_fill_value(Z, significant_digits)
 
     # Use the continental mask to mask out continents
     Z[cont_mask.astype(bool)] = masked_fill_value  # type: ignore
 
-    grids.write_netcdf_grid(
+    write_netcdf_grid(
         grid_output,
         Z,
         extent=extent,

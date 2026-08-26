@@ -27,7 +27,7 @@ from typing import List, Optional, Union
 
 from plate_model_manager import PlateModel, PlateModelManager  # type: ignore
 
-from ..grids import Raster
+from ..raster import Raster
 
 logger = logging.getLogger("gplately")
 
@@ -198,7 +198,7 @@ def _get_rotation_files_for_model(
             f"Could not find plate model '{model_name}'. "
             "Run `gplately list` to see available models."
         )
-    return plate_model.get_rotation_model()
+    return plate_model.get_rotation_model()  # type: ignore
 
 
 def rotate_single_grid(

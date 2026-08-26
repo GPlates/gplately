@@ -15,21 +15,30 @@
 #    51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 
-from .grids import *
-from .isochron_seafloor_grid import IsochronSeafloorGrid, OutputScalarType
-from .oceans import SeafloorGrid
-from .topology_seafloor_grid import TopologySeafloorGrid
-from ..raster import Raster
+from ._grids import *
+from ._utils import num_grid_points
+
+
+# The Raster class is a top-level class in gplately, and should be imported from gplately directly,
+# not from gplately.grids.
+# For historical reasons, Raster is also available in gplately.grids, but this is deprecated and has been removed.
+# This error will be raised if someone tries to import Raster from gplately.grids.
+def __getattr__(name):
+    if name in ["Raster"]:
+        raise ImportError(
+            f"The Raster class has been taken out of gplately.grids. Use `from gplately import Raster` instead of `from gplately.grids import Raster`"
+        )
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+
 
 __all__ = [
     "fill_raster",
     "read_netcdf_grid",
     "write_netcdf_grid",
     "default_netcdf_fill_value",
-    "RegularGridInterpolator",
     "sample_grid",
     "reconstruct_grid",
     "rasterise",
     "rasterize",
-    "Raster",
+    "num_grid_points",
 ]
