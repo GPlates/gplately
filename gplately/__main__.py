@@ -15,11 +15,12 @@
 #    51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 import argparse
+from importlib.resources import files
 import os
 import sys
 from typing import List
 
-import pygplates  # type: ignore
+import pygplates
 
 from gplately import __version__
 
@@ -66,6 +67,10 @@ def _run_combine_feature_collections(args):
         [args.combine_first_input_file] + args.combine_other_input_files,
         args.combine_output_file,
     )
+
+
+def _print_cli_config_example():
+    print(files("gplately").joinpath("data", "gplately-cli-config.toml").read_text())
 
 
 class ArgParser(argparse.ArgumentParser):
@@ -186,7 +191,6 @@ def main():
     )
     subduction_convergence.add_arguments(subduction_convergence_cmd)
 
-    # disable for now since it is not working right now due to the redesign of gpmdb.net
     # add gpmdb sub-command
     gpmdb_cmd = subparser.add_parser(
         "gpmdb",
@@ -200,6 +204,17 @@ def main():
     combine_cmd.add_argument("combine_first_input_file", type=str)
     combine_cmd.add_argument("combine_other_input_files", nargs="+", type=str)
     combine_cmd.add_argument("combine_output_file", type=str)
+
+    # get_cli_config_example sub-command
+    get_cli_config_example_cmd = subparser.add_parser(
+        "get_cli_config_example",
+        help="Print an example TOML configuration to stdout (for use with --config); "
+        "redirect it to save, e.g. 'gplately get_cli_config_example > my-gplately-cli-config.toml'",
+        add_help=True,
+    )
+    get_cli_config_example_cmd.set_defaults(
+        func=lambda args: _print_cli_config_example()
+    )
 
     if len(sys.argv) == 1:
         parser.print_help(sys.stderr)

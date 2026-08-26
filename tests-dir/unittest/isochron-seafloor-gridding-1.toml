@@ -1,6 +1,8 @@
 use_isochron_interp = true
 model_name = "zahirovic2022"
 times = [0, 50, 100, 150]
+
+# The input files can be found at https://repo.gplates.org/webdav/gplately/AgeGridInput.zip.
 ridges_filenames = "AgeGridInput/Global_EarthByte_GeeK07_Ridges.gpml"
 isochron_filenames = "AgeGridInput/Global_EarthByte_GeeK07_Isochrons.gpml"
 isochron_cob_filenames = "AgeGridInput/Global_EarthByte_GeeK07_IsoCOB.gpml"
