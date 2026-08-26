@@ -20,8 +20,6 @@ This sub-module contains tools that wrap up pyGPlates and Plate Tectonic Tools f
 working with point data, and calculating plate velocities at specific geological times.
 """
 
-# pyright: reportMissingTypeStubs=true
-
 import logging
 import numbers
 import warnings
@@ -29,7 +27,7 @@ from typing import Union
 
 import numpy as np
 import pygplates
-from plate_model_manager import PlateModel  # type: ignore
+from plate_model_manager import PlateModel
 
 from . import tools as _tools
 from .gpml import _load_FeatureCollection
@@ -1601,13 +1599,14 @@ class PlateReconstruction(object):
                 )
             )
         """
-        from . import grids as _grids
+        # import inside the function to avoid circular import issues
+        from .raster import Raster
 
-        if isinstance(continental_grid, _grids.Raster):
+        if isinstance(continental_grid, Raster):
             graster = continental_grid
         elif isinstance(continental_grid, str):
             # Process the continental grid directory
-            graster = _grids.Raster(
+            graster = Raster(
                 data=continental_grid,
                 realign=True,
                 time=float(time),
@@ -1616,7 +1615,7 @@ class PlateReconstruction(object):
             # Process the masked continental grid
             try:
                 continental_grid = np.array(continental_grid)
-                graster = _grids.Raster(
+                graster = Raster(
                     data=continental_grid,
                     extent=(-180, 180, -90, 90),
                     time=float(time),

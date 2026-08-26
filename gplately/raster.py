@@ -26,9 +26,6 @@ from typing import List, Tuple, Union, cast, overload, Literal
 import pygmt
 from xarray.core.types import InterpOptions
 
-# pyright: reportMissingImports=false
-# pyright: reportMissingModuleSource=false
-
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
@@ -60,7 +57,7 @@ from .lib.enums import GridRegistration, LongitudeConvention, InterpMethod
 
 from .geometry import pygplates_to_shapely
 from .reconstruction import PlateReconstruction
-from .tools import _deg2pixels, griddata_sphere
+from .tools import griddata_sphere
 from .utils.io_utils import load_feature_collection, load_data_array_from_netcdf
 
 logger = logging.getLogger("gplately")
@@ -1634,8 +1631,14 @@ class Raster(object):
                 raise ValueError(
                     "`grid_spacing_degrees` must be a positive finite number."
                 )
-            resX = _deg2pixels(grid_spacing_degrees, self.extent[0], self.extent[1])
-            resY = _deg2pixels(grid_spacing_degrees, self.extent[2], self.extent[3])
+            from .grids import num_grid_points as _num_grid_points
+
+            resX = _num_grid_points(
+                grid_spacing_degrees, self.extent[0], self.extent[1]
+            )
+            resY = _num_grid_points(
+                grid_spacing_degrees, self.extent[2], self.extent[3]
+            )
         resized_input_grid = self.resize(resX, resY, inplace=False)
 
         # Get the flattened lons, lats

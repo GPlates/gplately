@@ -45,7 +45,7 @@ from ..lib.reconstruct_continents import ReconstructContinents
 from ..lib.icosahedron import get_mesh, xyz2lonlat
 from ..ptt import continent_contours
 from ..ptt.utils import points_in_polygons, points_spatial_tree
-from ..tools import _deg2pixels
+from ._utils import num_grid_points as _num_grid_points
 from ..utils.log_utils import get_debug_level
 from ..raster import Raster
 
@@ -337,8 +337,8 @@ class SeafloorGrid(object):
 
         # Gridding parameters
         self.extent = extent
-        self.spacingX = _deg2pixels(grid_spacing, self.extent[0], self.extent[1])
-        self.spacingY = _deg2pixels(grid_spacing, self.extent[2], self.extent[3])
+        self.spacingX = _num_grid_points(grid_spacing, self.extent[0], self.extent[1])
+        self.spacingY = _num_grid_points(grid_spacing, self.extent[2], self.extent[3])
 
         self.resume_from_checkpoints = resume_from_checkpoints
 
