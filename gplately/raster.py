@@ -1631,6 +1631,7 @@ class Raster(object):
                 raise ValueError(
                     "`grid_spacing_degrees` must be a positive finite number."
                 )
+            # import here to avoid circular import issues
             from .grids import num_grid_points as _num_grid_points
 
             resX = _num_grid_points(

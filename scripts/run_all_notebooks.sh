@@ -26,5 +26,5 @@ notebooks=(
   Examples/08-UseAuxiliaryFunctions
   Examples/09-IcosahedronMesh
 )
-
+export GPLATELY_NOTEBOOK_QUICK_RUN=true
 ./scripts/run_notebooks.sh "${notebooks[@]}"
