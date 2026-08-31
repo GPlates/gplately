@@ -16,9 +16,9 @@ Reconstruction
 
    gplately.reconstruct_grid
    gplately.reconstruct_points
-   gplately.reconstruct_points_impl
+   gplately.reconstruct_points_with_model_files
    gplately.reverse_reconstruct_points
-   gplately.reverse_reconstruct_points_impl
+   gplately.reverse_reconstruct_points_with_model_files
 
 Resolve Topologies
 ------------------

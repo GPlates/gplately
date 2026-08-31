@@ -1,5 +1,5 @@
-GPlately v2.0.0 Documentation
-=============================
+GPlately |version| Documentation
+================================
 
 GPlately_ was created to accelerate spatio-temporal data analysis by leveraging pyGPlates_ within a simplified Python interface. 
 This object-oriented package enables the reconstruction of data through deep geologic time (such as points, lines, polygons, and rasters), 

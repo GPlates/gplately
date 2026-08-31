@@ -58,9 +58,9 @@ from .grids import (
 )
 from .lib.reconstruct import (
     reconstruct_points,
-    reconstruct_points_impl,
+    reconstruct_points_with_model_files,
     reverse_reconstruct_points,
-    reverse_reconstruct_points_impl,
+    reverse_reconstruct_points_with_model_files,
 )
 from .plot.cartopy_plot import CartopyPlotEngine
 from .plot.plot_engine import PlotEngine
