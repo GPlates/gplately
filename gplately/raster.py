@@ -24,6 +24,7 @@ import warnings
 from multiprocessing import cpu_count
 from typing import List, Tuple, Union, cast, overload, Literal
 import pygmt
+from shapely import polygons
 from xarray.core.types import InterpOptions
 
 import matplotlib.pyplot as plt
@@ -90,7 +91,7 @@ class Raster(object):
         data_variable_name: str = "",
         **kwargs,
     ):
-        """Constructor. Create a :class:`Raster` object.
+        """Create a :class:`Raster` object.
 
         Parameters
         ----------
@@ -319,13 +320,17 @@ class Raster(object):
         return self._data
 
     @data.setter
-    def data(self, z):
-        z = np.array(z)
-        if z.shape != np.shape(self.data):
-            raise ValueError(
-                f"Shape mismatch error: old dimensions are {np.shape(self.data)}, new dimensions are {z.shape}"
+    def data(self, z, extent=None):
+        _old_data_shape = np.shape(self.data)
+        self._data = np.asarray(z)
+        if self._data.shape != _old_data_shape:
+            logger.warning(
+                f"The new data shape {self._data.shape} is different from the old shape {_old_data_shape}"
             )
-        self._data = z
+            # recalculate the longitude and latitude coordinates based on the new extent if provided, otherwise use the normalized extent
+            self.extent = extent if extent is not None else self.normalized_extent
+        if extent is not None:
+            self.extent = extent
         self._invalidate_spatial_cache()
 
     @property
@@ -380,6 +385,12 @@ class Raster(object):
             float(self.lons[-1]),
             float(self.lats[0]),
             float(self.lats[-1]),
+        )
+
+    @extent.setter
+    def extent(self, new_extent: Tuple[float, float, float, float]):
+        self.lats, self.lons = self._get_lats_lons_from_extent_origin(
+            new_extent, "lower"
         )
 
     @property
@@ -920,6 +931,7 @@ class Raster(object):
         return new_obj
 
     def is_global(self) -> bool:
+        """Check if the raster covers the whole globe."""
         if not math.isclose(abs(self.lats[-1] - self.lats[0]), 180):
             return False
 
@@ -1378,7 +1390,7 @@ class Raster(object):
             return self
         else:
             return Raster(
-                data,
+                np.asarray(data, dtype=self.data.dtype),
                 self.plate_reconstruction,
                 resampled_extent,
                 time=self.time,
@@ -1501,7 +1513,7 @@ class Raster(object):
                 )
 
     def fill_NaNs(self, inplace=False, return_array=False):
-        """Deprecated. Use :meth:`fill_gaps` instead. This method will be removed in a future version of the library."""
+        """Deprecated, use :meth:`fill_gaps` instead. This method will be removed in a future version of the library."""
         r = self.fill_gaps(inplace=inplace, method="nearest")
         if return_array:
             return r.data
@@ -1683,6 +1695,7 @@ class Raster(object):
         return Raster(data=Z, extent=extent_globe)
 
     def sample_values(self, *, lons, lats, method="linear"):
+        """Sample grid data at a set of locations. This function is superseded by :meth:`Raster.query` and is kept for backward compatibility."""
         order = {
             "nearest": 0,
             "linear": 1,
@@ -1817,7 +1830,7 @@ class Raster(object):
         Returns
         --------
         Raster
-            The clipped grid.
+            The clipped raster.
         """
         if (
             extent[0] >= extent[1]
@@ -1828,56 +1841,122 @@ class Raster(object):
             or extent[3] > 90
         ):
             raise Exception(f"Invalid extent: {extent}")
+
+        original_extent = self.normalized_extent
+
         if (
-            extent[0] < self.extent[0]
-            or extent[1] > self.extent[1]
-            or extent[2] < self.extent[2]
-            or extent[3] > self.extent[3]
+            extent[0] < original_extent[0]
+            or extent[1] > original_extent[1]
+            or extent[2] < original_extent[2]
+            or extent[3] > original_extent[3]
         ):
             raise Exception(
-                f"The given extent is out of scope. {extent} -- {self.extent}"
+                f"The given extent is out of scope. {extent} -- {original_extent}"
             )
-        y_len, x_len = self.data.shape
+        y_len, x_len = self.data.shape[0:2]
         logger.debug(f"the shape of raster data x:{x_len} y:{y_len}")
 
         x0 = math.floor(
-            (extent[0] - self.extent[0])
-            / (self.extent[1] - self.extent[0])
+            (extent[0] - original_extent[0])
+            / (original_extent[1] - original_extent[0])
             * (x_len - 1)
         )
         x1 = math.ceil(
-            (extent[1] - self.extent[0])
-            / (self.extent[1] - self.extent[0])
+            (extent[1] - original_extent[0])
+            / (original_extent[1] - original_extent[0])
             * (x_len - 1)
         )
-        # print(x0, x1)
         y0 = math.floor(
-            (extent[2] - self.extent[2])
-            / (self.extent[3] - self.extent[2])
+            (extent[2] - original_extent[2])
+            / (original_extent[3] - original_extent[2])
             * (y_len - 1)
         )
         y1 = math.ceil(
-            (extent[3] - self.extent[2])
-            / (self.extent[3] - self.extent[2])
+            (extent[3] - original_extent[2])
+            / (original_extent[3] - original_extent[2])
             * (y_len - 1)
         )
-        # print(y0, y1)
         new_extent = (
-            x0 / (x_len - 1) * (self.extent[1] - self.extent[0]) - 180,
-            x1 / (x_len - 1) * (self.extent[1] - self.extent[0]) - 180,
-            y0 / (y_len - 1) * (self.extent[3] - self.extent[2]) - 90,
-            y1 / (y_len - 1) * (self.extent[3] - self.extent[2]) - 90,
+            x0 / (x_len - 1) * (original_extent[1] - original_extent[0]) - 180,
+            x1 / (x_len - 1) * (original_extent[1] - original_extent[0]) - 180,
+            y0 / (y_len - 1) * (original_extent[3] - original_extent[2]) - 90,
+            y1 / (y_len - 1) * (original_extent[3] - original_extent[2]) - 90,
         )
-        # print(new_extent)
-        # print(self.data[y0 : y1 + 1, x0 : x1 + 1].shape)
-        return Raster(
-            data=self.data[y0 : y1 + 1, x0 : x1 + 1],
-            extent=new_extent,
+        ret = self.copy()
+        ret.data = self.data[y0 : y1 + 1, x0 : x1 + 1]
+        ret.lats, ret.lons = ret._get_lats_lons_from_extent_origin(new_extent, "lower")
+        return ret
+
+    def clip_by_polygons(
+        self, polygons: list[_PolygonOnSphere], fill_value=None
+    ) -> "Raster":
+        """Clip the raster according to a given list of polygons defined on a sphere.
+
+        Parameters
+        ----------
+        polygons : list of pygplates.PolygonOnSphere
+            A list of polygons defined on a sphere.
+        fill_value : int, float, tuple, or None, optional
+            The value to use for data outside the clipped area. If None, the default fill value is used.
+
+        Returns
+        -------
+        Raster
+            The clipped raster.
+        """
+        for polygon in polygons:
+            if not isinstance(polygon, _PolygonOnSphere):
+                raise TypeError(
+                    f"Expected a list of pygplates.PolygonOnSphere objects, got {type(polygon)}"
+                )
+
+        shapely_polygons = pygplates_to_shapely(
+            polygons,
+            tessellate_degrees=0.1,
+        )
+        if not isinstance(shapely_polygons, list):
+            shapely_polygons = [shapely_polygons]
+
+        nx = len(self.lons)
+        ny = len(self.lats)
+        minx, maxx, miny, maxy = self.extent
+
+        polygon_mask = _rasterize(
+            shapes=zip(shapely_polygons, [1] * len(shapely_polygons)),
+            out_shape=(ny, nx),
+            fill=0,
+            dtype=np.uint8,
+            merge_alg=MergeAlg.replace,
+            transform=_from_bounds(minx, miny, maxx, maxy, nx, ny),
+        )
+        if polygon_mask is not None:
+            polygon_mask = polygon_mask.astype(bool)
+        else:
+            raise ValueError("Failed to rasterize the polygons.")
+
+        if self.data.ndim == 3:
+            polygon_mask = polygon_mask[..., np.newaxis]
+
+        if self.origin == "upper":
+            _data = np.flipud(self.data)
+        else:
+            _data = self.data
+
+        fill_value = self._parse_fill_value(fill_value)
+        clipped_data = np.where(
+            polygon_mask,
+            _data,
+            cast(
+                int | float | complex | np.generic,
+                fill_value,
+            ),
         )
 
-    def clip_by_polygons(self, polygons: list[_PolygonOnSphere]):
-        """TODO:"""
-        pass
+        ret = self.copy()
+        ret.data = np.asarray(clipped_data, dtype=self.data.dtype)
+        ret.extent = self.normalized_extent
+        ret.fill_value = fill_value
+        return ret
 
     def to_longitude_positive_360(self, inplace=False):
         """Convert a grid's longitude coordinates to the [0, 360] convention."""
@@ -1925,7 +2004,7 @@ class Raster(object):
             return new_raster
 
     def imshow(self, ax=None, projection=None, **kwargs):
-        """Deprecated. Use :meth:`plot` instead. Plot the raster data using matplotlib."""
+        """Deprecated, use :meth:`plot` instead. Plot the raster data using matplotlib."""
         for kw in ("origin", "extent"):
             if kw in kwargs.keys():
                 raise TypeError(

@@ -48,6 +48,8 @@ del get_required_pmm_version
 from plate_model_manager import PlateModel, PlateModelManager, PresentDayRasterManager
 
 from . import auxiliary, ptt
+
+from .auxiliary import get_plate_reconstruction, get_gplot
 from .data_server import DataServer
 from .raster import Raster
 from .grids import (
@@ -143,9 +145,12 @@ __all__ = [
     "default_netcdf_fill_value",
     "reconstruct_grid",
     "reconstruct_points",
+    "reconstruct_points_with_model_files",
     "ridge_spreading_rate",
     "subduction_convergence",
     "load_feature_collection",
+    "get_plate_reconstruction",
+    "get_gplot",
     # constants
     "EARTH_RADIUS",
 ]
