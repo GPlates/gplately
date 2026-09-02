@@ -21,3 +21,7 @@ There are four sub-folders in this "tests-dir". This folder is called "tests-dir
 `micromamba activate gplately`
 
 - `GPLATELY_TEST_LEVEL=100 python -m pytest -vv tests-dir/pytestcases`
+
+- `./scripts/run_all_notebooks.sh`
+
+- `./tests-dir/test-cli.sh`
