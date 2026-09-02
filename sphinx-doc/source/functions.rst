@@ -32,6 +32,17 @@ Resolve Topologies
    gplately.resolve_topologies_into_features
    gplately.resolve_topological_snapshot_into_features
 
+Colour Maps
+-----------
+.. autosummary::
+   :nosignatures:
+   :toctree: generated
+
+   gplately.plot.get_age_grid_cmap
+   gplately.plot.get_spreading_rate_cmap
+   gplately.plot.get_topo_cmap
+   
+
 Miscellaneous
 -------------
 

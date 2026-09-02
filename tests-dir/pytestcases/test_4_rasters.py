@@ -168,6 +168,20 @@ def test_clip_by_polygons_rgb_uses_channel_aware_default_fill_value():
     assert np.array_equal(clipped.data[-1, -1], [0, 0, 0])
 
 
+def test_clip_by_polygons_preserves_upper_origin():
+    data = np.full((3, 3), 255, dtype=np.uint8)
+    raster = gplately.Raster(data=data, extent=(0.0, 2.0, 0.0, 2.0), origin="upper")
+    polygon = pygplates.PolygonOnSphere(
+        [(0.0, 0.0), (0.0, 1.0), (1.0, 1.0), (1.0, 0.0)]
+    )
+
+    clipped = raster.clip_by_polygons([polygon], fill_value=0)
+
+    assert clipped.origin == "upper"
+    assert clipped.data[-1, 0] == 255
+    assert clipped.data[0, -1] == 0
+
+
 def test_rotate_reference_frames_ignores_masked_fill_values():
     fill_value = np.float64(9.969209968386869e36)
     data = np.linspace(0, 100, 100).reshape(10, 10).astype(float)
