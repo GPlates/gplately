@@ -119,6 +119,10 @@ on:
         description: "Examples/09-IcosahedronMesh"
         type: boolean
         default: false
+      notebook_examples_10_color_map_and_color_palette_table:
+        description: "Examples/10-ColorMapAndColorPaletteTable"
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -165,6 +169,7 @@ jobs:
             [notebook_examples_07_save_reconstructed_data]="Examples/07-SaveReconstructedData"
             [notebook_examples_08_use_auxiliary_functions]="Examples/08-UseAuxiliaryFunctions"
             [notebook_examples_09_icosahedron_mesh]="Examples/09-IcosahedronMesh"
+            [notebook_examples_10_color_map_and_color_palette_table]="Examples/10-ColorMapAndColorPaletteTable"
           )
 
           # Preserve a stable, human-friendly order (bash associative arrays
@@ -194,6 +199,7 @@ jobs:
             notebook_examples_07_save_reconstructed_data
             notebook_examples_08_use_auxiliary_functions
             notebook_examples_09_icosahedron_mesh
+            notebook_examples_10_color_map_and_color_palette_table
           )
 
           all_selected=$(echo "$INPUTS_JSON" | jq -r '.notebook_all')

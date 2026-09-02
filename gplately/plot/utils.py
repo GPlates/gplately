@@ -36,12 +36,26 @@ logger = logging.getLogger("gplately")
 
 
 def get_age_grid_cmap():
-    """Return a matplotlib colormap object from the GMT agegrid.cpt file."""
+    """Return a matplotlib colormap object from the GMT agegrid.cpt file.
+
+    Use the Python code below to access the agegrid.cpt file.
+    .. code-block:: python
+
+        from importlib.resources import files
+        cpt_file = files("gplately").joinpath("data", "agegrid.cpt")
+    """
     return get_cmap_from_gmt_cpt(files("gplately").joinpath("data", "agegrid.cpt"))
 
 
 def get_spreading_rate_cmap():
-    """Return a matplotlib colormap object from the GMT spreading_full_rate.cpt file."""
+    """Return a matplotlib colormap object from the GMT spreading_full_rate.cpt file.
+
+    Use the Python code below to access the spreading_full_rate.cpt file.
+        .. code-block:: python
+
+            from importlib.resources import files
+            cpt_file = files("gplately").joinpath("data", "spreading_full_rate.cpt")
+    """
     return get_cmap_from_gmt_cpt(
         files("gplately").joinpath("data", "spreading_full_rate.cpt")
     )
