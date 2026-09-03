@@ -1,5 +1,8 @@
 #!/bin/bash
-set -e # Exit immediately if any command exits with a non-zero status
+
+set -euo pipefail
+
+export DISABLE_GPLATELY_DEV_WARNING=true
 
 BASEDIR=$(dirname "$0")
 
@@ -29,13 +32,7 @@ $BASEDIR/test_plot_with_raster.py save
 
 $BASEDIR/test_plot.py save 
 
-$BASEDIR//test_pygmt_plot.py
-
-$BASEDIR/test_raster_reconstruction.py 701 save
-
-$BASEDIR/test_raster_reconstruction.py save
-
-$BASEDIR/test_raster.py save
+$BASEDIR//test_pygmt_plot.py save
 
 $BASEDIR/test_reconstruct_points.py save
 
@@ -47,3 +44,22 @@ $BASEDIR/test_subduction_teeth.py save
 
 $BASEDIR/test_tessellate.py save
 
+jupyter nbconvert \
+    --to notebook \
+    --execute \
+    --ExecutePreprocessor.force_raise_errors=True \
+    --output test_raster_tmp.ipynb \
+    --output-dir $BASEDIR \
+    $BASEDIR/test_raster.ipynb
+
+jupyter nbconvert \
+    --to notebook \
+    --execute \
+    --ExecutePreprocessor.force_raise_errors=True \
+    --output test_pygmt_tmp.ipynb \
+    --output-dir $BASEDIR \
+    $BASEDIR/test_pygmt.ipynb
+
+  $BASEDIR/test_feature_filter.sh
+
+echo "All tests passed!"

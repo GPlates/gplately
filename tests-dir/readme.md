@@ -25,3 +25,7 @@ There are four sub-folders in this "tests-dir". This folder is called "tests-dir
 - `./scripts/run_all_notebooks.sh`
 
 - `./tests-dir/test-cli.sh`
+
+- `./tests-dir/unittest/run_all.sh`
+
+- `./tests-dir/unittest/test-seafloor-gridding.sh`

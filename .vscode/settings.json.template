@@ -10,4 +10,17 @@
   "python-envs.defaultPackageManager": "ms-python.python:pip",
   "python.terminal.activateEnvironment": false,
   "python-envs.defaultEnvManager": "ms-python.python:system"
+
+// activate gplately env when starting a new terminal in vs code.
+//"terminal.integrated.profiles.osx": {
+//    "zsh-gplately-env": {
+//      "path": "/bin/zsh",
+//      "args": [
+//        "-c",
+//        "MM_BIN=\"${MAMBA_EXE:-$HOME/.local/bin/micromamba}\"; if [ ! -x \"$MM_BIN\" ] && command -v micromamba >/dev/null 2>&1; then MM_BIN=\"$(command -v micromamba)\"; fi; if [ -x \"$MM_BIN\" ]; then eval \"$($MM_BIN shell hook --shell zsh)\" && micromamba activate gplately; fi; exec zsh -L"
+//      ]
+//    }
+//  },
+//  "terminal.integrated.defaultProfile.osx": "zsh-gplately-env",
+
 }
