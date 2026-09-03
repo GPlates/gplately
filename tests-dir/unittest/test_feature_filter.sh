@@ -82,5 +82,7 @@ gplately filter "$IN_FILE" "$TEST_DATA_DIR/basins.gpmlz" -t gpml:Basin
 echo "Test 12: Filter by multiple feature types..."
 gplately filter "$IN_FILE" "$TEST_DATA_DIR/basin_islandarc.gpmlz" -t "gpml:IslandArc|gpml:Basin"
 
+rm -rf "$TEST_DATA_DIR"
+
 echo ""
-echo "✓ All tests passed successfully!"
+echo "✓ All feature filter tests passed successfully!"
