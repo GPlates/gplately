@@ -15,66 +15,9 @@
 #    51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 
-"""This sub-module contains tools for converting PyGPlates or GPlately geometries to Shapely geometries for mapping (and vice versa).
+"""This module contains tools for handling geometries,
+such as converting PyGPlates geometries to Shapely geometries (and vice versa)."""
 
-Supported PyGPlates geometries inherit from the following classes:
-
-* [pygplates.GeometryOnSphere](https://www.gplates.org/docs/pygplates/generated/pygplates.geometryonsphere): This
-class has the following derived GeometryOnSphere classes:
-    * [pygplates.PointOnSphere](https://www.gplates.org/docs/pygplates/generated/pygplates.pointonsphere#pygplates.PointOnSphere)
-    * [pygplates.MultiPointOnSphere](https://www.gplates.org/docs/pygplates/generated/pygplates.multipointonsphere#pygplates.MultiPointOnSphere)
-    * [pygplates.PolylineOnSphere](https://www.gplates.org/docs/pygplates/generated/pygplates.polylineonsphere#pygplates.PolylineOnSphere)
-    * [pygplates.PolygonOnSphere](https://www.gplates.org/docs/pygplates/generated/pygplates.polygononsphere#pygplates.PolygonOnSphere)
-
-
-* [pygplates.LatLonPoint](https://www.gplates.org/docs/pygplates/generated/pygplates.latlonpoint)
-* [pygplates.ReconstructedFeatureGeometry](https://www.gplates.org/docs/pygplates/generated/pygplates.reconstructedfeaturegeometry)
-* [pygplates.ResolvedTopologicalLine](https://www.gplates.org/docs/pygplates/generated/pygplates.resolvedtopologicalline)
-* [pygplates.ResolvedTopologicalBoundary](https://www.gplates.org/docs/pygplates/generated/pygplates.resolvedtopologicalboundary)
-* [pygplates.ResolvedTopologicalNetwork](https://www.gplates.org/docs/pygplates/generated/pygplates.resolvedtopologicalnetwork)
-
-Note: GPlately geometries derive from the `GeometryOnSphere` and `pygplates.GeometryOnSphere` base classes.
-
-Supported Shapely geometric objects include:
-
-* __Point__: a single point in 2D space with coordinate tuple (x,y) or 3D space with coordinate tuple (x,y,z).
-* __LineString__: a sequence of points joined together to form a line (a list of point coordinate tuples).
-* __Polygon__: a sequence of points joined together to form the outer ring of a filled area, or a hole (a list of at least
-three point coordinate tuples).
-
-Also supported are collections of geometric objects, such as:
-
-* __MultiPoint__: a list of __Point__ objects (a list of point coordinate tuples).
-* __MultiLineString__: a list of __LineString__ objects (a list containing lists of point coordinate tuples).
-* __MultiPolygon__:  a list of __Polygon__ objects (a list containing lists of point coordinate tuples that define exterior rings and/or holes).
-
-
-__Converting PyGPlates geometries into Shapely geometries__ involves:
-
-* __wrapping geometries at the dateline__: this involves splitting a polygon, MultiPolygon, line segment or MultiLine segment between
-connecting points at the dateline. This is to ensure the geometry's points are joined along the short path rather than
-the long path horizontally across the 2D map projection display.
-* __ordering geometries counter-clockwise__
-
-Input PyGPlates geometries are converted to the following Shapely geometries:
-
-- `PointOnSphere` or `LatLonPoint`: `Point`
-- `MultiPointOnSphere`: `MultiPoint`
-- `PolylineOnSphere`: `LineString` or `MultiLineString`
-- `PolygonOnSphere`: `Polygon` or `MultiPolygon`
-
-__Converting Shapely geometries into PyGPlates geometries__:
-Input Shapely geometries are converted to the following PyGPlates geometries:
-
-- `Point`: `PointOnSphere`
-- `MultiPoint`: `MultiPointOnSphere`
-- `LineString`: `PolylineOnSphere`
-- `LinearRing` or `Polygon`: `PolygonOnSphere`
-
-"""
-
-# pyright: reportMissingImports=false
-# pyright: reportMissingModuleSource=false
 import numpy as np
 import pygplates
 from shapely.geometry import LinearRing as _LinearRing
@@ -87,98 +30,105 @@ from shapely.geometry import Polygon as _Polygon
 from shapely.geometry.base import BaseGeometry as _BaseGeometry
 from shapely.geometry.base import BaseMultipartGeometry as _BaseMultipartGeometry
 
+from pygplates import (
+    GeometryOnSphere as _GeometryOnSphere,
+    PointOnSphere as _PointOnSphere,
+    MultiPointOnSphere as _MultiPointOnSphere,
+    PolylineOnSphere as _PolylineOnSphere,
+    PolygonOnSphere as _PolygonOnSphere,
+)
+
 __all__ = [
-    "GeometryOnSphere",
-    "LatLonPoint",
-    "MultiPointOnSphere",
-    "PointOnSphere",
-    "PolygonOnSphere",
-    "PolylineOnSphere",
     "pygplates_to_shapely",
     "shapely_to_pygplates",
     "wrap_geometries",
+    "to_shapely",
+    "from_shapely",
 ]
 
 
-class GeometryOnSphere(pygplates.GeometryOnSphere):
-    """Class to mix in `to_shapely` method to all GPlately geometry classes.
+def from_shapely(geometry: _BaseGeometry) -> _GeometryOnSphere:
+    """Convert one Shapely geometry to a PyGPlates geometry.
 
-    All GPlately geometry classes inherit from this class, in addition
-    to their PyGPlates base class.
+    Parameters
+    ----------
+    geometry : shapely.geometry.base.BaseGeometry
+        A `Point`, `MultiPoint`, `LineString`, or `Polygon`.
+
+    Returns
+    -------
+    pygplates.GeometryOnSphere
+        A `PointOnSphere`, `MultiPointOnSphere`, `PolylineOnSphere`, or `PolygonOnSphere`, respectively.
     """
+    if isinstance(geometry, _Point):
+        return _PointOnSphere(geometry.y, geometry.x)
 
-    def to_shapely(
-        self,
-        central_meridian=0.0,
-        tessellate_degrees=None,
-        validate=False,
-        force_ccw=False,
-        explode=False,
-    ):
-        """Convert to Shapely geometry.
+    if isinstance(geometry, _MultiPoint):
+        coords = np.array([point.coords[0] for point in geometry.geoms])
+        return _MultiPointOnSphere(np.fliplr(coords))
 
-        See Also
-        --------
-        pygplates_to_shapely : Equivalent function.
-        """
-        return pygplates_to_shapely(
-            self,
-            central_meridian=central_meridian,
-            tessellate_degrees=tessellate_degrees,
-            validate=validate,
-            force_ccw=force_ccw,
-            explode=explode,
+    if isinstance(geometry, _LineString):
+        return _PolylineOnSphere(np.fliplr(np.array(geometry.coords)))
+
+    if isinstance(geometry, _Polygon):
+        if geometry.exterior is None:
+            raise AttributeError("Polygon geometry has no exterior")
+        exterior = np.fliplr(np.array(geometry.exterior.coords)[:-1])
+        interiors = [
+            np.fliplr(np.array(interior.coords)[:-1]) for interior in geometry.interiors
+        ]
+        return _PolygonOnSphere(exterior, interiors)
+
+    raise TypeError("Invalid geometry type: " + str(type(geometry)))
+
+
+def to_shapely(geometry: _GeometryOnSphere) -> _BaseGeometry:
+    """Convert one PyGPlates geometry to a Shapely geometry.
+
+    A direct, unwrapped conversion: coordinates are used as-is, with no
+    antimeridian wrapping, tessellation, or validation. For those, use
+    `pygplates_to_shapely` instead.
+
+    Parameters
+    ----------
+    geometry : pygplates.GeometryOnSphere
+        A `PointOnSphere`, `MultiPointOnSphere`, `PolylineOnSphere`, or `PolygonOnSphere`.
+
+    Returns
+    -------
+    shapely.geometry.base.BaseGeometry
+        A `Point`, `MultiPoint`, `LineString`, or `Polygon`, respectively.
+    """
+    if isinstance(geometry, _PointOnSphere):
+        lat, lon = geometry.to_lat_lon()
+        return _Point(lon, lat)
+
+    if isinstance(geometry, _MultiPointOnSphere):
+        return _MultiPoint(np.fliplr(geometry.to_lat_lon_array()))
+
+    if isinstance(geometry, _PolylineOnSphere):
+        return _LineString(np.fliplr(geometry.to_lat_lon_array()))
+
+    if isinstance(geometry, _PolygonOnSphere):
+        exterior = np.fliplr(
+            np.array(
+                [point.to_lat_lon() for point in geometry.get_exterior_ring_points()]
+            )
         )
+        interiors = [
+            np.fliplr(
+                np.array(
+                    [
+                        point.to_lat_lon()
+                        for point in geometry.get_interior_ring_points(i)
+                    ]
+                )
+            )
+            for i in range(geometry.get_number_of_interior_rings())
+        ]
+        return _Polygon(exterior, interiors)
 
-    @classmethod
-    def from_shapely(cls, geom):
-        converted = shapely_to_pygplates(geom)
-        return cls(converted)
-
-
-class PointOnSphere(pygplates.PointOnSphere, GeometryOnSphere):
-    """GPlately equivalent of `pygplates.PointOnSphere`, incorporating
-    `to_shapely` method
-    """
-
-    pass
-
-
-class MultiPointOnSphere(pygplates.MultiPointOnSphere, GeometryOnSphere):
-    """GPlately equivalent of `pygplates.MultiPointOnSphere`, incorporating
-    `to_shapely` method
-    """
-
-    pass
-
-
-class PolylineOnSphere(pygplates.PolylineOnSphere, GeometryOnSphere):
-    """GPlately equivalent of `pygplates.PolylineOnSphere`, incorporating
-    `to_shapely` method
-    """
-
-    pass
-
-
-class PolygonOnSphere(pygplates.PolygonOnSphere, GeometryOnSphere):
-    """GPlately equivalent of `pygplates.PolygonOnSphere`, incorporating
-    `to_shapely` method
-    """
-
-    pass
-
-
-class LatLonPoint(pygplates.LatLonPoint):
-    """GPlately equivalent of `pygplates.LatLonPoint`, incorporating
-    `to_shapely` method
-    """
-
-    def to_shapely(self, central_meridian=0.0, tessellate_degrees=None):
-        return pygplates_to_shapely(
-            self,
-            central_meridian=central_meridian,
-            tessellate_degrees=tessellate_degrees,
-        )
+    raise TypeError("Invalid geometry type: " + str(type(geometry)))
 
 
 def pygplates_to_shapely(
@@ -337,16 +287,6 @@ def pygplates_to_shapely(
     return output_type(output_geoms)  # pyright: ignore[reportArgumentType]
 
 
-def _ensure_ccw(geometry):
-    if (
-        isinstance(geometry, _Polygon)
-        and geometry.exterior is not None
-        and not geometry.exterior.is_ccw
-    ):
-        return _Polygon(list(geometry.exterior.coords)[::-1])
-    return geometry
-
-
 def shapely_to_pygplates(geometry):
     """Convert one or more Shapely geometries to gplately format.
 
@@ -375,11 +315,11 @@ def shapely_to_pygplates(geometry):
     as an iterable of their component single-part geometries.
     """
     pygplates_conversion = {
-        _Point: PointOnSphere,
-        _MultiPoint: MultiPointOnSphere,
-        _LineString: PolylineOnSphere,
-        _LinearRing: PolygonOnSphere,
-        _Polygon: PolygonOnSphere,
+        _Point: _PointOnSphere,
+        _MultiPoint: _MultiPointOnSphere,
+        _LineString: _PolylineOnSphere,
+        _LinearRing: _PolygonOnSphere,
+        _Polygon: _PolygonOnSphere,
     }
 
     if isinstance(geometry, _BaseMultipartGeometry) and not isinstance(
@@ -491,6 +431,49 @@ def wrap_geometries(
         return out
 
 
+def geographic_circle(lon, lat, radius_deg, n_points=360):
+    """
+    Return (lons, lats) tracing a great-circle buffer.
+
+    A great-circle buffer around a point is the set of all points that are exactly
+    the same great-circle distance away from it — which traces out a circle on the sphere's surface.
+
+    Parameters
+    ----------
+    lon, lat    : centre coordinates in degrees
+    radius_deg  : radius in great-circle degrees (1° ≈ 111 km)
+    n_points    : number of vertices
+
+    Returns
+    -------
+    lons, lats : arrays of longitudes and latitudes of the circle vertices, in degrees
+    """
+    azimuths = np.linspace(0, 360, n_points, endpoint=False)
+    lons, lats = [], []
+    lat_r = np.radians(lat)
+    d_r = np.radians(radius_deg)
+
+    for az in azimuths:
+        az_r = np.radians(az)
+        out_lat = np.degrees(
+            np.arcsin(
+                np.sin(lat_r) * np.cos(d_r) + np.cos(lat_r) * np.sin(d_r) * np.cos(az_r)
+            )
+        )
+        out_lon = lon + np.degrees(
+            np.arctan2(
+                np.sin(az_r) * np.sin(d_r) * np.cos(lat_r),
+                np.cos(d_r) - np.sin(lat_r) * np.sin(np.radians(out_lat)),
+            )
+        )
+        lons.append(out_lon)
+        lats.append(out_lat)
+
+    lons.append(lons[0])
+    lats.append(lats[0])
+    return np.array(lons), np.array(lats)
+
+
 def _wrap_geometry(
     geometry,
     central_meridian=0.0,
@@ -598,53 +581,11 @@ def _contains_pygplates_geometries(i):
     return False
 
 
-__pdoc__ = {
-    "PointOnSphere": PointOnSphere.__doc__,
-    "PolygonOnSphere": PolygonOnSphere.__doc__,
-    "LatLonPoint": LatLonPoint.__doc__,
-    "MultiPointOnSphere": MultiPointOnSphere.__doc__,
-    "PolylineOnSphere": PolylineOnSphere.__doc__,
-}
-
-
-def geographic_circle(lon, lat, radius_deg, n_points=360):
-    """
-    Return (lons, lats) tracing a great-circle buffer.
-
-    A great-circle buffer around a point is the set of all points that are exactly
-    the same great-circle distance away from it — which traces out a circle on the sphere's surface.
-
-    Parameters
-    ----------
-    lon, lat    : centre coordinates in degrees
-    radius_deg  : radius in great-circle degrees (1° ≈ 111 km)
-    n_points    : number of vertices
-
-    Returns
-    -------
-    lons, lats : arrays of longitudes and latitudes of the circle vertices, in degrees
-    """
-    azimuths = np.linspace(0, 360, n_points, endpoint=False)
-    lons, lats = [], []
-    lat_r = np.radians(lat)
-    d_r = np.radians(radius_deg)
-
-    for az in azimuths:
-        az_r = np.radians(az)
-        out_lat = np.degrees(
-            np.arcsin(
-                np.sin(lat_r) * np.cos(d_r) + np.cos(lat_r) * np.sin(d_r) * np.cos(az_r)
-            )
-        )
-        out_lon = lon + np.degrees(
-            np.arctan2(
-                np.sin(az_r) * np.sin(d_r) * np.cos(lat_r),
-                np.cos(d_r) - np.sin(lat_r) * np.sin(np.radians(out_lat)),
-            )
-        )
-        lons.append(out_lon)
-        lats.append(out_lat)
-
-    lons.append(lons[0])
-    lats.append(lats[0])
-    return np.array(lons), np.array(lats)
+def _ensure_ccw(geometry):
+    if (
+        isinstance(geometry, _Polygon)
+        and geometry.exterior is not None
+        and not geometry.exterior.is_ccw
+    ):
+        return _Polygon(list(geometry.exterior.coords)[::-1])
+    return geometry
