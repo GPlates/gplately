@@ -6,7 +6,7 @@
 import os
 import sys
 
-os.environ["DISABLE_GPLATELY_DEV_WARNING"] = "true"
+os.environ["GPLATELY_DISABLE_DEV_WARNING"] = "true"
 import cartopy.crs as ccrs  # pyright: ignore[reportMissingImports]
 import matplotlib.pyplot as plt  # pyright: ignore[reportMissingModuleSource]
 from common import save_fig

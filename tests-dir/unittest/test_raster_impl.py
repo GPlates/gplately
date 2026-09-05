@@ -2,7 +2,7 @@ import os
 
 from gplately.plot import get_topo_cmap
 
-os.environ["DISABLE_GPLATELY_DEV_WARNING"] = "true"
+os.environ["GPLATELY_DISABLE_DEV_WARNING"] = "true"
 import cartopy.crs as ccrs
 import matplotlib.pyplot as plt
 import numpy as np

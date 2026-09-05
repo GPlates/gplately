@@ -4,14 +4,10 @@
 
 import os
 
-# pyright: reportMissingImports=false
-
 import pygmt
 
-os.environ["DISABLE_GPLATELY_DEV_WARNING"] = "true"
-
 from gplately.auxiliary import get_gplot, get_pygmt_basemap_figure
-from gplately.mapping.pygmt_plot import PygmtPlotEngine
+from gplately.plot.pygmt_plot import PygmtPlotEngine
 from gplately import Raster
 from plate_model_manager import PresentDayRasterManager
 

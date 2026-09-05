@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-export DISABLE_GPLATELY_DEV_WARNING=true
+export GPLATELY_DISABLE_DEV_WARNING=true
 
 BASEDIR=$(dirname "$0")
 
