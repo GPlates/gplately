@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import os
 
-os.environ["DISABLE_GPLATELY_DEV_WARNING"] = "true"
+os.environ["GPLATELY_DISABLE_DEV_WARNING"] = "true"
 
 from common import MODEL_REPO_DIR
 from plate_model_manager import PlateModelManager  # type: ignore

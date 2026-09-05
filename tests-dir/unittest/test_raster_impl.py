@@ -1,12 +1,14 @@
 import os
 
-os.environ["DISABLE_GPLATELY_DEV_WARNING"] = "true"
-import cartopy.crs as ccrs  # pyright: ignore[reportMissingImports]
-import matplotlib.pyplot as plt  # pyright: ignore[reportMissingModuleSource]
-import numpy as np  # pyright: ignore[reportMissingImports]
+from gplately.plot import get_topo_cmap
+
+os.environ["GPLATELY_DISABLE_DEV_WARNING"] = "true"
+import cartopy.crs as ccrs
+import matplotlib.pyplot as plt
+import numpy as np
 from common import MODEL_REPO_DIR, save_fig
 from plate_model_manager import PlateModelManager
-from matplotlib import image  # pyright: ignore[reportMissingModuleSource]
+from matplotlib import image
 from plate_model_manager import PresentDayRasterManager
 
 import gplately
@@ -109,6 +111,168 @@ def test_raster_clip_by_extent():
         vmax=200,
         vmin=0,
     )
+
+    plt.show()
+
+
+def test_raster_clip_by_polygons():
+    pmm_model = PlateModelManager().get_model("Zahirovic2022", data_dir=MODEL_REPO_DIR)
+    from gplately.utils.feature_filter import (
+        FeatureNameFilter,
+        PolygonAreaFilter,
+        filter_feature_collection,
+    )
+
+    # find the polygon feature with area greater than 7 million and named "Australia",
+    # which is the mainland of Australia, and use the Australia mainland polygon to clip a raster.
+    features = filter_feature_collection(
+        gplately.load_feature_collection(pmm_model.get_coastlines()),  # type: ignore
+        [
+            FeatureNameFilter(
+                ["Australia"],
+                exact_match=True,
+                case_sensitive=True,
+            ),
+            PolygonAreaFilter(7e6, reverse=False),
+        ],
+    )
+    assert (
+        len(features) == 1
+    ), f"Expected to find exactly one feature for the mainland of Australia, but found {len(features)} features."
+
+    australia_mainland_geometry = features[0].get_geometry()
+    etopo_downscaled = gplately.Raster(
+        data=image.imread(PresentDayRasterManager().get_raster("ETOPO1_tif")),
+        resample=(0.5, 0.5),
+        origin="upper",
+    )
+    topo15_downscaled = gplately.Raster(
+        data=PresentDayRasterManager().get_raster("topography"),
+        resample=(0.5, 0.5),
+    )
+
+    # now the austrlia is in a global map
+    raster_australia = etopo_downscaled.clip_by_polygons(
+        [australia_mainland_geometry], fill_value="lightblue"
+    )
+    raster_australia_15 = topo15_downscaled.clip_by_polygons(
+        [australia_mainland_geometry]
+    )
+
+    lat_lon = australia_mainland_geometry.to_lat_lon_array()
+    min_lat = np.min(lat_lon[:, 0])
+    max_lat = np.max(lat_lon[:, 0])
+    min_lon = np.min(lat_lon[:, 1])
+    max_lon = np.max(lat_lon[:, 1])
+    australia_extent = (
+        int(np.floor(min_lon)) - 1,
+        int(np.ceil(max_lon)) + 1,
+        int(np.floor(min_lat)) - 1,
+        int(np.ceil(max_lat)) + 1,
+    )
+
+    clipped_australia = raster_australia.clip_by_extent(australia_extent)
+    clipped_australia_15 = raster_australia_15.clip_by_extent(australia_extent)
+
+    fig, axs = plt.subplots(
+        2,
+        3,
+        figsize=(10, 8),
+        gridspec_kw={"width_ratios": [2, 2, 1]},
+        subplot_kw={"projection": ccrs.PlateCarree()},
+    )
+    fig.tight_layout()
+    ax_1 = axs[0, 0]
+    ax_2 = axs[0, 1]
+    ax_3 = axs[0, 2]
+    ax_4 = axs[1, 0]
+    ax_5 = axs[1, 1]
+    ax_6 = axs[1, 2]
+
+    # plot the original raster
+    ax_1.set_global()
+    etopo_downscaled.plot(ax=ax_1)
+    ax_1.set_title("Tif Raster")
+    gl = ax_1.gridlines(
+        draw_labels=True,
+        linewidth=1,
+        color="gray",
+        alpha=0.5,
+        linestyle="--",
+    )
+    gl.right_labels = False
+    gl.top_labels = False
+
+    # plot the clipped raster
+    ax_2.set_global()
+    raster_australia.plot(
+        ax=ax_2,
+    )
+    gl = ax_2.gridlines(
+        draw_labels=False,
+        linewidth=1,
+        color="gray",
+        alpha=0.5,
+        linestyle="--",
+    )
+
+    # plot the clipped raster with tighter extent
+    ax_3.set_extent(australia_extent)
+    clipped_australia.plot(ax=ax_3)
+
+    gl = ax_3.gridlines(
+        draw_labels=True,
+        linewidth=1,
+        color="gray",
+        alpha=0.5,
+        linestyle="--",
+    )
+    gl.left_labels = False
+    gl.top_labels = False
+
+    # plot the original raster
+    ax_4.set_global()
+    topo15_downscaled.plot(ax=ax_4, cmap=get_topo_cmap(), vmin=-10927, vmax=8726)
+    ax_4.set_title("netCDF Raster")
+    gl = ax_4.gridlines(
+        draw_labels=True,
+        linewidth=1,
+        color="gray",
+        alpha=0.5,
+        linestyle="--",
+    )
+    gl.right_labels = False
+    gl.top_labels = False
+
+    # plot the clipped raster
+    ax_5.set_global()
+    raster_australia_15.plot(ax=ax_5, cmap=get_topo_cmap(), vmin=-10927, vmax=8726)
+
+    gl = ax_5.gridlines(
+        draw_labels=False,
+        linewidth=1,
+        color="gray",
+        alpha=0.5,
+        linestyle="--",
+    )
+
+    # plot the clipped raster with tighter extent
+    ax_6.set_extent(australia_extent)
+    clipped_australia_15.plot(
+        ax=ax_6,
+        cmap=get_topo_cmap(),
+        vmin=-10927,
+        vmax=8726,
+    )
+    gl = ax_6.gridlines(
+        draw_labels=True,
+        linewidth=1,
+        color="gray",
+        alpha=0.5,
+        linestyle="--",
+    )
+    gl.left_labels = False
+    gl.top_labels = False
 
     plt.show()
 

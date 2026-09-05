@@ -9,7 +9,7 @@ in the feature_filter module, based on patterns from the 14-RuleBasedGPMLProcess
 import os
 import sys
 
-os.environ["DISABLE_GPLATELY_DEV_WARNING"] = "true"
+os.environ["GPLATELY_DISABLE_DEV_WARNING"] = "true"
 
 # Add parent directory to path for imports
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../.."))

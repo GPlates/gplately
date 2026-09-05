@@ -235,11 +235,13 @@ def test_pickle_reconstruction(model, muller_2019_model):
         # Since these are handled specially when pickling.
         assert pickled_model.rotation_model.get_rotation(
             time, plate_id
-        ) == m.rotation_model.get_rotation(time, plate_id)
-        assert pickled_model.topology_features and len(m.topology_features) == len(
+        ) == m.rotation_model.get_rotation(  # type: ignore
+            time, plate_id
+        )
+        assert pickled_model.topology_features and len(m.topology_features) == len(  # type: ignore
             pickled_model.topology_features
         )
-        assert pickled_model.static_polygons and len(m.static_polygons) == len(
+        assert pickled_model.static_polygons and len(m.static_polygons) == len(  # type: ignore
             pickled_model.static_polygons
         )
 

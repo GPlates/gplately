@@ -427,9 +427,7 @@ def test_point_array_time():
     os.unlink(rot_file)
 
     # Calculate where (0, 0) ends up at 50 Ma.
-    rot_0_to_50 = rot_model.get_rotation(
-        to_time=50, moving_plate_id=901, from_time=0
-    )
+    rot_0_to_50 = rot_model.get_rotation(to_time=50, moving_plate_id=901, from_time=0)
     pt_at_50 = rot_0_to_50 * pygplates.PointOnSphere(0, 0)
     pt_at_50_lat, pt_at_50_lon = pt_at_50.to_lat_lon()
 
@@ -742,7 +740,9 @@ def test_reconstruct_methods_array_time():
     times = np.array([0.0, 50.0, 0.0])
     plate_ids = np.array([901, 901, 902])
 
-    gpts = gplately.Points(model, lons, lats, time=times, plate_id=plate_ids, age=np.inf)
+    gpts = gplately.Points(
+        model, lons, lats, time=times, plate_id=plate_ids, age=np.inf
+    )
 
     # Scalar-time reference Points, one per point.
     refs = [
@@ -1093,7 +1093,7 @@ def test_reconstruct_points_func():
     for f in static_polygon_files:
         static_polygon_fc.add(pygplates.FeatureCollection(f))
 
-    ret = gplately.reverse_reconstruct_points_impl(
+    ret = gplately.reverse_reconstruct_points_with_model_files(
         lons=[62.6938, 126.7291],
         lats=[58.8486, -61.6615],
         rotation_model=pygplates.RotationModel(_model.get_rotation_model()),

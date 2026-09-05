@@ -14,7 +14,7 @@
 #    with this program; if not, write to Free Software Foundation, Inc.,
 #    51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
-
+from .utils import settings
 from .utils import dev_warning
 from .utils.check_pmm import (
     ensure_plate_model_manager_compatible,
@@ -48,6 +48,8 @@ del get_required_pmm_version
 from plate_model_manager import PlateModel, PlateModelManager, PresentDayRasterManager
 
 from . import auxiliary, ptt
+
+from .auxiliary import get_plate_reconstruction, get_gplot
 from .data_server import DataServer
 from .raster import Raster
 from .grids import (
@@ -58,9 +60,9 @@ from .grids import (
 )
 from .lib.reconstruct import (
     reconstruct_points,
-    reconstruct_points_impl,
+    reconstruct_points_with_model_files,
     reverse_reconstruct_points,
-    reverse_reconstruct_points_impl,
+    reverse_reconstruct_points_with_model_files,
 )
 from .plot.cartopy_plot import CartopyPlotEngine
 from .plot.plot_engine import PlotEngine
@@ -143,9 +145,12 @@ __all__ = [
     "default_netcdf_fill_value",
     "reconstruct_grid",
     "reconstruct_points",
+    "reconstruct_points_with_model_files",
     "ridge_spreading_rate",
     "subduction_convergence",
     "load_feature_collection",
+    "get_plate_reconstruction",
+    "get_gplot",
     # constants
     "EARTH_RADIUS",
 ]

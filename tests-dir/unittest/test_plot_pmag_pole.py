@@ -9,7 +9,7 @@ import sys
 from gplately.mapping.cartopy_plot import _create_a_basic_cartopy_ax
 from gplately.mapping.pygmt_plot import PygmtPlotEngine
 
-os.environ["DISABLE_GPLATELY_DEV_WARNING"] = "true"
+os.environ["GPLATELY_DISABLE_DEV_WARNING"] = "true"
 # pyright: reportMissingImports=false
 
 import cartopy.crs as ccrs  # pyright: ignore[reportMissingImports]

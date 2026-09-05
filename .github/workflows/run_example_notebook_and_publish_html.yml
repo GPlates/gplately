@@ -1,26 +1,25 @@
-# This workflow runs selected Jupyter notebooks (the numbered tutorial
-# notebooks, e.g. 01-GettingStarted..15-ConvertGridReferenceFrame), converts
-# them to HTML, and publishes the HTML files to the gh-pages branch.
+# This workflow runs selected Jupyter notebooks under Notebooks/Examples,
+# converts them to HTML, and publishes the HTML files to the gh-pages branch.
 #
-# The Examples/* notebooks have their own, near-identical workflow:
-# run_example_notebook_and_publish_html.yml. They were split out into a
-# separate workflow because a single workflow_dispatch event may define at
-# most 25 `inputs`, and the combined notebook + Examples list exceeded that.
+# The numbered tutorial notebooks (01-GettingStarted etc.) have their own,
+# near-identical workflow: run_notebook_and_publish_html.yml. They were split
+# out into separate workflows because a single workflow_dispatch event may
+# define at most 25 `inputs`, and the combined notebook + Examples list
+# exceeded that.
 #
 # NOTE ON THE 6-HOUR JOB LIMIT:
 # GitHub Actions caps every individual JOB at 6 hours - this cannot be
 # configured or bypassed on GitHub-hosted runners. There is, however, no
 # limit on how many jobs a workflow can run, and independent jobs run in
 # parallel. So instead of running every selected notebook sequentially in
-# one long job (which could exceed 6h if e.g. 08 + 12 + 13 are all
-# selected), this workflow:
+# one long job, this workflow:
 #   1. "prepare"  - figures out which notebooks were selected
 #   2. "execute"  - runs each selected notebook in its OWN matrix job
 #                   (so each job only ever needs to finish ONE notebook)
 #   3. "deploy"   - collects the HTML output from every matrix job and
 #                   publishes it all to gh-pages in a single commit
 
-name: Run Notebooks and Publish HTML
+name: Run Example Notebooks and Publish HTML
 
 on:
   workflow_dispatch:
@@ -29,64 +28,44 @@ on:
         description: "all"
         type: boolean
         default: false
-      notebook_01_getting_started:
-        description: "01-GettingStarted"
+      notebook_examples_01_hello_world:
+        description: "Examples/01-HelloWorld"
         type: boolean
         default: false
-      notebook_02_plate_reconstructions:
-        description: "02-PlateReconstructions"
+      notebook_examples_02_plate_model_manager:
+        description: "Examples/02-PlateModelManager"
         type: boolean
         default: false
-      notebook_03_working_with_points:
-        description: "03-WorkingWithPoints"
+      notebook_examples_03_plot_with_cartopy:
+        description: "Examples/03-PlotWithCartopy"
         type: boolean
         default: false
-      notebook_04_velocity_basics:
-        description: "04-VelocityBasics"
+      notebook_examples_04_plot_with_pygmt:
+        description: "Examples/04-PlotWithPyGMT"
         type: boolean
         default: false
-      notebook_05_working_with_feature_geometries:
-        description: "05-WorkingWithFeatureGeometries"
+      notebook_examples_05_reconstruct_files:
+        description: "Examples/05-ReconstructFiles"
         type: boolean
         default: false
-      notebook_06_rasters:
-        description: "06-Rasters"
+      notebook_examples_06_load_plate_model_from_files:
+        description: "Examples/06-LoadPlateModelFromFiles"
         type: boolean
         default: false
-      notebook_07_working_with_plate_tectonic_stats:
-        description: "07-WorkingWithPlateTectonicStats"
+      notebook_examples_07_save_reconstructed_data:
+        description: "Examples/07-SaveReconstructedData"
         type: boolean
         default: false
-      notebook_08_predicting_slab_flux:
-        description: "08-PredictingSlabFlux"
+      notebook_examples_08_use_auxiliary_functions:
+        description: "Examples/08-UseAuxiliaryFunctions"
         type: boolean
         default: false
-      notebook_09_creating_motion_paths_and_flowlines:
-        description: "09-CreatingMotionPathsAndFlowlines"
+      notebook_examples_09_icosahedron_mesh:
+        description: "Examples/09-IcosahedronMesh"
         type: boolean
         default: false
-      notebook_10_seafloor_grids:
-        description: "10-SeafloorGrids"
-        type: boolean
-        default: false
-      notebook_11_andes_fluxes:
-        description: "11-AndesFluxes"
-        type: boolean
-        default: false
-      notebook_12_mutschler_world_porphyry_copper_deposits_regional_plots:
-        description: "12-MutschlerWorldPorphyryCopperDepositsRegionalPlots"
-        type: boolean
-        default: false
-      notebook_13_reconstructing_zircon_data:
-        description: "13-ReconstructingZirconData"
-        type: boolean
-        default: false
-      notebook_14_rule_based_gpml_processing_pipeline:
-        description: "14-RuleBasedGPMLProcessingPipeline"
-        type: boolean
-        default: false
-      notebook_15_convert_grid_reference_frame:
-        description: "15-ConvertGridReferenceFrame"
+      notebook_examples_10_color_map_and_color_palette_table:
+        description: "Examples/10-ColorMapAndColorPaletteTable"
         type: boolean
         default: false
 
@@ -111,21 +90,6 @@ jobs:
           set -euo pipefail
 
           declare -A map=(
-            [notebook_01_getting_started]="01-GettingStarted"
-            [notebook_02_plate_reconstructions]="02-PlateReconstructions"
-            [notebook_03_working_with_points]="03-WorkingWithPoints"
-            [notebook_04_velocity_basics]="04-VelocityBasics"
-            [notebook_05_working_with_feature_geometries]="05-WorkingWithFeatureGeometries"
-            [notebook_06_rasters]="06-Rasters"
-            [notebook_07_working_with_plate_tectonic_stats]="07-WorkingWithPlateTectonicStats"
-            [notebook_08_predicting_slab_flux]="08-PredictingSlabFlux"
-            [notebook_09_creating_motion_paths_and_flowlines]="09-CreatingMotionPathsAndFlowlines"
-            [notebook_10_seafloor_grids]="10-SeafloorGrids"
-            [notebook_11_andes_fluxes]="11-AndesFluxes"
-            [notebook_12_mutschler_world_porphyry_copper_deposits_regional_plots]="12-MutschlerWorldPorphyryCopperDepositsRegionalPlots"
-            [notebook_13_reconstructing_zircon_data]="13-ReconstructingZirconData"
-            [notebook_14_rule_based_gpml_processing_pipeline]="14-RuleBasedGPMLProcessingPipeline"
-            [notebook_15_convert_grid_reference_frame]="15-ConvertGridReferenceFrame"
             [notebook_examples_01_hello_world]="Examples/01-HelloWorld"
             [notebook_examples_02_plate_model_manager]="Examples/02-PlateModelManager"
             [notebook_examples_03_plot_with_cartopy]="Examples/03-PlotWithCartopy"
@@ -141,21 +105,16 @@ jobs:
           # Preserve a stable, human-friendly order (bash associative arrays
           # don't iterate in insertion order, so list keys explicitly).
           order=(
-            notebook_01_getting_started
-            notebook_02_plate_reconstructions
-            notebook_03_working_with_points
-            notebook_04_velocity_basics
-            notebook_05_working_with_feature_geometries
-            notebook_06_rasters
-            notebook_07_working_with_plate_tectonic_stats
-            notebook_08_predicting_slab_flux
-            notebook_09_creating_motion_paths_and_flowlines
-            notebook_10_seafloor_grids
-            notebook_11_andes_fluxes
-            notebook_12_mutschler_world_porphyry_copper_deposits_regional_plots
-            notebook_13_reconstructing_zircon_data
-            notebook_14_rule_based_gpml_processing_pipeline
-            notebook_15_convert_grid_reference_frame
+            notebook_examples_01_hello_world
+            notebook_examples_02_plate_model_manager
+            notebook_examples_03_plot_with_cartopy
+            notebook_examples_04_plot_with_pygmt
+            notebook_examples_05_reconstruct_files
+            notebook_examples_06_load_plate_model_from_files
+            notebook_examples_07_save_reconstructed_data
+            notebook_examples_08_use_auxiliary_functions
+            notebook_examples_09_icosahedron_mesh
+            notebook_examples_10_color_map_and_color_palette_table
           )
 
           all_selected=$(echo "$INPUTS_JSON" | jq -r '.notebook_all')
@@ -211,44 +170,6 @@ jobs:
         run: |
           pip install . --no-binary :all: --no-cache-dir --no-dependencies
 
-      - uses: actions/cache@v4
-        id: cache-data
-        if: matrix.notebook == '12-MutschlerWorldPorphyryCopperDepositsRegionalPlots'
-        with:
-          path: Notebooks/12-GPlately-Regional-Plots-Source-Data
-          key: 12-GPlately-Regional-Plots-Source-Data
-
-      - name: Download data
-        if: matrix.notebook == '12-MutschlerWorldPorphyryCopperDepositsRegionalPlots' && steps.cache-data.outputs.cache-hit != 'true'
-        run: |
-          set -euo pipefail
-
-          target_dir="Notebooks/12-GPlately-Regional-Plots-Source-Data"
-          tmp_dir="$(mktemp -d)"
-          zip_path="${tmp_dir}/12-GPlately-Regional-Plots-data.zip"
-
-          rm -rf "${target_dir}"
-          mkdir -p "${target_dir}"
-
-          curl -fL "https://repo.gplates.org/webdav/gplately/12-GPlately-Regional-Plots-data.zip" -o "${zip_path}"
-          unzip -q "${zip_path}" -d "${tmp_dir}/unzipped"
-
-          extracted_source_data_dir="$(find "${tmp_dir}/unzipped" -type d -name source_data | head -n 1)"
-
-          if [ -z "${extracted_source_data_dir}" ]; then
-            echo "Error: could not find source_data directory in downloaded archive." >&2
-            exit 1
-          fi
-
-          cp -a "${extracted_source_data_dir}/." "${target_dir}/"
-
-          if [ ! -f "${target_dir}/Mutschler_WorldPorphyryCopperDeposits_GPlates.xlsx" ]; then
-            echo "Error: required deposits workbook was not found in ${extracted_source_data_dir}." >&2
-            exit 1
-          fi
-
-          echo "Data downloaded and extracted to ${target_dir}."
-
       - name: Execute notebook
         run: |
           chmod +x scripts/run_notebooks.sh
@@ -257,7 +178,8 @@ jobs:
       - name: Sanitize artifact name
         id: artifact-name
         run: |
-          # actions/upload-artifact rejects "/" in the artifact name.
+          # actions/upload-artifact rejects "/" in the artifact name, and
+          # notebook ids under Examples/ (e.g. Examples/01-HelloWorld) contain one.
           safe_name=$(echo "${{ matrix.notebook }}" | tr '/' '-')
           echo "name=$safe_name" >> "$GITHUB_OUTPUT"
 

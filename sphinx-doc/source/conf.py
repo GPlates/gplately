@@ -6,6 +6,11 @@
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
+import gplately
+
+version = gplately.__version__
+release = ".".join(version.split(".")[:2])
+
 project = "gplately"
 copyright = "2023-2026, The University of Sydney"
 author = "EarthByte Group"
@@ -48,3 +53,27 @@ autodoc_default_options = {
     "private-members": False,
     "show-inheritance": True,
 }
+
+
+def autodoc_skip_member(app, what, name, obj, skip, options):
+    """
+    app     - the Sphinx application object
+    what    - the type of the parent: 'module', 'class', 'exception', 'function', 'method', 'attribute'
+    name    - the name of the member (e.g. 'generate', '__init__')
+    obj     - the member object itself
+    skip    - bool: whether Sphinx's default logic decided to skip it
+    options - the options given to the directive (autodoc_default_options etc.)
+
+    Return True to skip (exclude) the member, False to include it,
+    or None to let Sphinx's default behavior stand.
+    """
+    if name in {
+        "CURRENT_LATITUDES_KEY",
+        "CURRENT_LONGITUDES_KEY",
+    }:
+        return True
+    return None
+
+
+def setup(app):
+    app.connect("autodoc-skip-member", autodoc_skip_member)

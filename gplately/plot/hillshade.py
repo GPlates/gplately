@@ -158,7 +158,7 @@ def hillshade(data, scale=10.0, azdeg=165.0, altdeg=45.0):
 
 
 def get_topo_cmap():
-    """Return a topography/bathymetry colormap used by gplately plots."""
+    """Return a LinearSegmentedColormap for topography/bathymetry(vmin=-10927, vmax=8726)."""
     colors = [
         (-10927, [10, 0, 121]),
         (-10500, [26, 0, 137]),

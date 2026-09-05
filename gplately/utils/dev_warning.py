@@ -16,13 +16,11 @@
 #
 
 import logging, os, warnings
+from . import settings
 
 logger = logging.getLogger("gplately")
 
-disable_dev_warning = (
-    "DISABLE_GPLATELY_DEV_WARNING" in os.environ
-    and os.environ["DISABLE_GPLATELY_DEV_WARNING"].lower() == "true"
-)
+disable_dev_warning = settings.disable_dev_warning
 
 
 def print_dev_warning(version: str):
@@ -35,7 +33,7 @@ class GPlatelyDevWarning(UserWarning):
 
 
 def _warn_if_dev_version(version: str) -> None:
-    if os.environ.get("DISABLE_GPLATELY_DEV_WARNING", "").lower() == "true":
+    if os.environ.get("GPLATELY_DISABLE_DEV_WARNING", "").lower() == "true":
         return
 
     message = f"""\
@@ -50,12 +48,12 @@ def _warn_if_dev_version(version: str) -> None:
         with this GPlately build:
             https://github.com/gplates/plate-model-manager
 
-        To silence this warning, set the DISABLE_GPLATELY_DEV_WARNING
+        To silence this warning, set the GPLATELY_DISABLE_DEV_WARNING
         environment variable to "true" before importing GPlately:
 
-            Python:      os.environ["DISABLE_GPLATELY_DEV_WARNING"] = "true"
-            bash/zsh:    export DISABLE_GPLATELY_DEV_WARNING=true
-            PowerShell:  $env:DISABLE_GPLATELY_DEV_WARNING = "true"
+            Python:      os.environ["GPLATELY_DISABLE_DEV_WARNING"] = "true"
+            bash/zsh:    export GPLATELY_DISABLE_DEV_WARNING=true
+            PowerShell:  $env:GPLATELY_DISABLE_DEV_WARNING = "true"
 
         To make this permanent, add the shell command above to your shell
         startup file (e.g. .bashrc, .zshrc, or your PowerShell profile).

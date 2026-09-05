@@ -24,6 +24,7 @@ import warnings
 from multiprocessing import cpu_count
 from typing import List, Tuple, Union, cast, overload, Literal
 import pygmt
+from shapely import polygons
 from xarray.core.types import InterpOptions
 
 import matplotlib.pyplot as plt
@@ -90,7 +91,7 @@ class Raster(object):
         data_variable_name: str = "",
         **kwargs,
     ):
-        """Constructor. Create a :class:`Raster` object.
+        """Create a :class:`Raster` object.
 
         Parameters
         ----------
@@ -319,13 +320,17 @@ class Raster(object):
         return self._data
 
     @data.setter
-    def data(self, z):
-        z = np.array(z)
-        if z.shape != np.shape(self.data):
-            raise ValueError(
-                f"Shape mismatch error: old dimensions are {np.shape(self.data)}, new dimensions are {z.shape}"
+    def data(self, z, extent=None):
+        _old_data_shape = np.shape(self.data)
+        self._data = np.asarray(z)
+        if self._data.shape != _old_data_shape:
+            logger.warning(
+                f"The new data shape {self._data.shape} is different from the old shape {_old_data_shape}"
             )
-        self._data = z
+            # recalculate the longitude and latitude coordinates based on the new extent if provided, otherwise use the normalized extent
+            self.extent = extent if extent is not None else self.normalized_extent
+        if extent is not None:
+            self.extent = extent
         self._invalidate_spatial_cache()
 
     @property
@@ -381,6 +386,18 @@ class Raster(object):
             float(self.lats[0]),
             float(self.lats[-1]),
         )
+
+    @extent.setter
+    def extent(self, new_extent: Tuple[float, float, float, float]):
+        """Set a new spatial extent for the raster data. The extent is specified as a 4-tuple ``(x0, x1, y0, y1)``. If y0 < y1, the origin is the lower-left corner; else the upper-left."""
+        if new_extent[3] < new_extent[2]:
+            self.lats, self.lons = self._get_lats_lons_from_extent_origin(
+                new_extent, "upper"
+            )
+        else:
+            self.lats, self.lons = self._get_lats_lons_from_extent_origin(
+                new_extent, "lower"
+            )
 
     @property
     def longitude_convention(self) -> LongitudeConvention:
@@ -920,6 +937,7 @@ class Raster(object):
         return new_obj
 
     def is_global(self) -> bool:
+        """Check if the raster covers the whole globe."""
         if not math.isclose(abs(self.lats[-1] - self.lats[0]), 180):
             return False
 
@@ -1378,7 +1396,7 @@ class Raster(object):
             return self
         else:
             return Raster(
-                data,
+                np.asarray(data, dtype=self.data.dtype),
                 self.plate_reconstruction,
                 resampled_extent,
                 time=self.time,
@@ -1501,7 +1519,7 @@ class Raster(object):
                 )
 
     def fill_NaNs(self, inplace=False, return_array=False):
-        """Deprecated. Use :meth:`fill_gaps` instead. This method will be removed in a future version of the library."""
+        """Deprecated, use :meth:`fill_gaps` instead. This method will be removed in a future version of the library."""
         r = self.fill_gaps(inplace=inplace, method="nearest")
         if return_array:
             return r.data
@@ -1631,6 +1649,7 @@ class Raster(object):
                 raise ValueError(
                     "`grid_spacing_degrees` must be a positive finite number."
                 )
+            # import here to avoid circular import issues
             from .grids import num_grid_points as _num_grid_points
 
             resX = _num_grid_points(
@@ -1682,6 +1701,7 @@ class Raster(object):
         return Raster(data=Z, extent=extent_globe)
 
     def sample_values(self, *, lons, lats, method="linear"):
+        """Sample grid data at a set of locations. This function is superseded by :meth:`Raster.query` and is kept for backward compatibility."""
         order = {
             "nearest": 0,
             "linear": 1,
@@ -1816,7 +1836,7 @@ class Raster(object):
         Returns
         --------
         Raster
-            The clipped grid.
+            The clipped raster.
         """
         if (
             extent[0] >= extent[1]
@@ -1827,56 +1847,126 @@ class Raster(object):
             or extent[3] > 90
         ):
             raise Exception(f"Invalid extent: {extent}")
+
+        original_extent = self.normalized_extent
+
         if (
-            extent[0] < self.extent[0]
-            or extent[1] > self.extent[1]
-            or extent[2] < self.extent[2]
-            or extent[3] > self.extent[3]
+            extent[0] < original_extent[0]
+            or extent[1] > original_extent[1]
+            or extent[2] < original_extent[2]
+            or extent[3] > original_extent[3]
         ):
             raise Exception(
-                f"The given extent is out of scope. {extent} -- {self.extent}"
+                f"The given extent is out of scope. {extent} -- {original_extent}"
             )
-        y_len, x_len = self.data.shape
+        y_len, x_len = self.data.shape[0:2]
         logger.debug(f"the shape of raster data x:{x_len} y:{y_len}")
 
         x0 = math.floor(
-            (extent[0] - self.extent[0])
-            / (self.extent[1] - self.extent[0])
+            (extent[0] - original_extent[0])
+            / (original_extent[1] - original_extent[0])
             * (x_len - 1)
         )
         x1 = math.ceil(
-            (extent[1] - self.extent[0])
-            / (self.extent[1] - self.extent[0])
+            (extent[1] - original_extent[0])
+            / (original_extent[1] - original_extent[0])
             * (x_len - 1)
         )
-        # print(x0, x1)
         y0 = math.floor(
-            (extent[2] - self.extent[2])
-            / (self.extent[3] - self.extent[2])
+            (extent[2] - original_extent[2])
+            / (original_extent[3] - original_extent[2])
             * (y_len - 1)
         )
         y1 = math.ceil(
-            (extent[3] - self.extent[2])
-            / (self.extent[3] - self.extent[2])
+            (extent[3] - original_extent[2])
+            / (original_extent[3] - original_extent[2])
             * (y_len - 1)
         )
-        # print(y0, y1)
         new_extent = (
-            x0 / (x_len - 1) * (self.extent[1] - self.extent[0]) - 180,
-            x1 / (x_len - 1) * (self.extent[1] - self.extent[0]) - 180,
-            y0 / (y_len - 1) * (self.extent[3] - self.extent[2]) - 90,
-            y1 / (y_len - 1) * (self.extent[3] - self.extent[2]) - 90,
+            x0 / (x_len - 1) * (original_extent[1] - original_extent[0]) - 180,
+            x1 / (x_len - 1) * (original_extent[1] - original_extent[0]) - 180,
+            y0 / (y_len - 1) * (original_extent[3] - original_extent[2]) - 90,
+            y1 / (y_len - 1) * (original_extent[3] - original_extent[2]) - 90,
         )
-        # print(new_extent)
-        # print(self.data[y0 : y1 + 1, x0 : x1 + 1].shape)
-        return Raster(
-            data=self.data[y0 : y1 + 1, x0 : x1 + 1],
-            extent=new_extent,
+        ret = self.copy()
+        ret.lats, ret.lons = ret._get_lats_lons_from_extent_origin(new_extent, "lower")
+        if self.origin == "upper":
+            ret.data = np.flipud(self.data)[y0 : y1 + 1, x0 : x1 + 1]
+            ret.data = ret.data[::-1]
+            ret.lats = ret.lats[::-1]
+        else:
+            ret.data = self.data[y0 : y1 + 1, x0 : x1 + 1]
+
+        return ret
+
+    def clip_by_polygons(
+        self, polygons: list[_PolygonOnSphere], fill_value=None
+    ) -> "Raster":
+        """Clip the raster according to a given list of polygons defined on a sphere.
+
+        Parameters
+        ----------
+        polygons : list of pygplates.PolygonOnSphere
+            A list of polygons defined on a sphere.
+        fill_value : int, float, tuple, or None, optional
+            The value to use for data outside the clipped area. If None, the default fill value is used.
+
+        Returns
+        -------
+        Raster
+            The clipped raster.
+        """
+        for polygon in polygons:
+            if not isinstance(polygon, _PolygonOnSphere):
+                raise TypeError(
+                    f"Expected a list of pygplates.PolygonOnSphere objects, got {type(polygon)}"
+                )
+
+        shapely_polygons = pygplates_to_shapely(
+            polygons,
+            tessellate_degrees=0.1,
+        )
+        if not isinstance(shapely_polygons, list):
+            shapely_polygons = [shapely_polygons]
+
+        nx = len(self.lons)
+        ny = len(self.lats)
+        minx, maxx, miny, maxy = self.normalized_extent
+
+        polygon_mask = _rasterize(
+            shapes=zip(shapely_polygons, [1] * len(shapely_polygons)),
+            out_shape=(ny, nx),
+            fill=0,
+            dtype=np.uint8,
+            merge_alg=MergeAlg.replace,
+            transform=_from_bounds(minx, miny, maxx, maxy, nx, ny),
+        )
+        if polygon_mask is not None:
+            polygon_mask = polygon_mask.astype(bool)
+        else:
+            raise ValueError("Failed to rasterize the polygons.")
+
+        if self.origin == "lower":
+            polygon_mask = np.flipud(polygon_mask)
+
+        if self.data.ndim == 3:
+            polygon_mask = polygon_mask[..., np.newaxis]
+
+        fill_value = self._parse_fill_value(fill_value)
+        clipped_data = np.where(
+            polygon_mask,
+            self.data,
+            cast(
+                int | float | complex | np.generic,
+                fill_value,
+            ),
         )
 
-    def clip_by_polygons(self, polygons: list[_PolygonOnSphere]):
-        """TODO:"""
-        pass
+        ret = self.copy()
+        ret.data = np.asarray(clipped_data, dtype=self.data.dtype)
+        ret.extent = self.extent
+        ret.fill_value = fill_value
+        return ret
 
     def to_longitude_positive_360(self, inplace=False):
         """Convert a grid's longitude coordinates to the [0, 360] convention."""
@@ -1924,7 +2014,7 @@ class Raster(object):
             return new_raster
 
     def imshow(self, ax=None, projection=None, **kwargs):
-        """Deprecated. Use :meth:`plot` instead. Plot the raster data using matplotlib."""
+        """Deprecated, use :meth:`plot` instead. Plot the raster data using matplotlib."""
         for kw in ("origin", "extent"):
             if kw in kwargs.keys():
                 raise TypeError(
@@ -3314,12 +3404,12 @@ class Raster(object):
         - 2D rasters return a scalar.
         - 3D rasters return a tuple with one value per channel.
         - ``None`` chooses a dtype-aware default:
-          - 2D integer: dtype minimum (signed) or maximum (unsigned)
-          - 2D float/complex: ``np.nan``
-          - 3D integer: all zeros
-          - 3D float/complex: all zeros as float
+        - 2D integer: dtype minimum (signed) or maximum (unsigned)
+        - 2D float/complex: ``np.nan``
+        - 3D integer: all zeros
+        - 3D float/complex: all zeros as float
         - Color strings (for example ``"black"`` or ``"#ff0000"``) are
-          supported for 3D rasters only and converted through RGBA.
+        supported for 3D rasters only and converted through RGBA.
         - For RGBA rasters, RGB input is accepted and an opaque alpha is appended.
         - For 3D rasters, scalar numeric input is broadcast to all channels.
 
@@ -3343,96 +3433,113 @@ class Raster(object):
         """
         grid = self.data
         dtype = grid.dtype
+        kind = dtype.kind
 
         if grid.ndim not in (2, 3):
             raise ValueError(
                 f"Unsupported raster dimensionality {grid.ndim}; expected 2D or 3D data."
             )
 
-        expected_size = 1 if grid.ndim == 2 else int(grid.shape[2])
-        dtype_kind = dtype.kind
+        n_channels = 1 if grid.ndim == 2 else int(grid.shape[2])
 
+        # --- single source of truth for casting a scalar into the raster's dtype ---
         def _coerce_scalar(value):
-            if dtype_kind == "b":
+            if kind == "b":
                 return bool(value)
-            if dtype_kind in ("i", "u"):
+
+            if kind in ("i", "u"):
                 if isinstance(value, numbers.Real) and not math.isfinite(value):
                     raise ValueError(
-                        f"Non-finite fill_value {value} is not allowed for integer dtype {dtype}."
+                        f"Non-finite fill_value {value!r} is not allowed for integer dtype {dtype}."
                     )
                 info = np.iinfo(dtype)
                 ivalue = int(np.rint(float(value)))
                 return int(np.clip(ivalue, info.min, info.max))
-            if dtype_kind == "f":
+
+            if kind == "f":
                 return float(value)
-            if dtype_kind == "c":
+
+            raise ValueError(f"Unsupported dtype for fill_value normalization: {dtype}")
+
+        # --- normalize any array-like into exactly `n` coerced values ---
+        def _coerce_sequence(
+            values, n, *, allow_broadcast=True, allow_rgb_to_rgba=False
+        ):
+            arr = np.asarray(values).ravel()
+
+            if allow_rgb_to_rgba and n == 4 and arr.size == 3:
+                alpha = np.iinfo(dtype).max if kind in ("i", "u") else 1.0
+                arr = np.append(arr, alpha)
+            elif allow_broadcast and arr.size == 1:
+                arr = np.repeat(arr, n)
+
+            if arr.size != n:
+                raise ValueError(
+                    f"Shape mismatch: fill_value size {arr.size}, expected {n}, "
+                    f"grid shape {grid.shape}."
+                )
+
+            return tuple(_coerce_scalar(v) for v in arr)
+
+        # --- None: dtype-aware default ---
+        if fill_value is None:
+            if grid.ndim == 2:
+                if kind == "i":
+                    return np.iinfo(dtype).min
+                if kind == "u":
+                    return np.iinfo(dtype).max
+                return np.nan  # float/complex
+            base = 0 if kind in ("i", "u", "b") else 0.0
+            return tuple([base] * n_channels)
+
+        # --- color string: only valid for 3D (RGB/RGBA) rasters ---
+        if isinstance(fill_value, str):
+            if grid.ndim == 2:
+                raise TypeError(f"Invalid fill_value for 2D grid: {fill_value!r}")
+            if kind == "c":
                 raise ValueError(
                     "Complex raster dtypes are not supported for fill_value normalization."
                 )
-            raise ValueError(f"Unsupported dtype for fill_value normalization: {dtype}")
-
-        if fill_value is None:
-            if grid.ndim == 2:
-                if dtype_kind == "i":
-                    fill_value = np.iinfo(dtype).min
-                elif dtype_kind == "u":
-                    fill_value = np.iinfo(dtype).max
-                else:
-                    fill_value = np.nan
-            else:
-                base = 0 if dtype_kind in ("i", "u", "b") else 0.0
-                fill_value = tuple([base] * expected_size)
-            return fill_value
-
-        if isinstance(fill_value, str):
-            if grid.ndim == 2:
-                raise TypeError(f"Invalid fill_value for 2D grid: {fill_value}")
 
             import matplotlib.colors
 
             try:
-                rgba = np.asarray(matplotlib.colors.to_rgba(fill_value), dtype=float)
+                rgba = matplotlib.colors.to_rgba(fill_value)  # 4 floats in [0, 1]
             except ValueError as exc:
-                raise ValueError(f"Invalid color specification: {fill_value}") from exc
-
-            if dtype_kind in ("i", "u"):
-                max_value = np.iinfo(dtype).max
-                rgba = np.rint(rgba * max_value)
-            elif dtype_kind == "b":
-                rgba = rgba >= 0.5
-
-            return tuple(rgba[:expected_size])
-
-        if grid.ndim == 2:
-            if hasattr(fill_value, "__len__") and not isinstance(
-                fill_value, (str, bytes)
-            ):
-                fill_array = np.asarray(fill_value)
-                if fill_array.size != 1:
-                    raise ValueError(
-                        f"Shape mismatch: fill_value size: {fill_array.size}, expected: 1, grid shape: {np.shape(grid)}"
-                    )
-                fill_value = fill_array.reshape(-1)[0]
-            return _coerce_scalar(fill_value)
-
-        # From here on: 3D raster handling.
-        if np.isscalar(fill_value):
-            fill_items = [fill_value] * expected_size
-        else:
-            fill_array = np.asarray(fill_value).ravel()
-            if expected_size == 4 and fill_array.size == 3:
-                alpha_default = np.iinfo(dtype).max if dtype_kind in ("i", "u") else 1.0
-                fill_array = np.append(fill_array, alpha_default)
-            elif fill_array.size == 1:
-                fill_array = np.repeat(fill_array, expected_size)
-
-            if fill_array.size != expected_size:
                 raise ValueError(
-                    f"Shape mismatch: fill_value size: {fill_array.size}, expected: {expected_size}, grid shape: {np.shape(grid)}"
-                )
-            fill_items = fill_array.tolist()
+                    f"Invalid color specification: {fill_value!r}"
+                ) from exc
 
-        return tuple(_coerce_scalar(v) for v in fill_items)
+            # Scale [0, 1] floats up to dtype range before coercing (uint8 "blue"
+            # should become (0, 0, 255, 255), not (0., 0., 1., 1.)).
+            if kind in ("i", "u"):
+                scale = np.iinfo(dtype).max
+                rgba = [v * scale for v in rgba]
+
+            return _coerce_sequence(
+                rgba[:n_channels], n_channels, allow_broadcast=False
+            )
+
+        if kind == "c":
+            raise ValueError(
+                "Complex raster dtypes are not supported for fill_value normalization."
+            )
+
+        # --- 2D: must reduce to a single scalar ---
+        if grid.ndim == 2:
+            if np.isscalar(fill_value):
+                return _coerce_scalar(fill_value)
+            return _coerce_sequence(fill_value, 1, allow_broadcast=False)[0]
+
+        # --- 3D: broadcast scalar, or match/expand a sequence ---
+        if np.isscalar(fill_value):
+            return _coerce_sequence(
+                [fill_value] * n_channels, n_channels, allow_broadcast=False
+            )
+
+        return _coerce_sequence(
+            fill_value, n_channels, allow_broadcast=True, allow_rgb_to_rgba=True
+        )
 
     def _validate_data(self):
         _data = self.data
