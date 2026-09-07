@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euo pipefail  # Exit on error, undefined vars, pipe failures
 
-export DISABLE_GPLATELY_DEV_WARNING=true
+export GPLATELY_DISABLE_DEV_WARNING=true
 
 TEST_DATA_DIR="./test-output/test-feature-filter-data"
 mkdir -p "$TEST_DATA_DIR"
@@ -82,5 +82,7 @@ gplately filter "$IN_FILE" "$TEST_DATA_DIR/basins.gpmlz" -t gpml:Basin
 echo "Test 12: Filter by multiple feature types..."
 gplately filter "$IN_FILE" "$TEST_DATA_DIR/basin_islandarc.gpmlz" -t "gpml:IslandArc|gpml:Basin"
 
+rm -rf "$TEST_DATA_DIR"
+
 echo ""
-echo "✓ All tests passed successfully!"
+echo "✓ All feature filter tests passed successfully!"

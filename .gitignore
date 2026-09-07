@@ -11,3 +11,12 @@ sphinx-doc/source/generated/
 Notebooks/source_data/
 notebook-html/
 .vscode/settings.json
+__MACOSX/
+Notebooks/12-GPlately-Regional-Plots-Source-Data/
+*AgeGridInput*
+*plate-model-repo*
+*present-day-rasters*
+*gplately-example-data*
+Notebooks/WorkflowData/
+*data-cache*
+*unittest-data*

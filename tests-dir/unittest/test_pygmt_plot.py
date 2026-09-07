@@ -4,14 +4,10 @@
 
 import os
 
-# pyright: reportMissingImports=false
-
 import pygmt
 
-os.environ["DISABLE_GPLATELY_DEV_WARNING"] = "true"
-
 from gplately.auxiliary import get_gplot, get_pygmt_basemap_figure
-from gplately.mapping.pygmt_plot import PygmtPlotEngine
+from gplately.plot.pygmt_plot import PygmtPlotEngine
 from gplately import Raster
 from plate_model_manager import PresentDayRasterManager
 
@@ -79,10 +75,13 @@ if __name__ == "__main__":
         offset="j0/-0.5c",
     )
     with pygmt.config(FONT_ANNOT_PRIMARY=4):
-        fig.legend(position="jBL+o-1.0/0", box="+gwhite+p0.25p")
+        fig.legend(position="jBL+o-1.0/0", box="+gwhite+p0.25p")  # type: ignore
 
-    fig.show(width=1200, crop="+m0.4c")
-    # uncomment the following lines to save the figure to a file
-    # output_file = "./output/test-pygmt-plot.pdf"
-    # fig.savefig(output_file, crop="+m0.4c")
-    # print(f"The figure has been saved to: {output_file}.")
+    import sys
+
+    if not "save" in sys.argv:
+        fig.show(width=1200, crop="+m0.4c")
+    else:
+        output_file = "./output/test-pygmt-plot.pdf"
+        fig.savefig(output_file, crop="+m0.4c")  # type: ignore
+        print(f"The figure has been saved to: {output_file}.")

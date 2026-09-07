@@ -121,6 +121,7 @@ class IsochronSeafloorGrid:
         interval_spacing_degrees: float = 0.1,
         grid_output_dir: str | Path = "seafloor_grids_by_isochron_interpolation",
     ):
+        """Create an IsochronSeafloorGrid instance."""
         self._plate_reconstruction = plate_reconstruction
         self._time_steps = np.asarray(time_steps)
         self._ridges: pygplates.FeatureCollection = (
@@ -161,7 +162,7 @@ class IsochronSeafloorGrid:
         output_scalar_types: set[OutputScalarType] | None = None,
     ):
         """
-        Generate the seafloor grids from the isochrons.
+        Generate the seafloor grids by isochron interpolation.
         """
         if output_scalar_types is None:
             output_scalar_types = _DEFAULT_OUTPUT_SCALAR_TYPES

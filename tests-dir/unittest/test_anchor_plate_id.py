@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 from common import MODEL_REPO_DIR, save_fig
 from plate_model_manager import PlateModelManager
 
-os.environ["DISABLE_GPLATELY_DEV_WARNING"] = "true"
+os.environ["GPLATELY_DISABLE_DEV_WARNING"] = "true"
 import gplately
 
 print(gplately.__file__)

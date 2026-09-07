@@ -3,7 +3,7 @@
 import os
 import sys
 
-os.environ["DISABLE_GPLATELY_DEV_WARNING"] = "true"
+os.environ["GPLATELY_DISABLE_DEV_WARNING"] = "true"
 import cartopy
 import matplotlib.pyplot as plt
 from common import MODEL_REPO_DIR, save_fig

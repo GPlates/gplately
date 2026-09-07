@@ -7,7 +7,7 @@ import sys
 import pygplates
 from common import MODEL_REPO_DIR, save_fig
 
-os.environ["DISABLE_GPLATELY_DEV_WARNING"] = "true"
+os.environ["GPLATELY_DISABLE_DEV_WARNING"] = "true"
 import gplately
 from gplately.lib import discretize_polyline
 

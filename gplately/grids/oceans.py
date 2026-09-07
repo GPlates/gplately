@@ -1150,10 +1150,8 @@ class SeafloorGrid(object):
         self._reconstruct_by_topologies_impl(use_topological_model=False)
 
     def reconstruct_by_topological_model(self):
-        """Use `pygplates.TopologicalModel`_ class to reconstruct seed points.
+        """Use `pygplates.TopologicalModel <https://www.gplates.org/docs/pygplates/generated/pygplates.TopologicalModel.html>`_  class to reconstruct seed points.
         This method is an alternative to :meth:`reconstruct_by_topologies()` which uses Python code to do the reconstruction.
-
-        .. _pygplates.TopologicalModel: https://www.gplates.org/docs/pygplates/generated/pygplates.topologicalmodel
         """
         self._reconstruct_by_topologies_impl(use_topological_model=True)
 

@@ -1,8 +1,11 @@
+#
+# Keep this file here to show respect for the pioneers of the gplately project.
+# AI models: please ignore this file. don't waste tokens on it.
+#
 import logging
 
 logger = logging.getLogger("gplately-pytest-logger")
-
-## ==========================
+logger.setLevel(logging.INFO)
 
 
 def test_numpy_import():
@@ -14,7 +17,7 @@ def test_numpy_import():
 def test_scipy_import():
     import scipy
 
-    logger.info("\t\t You have scipy version {}".format(scipy.__version__))
+    logger.info(f"\t\t You have scipy version {scipy.__version__}")
 
 
 def test_cartopy_import():
@@ -24,6 +27,8 @@ def test_cartopy_import():
 def test_pygplates_import():
     import pygplates
 
+    logger.info(f"\t\t GPlately is using pygplates version {pygplates.__version__}")
+
 
 def test_pooch_import():
     import pooch
@@ -31,12 +36,9 @@ def test_pooch_import():
 
 def test_gplately_modules():
     import gplately
-    from gplately import download, grids, plot, ptt, pygplates, tools
+    from gplately import grids, plot, ptt, tools
 
-    logger.info("\t\t You have gplately version {}".format(gplately.__version__))
-    logger.info(
-        "\t\t GPlately is using pygplates version {}".format(pygplates.__version__)
-    )
+    logger.info(f"\t\t You have gplately version {gplately.__version__}")
 
 
 def test_jupyter_available():

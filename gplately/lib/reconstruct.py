@@ -81,7 +81,7 @@ def reconstruct_points(
     for f in static_polygon_files:
         static_polygon_fc.add(pygplates.FeatureCollection(f))
 
-    return reconstruct_points_impl(
+    return reconstruct_points_with_model_files(
         lons,
         lats,
         pygplates.RotationModel(_model.get_rotation_model()),
@@ -95,7 +95,7 @@ def reconstruct_points(
     )
 
 
-def reconstruct_points_impl(
+def reconstruct_points_with_model_files(
     lons: list[float],
     lats: list[float],
     rotation_model: pygplates.RotationModel,
@@ -218,6 +218,9 @@ def reconstruct_points_impl(
         return ret
 
 
+reconstruct_points_impl = reconstruct_points_with_model_files
+
+
 def reverse_reconstruct_points(
     lons: list[float],
     lats: list[float],
@@ -247,7 +250,7 @@ def reverse_reconstruct_points(
     )
 
 
-def reverse_reconstruct_points_impl(
+def reverse_reconstruct_points_with_model_files(
     lons: list[float],
     lats: list[float],
     rotation_model: pygplates.RotationModel,
@@ -258,13 +261,13 @@ def reverse_reconstruct_points_impl(
     anchor_plate_id: int = 0,
     ignore_valid_time: bool = False,
 ):
-    """Wrapper function to reverse reconstruct points with :func:`gplately.reconstruct_points_impl`.
+    """Wrapper function to reverse reconstruct points with :func:`gplately.reconstruct_points_with_model_files`.
 
     .. seealso::
 
         See :func:`gplately.reconstruct_points` for parameter details.
     """
-    return reconstruct_points_impl(
+    return reconstruct_points_with_model_files(
         lons=lons,
         lats=lats,
         rotation_model=rotation_model,

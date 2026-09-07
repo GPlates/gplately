@@ -198,7 +198,7 @@ def _get_rotation_files_for_model(
             f"Could not find plate model '{model_name}'. "
             "Run `gplately list` to see available models."
         )
-    return plate_model.get_rotation_model()  # type: ignore
+    return plate_model.get_rotation_model()
 
 
 def rotate_single_grid(

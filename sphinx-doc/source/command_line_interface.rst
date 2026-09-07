@@ -137,7 +137,7 @@ Reset the feature type for the selected features.
 agegrid (ag)
 ------------
 
-Generate age grids for a plate reconstruction model. 
+Generate seafloor age grids for a plate reconstruction model. 
 
 👉 create age grids from 10 Ma to 0 Ma with 1 Myr increment for the `merdith2021` reconstruction model
 
@@ -151,6 +151,17 @@ Generate age grids for a plate reconstruction model.
 
    $ gplately ag rotations.rot topologies.gpmlz output -c continental_polygons.gpmlz -e 0 -s 10
    
+.. note::
+
+   To use a configuration file instead of specifying the command line arguments,
+   create a TOML file (e.g. ``gplately-cli-config.toml``) and run the command below.
+
+   .. code:: console
+
+      $ gplately ag output-dir --config gplately-cli-config.toml
+
+   Some example configuration files are available in the ``tests-dir/unittest/`` folder of the GPlately repository.
+   And you can also run ``gplately get_cli_config_example`` to get an example configuration file.
 
 fix_crossovers
 --------------
@@ -247,6 +258,13 @@ Split the geometries of isochrons and mid-ocean ridges into ridge and transform 
 
    $ gplately separate_ridge_transform_segments -r rotations.rot -d 45 -s _ridges -t _transforms -- spreading_features.gpml
     
+.. note::
+
+   There's also PlateReconstruction.crustal_production_destruction_rate() and PlateReconstruction.divergent_convergent_plate_boundaries() 
+   for users interested in convergent/divergent plate boundaries and crustal production/destruction - it's more accurate 
+   because it avoids the issue of whether features are labelled as mid-ocean ridges (or missing left/right plate IDs, etc) 
+   and the default ridge-transform separation angle of 70 degrees is just an empirically observed compromise to 
+   suit most cases (but not all cases).
 
 subduction_convergence
 ----------------------
@@ -297,3 +315,13 @@ If the reconstruction time is not given explicitly, it is deduced from the filen
 
    $ gplately rotate_grid input.nc output.nc --from-rotation-files from.rot --to-rotation-files to.rot --time 100
 
+
+get_cli_config_example
+----------------------
+
+Print an example CLI configuration in TOML format to stdout (for use with --config); 
+redirect it to save, e.g. 
+
+.. code:: console
+
+   $ gplately get_cli_config_example > my-gplately-cli-config.toml
