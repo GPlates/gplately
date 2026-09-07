@@ -1,0 +1,333 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>gplately.plot.hillshade &mdash; gplately 2.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
+
+  
+    <link rel="shortcut icon" href="../../../_static/favicon.ico"/>
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=51b770b3"></script>
+      <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            gplately
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../basic_usages.html">Minimal Working Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../use_cases.html">Common Use Cases</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../faq.html">Troubleshooting and FAQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../command_line_interface.html">Command Line Interface (CLI)</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../api.html">Main Classes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../functions.html">Functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../filters_and_transformers.html">Filters And Transformers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../secondaries.html">Other Classes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../plate_models.html">Plate Models</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">gplately</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">gplately.plot.hillshade</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for gplately.plot.hillshade</h1><div class="highlight"><pre>
+<span></span><span class="c1">#</span>
+<span class="c1">#    Copyright (C) 2024-2026 The University of Sydney, Australia</span>
+<span class="c1">#</span>
+<span class="c1">#    This program is free software; you can redistribute it and/or modify it under</span>
+<span class="c1">#    the terms of the GNU General Public License, version 2, as published by</span>
+<span class="c1">#    the Free Software Foundation.</span>
+<span class="c1">#</span>
+<span class="c1">#    This program is distributed in the hope that it will be useful, but WITHOUT</span>
+<span class="c1">#    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or</span>
+<span class="c1">#    FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License</span>
+<span class="c1">#    for more details.</span>
+<span class="c1">#</span>
+<span class="c1">#    You should have received a copy of the GNU General Public License along</span>
+<span class="c1">#    with this program; if not, write to Free Software Foundation, Inc.,</span>
+<span class="c1">#    51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.</span>
+<span class="c1">#</span>
+
+
+<span class="c1"># pyright: reportMissingImports=false</span>
+<span class="c1"># pyright: reportMissingModuleSource=false</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">matplotlib.colors</span><span class="w"> </span><span class="kn">import</span> <span class="n">LinearSegmentedColormap</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_as_2d_float_array</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+    <span class="n">arr</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">getdata</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">asanyarray</span><span class="p">(</span><span class="n">data</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="n">copy</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">arr</span><span class="o">.</span><span class="n">ndim</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> must be a 2-D array, got shape </span><span class="si">{</span><span class="n">arr</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">."</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">arr</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_normalize_finite</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="n">fill_value</span><span class="o">=</span><span class="mf">0.0</span><span class="p">):</span>
+    <span class="n">normalized</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">arr</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">fill_value</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+    <span class="n">finite</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">arr</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">numpy</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">finite</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">normalized</span>
+
+    <span class="n">arr_min</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">nanmin</span><span class="p">(</span><span class="n">arr</span><span class="p">)</span>
+    <span class="n">arr_max</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">nanmax</span><span class="p">(</span><span class="n">arr</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">arr_max</span> <span class="o">&lt;=</span> <span class="n">arr_min</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">normalized</span>
+
+    <span class="n">normalized</span><span class="p">[</span><span class="n">finite</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">arr</span><span class="p">[</span><span class="n">finite</span><span class="p">]</span> <span class="o">-</span> <span class="n">arr_min</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">arr_max</span> <span class="o">-</span> <span class="n">arr_min</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">normalized</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">set_shade</span><span class="p">(</span>
+    <span class="n">a</span><span class="p">,</span>
+    <span class="n">intensity</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">cmap</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">vmin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">vmax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">scale</span><span class="o">=</span><span class="mf">10.0</span><span class="p">,</span>
+    <span class="n">azdeg</span><span class="o">=</span><span class="mf">165.0</span><span class="p">,</span>
+    <span class="n">altdeg</span><span class="o">=</span><span class="mf">45.0</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Apply soft-light shading to a 2-D grid.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    a : array-like</span>
+<span class="sd">        A 2-D data array.</span>
+<span class="sd">    intensity : array-like, optional</span>
+<span class="sd">        A 2-D intensity source used to derive hillshade. If omitted, ``a`` is</span>
+<span class="sd">        used.</span>
+<span class="sd">    cmap : matplotlib colormap, optional</span>
+<span class="sd">        Colormap used to map ``a`` into RGB before blending.</span>
+<span class="sd">    vmin, vmax : float, optional</span>
+<span class="sd">        Data bounds for colormap normalization. If omitted, finite min/max of</span>
+<span class="sd">        ``a`` are used.</span>
+<span class="sd">    scale, azdeg, altdeg : float, optional</span>
+<span class="sd">        Hillshade parameters passed to :func:`hillshade`.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    numpy.ndarray</span>
+<span class="sd">        RGB image array with shape ``(ny, nx, 3)``.</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="n">cmap</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">cmap</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">plt</span><span class="p">,</span> <span class="s2">"get_cmap"</span><span class="p">)(</span><span class="s2">"jet"</span><span class="p">)</span>
+
+    <span class="n">data</span> <span class="o">=</span> <span class="n">_as_2d_float_array</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="s2">"a"</span><span class="p">)</span>
+    <span class="n">finite_data</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">intensity</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">intensity</span> <span class="o">=</span> <span class="n">_as_2d_float_array</span><span class="p">(</span><span class="n">intensity</span><span class="p">,</span> <span class="s2">"intensity"</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">intensity</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">"intensity must have the same shape as a: "</span>
+                <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">intensity</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2"> != </span><span class="si">{</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">."</span>
+            <span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">intensity</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">intensity_img</span> <span class="o">=</span> <span class="n">hillshade</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="n">scale</span><span class="p">,</span> <span class="n">azdeg</span><span class="o">=</span><span class="n">azdeg</span><span class="p">,</span> <span class="n">altdeg</span><span class="o">=</span><span class="n">altdeg</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">intensity_img</span> <span class="o">=</span> <span class="n">hillshade</span><span class="p">(</span><span class="n">intensity</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="n">scale</span><span class="p">,</span> <span class="n">azdeg</span><span class="o">=</span><span class="n">azdeg</span><span class="p">,</span> <span class="n">altdeg</span><span class="o">=</span><span class="n">altdeg</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">numpy</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">finite_data</span><span class="p">):</span>
+        <span class="n">data_norm</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">vmin</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">vmin</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">nanmin</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">vmax</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">vmax</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">nanmax</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">vmax</span> <span class="o">&lt;=</span> <span class="n">vmin</span><span class="p">:</span>
+            <span class="n">data_norm</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">data_norm</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+            <span class="n">data_norm</span><span class="p">[</span><span class="n">finite_data</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">finite_data</span><span class="p">]</span> <span class="o">-</span> <span class="n">vmin</span><span class="p">)</span> <span class="o">/</span> <span class="nb">float</span><span class="p">(</span><span class="n">vmax</span> <span class="o">-</span> <span class="n">vmin</span><span class="p">)</span>
+
+    <span class="n">rgb</span> <span class="o">=</span> <span class="n">cmap</span><span class="p">(</span><span class="n">data_norm</span><span class="p">)[:,</span> <span class="p">:,</span> <span class="p">:</span><span class="mi">3</span><span class="p">]</span>
+
+    <span class="c1"># Use neutral illumination on invalid cells so their base color is preserved.</span>
+    <span class="n">intensity_img</span><span class="p">[</span><span class="o">~</span><span class="n">finite_data</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.5</span>
+
+    <span class="c1"># Form an RGB equivalent of intensity.</span>
+    <span class="n">d</span> <span class="o">=</span> <span class="n">intensity_img</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">rgb</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+    <span class="c1"># simulate illumination based on pegtop algorithm.</span>
+    <span class="n">rgb</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">d</span> <span class="o">*</span> <span class="n">rgb</span> <span class="o">+</span> <span class="p">(</span><span class="n">rgb</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">d</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">rgb</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">hillshade</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mf">10.0</span><span class="p">,</span> <span class="n">azdeg</span><span class="o">=</span><span class="mf">165.0</span><span class="p">,</span> <span class="n">altdeg</span><span class="o">=</span><span class="mf">45.0</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Convert a 2-D array to normalized hillshade intensity.</span>
+
+<span class="sd">    Returns values in the ``[0, 1]`` range, with ``0.5`` as neutral intensity</span>
+<span class="sd">    when variation is insufficient to estimate relief.</span>
+<span class="sd">    """</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">_as_2d_float_array</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s2">"data"</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">scale</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"scale must be &gt; 0."</span><span class="p">)</span>
+
+    <span class="n">finite</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">numpy</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">finite</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">numpy</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+
+    <span class="c1"># Fill invalid values with the finite mean to reduce edge artifacts in gradients.</span>
+    <span class="n">fill_value</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">nanmean</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">finite</span><span class="p">])</span>
+    <span class="n">filled</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">finite</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">fill_value</span><span class="p">)</span>
+
+    <span class="c1"># convert alt, az to radians</span>
+    <span class="n">az</span> <span class="o">=</span> <span class="n">azdeg</span> <span class="o">*</span> <span class="n">numpy</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mf">180.0</span>
+    <span class="n">alt</span> <span class="o">=</span> <span class="n">altdeg</span> <span class="o">*</span> <span class="n">numpy</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mf">180.0</span>
+    <span class="c1"># gradient in x and y directions</span>
+    <span class="n">dx</span><span class="p">,</span> <span class="n">dy</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">gradient</span><span class="p">(</span><span class="n">filled</span> <span class="o">/</span> <span class="nb">float</span><span class="p">(</span><span class="n">scale</span><span class="p">))</span>
+    <span class="n">slope</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">numpy</span><span class="o">.</span><span class="n">pi</span> <span class="o">-</span> <span class="n">numpy</span><span class="o">.</span><span class="n">arctan</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">hypot</span><span class="p">(</span><span class="n">dx</span><span class="p">,</span> <span class="n">dy</span><span class="p">))</span>
+    <span class="n">aspect</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="n">dx</span><span class="p">,</span> <span class="n">dy</span><span class="p">)</span>
+    <span class="n">intensity</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">alt</span><span class="p">)</span> <span class="o">*</span> <span class="n">numpy</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">slope</span><span class="p">)</span> <span class="o">+</span> <span class="n">numpy</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">alt</span><span class="p">)</span> <span class="o">*</span> <span class="n">numpy</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span>
+        <span class="n">slope</span>
+    <span class="p">)</span> <span class="o">*</span> <span class="n">numpy</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="o">-</span><span class="n">az</span> <span class="o">-</span> <span class="n">aspect</span> <span class="o">-</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">numpy</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span>
+
+    <span class="n">intensity</span> <span class="o">=</span> <span class="n">_normalize_finite</span><span class="p">(</span><span class="n">intensity</span><span class="p">,</span> <span class="n">fill_value</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+    <span class="n">intensity</span><span class="p">[</span><span class="o">~</span><span class="n">finite</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.5</span>
+    <span class="k">return</span> <span class="n">intensity</span>
+
+
+<div class="viewcode-block" id="get_topo_cmap">
+<a class="viewcode-back" href="../../../generated/gplately.plot.get_topo_cmap.html#gplately.plot.get_topo_cmap">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_topo_cmap</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">"""Return a LinearSegmentedColormap for topography/bathymetry(vmin=-10927, vmax=8726)."""</span>
+    <span class="n">colors</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="p">(</span><span class="o">-</span><span class="mi">10927</span><span class="p">,</span> <span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">121</span><span class="p">]),</span>
+        <span class="p">(</span><span class="o">-</span><span class="mi">10500</span><span class="p">,</span> <span class="p">[</span><span class="mi">26</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">137</span><span class="p">]),</span>
+        <span class="p">(</span><span class="o">-</span><span class="mi">10000</span><span class="p">,</span> <span class="p">[</span><span class="mi">38</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">152</span><span class="p">]),</span>
+        <span class="p">(</span><span class="o">-</span><span class="mi">9500</span><span class="p">,</span> <span class="p">[</span><span class="mi">27</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">166</span><span class="p">]),</span>
+        <span class="p">(</span><span class="o">-</span><span class="mi">9000</span><span class="p">,</span> <span class="p">[</span><span class="mi">16</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">180</span><span class="p">]),</span>
+        <span class="p">(</span><span class="o">-</span><span class="mi">8500</span><span class="p">,</span> <span class="p">[</span><span class="mi">5</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">193</span><span class="p">]),</span>
+        <span class="p">(</span><span class="o">-</span><span class="mi">8000</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">14</span><span class="p">,</span> <span class="mi">203</span><span class="p">]),</span>
+        <span class="p">(</span><span class="o">-</span><span class="mi">7500</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">22</span><span class="p">,</span> <span class="mi">210</span><span class="p">]),</span>
+        <span class="p">(</span><span class="o">-</span><span class="mi">7000</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="mi">216</span><span class="p">]),</span>
+        <span class="p">(</span><span class="o">-</span><span class="mi">6500</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">39</span><span class="p">,</span> <span class="mi">223</span><span class="p">]),</span>
+        <span class="p">(</span><span class="o">-</span><span class="mi">6000</span><span class="p">,</span> <span class="p">[</span><span class="mi">12</span><span class="p">,</span> <span class="mi">68</span><span class="p">,</span> <span class="mi">231</span><span class="p">]),</span>
+        <span class="p">(</span><span class="o">-</span><span class="mi">5500</span><span class="p">,</span> <span class="p">[</span><span class="mi">26</span><span class="p">,</span> <span class="mi">102</span><span class="p">,</span> <span class="mi">240</span><span class="p">]),</span>
+        <span class="p">(</span><span class="o">-</span><span class="mi">5000</span><span class="p">,</span> <span class="p">[</span><span class="mi">19</span><span class="p">,</span> <span class="mi">117</span><span class="p">,</span> <span class="mi">244</span><span class="p">]),</span>
+        <span class="p">(</span><span class="o">-</span><span class="mi">4500</span><span class="p">,</span> <span class="p">[</span><span class="mi">14</span><span class="p">,</span> <span class="mi">133</span><span class="p">,</span> <span class="mi">249</span><span class="p">]),</span>
+        <span class="p">(</span><span class="o">-</span><span class="mi">4000</span><span class="p">,</span> <span class="p">[</span><span class="mi">21</span><span class="p">,</span> <span class="mi">158</span><span class="p">,</span> <span class="mi">252</span><span class="p">]),</span>
+        <span class="p">(</span><span class="o">-</span><span class="mi">3500</span><span class="p">,</span> <span class="p">[</span><span class="mi">30</span><span class="p">,</span> <span class="mi">178</span><span class="p">,</span> <span class="mi">255</span><span class="p">]),</span>
+        <span class="p">(</span><span class="o">-</span><span class="mi">3000</span><span class="p">,</span> <span class="p">[</span><span class="mi">43</span><span class="p">,</span> <span class="mi">186</span><span class="p">,</span> <span class="mi">255</span><span class="p">]),</span>
+        <span class="p">(</span><span class="o">-</span><span class="mi">2500</span><span class="p">,</span> <span class="p">[</span><span class="mi">55</span><span class="p">,</span> <span class="mi">193</span><span class="p">,</span> <span class="mi">255</span><span class="p">]),</span>
+        <span class="p">(</span><span class="o">-</span><span class="mi">2000</span><span class="p">,</span> <span class="p">[</span><span class="mi">65</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="mi">255</span><span class="p">]),</span>
+        <span class="p">(</span><span class="o">-</span><span class="mi">1500</span><span class="p">,</span> <span class="p">[</span><span class="mi">79</span><span class="p">,</span> <span class="mi">210</span><span class="p">,</span> <span class="mi">255</span><span class="p">]),</span>
+        <span class="p">(</span><span class="o">-</span><span class="mi">1000</span><span class="p">,</span> <span class="p">[</span><span class="mi">94</span><span class="p">,</span> <span class="mi">223</span><span class="p">,</span> <span class="mi">255</span><span class="p">]),</span>
+        <span class="p">(</span><span class="o">-</span><span class="mi">500</span><span class="p">,</span> <span class="p">[</span><span class="mi">138</span><span class="p">,</span> <span class="mi">227</span><span class="p">,</span> <span class="mi">255</span><span class="p">]),</span>
+        <span class="p">(</span><span class="o">-</span><span class="mf">0.001</span><span class="p">,</span> <span class="p">[</span><span class="mi">188</span><span class="p">,</span> <span class="mi">230</span><span class="p">,</span> <span class="mi">255</span><span class="p">]),</span>
+        <span class="p">(</span><span class="o">-</span><span class="mf">0.0005</span><span class="p">,</span> <span class="p">[</span><span class="mi">51</span><span class="p">,</span> <span class="mi">102</span><span class="p">,</span> <span class="mi">0</span><span class="p">]),</span>
+        <span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="p">[</span><span class="mi">51</span><span class="p">,</span> <span class="mi">204</span><span class="p">,</span> <span class="mi">102</span><span class="p">]),</span>
+        <span class="p">(</span><span class="mi">200</span><span class="p">,</span> <span class="p">[</span><span class="mi">187</span><span class="p">,</span> <span class="mi">228</span><span class="p">,</span> <span class="mi">146</span><span class="p">]),</span>
+        <span class="p">(</span><span class="mi">500</span><span class="p">,</span> <span class="p">[</span><span class="mi">255</span><span class="p">,</span> <span class="mi">220</span><span class="p">,</span> <span class="mi">185</span><span class="p">]),</span>
+        <span class="p">(</span><span class="mi">1000</span><span class="p">,</span> <span class="p">[</span><span class="mi">243</span><span class="p">,</span> <span class="mi">202</span><span class="p">,</span> <span class="mi">137</span><span class="p">]),</span>
+        <span class="p">(</span><span class="mi">1500</span><span class="p">,</span> <span class="p">[</span><span class="mi">230</span><span class="p">,</span> <span class="mi">184</span><span class="p">,</span> <span class="mi">88</span><span class="p">]),</span>
+        <span class="p">(</span><span class="mi">2000</span><span class="p">,</span> <span class="p">[</span><span class="mi">217</span><span class="p">,</span> <span class="mi">166</span><span class="p">,</span> <span class="mi">39</span><span class="p">]),</span>
+        <span class="p">(</span><span class="mi">2500</span><span class="p">,</span> <span class="p">[</span><span class="mi">168</span><span class="p">,</span> <span class="mi">154</span><span class="p">,</span> <span class="mi">31</span><span class="p">]),</span>
+        <span class="p">(</span><span class="mi">3000</span><span class="p">,</span> <span class="p">[</span><span class="mi">164</span><span class="p">,</span> <span class="mi">144</span><span class="p">,</span> <span class="mi">25</span><span class="p">]),</span>
+        <span class="p">(</span><span class="mi">3500</span><span class="p">,</span> <span class="p">[</span><span class="mi">162</span><span class="p">,</span> <span class="mi">134</span><span class="p">,</span> <span class="mi">19</span><span class="p">]),</span>
+        <span class="p">(</span><span class="mi">4000</span><span class="p">,</span> <span class="p">[</span><span class="mi">159</span><span class="p">,</span> <span class="mi">123</span><span class="p">,</span> <span class="mi">13</span><span class="p">]),</span>
+        <span class="p">(</span><span class="mi">4500</span><span class="p">,</span> <span class="p">[</span><span class="mi">156</span><span class="p">,</span> <span class="mi">113</span><span class="p">,</span> <span class="mi">7</span><span class="p">]),</span>
+        <span class="p">(</span><span class="mi">5000</span><span class="p">,</span> <span class="p">[</span><span class="mi">153</span><span class="p">,</span> <span class="mi">102</span><span class="p">,</span> <span class="mi">0</span><span class="p">]),</span>
+        <span class="p">(</span><span class="mi">5500</span><span class="p">,</span> <span class="p">[</span><span class="mi">162</span><span class="p">,</span> <span class="mi">89</span><span class="p">,</span> <span class="mi">89</span><span class="p">]),</span>
+        <span class="p">(</span><span class="mi">6000</span><span class="p">,</span> <span class="p">[</span><span class="mi">178</span><span class="p">,</span> <span class="mi">118</span><span class="p">,</span> <span class="mi">118</span><span class="p">]),</span>
+        <span class="p">(</span><span class="mi">6500</span><span class="p">,</span> <span class="p">[</span><span class="mi">183</span><span class="p">,</span> <span class="mi">147</span><span class="p">,</span> <span class="mi">147</span><span class="p">]),</span>
+        <span class="p">(</span><span class="mi">7000</span><span class="p">,</span> <span class="p">[</span><span class="mi">194</span><span class="p">,</span> <span class="mi">176</span><span class="p">,</span> <span class="mi">176</span><span class="p">]),</span>
+        <span class="p">(</span><span class="mi">7500</span><span class="p">,</span> <span class="p">[</span><span class="mi">204</span><span class="p">,</span> <span class="mi">204</span><span class="p">,</span> <span class="mi">204</span><span class="p">]),</span>
+        <span class="p">(</span><span class="mi">8726</span><span class="p">,</span> <span class="p">[</span><span class="mi">229</span><span class="p">,</span> <span class="mi">229</span><span class="p">,</span> <span class="mi">229</span><span class="p">]),</span>
+    <span class="p">]</span>
+
+    <span class="n">color_list</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="p">(</span>
+            <span class="nb">float</span><span class="p">(</span><span class="n">color</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">colors</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span> <span class="o">/</span> <span class="p">(</span><span class="n">colors</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">colors</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]),</span>
+            <span class="p">[</span><span class="n">x</span> <span class="o">/</span> <span class="mf">255.0</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">color</span><span class="p">[</span><span class="mi">1</span><span class="p">]],</span>
+        <span class="p">)</span>
+        <span class="k">for</span> <span class="n">color</span> <span class="ow">in</span> <span class="n">colors</span>
+    <span class="p">]</span>
+
+    <span class="k">return</span> <span class="n">LinearSegmentedColormap</span><span class="o">.</span><span class="n">from_list</span><span class="p">(</span><span class="s2">"topo"</span><span class="p">,</span> <span class="n">color_list</span><span class="p">,</span> <span class="n">N</span><span class="o">=</span><span class="mi">1024</span><span class="p">)</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023-2026, The University of Sydney.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

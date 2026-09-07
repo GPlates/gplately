@@ -26,8 +26,6 @@
 
    .. autosummary::
    
-      ~SeafloorGrid.CURRENT_LATITUDES_KEY
-      ~SeafloorGrid.CURRENT_LONGITUDES_KEY
       ~SeafloorGrid.SEAFLOOR_AGE_KEY
       ~SeafloorGrid.SPREADING_RATE_KEY
       ~SeafloorGrid.max_time

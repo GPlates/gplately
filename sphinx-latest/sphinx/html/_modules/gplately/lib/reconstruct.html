@@ -168,7 +168,7 @@
     <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">static_polygon_files</span><span class="p">:</span>
         <span class="n">static_polygon_fc</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">pygplates</span><span class="o">.</span><span class="n">FeatureCollection</span><span class="p">(</span><span class="n">f</span><span class="p">))</span>
 
-    <span class="k">return</span> <span class="n">reconstruct_points_impl</span><span class="p">(</span>
+    <span class="k">return</span> <span class="n">reconstruct_points_with_model_files</span><span class="p">(</span>
         <span class="n">lons</span><span class="p">,</span>
         <span class="n">lats</span><span class="p">,</span>
         <span class="n">pygplates</span><span class="o">.</span><span class="n">RotationModel</span><span class="p">(</span><span class="n">_model</span><span class="o">.</span><span class="n">get_rotation_model</span><span class="p">()),</span>
@@ -183,9 +183,9 @@
 
 
 
-<div class="viewcode-block" id="reconstruct_points_impl">
-<a class="viewcode-back" href="../../../generated/gplately.reconstruct_points_impl.html#gplately.reconstruct_points_impl">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">reconstruct_points_impl</span><span class="p">(</span>
+<div class="viewcode-block" id="reconstruct_points_with_model_files">
+<a class="viewcode-back" href="../../../generated/gplately.reconstruct_points_with_model_files.html#gplately.reconstruct_points_with_model_files">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">reconstruct_points_with_model_files</span><span class="p">(</span>
     <span class="n">lons</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span>
     <span class="n">lats</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span>
     <span class="n">rotation_model</span><span class="p">:</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">RotationModel</span><span class="p">,</span>
@@ -309,6 +309,9 @@
 
 
 
+<span class="n">reconstruct_points_impl</span> <span class="o">=</span> <span class="n">reconstruct_points_with_model_files</span>
+
+
 <div class="viewcode-block" id="reverse_reconstruct_points">
 <a class="viewcode-back" href="../../../generated/gplately.reverse_reconstruct_points.html#gplately.reverse_reconstruct_points">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">reverse_reconstruct_points</span><span class="p">(</span>
@@ -341,9 +344,9 @@
 
 
 
-<div class="viewcode-block" id="reverse_reconstruct_points_impl">
-<a class="viewcode-back" href="../../../generated/gplately.reverse_reconstruct_points_impl.html#gplately.reverse_reconstruct_points_impl">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">reverse_reconstruct_points_impl</span><span class="p">(</span>
+<div class="viewcode-block" id="reverse_reconstruct_points_with_model_files">
+<a class="viewcode-back" href="../../../generated/gplately.reverse_reconstruct_points_with_model_files.html#gplately.reverse_reconstruct_points_with_model_files">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">reverse_reconstruct_points_with_model_files</span><span class="p">(</span>
     <span class="n">lons</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span>
     <span class="n">lats</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span>
     <span class="n">rotation_model</span><span class="p">:</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">RotationModel</span><span class="p">,</span>
@@ -354,13 +357,13 @@
     <span class="n">anchor_plate_id</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
     <span class="n">ignore_valid_time</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
 <span class="p">):</span>
-<span class="w">    </span><span class="sd">"""Wrapper function to reverse reconstruct points with :func:`gplately.reconstruct_points_impl`.</span>
+<span class="w">    </span><span class="sd">"""Wrapper function to reverse reconstruct points with :func:`gplately.reconstruct_points_with_model_files`.</span>
 
 <span class="sd">    .. seealso::</span>
 
 <span class="sd">        See :func:`gplately.reconstruct_points` for parameter details.</span>
 <span class="sd">    """</span>
-    <span class="k">return</span> <span class="n">reconstruct_points_impl</span><span class="p">(</span>
+    <span class="k">return</span> <span class="n">reconstruct_points_with_model_files</span><span class="p">(</span>
         <span class="n">lons</span><span class="o">=</span><span class="n">lons</span><span class="p">,</span>
         <span class="n">lats</span><span class="o">=</span><span class="n">lats</span><span class="p">,</span>
         <span class="n">rotation_model</span><span class="o">=</span><span class="n">rotation_model</span><span class="p">,</span>

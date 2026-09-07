@@ -1,0 +1,6 @@
+﻿gplately.reverse\_reconstruct\_points\_with\_model\_files
+=========================================================
+
+.. currentmodule:: gplately
+
+.. autofunction:: reverse_reconstruct_points_with_model_files

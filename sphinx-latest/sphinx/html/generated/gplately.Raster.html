@@ -109,6 +109,8 @@
 </li>
 <li class="toctree-l2"><a class="reference internal" href="gplately.PlotTopologies.html">gplately.PlotTopologies</a></li>
 <li class="toctree-l2"><a class="reference internal" href="gplately.SeafloorGrid.html">gplately.SeafloorGrid</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gplately.TopologySeafloorGrid.html">gplately.TopologySeafloorGrid</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gplately.IsochronSeafloorGrid.html">gplately.IsochronSeafloorGrid</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../functions.html">Functions</a></li>
@@ -152,7 +154,7 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="gplately.Raster.__init__">
 <span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plate_reconstruction</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extent</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'global'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resample</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">origin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">lons</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lats</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grid_registration</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">GridRegistration.Gridline</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_dimension_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_dimension_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_variable_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/raster.html#Raster.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.Raster.__init__" title="Link to this definition"></a></dt>
-<dd><p>Constructor. Create a <a class="reference internal" href="#gplately.Raster" title="gplately.Raster"><code class="xref py py-class docutils literal notranslate"><span class="pre">Raster</span></code></a> object.</p>
+<dd><p>Create a <a class="reference internal" href="#gplately.Raster" title="gplately.Raster"><code class="xref py py-class docutils literal notranslate"><span class="pre">Raster</span></code></a> object.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -197,19 +199,19 @@ Otherwise, GPlately’s guess may/may not be correct.</p></li>
 <table class="autosummary longtable docutils align-default">
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="#gplately.Raster.__init__" title="gplately.Raster.__init__"><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code></a>([data, plate_reconstruction, ...])</p></td>
-<td><p>Constructor.</p></td>
+<td><p>Create a <a class="reference internal" href="#gplately.Raster" title="gplately.Raster"><code class="xref py py-class docutils literal notranslate"><span class="pre">Raster</span></code></a> object.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#gplately.Raster.clip_by_extent" title="gplately.Raster.clip_by_extent"><code class="xref py py-obj docutils literal notranslate"><span class="pre">clip_by_extent</span></code></a>(extent)</p></td>
 <td><p>Clip the raster according to a given extent <code class="docutils literal notranslate"><span class="pre">(x_min,</span> <span class="pre">x_max,</span> <span class="pre">y_min,</span> <span class="pre">y_max)</span></code>.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#gplately.Raster.clip_by_polygons" title="gplately.Raster.clip_by_polygons"><code class="xref py py-obj docutils literal notranslate"><span class="pre">clip_by_polygons</span></code></a>(polygons)</p></td>
-<td><p>TODO:</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#gplately.Raster.clip_by_polygons" title="gplately.Raster.clip_by_polygons"><code class="xref py py-obj docutils literal notranslate"><span class="pre">clip_by_polygons</span></code></a>(polygons[, fill_value])</p></td>
+<td><p>Clip the raster according to a given list of polygons defined on a sphere.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#gplately.Raster.copy" title="gplately.Raster.copy"><code class="xref py py-obj docutils literal notranslate"><span class="pre">copy</span></code></a>()</p></td>
 <td><p>Return a copy of the <a class="reference internal" href="#gplately.Raster" title="gplately.Raster"><code class="xref py py-class docutils literal notranslate"><span class="pre">Raster</span></code></a> object.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#gplately.Raster.fill_NaNs" title="gplately.Raster.fill_NaNs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">fill_NaNs</span></code></a>([inplace, return_array])</p></td>
-<td><p>Deprecated.</p></td>
+<td><p>Deprecated, use <a class="reference internal" href="#gplately.Raster.fill_gaps" title="gplately.Raster.fill_gaps"><code class="xref py py-meth docutils literal notranslate"><span class="pre">fill_gaps()</span></code></a> instead.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#gplately.Raster.fill_gaps" title="gplately.Raster.fill_gaps"><code class="xref py py-obj docutils literal notranslate"><span class="pre">fill_gaps</span></code></a>(*[, method, use_gmt, ...])</p></td>
 <td><p>Fill invalid cells in a raster using interpolation.</p></td>
@@ -218,7 +220,7 @@ Otherwise, GPlately’s guess may/may not be correct.</p></li>
 <td><p>Class method to create a <a class="reference internal" href="#gplately.Raster" title="gplately.Raster"><code class="xref py py-class docutils literal notranslate"><span class="pre">Raster</span></code></a> object from scattered geographic points.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#gplately.Raster.imshow" title="gplately.Raster.imshow"><code class="xref py py-obj docutils literal notranslate"><span class="pre">imshow</span></code></a>([ax, projection])</p></td>
-<td><p>Deprecated.</p></td>
+<td><p>Deprecated, use <a class="reference internal" href="#gplately.Raster.plot" title="gplately.Raster.plot"><code class="xref py py-meth docutils literal notranslate"><span class="pre">plot()</span></code></a> instead.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#gplately.Raster.interp" title="gplately.Raster.interp"><code class="xref py py-obj docutils literal notranslate"><span class="pre">interp</span></code></a>(*, lons, lats[, data, method, ...])</p></td>
 <td><p>Interpolate <cite>data</cite> at given longitude/latitude locations.</p></td>
@@ -227,7 +229,7 @@ Otherwise, GPlately’s guess may/may not be correct.</p></li>
 <td><p>Sample grid data at a set of points using spline interpolation.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#gplately.Raster.is_global" title="gplately.Raster.is_global"><code class="xref py py-obj docutils literal notranslate"><span class="pre">is_global</span></code></a>()</p></td>
-<td><p></p></td>
+<td><p>Check if the raster covers the whole globe.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#gplately.Raster.is_longitude_wrapped" title="gplately.Raster.is_longitude_wrapped"><code class="xref py py-obj docutils literal notranslate"><span class="pre">is_longitude_wrapped</span></code></a>()</p></td>
 <td><p>Check if the longitude coordinates have wrapped around the antimeridian.</p></td>
@@ -257,7 +259,7 @@ Otherwise, GPlately’s guess may/may not be correct.</p></li>
 <td><p>Rotate a grid defined in one plate model reference frame within a <a class="reference internal" href="#gplately.Raster" title="gplately.Raster"><code class="xref py py-class docutils literal notranslate"><span class="pre">Raster</span></code></a> object to another plate reconstruction model reference frame.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#gplately.Raster.sample_values" title="gplately.Raster.sample_values"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sample_values</span></code></a>(*, lons, lats[, method])</p></td>
-<td><p></p></td>
+<td><p>Sample grid data at a set of locations.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#gplately.Raster.save_as_image" title="gplately.Raster.save_as_image"><code class="xref py py-obj docutils literal notranslate"><span class="pre">save_as_image</span></code></a>(filename[, projection, cmap, ...])</p></td>
 <td><p>Saves the <a class="reference internal" href="#gplately.Raster" title="gplately.Raster"><code class="xref py py-class docutils literal notranslate"><span class="pre">Raster</span></code></a> object as a image.</p></td>
@@ -343,7 +345,7 @@ This happens when the border of the given extent fall between two gird lines.</p
 <dd class="field-odd"><p><strong>extent</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><em>tuple</em></a>) – A tuple of 4 (min_lon, max_lon, min_lat, max_lat) extent.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>The clipped grid.</p>
+<dd class="field-even"><p>The clipped raster.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference internal" href="#gplately.Raster" title="gplately.Raster">Raster</a></p>
@@ -353,8 +355,22 @@ This happens when the border of the given extent fall between two gird lines.</p
 
 <dl class="py method">
 <dt class="sig sig-object py" id="gplately.Raster.clip_by_polygons">
-<span class="sig-name descname"><span class="pre">clip_by_polygons</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">polygons</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><span class="pre">PolygonOnSphere</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/raster.html#Raster.clip_by_polygons"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.Raster.clip_by_polygons" title="Link to this definition"></a></dt>
-<dd><p>TODO:</p>
+<span class="sig-name descname"><span class="pre">clip_by_polygons</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">polygons</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><span class="pre">PolygonOnSphere</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fill_value</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#gplately.Raster" title="gplately.raster.Raster"><span class="pre">Raster</span></a></span></span><a class="reference internal" href="../_modules/gplately/raster.html#Raster.clip_by_polygons"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.Raster.clip_by_polygons" title="Link to this definition"></a></dt>
+<dd><p>Clip the raster according to a given list of polygons defined on a sphere.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>polygons</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em> of </em><em>pygplates.PolygonOnSphere</em>) – A list of polygons defined on a sphere.</p></li>
+<li><p><strong>fill_value</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><em>tuple</em></a><em>, or </em><em>None</em><em>, </em><em>optional</em>) – The value to use for data outside the clipped area. If None, the default fill value is used.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The clipped raster.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#gplately.Raster" title="gplately.Raster">Raster</a></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -397,7 +413,7 @@ If the object was created directly from an array, this attribute is <code class=
 <dl class="py method">
 <dt class="sig sig-object py" id="gplately.Raster.fill_NaNs">
 <span class="sig-name descname"><span class="pre">fill_NaNs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inplace</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_array</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/raster.html#Raster.fill_NaNs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.Raster.fill_NaNs" title="Link to this definition"></a></dt>
-<dd><p>Deprecated. Use <a class="reference internal" href="#gplately.Raster.fill_gaps" title="gplately.Raster.fill_gaps"><code class="xref py py-meth docutils literal notranslate"><span class="pre">fill_gaps()</span></code></a> instead. This method will be removed in a future version of the library.</p>
+<dd><p>Deprecated, use <a class="reference internal" href="#gplately.Raster.fill_gaps" title="gplately.Raster.fill_gaps"><code class="xref py py-meth docutils literal notranslate"><span class="pre">fill_gaps()</span></code></a> instead. This method will be removed in a future version of the library.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -516,7 +532,7 @@ to skip and pass points to <cite>surface</cite> directly. Default
 <dl class="py method">
 <dt class="sig sig-object py" id="gplately.Raster.imshow">
 <span class="sig-name descname"><span class="pre">imshow</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">projection</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/raster.html#Raster.imshow"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.Raster.imshow" title="Link to this definition"></a></dt>
-<dd><p>Deprecated. Use <a class="reference internal" href="#gplately.Raster.plot" title="gplately.Raster.plot"><code class="xref py py-meth docutils literal notranslate"><span class="pre">plot()</span></code></a> instead. Plot the raster data using matplotlib.</p>
+<dd><p>Deprecated, use <a class="reference internal" href="#gplately.Raster.plot" title="gplately.Raster.plot"><code class="xref py py-meth docutils literal notranslate"><span class="pre">plot()</span></code></a> instead. Plot the raster data using matplotlib.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -595,7 +611,8 @@ are returned as a tuple of arrays, in <code class="docutils literal notranslate"
 <dl class="py method">
 <dt class="sig sig-object py" id="gplately.Raster.is_global">
 <span class="sig-name descname"><span class="pre">is_global</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span></span><a class="reference internal" href="../_modules/gplately/raster.html#Raster.is_global"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.Raster.is_global" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Check if the raster covers the whole globe.</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="gplately.Raster.is_longitude_wrapped">
@@ -917,7 +934,8 @@ to define the “from” and “to” reference frames.</p></li>
 <dl class="py method">
 <dt class="sig sig-object py" id="gplately.Raster.sample_values">
 <span class="sig-name descname"><span class="pre">sample_values</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">lons</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lats</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'linear'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/raster.html#Raster.sample_values"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.Raster.sample_values" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Sample grid data at a set of locations. This function is superseded by <a class="reference internal" href="#gplately.Raster.query" title="gplately.Raster.query"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Raster.query()</span></code></a> and is kept for backward compatibility.</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="gplately.Raster.save_as_image">

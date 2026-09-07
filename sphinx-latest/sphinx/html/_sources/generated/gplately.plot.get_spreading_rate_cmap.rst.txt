@@ -1,0 +1,6 @@
+﻿gplately.plot.get\_spreading\_rate\_cmap
+========================================
+
+.. currentmodule:: gplately.plot
+
+.. autofunction:: get_spreading_rate_cmap

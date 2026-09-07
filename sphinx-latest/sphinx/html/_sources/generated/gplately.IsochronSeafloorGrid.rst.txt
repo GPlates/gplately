@@ -1,0 +1,29 @@
+﻿gplately.IsochronSeafloorGrid
+=============================
+
+.. currentmodule:: gplately
+
+.. autoclass:: IsochronSeafloorGrid
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~IsochronSeafloorGrid.__init__
+      ~IsochronSeafloorGrid.generate
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~IsochronSeafloorGrid.time_steps
+   
+   

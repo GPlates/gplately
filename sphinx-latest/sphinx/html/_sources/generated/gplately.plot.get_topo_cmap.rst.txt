@@ -1,0 +1,6 @@
+﻿gplately.plot.get\_topo\_cmap
+=============================
+
+.. currentmodule:: gplately.plot
+
+.. autofunction:: get_topo_cmap

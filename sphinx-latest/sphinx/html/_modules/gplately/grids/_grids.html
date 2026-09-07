@@ -319,8 +319,6 @@
     <span class="k">return</span> <span class="n">_adjust_extent_for_origin</span><span class="p">(</span><span class="n">extent</span><span class="p">,</span> <span class="n">origin</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="read_netcdf_grid">
-<a class="viewcode-back" href="../../../generated/gplately.read_netcdf_grid.html#gplately.read_netcdf_grid">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">read_netcdf_grid</span><span class="p">(</span>
     <span class="n">filename</span><span class="p">,</span>
     <span class="n">return_grids</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
@@ -525,12 +523,9 @@
     <span class="k">if</span> <span class="n">return_grids</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">cdf_grid_z</span><span class="p">,</span> <span class="n">cdf_lon</span><span class="p">,</span> <span class="n">cdf_lat</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">cdf_grid_z</span></div>
+        <span class="k">return</span> <span class="n">cdf_grid_z</span>
 
 
-
-<div class="viewcode-block" id="write_netcdf_grid">
-<a class="viewcode-back" href="../../../generated/gplately.write_netcdf_grid.html#gplately.write_netcdf_grid">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">write_netcdf_grid</span><span class="p">(</span>
     <span class="n">filename</span><span class="p">,</span>
     <span class="n">grid</span><span class="p">,</span>
@@ -773,12 +768,9 @@
         <span class="n">cdf_lat_bnds</span><span class="p">[:,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">_compute_coordinate_bounds</span><span class="p">(</span><span class="n">lat_grid</span><span class="p">)</span>
 
         <span class="c1"># write data</span>
-        <span class="n">cdf_data</span><span class="p">[:,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">grid</span></div>
+        <span class="n">cdf_data</span><span class="p">[:,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">grid</span>
 
 
-
-<div class="viewcode-block" id="default_netcdf_fill_value">
-<a class="viewcode-back" href="../../../generated/gplately.default_netcdf_fill_value.html#gplately.default_netcdf_fill_value">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">default_netcdf_fill_value</span><span class="p">(</span><span class="n">grid</span><span class="p">,</span> <span class="n">significant_digits</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Return the default fill value that would be used when calling ``write_netcdf_grid`` with ``fill_value=None``.</span>
 
@@ -828,8 +820,7 @@
     <span class="c1"># Note: This will return None if netCDF4 does not have a default fill value for the grid type.</span>
     <span class="k">return</span> <span class="n">netCDF4</span><span class="o">.</span><span class="n">default_fillvals</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
         <span class="n">grid</span><span class="o">.</span><span class="n">dtype</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">lstrip</span><span class="p">(</span><span class="s2">"&lt;&gt;=|"</span><span class="p">)</span>  <span class="c1"># Remove endianness/alignment prefixes</span>
-    <span class="p">)</span></div>
-
+    <span class="p">)</span>
 
 
 <span class="nd">@overload</span>
