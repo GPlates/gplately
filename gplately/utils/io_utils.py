@@ -292,7 +292,7 @@ def to_geographic_data_array(data_array):
 def load_feature_collection(
     source: FeatureCollectionInput,
 ) -> pygplates.FeatureCollection:
-    """Load and return a `pygplates.FeatureCollection`_ from a source.
+    """Load and return a `pygplates.FeatureCollection` object.
 
     Parameters
     ----------
@@ -303,7 +303,7 @@ def load_feature_collection(
     Returns
     -------
     `pygplates.FeatureCollection`_
-        A feature collection containing all features. If failed to load, an empty feature collection will be returned.
+        A feature collection containing all features. If loading fails, an empty feature collection is returned instead.
 
 
     .. _pygplates.Feature: https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature
