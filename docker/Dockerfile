@@ -2,18 +2,18 @@
 # to build this docker container image
 # step 1: git clone https://github.com/GPlates/gplately.git
 # step 2: cd gplately
-# step 3: docker build -f docker/Dockerfile -t gplately .
+# step 3: `docker build -f docker/Dockerfile -t gplately .`
 #
 # run the docker container
-# docker run --rm -ti -p 8888:8888 -v `pwd`:/workspace/my_stuff gplately 
+# `docker run --rm -ti -p 8888:8888 -v `pwd`:/workspace/my_stuff gplately`
 #
 
 # if error, try with --no-cache option
 
-FROM mambaorg/micromamba:1.5.8
+FROM mambaorg/micromamba:2.9.0
 
 LABEL org.opencontainers.image.authors="michael.chin@sydney.edu.au"
-LABEL version="v2.0.0"
+LABEL version="v2.1.0"
 
 USER root
 RUN apt-get update && apt-get install ffmpeg libsm6 libxext6  -y
