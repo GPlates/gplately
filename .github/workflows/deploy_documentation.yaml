@@ -6,8 +6,7 @@ on:
   push:
     branches: 
       - master
-    paths:
-      - gplately/**
+  workflow_dispatch:
   
 jobs:
   build-and-deploy-documentation:
@@ -17,9 +16,12 @@ jobs:
       run:
         shell: bash -l {0}
         
-    if: github.event.pull_request.draft == false
     steps:
       - uses: actions/checkout@v4
+        with:
+          # Full history + tags needed so setuptools-git-versioning can
+          # compute the real version instead of falling back to 0.0.1.
+          fetch-depth: 0
       - uses: mamba-org/setup-micromamba@v1
         with:
           micromamba-version: "1.5.8-0"
