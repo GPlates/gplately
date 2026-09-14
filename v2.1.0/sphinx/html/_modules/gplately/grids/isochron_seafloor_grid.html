@@ -1,0 +1,568 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>gplately.grids.isochron_seafloor_grid &mdash; gplately 2.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
+
+  
+    <link rel="shortcut icon" href="../../../_static/favicon.ico"/>
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=51b770b3"></script>
+      <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            gplately
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../basic_usages.html">Minimal Working Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../use_cases.html">Common Use Cases</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../faq.html">Troubleshooting and FAQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../command_line_interface.html">Command Line Interface (CLI)</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../api.html">Main Classes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../functions.html">Functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../filters_and_transformers.html">Filters And Transformers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../secondaries.html">Other Classes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../plate_models.html">Plate Models</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">gplately</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">gplately.grids.isochron_seafloor_grid</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for gplately.grids.isochron_seafloor_grid</h1><div class="highlight"><pre>
+<span></span><span class="sd">"""</span>
+<span class="sd">Copyright (C) 2015-2026 The University of Sydney, Australia</span>
+
+<span class="sd">This program is free software; you can redistribute it and/or modify it under</span>
+<span class="sd">the terms of the GNU General Public License, version 2, as published by</span>
+<span class="sd">the Free Software Foundation.</span>
+
+<span class="sd">This program is distributed in the hope that it will be useful, but WITHOUT</span>
+<span class="sd">ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or</span>
+<span class="sd">FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License</span>
+<span class="sd">for more details.</span>
+
+<span class="sd">You should have received a copy of the GNU General Public License along</span>
+<span class="sd">with this program; if not, write to Free Software Foundation, Inc.,</span>
+<span class="sd">51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.</span>
+<span class="sd">"""</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pygplates</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">xarray</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pygmt</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">enum</span><span class="w"> </span><span class="kn">import</span> <span class="n">Enum</span><span class="p">,</span> <span class="n">auto</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..reconstruction</span><span class="w"> </span><span class="kn">import</span> <span class="n">PlateReconstruction</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..lib</span><span class="w"> </span><span class="kn">import</span> <span class="n">isopolate</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">rasterio.features</span><span class="w"> </span><span class="kn">import</span> <span class="n">rasterize</span> <span class="k">as</span> <span class="n">_rasterize</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">rasterio.transform</span><span class="w"> </span><span class="kn">import</span> <span class="n">from_origin</span> <span class="k">as</span> <span class="n">_from_origin</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">rasterio.enums</span><span class="w"> </span><span class="kn">import</span> <span class="n">MergeAlg</span> <span class="k">as</span> <span class="n">_MergeAlg</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..utils.io_utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">FeatureCollectionInput</span><span class="p">,</span> <span class="n">load_feature_collection</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..geometry</span><span class="w"> </span><span class="kn">import</span> <span class="n">pygplates_to_shapely</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">"gplately"</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_parse_gmt_region</span><span class="p">(</span>
+    <span class="n">region</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""Convert a GMT-style region string (e.g. "d", "g", "minx/maxx/miny/maxy") to bounds."""</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">region</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">region</span>
+    <span class="k">if</span> <span class="n">region</span> <span class="o">==</span> <span class="s2">"d"</span><span class="p">:</span>
+        <span class="k">return</span> <span class="o">-</span><span class="mf">180.0</span><span class="p">,</span> <span class="mf">180.0</span><span class="p">,</span> <span class="o">-</span><span class="mf">90.0</span><span class="p">,</span> <span class="mf">90.0</span>
+    <span class="k">if</span> <span class="n">region</span> <span class="o">==</span> <span class="s2">"g"</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">360.0</span><span class="p">,</span> <span class="o">-</span><span class="mf">90.0</span><span class="p">,</span> <span class="mf">90.0</span>
+    <span class="n">minx</span><span class="p">,</span> <span class="n">maxx</span><span class="p">,</span> <span class="n">miny</span><span class="p">,</span> <span class="n">maxy</span> <span class="o">=</span> <span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">region</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">"/"</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">minx</span><span class="p">,</span> <span class="n">maxx</span><span class="p">,</span> <span class="n">miny</span><span class="p">,</span> <span class="n">maxy</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_parse_gmt_spacing</span><span class="p">(</span><span class="n">spacing</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Convert a GMT-style spacing string (e.g. "0.1d", "5m", "30s") to degrees."""</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">spacing</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">spacing</span><span class="p">)</span>
+    <span class="n">unit</span> <span class="o">=</span> <span class="n">spacing</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">unit</span><span class="o">.</span><span class="n">isalpha</span><span class="p">():</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">spacing</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">unit</span> <span class="o">==</span> <span class="s2">"m"</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">value</span> <span class="o">/</span> <span class="mf">60.0</span>
+        <span class="k">if</span> <span class="n">unit</span> <span class="o">==</span> <span class="s2">"s"</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">value</span> <span class="o">/</span> <span class="mf">3600.0</span>
+        <span class="k">if</span> <span class="n">unit</span> <span class="o">!=</span> <span class="s2">"d"</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unsupported grid spacing unit: </span><span class="si">{</span><span class="n">unit</span><span class="si">!r}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">value</span>
+    <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">spacing</span><span class="p">)</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">OutputScalarType</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
+    <span class="n">AGE</span> <span class="o">=</span> <span class="n">auto</span><span class="p">()</span>
+    <span class="n">SPREADING_RATE</span> <span class="o">=</span> <span class="n">auto</span><span class="p">()</span>
+    <span class="n">SPREADING_ASYMMETRY</span> <span class="o">=</span> <span class="n">auto</span><span class="p">()</span>
+    <span class="n">FULL_SPREADING_RATE</span> <span class="o">=</span> <span class="n">auto</span><span class="p">()</span>
+    <span class="n">SPREADING_DIRECTION</span> <span class="o">=</span> <span class="n">auto</span><span class="p">()</span>
+    <span class="n">SPREADING_OBLIQUITY</span> <span class="o">=</span> <span class="n">auto</span><span class="p">()</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">gpml_name</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">_OUTPUT_SCALAR_TYPE_NAMES</span><span class="p">[</span><span class="bp">self</span><span class="p">]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">gpml_column</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">"gpml:</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">gpml_name</span><span class="si">}</span><span class="s2">"</span>
+
+
+<span class="n">_DEFAULT_OUTPUT_SCALAR_TYPES</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([</span><span class="n">OutputScalarType</span><span class="o">.</span><span class="n">AGE</span><span class="p">])</span>  <span class="c1"># for only age</span>
+<span class="c1"># _DEFAULT_OUTPUT_SCALAR_TYPES = set(OutputScalarType) # for all</span>
+<span class="n">_OUTPUT_SCALAR_TYPE_SETTINGS</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="n">OutputScalarType</span><span class="o">.</span><span class="n">AGE</span><span class="p">:</span> <span class="s2">"output_scalar_age"</span><span class="p">,</span>
+    <span class="n">OutputScalarType</span><span class="o">.</span><span class="n">SPREADING_RATE</span><span class="p">:</span> <span class="s2">"output_scalar_spreading_rate"</span><span class="p">,</span>
+    <span class="n">OutputScalarType</span><span class="o">.</span><span class="n">SPREADING_ASYMMETRY</span><span class="p">:</span> <span class="s2">"output_scalar_spreading_asymmetry"</span><span class="p">,</span>
+    <span class="n">OutputScalarType</span><span class="o">.</span><span class="n">FULL_SPREADING_RATE</span><span class="p">:</span> <span class="s2">"output_scalar_full_spreading_rate"</span><span class="p">,</span>
+    <span class="n">OutputScalarType</span><span class="o">.</span><span class="n">SPREADING_DIRECTION</span><span class="p">:</span> <span class="s2">"output_scalar_spreading_direction"</span><span class="p">,</span>
+    <span class="n">OutputScalarType</span><span class="o">.</span><span class="n">SPREADING_OBLIQUITY</span><span class="p">:</span> <span class="s2">"output_scalar_spreading_obliquity"</span><span class="p">,</span>
+<span class="p">}</span>
+<span class="n">_OUTPUT_SCALAR_TYPE_NAMES</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="n">OutputScalarType</span><span class="o">.</span><span class="n">AGE</span><span class="p">:</span> <span class="s2">"Age"</span><span class="p">,</span>
+    <span class="n">OutputScalarType</span><span class="o">.</span><span class="n">SPREADING_RATE</span><span class="p">:</span> <span class="s2">"SpreadingRate"</span><span class="p">,</span>
+    <span class="n">OutputScalarType</span><span class="o">.</span><span class="n">SPREADING_ASYMMETRY</span><span class="p">:</span> <span class="s2">"SpreadingAsymmetry"</span><span class="p">,</span>
+    <span class="n">OutputScalarType</span><span class="o">.</span><span class="n">FULL_SPREADING_RATE</span><span class="p">:</span> <span class="s2">"FullSpreadingRate"</span><span class="p">,</span>
+    <span class="n">OutputScalarType</span><span class="o">.</span><span class="n">SPREADING_DIRECTION</span><span class="p">:</span> <span class="s2">"SpreadingDirection"</span><span class="p">,</span>
+    <span class="n">OutputScalarType</span><span class="o">.</span><span class="n">SPREADING_OBLIQUITY</span><span class="p">:</span> <span class="s2">"SpreadingObliquity"</span><span class="p">,</span>
+<span class="p">}</span>
+
+
+<span class="c1"># This implementation was based on https://github.com/EarthByte/presentday-agegridding/blob/master/compute_agegrid.sh</span>
+<div class="viewcode-block" id="IsochronSeafloorGrid">
+<a class="viewcode-back" href="../../../generated/gplately.IsochronSeafloorGrid.html#gplately.IsochronSeafloorGrid">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">IsochronSeafloorGrid</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Using isochrons interpolation to genereate seafloor grids.</span>
+<span class="sd">    """</span>
+
+<div class="viewcode-block" id="IsochronSeafloorGrid.__init__">
+<a class="viewcode-back" href="../../../generated/gplately.IsochronSeafloorGrid.html#gplately.IsochronSeafloorGrid.__init__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">plate_reconstruction</span><span class="p">:</span> <span class="n">PlateReconstruction</span><span class="p">,</span>
+        <span class="n">time_steps</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="nb">list</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">ridges</span><span class="p">:</span> <span class="n">FeatureCollectionInput</span><span class="p">,</span>
+        <span class="n">isochrons</span><span class="p">:</span> <span class="n">FeatureCollectionInput</span><span class="p">,</span>
+        <span class="n">iso_cob</span><span class="p">:</span> <span class="n">FeatureCollectionInput</span><span class="p">,</span>
+        <span class="n">continental_polygons</span><span class="p">:</span> <span class="n">FeatureCollectionInput</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">grid_region</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"d"</span><span class="p">,</span>
+        <span class="n">grid_spacing</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">=</span> <span class="s2">"0.1d"</span><span class="p">,</span>  <span class="c1"># degrees</span>
+        <span class="n">interval_spacing_degrees</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">,</span>
+        <span class="n">grid_output_dir</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span> <span class="o">=</span> <span class="s2">"seafloor_grids_by_isochron_interpolation"</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Create an IsochronSeafloorGrid instance."""</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_plate_reconstruction</span> <span class="o">=</span> <span class="n">plate_reconstruction</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_time_steps</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">time_steps</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_ridges</span><span class="p">:</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">FeatureCollection</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">ridges</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ridges</span><span class="p">,</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">FeatureCollection</span><span class="p">)</span>
+            <span class="k">else</span> <span class="n">load_feature_collection</span><span class="p">(</span><span class="n">ridges</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_isochrons</span><span class="p">:</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">FeatureCollection</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">isochrons</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">isochrons</span><span class="p">,</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">FeatureCollection</span><span class="p">)</span>
+            <span class="k">else</span> <span class="n">load_feature_collection</span><span class="p">(</span><span class="n">isochrons</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_iso_cob</span><span class="p">:</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">FeatureCollection</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">iso_cob</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">iso_cob</span><span class="p">,</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">FeatureCollection</span><span class="p">)</span>
+            <span class="k">else</span> <span class="n">load_feature_collection</span><span class="p">(</span><span class="n">iso_cob</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_continental_polygons</span><span class="p">:</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">FeatureCollection</span> <span class="o">|</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">continental_polygons</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span>
+            <span class="n">continental_polygons</span><span class="p">,</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">FeatureCollection</span>
+        <span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_continental_polygons</span> <span class="o">=</span> <span class="n">continental_polygons</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_continental_polygons</span> <span class="o">=</span> <span class="n">load_feature_collection</span><span class="p">(</span><span class="n">continental_polygons</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_interval_spacing_radians</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="n">interval_spacing_degrees</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">grid_region</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="n">grid_region</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">"global"</span><span class="p">:</span>
+            <span class="n">grid_region</span> <span class="o">=</span> <span class="s2">"d"</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_grid_region</span> <span class="o">=</span> <span class="n">grid_region</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_grid_spacing</span> <span class="o">=</span> <span class="n">grid_spacing</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_grid_output_dir</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">grid_output_dir</span><span class="p">)</span></div>
+
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">time_steps</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_time_steps</span>
+
+<div class="viewcode-block" id="IsochronSeafloorGrid.generate">
+<a class="viewcode-back" href="../../../generated/gplately.IsochronSeafloorGrid.html#gplately.IsochronSeafloorGrid.generate">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">generate</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">output_scalar_types</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="n">OutputScalarType</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Generate the seafloor grids by isochron interpolation.</span>
+<span class="sd">        """</span>
+        <span class="k">if</span> <span class="n">output_scalar_types</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">output_scalar_types</span> <span class="o">=</span> <span class="n">_DEFAULT_OUTPUT_SCALAR_TYPES</span>
+
+        <span class="n">invalid_output_scalar_types</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">output_scalar_type</span>
+            <span class="k">for</span> <span class="n">output_scalar_type</span> <span class="ow">in</span> <span class="n">output_scalar_types</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">output_scalar_type</span><span class="p">,</span> <span class="n">OutputScalarType</span><span class="p">)</span>
+        <span class="p">]</span>
+        <span class="k">if</span> <span class="n">invalid_output_scalar_types</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+                <span class="s2">"output_scalar_types must contain only OutputScalarType values: "</span>
+                <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">invalid_output_scalar_types</span><span class="si">!r}</span><span class="s2">"</span>
+            <span class="p">)</span>
+
+        <span class="n">output_scalar_types</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">output_scalar_types</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">_time</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_steps</span><span class="p">:</span>
+            <span class="n">rotation_model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_plate_reconstruction</span><span class="o">.</span><span class="n">rotation_model</span>
+
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"Current reconstruction time is </span><span class="si">%s</span><span class="s2"> Ma"</span><span class="p">,</span> <span class="n">_time</span><span class="p">)</span>
+
+            <span class="n">_valid_isochrons</span> <span class="o">=</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">FeatureCollection</span><span class="p">(</span>
+                <span class="p">[</span>
+                    <span class="n">feature</span>
+                    <span class="k">for</span> <span class="n">feature</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_isochrons</span>
+                    <span class="k">if</span> <span class="n">feature</span><span class="o">.</span><span class="n">get_valid_time</span><span class="p">()[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">_time</span>
+                <span class="p">]</span>
+            <span class="p">)</span>
+
+            <span class="n">_valid_ridges</span> <span class="o">=</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">FeatureCollection</span><span class="p">(</span>
+                <span class="p">[</span>
+                    <span class="n">feature</span>
+                    <span class="k">for</span> <span class="n">feature</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ridges</span>
+                    <span class="k">if</span> <span class="n">feature</span><span class="o">.</span><span class="n">get_valid_time</span><span class="p">()[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">_time</span>
+                <span class="p">]</span>
+            <span class="p">)</span>
+
+            <span class="n">_valid_iso_cob</span> <span class="o">=</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">FeatureCollection</span><span class="p">(</span>
+                <span class="p">[</span>
+                    <span class="n">feature</span>
+                    <span class="k">for</span> <span class="n">feature</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_iso_cob</span>
+                    <span class="k">if</span> <span class="n">feature</span><span class="o">.</span><span class="n">get_valid_time</span><span class="p">()[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">_time</span>
+                <span class="p">]</span>
+            <span class="p">)</span>
+
+            <span class="c1"># The spacing between lines (in radians) at which to generate interpolated isochrons.</span>
+            <span class="c1"># Note that 'tessellate_threshold_radians' is the spacing ALONG lines.</span>
+            <span class="n">interval_spacing_radians</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_interval_spacing_radians</span>
+
+            <span class="c1"># Keywords arguments for the interpolate_isochrons() function.</span>
+            <span class="n">interpolate_isochrons_kwargs</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="n">interpolate_isochrons_kwargs</span><span class="p">[</span><span class="s2">"print_debug_output"</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="n">interpolate_isochrons_kwargs</span><span class="p">[</span><span class="s2">"tessellate_threshold_radians"</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">interval_spacing_radians</span>  <span class="c1"># Make spacing the same along *and* between lines.</span>
+            <span class="p">)</span>
+            <span class="c1"># This is where we enable/disable outputing of various scalar types.</span>
+            <span class="k">for</span> <span class="p">(</span>
+                <span class="n">output_scalar_type</span><span class="p">,</span>
+                <span class="n">setting_name</span><span class="p">,</span>
+            <span class="p">)</span> <span class="ow">in</span> <span class="n">_OUTPUT_SCALAR_TYPE_SETTINGS</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="n">interpolate_isochrons_kwargs</span><span class="p">[</span><span class="n">setting_name</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="n">output_scalar_type</span> <span class="ow">in</span> <span class="n">output_scalar_types</span>
+                <span class="p">)</span>
+
+            <span class="n">output_features</span> <span class="o">=</span> <span class="n">isopolate</span><span class="o">.</span><span class="n">interpolate_isochrons</span><span class="p">(</span>
+                <span class="n">rotation_model</span><span class="p">,</span>
+                <span class="p">(</span><span class="n">_valid_ridges</span><span class="p">,</span> <span class="n">_valid_isochrons</span><span class="p">,</span> <span class="n">_valid_iso_cob</span><span class="p">),</span>
+                <span class="n">interval_spacing_radians</span><span class="p">,</span>
+                <span class="c1"># Unpack the keyword arguments dict into keyword arguments...</span>
+                <span class="o">**</span><span class="n">interpolate_isochrons_kwargs</span><span class="p">,</span>
+            <span class="p">)</span>
+
+            <span class="n">scalar_types</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="n">pygplates</span><span class="o">.</span><span class="n">ScalarType</span><span class="o">.</span><span class="n">create_gpml</span><span class="p">(</span>
+                    <span class="n">_OUTPUT_SCALAR_TYPE_NAMES</span><span class="p">[</span><span class="n">output_scalar_type</span><span class="p">]</span>
+                <span class="p">)</span>
+                <span class="k">for</span> <span class="n">output_scalar_type</span> <span class="ow">in</span> <span class="n">OutputScalarType</span>
+                <span class="k">if</span> <span class="n">output_scalar_type</span> <span class="ow">in</span> <span class="n">output_scalar_types</span>
+            <span class="p">]</span>
+
+            <span class="n">gdf</span> <span class="o">=</span> <span class="n">isopolate</span><span class="o">.</span><span class="n">get_geodataframe_from_coverage_features</span><span class="p">(</span>
+                <span class="n">output_features</span><span class="p">,</span>
+                <span class="n">output_scalar_types</span><span class="o">=</span><span class="n">scalar_types</span><span class="p">,</span>
+                <span class="n">rotation_model</span><span class="o">=</span><span class="n">rotation_model</span><span class="p">,</span>
+                <span class="n">reconstruction_time</span><span class="o">=</span><span class="n">_time</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="p">(</span>
+                <span class="n">_time</span> <span class="o">&gt;=</span> <span class="mi">0</span>
+                <span class="ow">and</span> <span class="n">OutputScalarType</span><span class="o">.</span><span class="n">AGE</span> <span class="ow">in</span> <span class="n">output_scalar_types</span>
+                <span class="ow">and</span> <span class="s2">"gpml:Age"</span> <span class="ow">in</span> <span class="n">gdf</span><span class="o">.</span><span class="n">columns</span>
+            <span class="p">):</span>
+                <span class="n">gdf</span><span class="p">[</span><span class="s2">"gpml:Age"</span><span class="p">]</span> <span class="o">=</span> <span class="n">gdf</span><span class="p">[</span><span class="s2">"gpml:Age"</span><span class="p">]</span> <span class="o">-</span> <span class="n">_time</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">"Interpolated GeoDataFrame:</span><span class="se">\n</span><span class="si">%s</span><span class="s2">"</span><span class="p">,</span> <span class="n">gdf</span><span class="p">)</span>
+
+            <span class="c1"># Computed once per time step and reused for every scalar type below —</span>
+            <span class="c1"># it doesn't depend on the scalar type, and rasterizing/writing it</span>
+            <span class="c1"># repeatedly per scalar type was wasted work.</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_continental_polygons</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">mask</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_continent_mask</span><span class="p">(</span><span class="n">_time</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">mask</span> <span class="o">=</span> <span class="kc">None</span>
+
+            <span class="c1"># Build one NetCDF grid for each selected scalar type.</span>
+            <span class="k">for</span> <span class="n">output_scalar_type</span> <span class="ow">in</span> <span class="n">output_scalar_types</span><span class="p">:</span>
+                <span class="n">scalar_column</span> <span class="o">=</span> <span class="n">output_scalar_type</span><span class="o">.</span><span class="n">gpml_column</span>
+                <span class="k">if</span> <span class="n">scalar_column</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">gdf</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+                    <span class="k">continue</span>
+
+                <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">gdf</span><span class="p">,</span> <span class="s2">"geometry"</span><span class="p">):</span>
+                    <span class="n">lons</span> <span class="o">=</span> <span class="n">gdf</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">x</span>
+                    <span class="n">lats</span> <span class="o">=</span> <span class="n">gdf</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">y</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                        <span class="s2">"Expected geometry column in interpolated GeoDataFrame."</span>
+                    <span class="p">)</span>
+
+                <span class="n">xyz_table</span> <span class="o">=</span> <span class="n">gdf</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+                <span class="n">xyz_table</span><span class="p">[</span><span class="s2">"lon"</span><span class="p">]</span> <span class="o">=</span> <span class="n">lons</span>
+                <span class="n">xyz_table</span><span class="p">[</span><span class="s2">"lat"</span><span class="p">]</span> <span class="o">=</span> <span class="n">lats</span>
+                <span class="n">xyz_table</span> <span class="o">=</span> <span class="n">xyz_table</span><span class="p">[[</span><span class="s2">"lon"</span><span class="p">,</span> <span class="s2">"lat"</span><span class="p">,</span> <span class="n">scalar_column</span><span class="p">]]</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
+
+                <span class="k">if</span> <span class="n">xyz_table</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
+                    <span class="k">continue</span>
+
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                    <span class="s2">"Running sphinterpolate for </span><span class="si">%s</span><span class="s2"> at </span><span class="si">%s</span><span class="s2"> Ma"</span><span class="p">,</span>
+                    <span class="n">output_scalar_type</span><span class="o">.</span><span class="n">gpml_name</span><span class="p">,</span>
+                    <span class="n">_time</span><span class="p">,</span>
+                <span class="p">)</span>
+
+                <span class="n">median_table</span> <span class="o">=</span> <span class="n">pygmt</span><span class="o">.</span><span class="n">blockmedian</span><span class="p">(</span>
+                    <span class="n">data</span><span class="o">=</span><span class="n">xyz_table</span><span class="p">,</span>
+                    <span class="n">region</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_grid_region</span><span class="p">,</span>
+                    <span class="n">spacing</span><span class="o">=</span><span class="p">(</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_grid_spacing</span>
+                        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_grid_spacing</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span>
+                        <span class="k">else</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_grid_spacing</span><span class="si">}</span><span class="s2">d"</span>
+                    <span class="p">),</span>
+                <span class="p">)</span>
+
+                <span class="n">scalar_dir_base</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_grid_output_dir</span>
+                    <span class="o">/</span> <span class="sa">f</span><span class="s2">"isochron_seafloor_</span><span class="si">{</span><span class="n">output_scalar_type</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="si">}</span><span class="s2">"</span>
+                <span class="p">)</span>
+                <span class="k">if</span> <span class="n">mask</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">scalar_dir</span> <span class="o">=</span> <span class="n">scalar_dir_base</span> <span class="o">/</span> <span class="s2">"NoMask"</span>
+                    <span class="n">scalar_dir</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                    <span class="n">grid_path</span> <span class="o">=</span> <span class="n">scalar_dir</span> <span class="o">/</span> <span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">"seafloor_</span><span class="si">{</span><span class="n">output_scalar_type</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="si">}</span><span class="s2">_grid_nomask_</span><span class="si">{</span><span class="n">_time</span><span class="si">}</span><span class="s2">Ma.nc"</span>
+                    <span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">scalar_dir</span> <span class="o">=</span> <span class="n">scalar_dir_base</span> <span class="o">/</span> <span class="s2">"Masked"</span>
+                    <span class="n">scalar_dir</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                    <span class="n">grid_path</span> <span class="o">=</span> <span class="n">scalar_dir</span> <span class="o">/</span> <span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">"seafloor_</span><span class="si">{</span><span class="n">output_scalar_type</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="si">}</span><span class="s2">_grid_masked_</span><span class="si">{</span><span class="n">_time</span><span class="si">}</span><span class="s2">Ma.nc"</span>
+                    <span class="p">)</span>
+
+                <span class="n">grid</span> <span class="o">=</span> <span class="n">pygmt</span><span class="o">.</span><span class="n">sphinterpolate</span><span class="p">(</span>
+                    <span class="n">data</span><span class="o">=</span><span class="n">median_table</span><span class="p">,</span>
+                    <span class="n">region</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_grid_region</span><span class="p">,</span>
+                    <span class="n">spacing</span><span class="o">=</span><span class="p">(</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_grid_spacing</span>
+                        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_grid_spacing</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span>
+                        <span class="k">else</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_grid_spacing</span><span class="si">}</span><span class="s2">d"</span>
+                    <span class="p">),</span>
+                    <span class="n">Q</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="k">if</span> <span class="n">grid</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">"pygmt.sphinterpolate returned no grid for "</span>
+                        <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">output_scalar_type</span><span class="o">.</span><span class="n">gpml_name</span><span class="si">}</span><span class="s2"> at </span><span class="si">{</span><span class="n">_time</span><span class="si">}</span><span class="s2"> Ma."</span>
+                    <span class="p">)</span>
+                <span class="c1"># GMT may not honour the requested spacing/region exactly, so resample</span>
+                <span class="c1"># onto the exact target grid to guarantee the expected output size.</span>
+                <span class="n">target_lon</span><span class="p">,</span> <span class="n">target_lat</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_target_lon_lat</span><span class="p">()</span>
+                <span class="n">grid</span> <span class="o">=</span> <span class="n">grid</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="n">lon</span><span class="o">=</span><span class="n">target_lon</span><span class="p">,</span> <span class="n">lat</span><span class="o">=</span><span class="n">target_lat</span><span class="p">)</span>
+                <span class="c1"># Prevent small negative artifacts introduced by interpolation.</span>
+                <span class="n">clipped_grid</span> <span class="o">=</span> <span class="n">grid</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="nb">min</span><span class="o">=</span><span class="mf">0.01</span><span class="p">)</span>
+                <span class="n">finite_values</span> <span class="o">=</span> <span class="n">clipped_grid</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">clipped_grid</span><span class="o">.</span><span class="n">values</span><span class="p">)]</span>
+                <span class="k">if</span> <span class="n">finite_values</span><span class="o">.</span><span class="n">size</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">min_value</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">finite_values</span><span class="p">))</span>
+                    <span class="n">max_value</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">finite_values</span><span class="p">))</span>
+                    <span class="n">clipped_grid</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">"actual_range"</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+                        <span class="p">[</span><span class="n">min_value</span><span class="p">,</span> <span class="n">max_value</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span>
+                    <span class="p">)</span>
+                    <span class="n">clipped_grid</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">"valid_min"</span><span class="p">]</span> <span class="o">=</span> <span class="n">min_value</span>
+                    <span class="n">clipped_grid</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">"valid_max"</span><span class="p">]</span> <span class="o">=</span> <span class="n">max_value</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">clipped_grid</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">"actual_range"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+                <span class="k">if</span> <span class="n">mask</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">clipped_grid</span><span class="o">.</span><span class="n">to_netcdf</span><span class="p">(</span><span class="n">grid_path</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">masked_grid</span> <span class="o">=</span> <span class="n">clipped_grid</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">mask</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span>
+                    <span class="n">masked_grid</span><span class="o">.</span><span class="n">to_netcdf</span><span class="p">(</span><span class="n">grid_path</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_target_lon_lat</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">"""Compute the exact lon/lat node coordinates for grid_region/grid_spacing."""</span>
+        <span class="n">minx</span><span class="p">,</span> <span class="n">maxx</span><span class="p">,</span> <span class="n">miny</span><span class="p">,</span> <span class="n">maxy</span> <span class="o">=</span> <span class="n">_parse_gmt_region</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_grid_region</span><span class="p">)</span>
+        <span class="n">spacing</span> <span class="o">=</span> <span class="n">_parse_gmt_spacing</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_grid_spacing</span><span class="p">)</span>
+        <span class="n">nx</span> <span class="o">=</span> <span class="nb">round</span><span class="p">((</span><span class="n">maxx</span> <span class="o">-</span> <span class="n">minx</span><span class="p">)</span> <span class="o">/</span> <span class="n">spacing</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="n">ny</span> <span class="o">=</span> <span class="nb">round</span><span class="p">((</span><span class="n">maxy</span> <span class="o">-</span> <span class="n">miny</span><span class="p">)</span> <span class="o">/</span> <span class="n">spacing</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">minx</span><span class="p">,</span> <span class="n">maxx</span><span class="p">,</span> <span class="n">nx</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">miny</span><span class="p">,</span> <span class="n">maxy</span><span class="p">,</span> <span class="n">ny</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_continent_mask</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">time</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">save</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xarray</span><span class="o">.</span><span class="n">DataArray</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_continental_polygons</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">"Cannot generate continent mask grid because continental polygons are not provided."</span>
+            <span class="p">)</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"Generating continent mask grid..."</span><span class="p">)</span>
+
+        <span class="n">reconstructed_polygons</span> <span class="o">=</span> <span class="n">pygplates_to_shapely</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_plate_reconstruction</span><span class="o">.</span><span class="n">reconstruct</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_continental_polygons</span><span class="p">,</span> <span class="n">time</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">reconstructed_polygons</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="n">reconstructed_polygons</span> <span class="o">=</span> <span class="p">[</span><span class="n">reconstructed_polygons</span><span class="p">]</span>
+
+        <span class="n">lon</span><span class="p">,</span> <span class="n">lat</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_target_lon_lat</span><span class="p">()</span>
+        <span class="n">nx</span><span class="p">,</span> <span class="n">ny</span> <span class="o">=</span> <span class="n">lon</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="n">lat</span><span class="o">.</span><span class="n">size</span>
+        <span class="k">if</span> <span class="n">nx</span> <span class="o">&lt;</span> <span class="mi">2</span> <span class="ow">or</span> <span class="n">ny</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">"Grid must have at least 2 nodes per axis to rasterize a mask "</span>
+                <span class="sa">f</span><span class="s2">"(got nx=</span><span class="si">{</span><span class="n">nx</span><span class="si">}</span><span class="s2">, ny=</span><span class="si">{</span><span class="n">ny</span><span class="si">}</span><span class="s2">)."</span>
+            <span class="p">)</span>
+        <span class="n">minx</span><span class="p">,</span> <span class="n">maxx</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">lon</span><span class="o">.</span><span class="n">min</span><span class="p">()),</span> <span class="nb">float</span><span class="p">(</span><span class="n">lon</span><span class="o">.</span><span class="n">max</span><span class="p">())</span>
+        <span class="n">miny</span><span class="p">,</span> <span class="n">maxy</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">lat</span><span class="o">.</span><span class="n">min</span><span class="p">()),</span> <span class="nb">float</span><span class="p">(</span><span class="n">lat</span><span class="o">.</span><span class="n">max</span><span class="p">())</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">reconstructed_polygons</span><span class="p">:</span>
+            <span class="c1"># No continental polygons at this reconstruction time.</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                <span class="s2">"No continental polygons found at </span><span class="si">%s</span><span class="s2"> Ma; mask is all-ocean."</span><span class="p">,</span> <span class="n">time</span>
+            <span class="p">)</span>
+            <span class="n">mask_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">ny</span><span class="p">,</span> <span class="n">nx</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># lon/lat are node (pixel-center) coordinates from linspace, spanning</span>
+            <span class="c1"># nx and ny *points*, i.e. (nx-1)/(ny-1) intervals. rasterio's</span>
+            <span class="c1"># from_bounds() instead treats nx/ny as cell *counts* spanning the</span>
+            <span class="c1"># bounds, which would shift pixel centers off the lon/lat nodes</span>
+            <span class="c1"># (worse the larger the grid). Build the affine transform directly so</span>
+            <span class="c1"># pixel centers land exactly on the lon/lat node coordinates instead.</span>
+            <span class="n">dx</span> <span class="o">=</span> <span class="p">(</span><span class="n">maxx</span> <span class="o">-</span> <span class="n">minx</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">nx</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">dy</span> <span class="o">=</span> <span class="p">(</span><span class="n">maxy</span> <span class="o">-</span> <span class="n">miny</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">ny</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">transform</span> <span class="o">=</span> <span class="n">_from_origin</span><span class="p">(</span><span class="n">minx</span> <span class="o">-</span> <span class="n">dx</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="n">maxy</span> <span class="o">+</span> <span class="n">dy</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="n">dx</span><span class="p">,</span> <span class="n">dy</span><span class="p">)</span>
+            <span class="n">mask_array</span> <span class="o">=</span> <span class="n">_rasterize</span><span class="p">(</span>
+                <span class="n">shapes</span><span class="o">=</span><span class="nb">zip</span><span class="p">(</span><span class="n">reconstructed_polygons</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">reconstructed_polygons</span><span class="p">)),</span>
+                <span class="n">out_shape</span><span class="o">=</span><span class="p">(</span><span class="n">ny</span><span class="p">,</span> <span class="n">nx</span><span class="p">),</span>
+                <span class="n">fill</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">,</span>
+                <span class="n">merge_alg</span><span class="o">=</span><span class="n">_MergeAlg</span><span class="o">.</span><span class="n">replace</span><span class="p">,</span>
+                <span class="n">transform</span><span class="o">=</span><span class="n">transform</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="n">mask_array</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">"Failed to rasterize continental polygons at </span><span class="si">{</span><span class="n">time</span><span class="si">}</span><span class="s2"> Ma."</span>
+                <span class="p">)</span>
+        <span class="c1"># rasterize's row 0 is the top (maxy); flip to match ascending lat coordinates.</span>
+        <span class="n">mask_array</span> <span class="o">=</span> <span class="n">mask_array</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]</span>
+
+        <span class="n">mask_grid</span> <span class="o">=</span> <span class="n">xarray</span><span class="o">.</span><span class="n">DataArray</span><span class="p">(</span>
+            <span class="n">mask_array</span><span class="p">,</span>
+            <span class="n">dims</span><span class="o">=</span><span class="p">[</span><span class="s2">"lat"</span><span class="p">,</span> <span class="s2">"lon"</span><span class="p">],</span>
+            <span class="n">coords</span><span class="o">=</span><span class="p">{</span><span class="s2">"lon"</span><span class="p">:</span> <span class="n">lon</span><span class="p">,</span> <span class="s2">"lat"</span><span class="p">:</span> <span class="n">lat</span><span class="p">},</span>
+            <span class="n">name</span><span class="o">=</span><span class="s2">"continent_mask"</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">mask_grid</span><span class="o">.</span><span class="n">lon</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+            <span class="p">{</span><span class="s2">"standard_name"</span><span class="p">:</span> <span class="s2">"longitude"</span><span class="p">,</span> <span class="s2">"units"</span><span class="p">:</span> <span class="s2">"degrees_east"</span><span class="p">,</span> <span class="s2">"axis"</span><span class="p">:</span> <span class="s2">"X"</span><span class="p">}</span>
+        <span class="p">)</span>
+        <span class="n">mask_grid</span><span class="o">.</span><span class="n">lat</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+            <span class="p">{</span><span class="s2">"standard_name"</span><span class="p">:</span> <span class="s2">"latitude"</span><span class="p">,</span> <span class="s2">"units"</span><span class="p">:</span> <span class="s2">"degrees_north"</span><span class="p">,</span> <span class="s2">"axis"</span><span class="p">:</span> <span class="s2">"Y"</span><span class="p">}</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">save</span><span class="p">:</span>
+            <span class="n">continent_mask_dir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_grid_output_dir</span> <span class="o">/</span> <span class="s2">"continent_mask"</span>
+            <span class="n">continent_mask_dir</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">continent_mask_path</span> <span class="o">=</span> <span class="n">continent_mask_dir</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">"continent_mask_</span><span class="si">{</span><span class="n">time</span><span class="si">}</span><span class="s2">_Ma.nc"</span>
+            <span class="n">mask_grid</span><span class="o">.</span><span class="n">to_netcdf</span><span class="p">(</span><span class="n">continent_mask_path</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Continent mask grid saved to </span><span class="si">{</span><span class="n">continent_mask_path</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">mask_grid</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023-2026, The University of Sydney.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

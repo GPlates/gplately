@@ -1,0 +1,33 @@
+﻿gplately.PlateModelManager
+==========================
+
+.. currentmodule:: gplately
+
+.. autoclass:: PlateModelManager
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~PlateModelManager.__init__
+      ~PlateModelManager.download_all_models
+      ~PlateModelManager.get_available_model_names
+      ~PlateModelManager.get_default_repo_url
+      ~PlateModelManager.get_local_available_model_names
+      ~PlateModelManager.get_model
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~PlateModelManager.models
+   
+   

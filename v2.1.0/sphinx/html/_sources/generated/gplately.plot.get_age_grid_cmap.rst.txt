@@ -1,0 +1,6 @@
+﻿gplately.plot.get\_age\_grid\_cmap
+==================================
+
+.. currentmodule:: gplately.plot
+
+.. autofunction:: get_age_grid_cmap

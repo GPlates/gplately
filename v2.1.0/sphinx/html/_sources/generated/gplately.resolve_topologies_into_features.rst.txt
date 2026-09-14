@@ -1,0 +1,6 @@
+﻿gplately.resolve\_topologies\_into\_features
+============================================
+
+.. currentmodule:: gplately
+
+.. autofunction:: resolve_topologies_into_features

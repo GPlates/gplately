@@ -1,0 +1,104 @@
+﻿gplately.PlotTopologies
+=======================
+
+.. currentmodule:: gplately
+
+.. autoclass:: PlotTopologies
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~PlotTopologies.__init__
+      ~PlotTopologies.get_all_topological_sections
+      ~PlotTopologies.get_all_topologies
+      ~PlotTopologies.get_coastlines
+      ~PlotTopologies.get_continent_ocean_boundaries
+      ~PlotTopologies.get_continental_crusts
+      ~PlotTopologies.get_continental_rifts
+      ~PlotTopologies.get_continents
+      ~PlotTopologies.get_extended_continental_crusts
+      ~PlotTopologies.get_faults
+      ~PlotTopologies.get_feature
+      ~PlotTopologies.get_fracture_zones
+      ~PlotTopologies.get_inferred_paleo_boundaries
+      ~PlotTopologies.get_misc_boundaries
+      ~PlotTopologies.get_misc_transforms
+      ~PlotTopologies.get_orogenic_belts
+      ~PlotTopologies.get_passive_continental_boundaries
+      ~PlotTopologies.get_ridges
+      ~PlotTopologies.get_ridges_and_transforms
+      ~PlotTopologies.get_slab_edges
+      ~PlotTopologies.get_subduction_direction
+      ~PlotTopologies.get_sutures
+      ~PlotTopologies.get_terrane_boundaries
+      ~PlotTopologies.get_topological_plate_boundaries
+      ~PlotTopologies.get_transforms
+      ~PlotTopologies.get_transitional_crusts
+      ~PlotTopologies.get_trenches
+      ~PlotTopologies.get_unclassified_features
+      ~PlotTopologies.plot_all_topological_sections
+      ~PlotTopologies.plot_all_topologies
+      ~PlotTopologies.plot_coastlines
+      ~PlotTopologies.plot_continent_ocean_boundaries
+      ~PlotTopologies.plot_continental_crusts
+      ~PlotTopologies.plot_continental_rifts
+      ~PlotTopologies.plot_continents
+      ~PlotTopologies.plot_extended_continental_crusts
+      ~PlotTopologies.plot_faults
+      ~PlotTopologies.plot_feature
+      ~PlotTopologies.plot_fracture_zones
+      ~PlotTopologies.plot_grid
+      ~PlotTopologies.plot_grid_from_netCDF
+      ~PlotTopologies.plot_inferred_paleo_boundaries
+      ~PlotTopologies.plot_misc_boundaries
+      ~PlotTopologies.plot_misc_transforms
+      ~PlotTopologies.plot_orogenic_belts
+      ~PlotTopologies.plot_passive_continental_boundaries
+      ~PlotTopologies.plot_plate_id
+      ~PlotTopologies.plot_plate_motion_vectors
+      ~PlotTopologies.plot_plate_polygon_by_id
+      ~PlotTopologies.plot_pole
+      ~PlotTopologies.plot_ridges
+      ~PlotTopologies.plot_ridges_and_transforms
+      ~PlotTopologies.plot_slab_edges
+      ~PlotTopologies.plot_subduction_teeth
+      ~PlotTopologies.plot_sutures
+      ~PlotTopologies.plot_terrane_boundaries
+      ~PlotTopologies.plot_topological_plate_boundaries
+      ~PlotTopologies.plot_transforms
+      ~PlotTopologies.plot_transitional_crusts
+      ~PlotTopologies.plot_trenches
+      ~PlotTopologies.plot_unclassified_features
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~PlotTopologies.anchor_plate_id
+      ~PlotTopologies.misc_transforms
+      ~PlotTopologies.ridge_transforms
+      ~PlotTopologies.ridges
+      ~PlotTopologies.time
+      ~PlotTopologies.topological_plate_boundaries
+      ~PlotTopologies.topologies
+      ~PlotTopologies.transforms
+      ~PlotTopologies.plate_reconstruction
+      ~PlotTopologies.base_projection
+      ~PlotTopologies.coastlines
+      ~PlotTopologies.continents
+      ~PlotTopologies.COBs
+      ~PlotTopologies.trenches
+      ~PlotTopologies.trench_left
+      ~PlotTopologies.trench_right
+      ~PlotTopologies.other
+   
+   

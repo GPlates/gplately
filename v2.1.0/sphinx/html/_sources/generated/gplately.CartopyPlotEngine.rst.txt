@@ -1,0 +1,28 @@
+﻿gplately.CartopyPlotEngine
+==========================
+
+.. currentmodule:: gplately
+
+.. autoclass:: CartopyPlotEngine
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~CartopyPlotEngine.__init__
+      ~CartopyPlotEngine.plot_geo_data_frame
+      ~CartopyPlotEngine.plot_grid
+      ~CartopyPlotEngine.plot_plate_motion_vectors
+      ~CartopyPlotEngine.plot_pole
+      ~CartopyPlotEngine.plot_pygplates_features
+      ~CartopyPlotEngine.plot_subduction_zones
+   
+   
+
+   
+   
+   

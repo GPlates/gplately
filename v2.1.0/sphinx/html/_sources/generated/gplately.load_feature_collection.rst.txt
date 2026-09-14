@@ -1,0 +1,6 @@
+﻿gplately.load\_feature\_collection
+==================================
+
+.. currentmodule:: gplately
+
+.. autofunction:: load_feature_collection

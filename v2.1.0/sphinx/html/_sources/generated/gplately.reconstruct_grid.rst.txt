@@ -1,0 +1,6 @@
+﻿gplately.reconstruct\_grid
+==========================
+
+.. currentmodule:: gplately
+
+.. autofunction:: reconstruct_grid

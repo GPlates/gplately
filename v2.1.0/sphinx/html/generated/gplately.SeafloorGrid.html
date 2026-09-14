@@ -1,0 +1,358 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>gplately.SeafloorGrid &mdash; gplately 2.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+
+  
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=51b770b3"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="gplately.TopologySeafloorGrid" href="gplately.TopologySeafloorGrid.html" />
+    <link rel="prev" title="gplately.PlotTopologies" href="gplately.PlotTopologies.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            gplately
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../basic_usages.html">Minimal Working Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../use_cases.html">Common Use Cases</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../faq.html">Troubleshooting and FAQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../command_line_interface.html">Command Line Interface (CLI)</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../api.html">Main Classes</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="gplately.DataServer.html">gplately.DataServer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gplately.PlateReconstruction.html">gplately.PlateReconstruction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gplately.Points.html">gplately.Points</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gplately.Raster.html">gplately.Raster</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gplately.PlotTopologies.html">gplately.PlotTopologies</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">gplately.SeafloorGrid</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#gplately.SeafloorGrid"><code class="docutils literal notranslate"><span class="pre">SeafloorGrid</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#gplately.SeafloorGrid.__init__"><code class="docutils literal notranslate"><span class="pre">SeafloorGrid.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gplately.SeafloorGrid.SEAFLOOR_AGE_KEY"><code class="docutils literal notranslate"><span class="pre">SeafloorGrid.SEAFLOOR_AGE_KEY</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gplately.SeafloorGrid.SPREADING_RATE_KEY"><code class="docutils literal notranslate"><span class="pre">SeafloorGrid.SPREADING_RATE_KEY</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gplately.SeafloorGrid.lat_lon_z_to_netCDF"><code class="docutils literal notranslate"><span class="pre">SeafloorGrid.lat_lon_z_to_netCDF()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gplately.SeafloorGrid.max_time"><code class="docutils literal notranslate"><span class="pre">SeafloorGrid.max_time</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gplately.SeafloorGrid.reconstruct_by_topological_model"><code class="docutils literal notranslate"><span class="pre">SeafloorGrid.reconstruct_by_topological_model()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gplately.SeafloorGrid.reconstruct_by_topologies"><code class="docutils literal notranslate"><span class="pre">SeafloorGrid.reconstruct_by_topologies()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="gplately.TopologySeafloorGrid.html">gplately.TopologySeafloorGrid</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gplately.IsochronSeafloorGrid.html">gplately.IsochronSeafloorGrid</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../functions.html">Functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../filters_and_transformers.html">Filters And Transformers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../secondaries.html">Other Classes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../plate_models.html">Plate Models</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">gplately</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../api.html">Main Classes</a></li>
+      <li class="breadcrumb-item active">gplately.SeafloorGrid</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/generated/gplately.SeafloorGrid.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="gplately-seafloorgrid">
+<h1>gplately.SeafloorGrid<a class="headerlink" href="#gplately-seafloorgrid" title="Link to this heading"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="gplately.SeafloorGrid">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">gplately.</span></span><span class="sig-name descname"><span class="pre">SeafloorGrid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">plate_reconstruction</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">ridge_time_step</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_directory</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.14)"><span class="pre">Path</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'seafloor-grid-output'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_collection</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">refinement_levels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">6</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ridge_sampling</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extent</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Tuple" title="(in Python v3.14)"><span class="pre">Tuple</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">(-180,</span> <span class="pre">180,</span> <span class="pre">-90,</span> <span class="pre">90)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grid_spacing</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">subduction_collision_parameters</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(5.0,</span> <span class="pre">10.0)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_ocean_mean_spreading_rate</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">75.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resume_from_checkpoints</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">continent_polygon_features</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_continent_contouring</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">continent_mask_filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nprocs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-2</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/grids/oceans.html#SeafloorGrid"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.SeafloorGrid" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Generate grids that track data atop global ocean basin points (which emerge from mid-ocean ridges) through geological time.</p>
+<p>This generates grids of seafloor age, seafloor spreading rate and other oceanic data from the <a class="reference internal" href="gplately.PlateReconstruction.html#gplately.PlateReconstruction" title="gplately.PlateReconstruction"><code class="xref py py-class docutils literal notranslate"><span class="pre">gplately.PlateReconstruction</span></code></a> object.
+By default, continental polygons are reconstructed to mask out continental regions.</p>
+<p>Gridding methods in this class have been adapted from Simon Williams’ development repository for an
+[auto-age-gridding workflow](<a class="reference external" href="https://github.com/siwill22/agegrid-0.1">https://github.com/siwill22/agegrid-0.1</a>).</p>
+<p>The sample jupyter notebook [10-SeafloorGrid](<a class="reference external" href="https://github.com/GPlates/gplately/blob/master/Notebooks/10-SeafloorGrids.ipynb">https://github.com/GPlates/gplately/blob/master/Notebooks/10-SeafloorGrids.ipynb</a>)
+demonstrates how the functionalities within this class work. Below you can find documentation for each of these functionalities.</p>
+<section id="methodology">
+<h2>Methodology<a class="headerlink" href="#methodology" title="Link to this heading"></a></h2>
+<p>There are two main steps that this class follows to generate grids:</p>
+<ol class="arabic simple">
+<li><p>Preparation for reconstruction by topologies</p></li>
+<li><p>Reconstruction by topologies</p></li>
+</ol>
+<p>The preparation step involves building a:</p>
+<ul class="simple">
+<li><p>global domain of initial points that populate the seafloor at <code class="docutils literal notranslate"><span class="pre">max_time</span></code>,</p></li>
+<li><p>continental mask that separates ocean points from continent regions per timestep, and</p></li>
+<li><p>set of points that emerge to the left and right of mid-ocean ridge segments per timestep, as well as the z-value to allocate to these points.</p></li>
+</ul>
+<p>First, the global domain of initial points is created using [stripy’s](<a class="reference external" href="https://github.com/underworldcode/stripy/blob/master/stripy/spherical_meshes.py#L27">https://github.com/underworldcode/stripy/blob/master/stripy/spherical_meshes.py#L27</a>)
+icosahedral triangulated mesh. The number of points in this mesh can be controlled using a <code class="docutils literal notranslate"><span class="pre">refinement_levels</span></code> integer (the larger this integer,
+the more resolved the initial ocean basin will be).</p>
+<p>![RefinementLevels](<a class="reference external" href="https://raw.githubusercontent.com/GPlates/gplately/master/Notebooks/NotebookFiles/pdoc_Files/seafloorgrid_refinement.png">https://raw.githubusercontent.com/GPlates/gplately/master/Notebooks/NotebookFiles/pdoc_Files/seafloorgrid_refinement.png</a>)</p>
+<p>These points are spatially partitioned by plate ID so they can be passed into a point-in-polygon routine.
+This identifies points that lie within continental polygon boundaries and those that are in the ocean. From this, continental masks are built
+per timestep, and the initial seed points are allocated ages at the first reconstruction timestep <code class="docutils literal notranslate"><span class="pre">max_time</span></code>. Each point’s initial age
+is calculated by dividing its proximity to the nearest MOR segment by half its assumed spreading rate. This spreading rate
+(<code class="docutils literal notranslate"><span class="pre">initial_ocean_mean_spreading_rate</span></code>) is assumed to be uniform for all points.</p>
+<p>These initial points momentarily fill the global ocean basin, and all have uniform spreading rates.
+Thus, the spreading rate grid at <code class="docutils literal notranslate"><span class="pre">max_time</span></code> will be uniformly populated with the <code class="docutils literal notranslate"><span class="pre">initial_ocean_mean_spreading_rate</span></code> (mm/yr).
+The age grid at <code class="docutils literal notranslate"><span class="pre">max_time</span></code> will look like a series of smooth, linear age gradients clearly partitioned by tectonic plates with unique plate IDs:</p>
+<p>![MaxTimeGrids](<a class="reference external" href="https://raw.githubusercontent.com/GPlates/gplately/master/Notebooks/NotebookFiles/pdoc_Files/max_time_grids.png">https://raw.githubusercontent.com/GPlates/gplately/master/Notebooks/NotebookFiles/pdoc_Files/max_time_grids.png</a>)</p>
+<p>Ridge “line” topologies are resolved at each reconstruction time step and partitioned into segments with a valid stage rotation.
+Each segment is further divided into points at a specified ridge sampling spacing (<code class="docutils literal notranslate"><span class="pre">ridge_sampling</span></code>).
+Each point is ascribed a latitude, longitude, spreading rate and age (from plate reconstruction model files, as opposed to ages of the initial ocean mesh points),
+a point index and the general z-value that will be gridded onto it.</p>
+<p>![NewRidgePoints](<a class="reference external" href="https://raw.githubusercontent.com/GPlates/gplately/master/Notebooks/NotebookFiles/pdoc_Files/new_ridge_points.png">https://raw.githubusercontent.com/GPlates/gplately/master/Notebooks/NotebookFiles/pdoc_Files/new_ridge_points.png</a>)</p>
+<p>Reconstruction by topologies involves determining which points are active and inactive (collided with a continent or subducted at a trench)
+for each reconstruction time step. This is done using a hidden object in <a class="reference internal" href="gplately.PlateReconstruction.html#gplately.PlateReconstruction" title="gplately.PlateReconstruction"><code class="xref py py-class docutils literal notranslate"><span class="pre">PlateReconstruction</span></code></a> called <code class="docutils literal notranslate"><span class="pre">ReconstructByTopologies</span></code>.</p>
+<p>If an ocean point with a certain velocity on one plate ID transitions into another rigid plate ID at another timestep (with another velocity),
+the velocity difference between both plates is calculated. The point may have subducted/collided with a continent if this velocity difference
+is higher than a specified velocity threshold (which can be controlled with <code class="docutils literal notranslate"><span class="pre">subduction_collision_parameters</span></code>). To ascertain whether the point
+should be deactivated, a displacement test is conducted. If the proximity of the point’s previous time position to the polygon boundary it is
+approaching is higher than a set distance threshold, then the point is far enough away from the boundary that it cannot be subducted or consumed by it,
+and hence the point is still active. Otherwise, it is deemed inactive and deleted from the ocean basin mesh.</p>
+<p>With each reconstruction time step, points from mid-ocean ridges (which have more accurate spreading rates and attributed valid times) will spread across
+the ocean floor. Eventually, points will be pushed into continental boundaries or subduction zones, where they are deleted. Ideally, all initial ocean points
+(from the Stripy icosahedral mesh) should be deleted over time. However, not all will be deleted - such points typically reside near continental boundaries.
+This happens if the emerged ridge points do not spread far enough to “phase out” these points at collision regions - likely due to insufficient reconstruction detail.
+These undeleted points form artefacts of anomalously high seafloor age that append over the reconstruction time range.</p>
+<p>Once reconstruction by topologies determines the ocean basin snapshot per timestep, a data frame of all longitudes, latitudes, seafloor ages, spreading rates and
+any other attributed z values will be written to a gridding input file per timestep.</p>
+<p>Each active longitude, latitude and chosen z value is gridded using nearest-neighbour interpolation and written to a netCDF4 format.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="gplately.SeafloorGrid.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">plate_reconstruction</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">ridge_time_step</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_directory</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.14)"><span class="pre">Path</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'seafloor-grid-output'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_collection</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">refinement_levels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">6</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ridge_sampling</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extent</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Tuple" title="(in Python v3.14)"><span class="pre">Tuple</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">(-180,</span> <span class="pre">180,</span> <span class="pre">-90,</span> <span class="pre">90)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grid_spacing</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">subduction_collision_parameters</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(5.0,</span> <span class="pre">10.0)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_ocean_mean_spreading_rate</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">75.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resume_from_checkpoints</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">continent_polygon_features</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_continent_contouring</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">continent_mask_filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nprocs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-2</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/grids/oceans.html#SeafloorGrid.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.SeafloorGrid.__init__" title="Link to this definition"></a></dt>
+<dd><p>Constructor. Create a <a class="reference internal" href="#gplately.SeafloorGrid" title="gplately.SeafloorGrid"><code class="xref py py-class docutils literal notranslate"><span class="pre">SeafloorGrid</span></code></a> object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>plate_reconstruction</strong> (<a class="reference internal" href="gplately.PlateReconstruction.html#gplately.PlateReconstruction" title="gplately.PlateReconstruction"><em>PlateReconstruction</em></a>) – <p>A <a class="reference internal" href="gplately.PlateReconstruction.html#gplately.PlateReconstruction" title="gplately.PlateReconstruction"><code class="xref py py-class docutils literal notranslate"><span class="pre">PlateReconstruction</span></code></a> object to provide the following essential components for seafloor gridding.</p>
+<ul>
+<li><p><a class="reference internal" href="gplately.PlateReconstruction.html#gplately.PlateReconstruction.rotation_model" title="gplately.PlateReconstruction.rotation_model"><code class="xref py py-attr docutils literal notranslate"><span class="pre">PlateReconstruction.rotation_model</span></code></a></p></li>
+<li><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">PlateReconstruction.topology_featues</span></code></p></li>
+</ul>
+</p></li>
+<li><p><strong>max_time</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – The maximum time for age gridding.</p></li>
+<li><p><strong>min_time</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – The minimum time for age gridding.</p></li>
+<li><p><strong>ridge_time_step</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – The delta time for resolving ridges (and thus age gridding).</p></li>
+<li><p><strong>save_directory</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>default=None</em>) – The top-level directory to save all outputs to.</p></li>
+<li><p><strong>file_collection</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>default=&quot;&quot;</em>) – A string to identify the plate model used (will be automated later).</p></li>
+<li><p><strong>refinement_levels</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>, </em><em>default=6</em>) – Control the number of points in the icosahedral mesh (higher integer means higher resolution of initial ocean basin).</p></li>
+<li><p><strong>ridge_sampling</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em>, </em><em>default=0.5</em>) – Spatial resolution (in degrees) at which points that emerge from ridges are tessellated.</p></li>
+<li><p><strong>extent</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><em>tuple</em></a><em> of </em><em>4</em><em>, </em><em>default=</em><em>(</em><em>-180.</em><em>,</em><em>180.</em><em>,</em><em>-90.</em><em>,</em><em>90.</em><em>)</em>) – A tuple containing the mininum longitude, maximum longitude, minimum latitude and
+maximum latitude extents for all masking and final grids.</p></li>
+<li><p><strong>grid_spacing</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em>, </em><em>default=0.1</em>) – The degree spacing/interval with which to space grid points across all masking and
+final grids. If <code class="docutils literal notranslate"><span class="pre">grid_spacing</span></code> is provided, all grids will use it. If not, <code class="docutils literal notranslate"><span class="pre">grid_spacing</span></code> defaults to 0.1.</p></li>
+<li><p><strong>subduction_collision_parameters</strong> (<em>len-2 tuple</em><em> of </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em>, </em><em>default=</em><em>(</em><em>5.0</em><em>, </em><em>10.0</em><em>)</em>) – A 2-tuple of (threshold velocity delta in kms/my, threshold distance to boundary per My in kms/my)</p></li>
+<li><p><strong>initial_ocean_mean_spreading_rate</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em>, </em><em>default=75.</em>) – A spreading rate to uniformly allocate to points that define the initial ocean
+basin. These points will have inaccurate ages, but most of them will be phased
+out after points with plate-model prescribed ages emerge from ridges and spread
+to push them towards collision boundaries (where they are deleted).</p></li>
+<li><p><strong>resume_from_checkpoints</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>default=False</em>) – If set to <code class="docutils literal notranslate"><span class="pre">True</span></code>, and gridding was interrupted in a previous run, then SeafloorGrids will resume gridding.
+All other parameters and input data should remain unchanged when resuming (otherwise the results will be indeterminate).
+If set to <code class="docutils literal notranslate"><span class="pre">False</span></code>, SeafloorGrids will start gridding from scratch.</p></li>
+<li><p><strong>continent_polygon_features</strong> (str/<cite>os.PathLike</cite>, or a sequence (eg, <cite>list</cite> or <cite>tuple</cite>) of instances of <a class="reference external" href="https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature">pygplates.Feature</a>, or a single instance of <a class="reference external" href="https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature">pygplates.Feature</a>, or an instance of <a class="reference external" href="https://www.gplates.org/docs/pygplates/generated/pygplates.featurecollection#pygplates.FeatureCollection">pygplates.FeatureCollection</a>, or a sequence of any combination of those four types, optional) – Note that this is ignored if <code class="docutils literal notranslate"><span class="pre">continent_mask_filename</span></code> is specified, otherwise this argument must be specified.
+These are the continental polygon or COB terrane polygon features to mask the seafloor grids with.
+Can be provided as a continental polygon filename, or a sequence of continental polygon features, or a single continental polygon feature,
+or a continental polygon feature collection, or a sequence (eg, a list or tuple) of any combination of those four types.</p></li>
+<li><p><strong>use_continent_contouring</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>default=False</em>) – Note that this is ignored if <code class="docutils literal notranslate"><span class="pre">continent_mask_filename</span></code> is specified.
+If <code class="docutils literal notranslate"><span class="pre">True</span></code> then builds the continent mask for a given time using ptt’s ‘continent contouring’ method
+(for more information about ‘Continent Contouring’, visit <a class="reference external" href="https://github.com/EarthByte/continent-contouring">https://github.com/EarthByte/continent-contouring</a>).
+If <code class="docutils literal notranslate"><span class="pre">False</span></code> then builds the continent masks using the continents of <code class="docutils literal notranslate"><span class="pre">continent_polygon_features</span></code>.</p></li>
+<li><p><strong>continent_mask_filename</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>optional</em>) – An optional parameter pointing to the full path to a continental mask for each timestep.
+Assuming the time is in the filename, i.e. <code class="docutils literal notranslate"><span class="pre">/path/to/continent_mask_0Ma.nc</span></code>, it should be
+passed as <code class="docutils literal notranslate"><span class="pre">/path/to/continent_mask_{}Ma.nc</span></code> with curly brackets. Include decimal formatting if needed.</p></li>
+<li><p><strong>nprocs</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>, </em><em>default=-2</em>) – The number of CPUs to use for parts of the code that are parallelized.
+Must be an integer or convertible to an integer (eg, float is rounded towards zero).
+If positive then uses that many CPUs.
+If <code class="docutils literal notranslate"><span class="pre">1</span></code> then executes in serial (ie, is not parallelized).
+If <code class="docutils literal notranslate"><span class="pre">0</span></code> then a <code class="docutils literal notranslate"><span class="pre">ValueError</span></code> is raised.
+If <code class="docutils literal notranslate"><span class="pre">-1</span></code> then all available CPUs are used.
+If <code class="docutils literal notranslate"><span class="pre">-2</span></code> then all available CPUs except one are used, etc.
+Defaults to <code class="docutils literal notranslate"><span class="pre">-2</span></code> (ie, uses all available CPUs except one to keep system responsive).</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#gplately.SeafloorGrid.__init__" title="gplately.SeafloorGrid.__init__"><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code></a>(plate_reconstruction, max_time, ...)</p></td>
+<td><p>Constructor.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#gplately.SeafloorGrid.lat_lon_z_to_netCDF" title="gplately.SeafloorGrid.lat_lon_z_to_netCDF"><code class="xref py py-obj docutils literal notranslate"><span class="pre">lat_lon_z_to_netCDF</span></code></a>(zval_name[, time_arr, ...])</p></td>
+<td><p>Produce a netCDF4 grid of a z-value identified by its <code class="docutils literal notranslate"><span class="pre">zval_name</span></code> for a given time range in <code class="docutils literal notranslate"><span class="pre">time_arr</span></code>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#gplately.SeafloorGrid.reconstruct_by_topological_model" title="gplately.SeafloorGrid.reconstruct_by_topological_model"><code class="xref py py-obj docutils literal notranslate"><span class="pre">reconstruct_by_topological_model</span></code></a>()</p></td>
+<td><p>Use <a class="reference external" href="https://www.gplates.org/docs/pygplates/generated/pygplates.TopologicalModel.html">pygplates.TopologicalModel</a>  class to reconstruct seed points.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#gplately.SeafloorGrid.reconstruct_by_topologies" title="gplately.SeafloorGrid.reconstruct_by_topologies"><code class="xref py py-obj docutils literal notranslate"><span class="pre">reconstruct_by_topologies</span></code></a>()</p></td>
+<td><p>Obtain all active ocean seed points which are points that have not been consumed at subduction zones or have not collided with continental polygons.</p></td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Attributes</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#gplately.SeafloorGrid.SEAFLOOR_AGE_KEY" title="gplately.SeafloorGrid.SEAFLOOR_AGE_KEY"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SEAFLOOR_AGE_KEY</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#gplately.SeafloorGrid.SPREADING_RATE_KEY" title="gplately.SeafloorGrid.SPREADING_RATE_KEY"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SPREADING_RATE_KEY</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#gplately.SeafloorGrid.max_time" title="gplately.SeafloorGrid.max_time"><code class="xref py py-obj docutils literal notranslate"><span class="pre">max_time</span></code></a></p></td>
+<td><p>The maximum time for age gridding.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="gplately.SeafloorGrid.SEAFLOOR_AGE_KEY">
+<span class="sig-name descname"><span class="pre">SEAFLOOR_AGE_KEY</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'SEAFLOOR_AGE'</span></span><a class="headerlink" href="#gplately.SeafloorGrid.SEAFLOOR_AGE_KEY" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="gplately.SeafloorGrid.SPREADING_RATE_KEY">
+<span class="sig-name descname"><span class="pre">SPREADING_RATE_KEY</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'SPREADING_RATE'</span></span><a class="headerlink" href="#gplately.SeafloorGrid.SPREADING_RATE_KEY" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gplately.SeafloorGrid.lat_lon_z_to_netCDF">
+<span class="sig-name descname"><span class="pre">lat_lon_z_to_netCDF</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">zval_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_arr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unmasked</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nprocs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/grids/oceans.html#SeafloorGrid.lat_lon_z_to_netCDF"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.SeafloorGrid.lat_lon_z_to_netCDF" title="Link to this definition"></a></dt>
+<dd><p>Produce a netCDF4 grid of a z-value identified by its <code class="docutils literal notranslate"><span class="pre">zval_name</span></code> for a given time range in <code class="docutils literal notranslate"><span class="pre">time_arr</span></code>.</p>
+<p>Seafloor age can be gridded by passing <code class="docutils literal notranslate"><span class="pre">zval_name</span></code> as <code class="docutils literal notranslate"><span class="pre">SEAFLOOR_AGE</span></code>, and spreading
+rate can be gridded with <code class="docutils literal notranslate"><span class="pre">SPREADING_RATE</span></code>.</p>
+<p>Saves all grids to compressed netCDF format in the attributed directory. Grids
+can be read into ndarray format using <code class="xref py py-func docutils literal notranslate"><span class="pre">gplately.read_netcdf_grid()</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>zval_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – A string identifier for the z-value.</p></li>
+<li><p><strong>time_arr</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em> of </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em>, </em><em>default=None</em>) – A time range to turn lons, lats and z-values into netCDF4 grids. If not provided,
+<code class="docutils literal notranslate"><span class="pre">time_arr</span></code> defaults to the full <code class="docutils literal notranslate"><span class="pre">time_array</span></code> provided to <a class="reference internal" href="#gplately.SeafloorGrid" title="gplately.SeafloorGrid"><code class="xref py py-class docutils literal notranslate"><span class="pre">SeafloorGrid</span></code></a>.</p></li>
+<li><p><strong>unmasked</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>default=False</em>) – Save unmasked grids, in addition to masked versions.</p></li>
+<li><p><strong>nprocs</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>, </em><em>optional</em>) – Optional number of CPUs to use for producing grids.
+If not specified then defaults to the number of CPUs specified in <a class="reference internal" href="#gplately.SeafloorGrid.__init__" title="gplately.SeafloorGrid.__init__"><code class="xref py py-meth docutils literal notranslate"><span class="pre">__init__()</span></code></a>.
+If specified then must be an integer or convertible to an integer (eg, float is rounded towards zero).
+If positive then uses that many CPUs.
+If <code class="docutils literal notranslate"><span class="pre">1</span></code> then executes in serial (ie, is not parallelized).
+If <code class="docutils literal notranslate"><span class="pre">0</span></code> then a <code class="docutils literal notranslate"><span class="pre">ValueError</span></code> is raised.
+If <code class="docutils literal notranslate"><span class="pre">-1</span></code> then all available CPUs are used.
+If <code class="docutils literal notranslate"><span class="pre">-2</span></code> then all available CPUs except one are used, etc.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="gplately.SeafloorGrid.max_time">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">max_time</span></span><a class="headerlink" href="#gplately.SeafloorGrid.max_time" title="Link to this definition"></a></dt>
+<dd><p>The maximum time for age gridding.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)">float</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gplately.SeafloorGrid.reconstruct_by_topological_model">
+<span class="sig-name descname"><span class="pre">reconstruct_by_topological_model</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/grids/oceans.html#SeafloorGrid.reconstruct_by_topological_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.SeafloorGrid.reconstruct_by_topological_model" title="Link to this definition"></a></dt>
+<dd><p>Use <a class="reference external" href="https://www.gplates.org/docs/pygplates/generated/pygplates.TopologicalModel.html">pygplates.TopologicalModel</a>  class to reconstruct seed points.
+This method is an alternative to <a class="reference internal" href="#gplately.SeafloorGrid.reconstruct_by_topologies" title="gplately.SeafloorGrid.reconstruct_by_topologies"><code class="xref py py-meth docutils literal notranslate"><span class="pre">reconstruct_by_topologies()</span></code></a> which uses Python code to do the reconstruction.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gplately.SeafloorGrid.reconstruct_by_topologies">
+<span class="sig-name descname"><span class="pre">reconstruct_by_topologies</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/grids/oceans.html#SeafloorGrid.reconstruct_by_topologies"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.SeafloorGrid.reconstruct_by_topologies" title="Link to this definition"></a></dt>
+<dd><p>Obtain all active ocean seed points which are points that have not been consumed at subduction zones
+or have not collided with continental polygons. Active points’ latitudes, longitues, seafloor ages, spreading rates and all
+other general z-values are saved to a gridding input file (.npz).</p>
+</dd></dl>
+
+</section>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="gplately.PlotTopologies.html" class="btn btn-neutral float-left" title="gplately.PlotTopologies" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="gplately.TopologySeafloorGrid.html" class="btn btn-neutral float-right" title="gplately.TopologySeafloorGrid" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023-2026, The University of Sydney.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,6 @@
+﻿gplately.resolve\_topological\_snapshot
+=======================================
+
+.. currentmodule:: gplately
+
+.. autofunction:: resolve_topological_snapshot

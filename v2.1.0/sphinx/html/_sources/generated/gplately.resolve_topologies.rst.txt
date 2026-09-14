@@ -1,0 +1,6 @@
+﻿gplately.resolve\_topologies
+============================
+
+.. currentmodule:: gplately
+
+.. autofunction:: resolve_topologies
