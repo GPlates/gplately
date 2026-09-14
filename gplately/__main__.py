@@ -31,6 +31,7 @@ from .commands import (
     regrid,
     reset_feature_type,
     rotate_grid,
+    sediment_thickness,
 )
 from .ptt import (
     cleanup_topologies,
@@ -120,6 +121,9 @@ def main():
 
     # add "rotate_grid" sub-command
     rotate_grid.add_parser(subparser)
+
+    # add "generate-distance-grids"/"generate-sediment-grids" sub-commands
+    sediment_thickness.add_parser(subparser)
 
     # add "fix crossovers" sub-command
     fix_crossovers_cmd = subparser.add_parser(

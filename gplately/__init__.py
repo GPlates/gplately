@@ -59,6 +59,12 @@ from .paleobathymetry import (
     dutkiewicz_2017_sediment_thickness,
     sediment_isostatic_correction,
     paleobathymetry,
+    simple_paleobathymetry,
+)
+from .sediment_thickness import (
+    generate_input_points_grid,
+    generate_distance_grids,
+    generate_sediment_thickness_grids,
 )
 from .grids import (
     read_netcdf_grid,
