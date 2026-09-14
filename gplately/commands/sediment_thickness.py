@@ -83,6 +83,34 @@ def _resolve_rotation_topology_proximity_files(args, plate_model):
     return rotation_files, topology_files, proximity_files
 
 
+def _resolve_distance_grid_kwargs(args, plate_model):
+    """Resolve the continent-obstacle-routing kwargs shared by 'generate-distance-grids' and
+    'paleobathymetry'. Returns a dict suitable for **-splatting into generate_distance_grids()
+    (or gplately.grids.paleobathymetry.simple_paleobathymetry()) -- empty if obstacle routing
+    was not requested.
+    """
+    if not (args.route_around_continents or args.continent_obstacle_filenames):
+        return {}
+
+    continent_obstacle_files = args.continent_obstacle_filenames or (
+        plate_model.get_layer("Coastlines", return_none_if_not_exist=True)
+        if plate_model
+        else None
+    )
+    if not continent_obstacle_files:
+        raise Exception(
+            "--route-around-continents (or --continent-obstacles) requires continent/coastline "
+            "files: use --continent-obstacles, or -m/--model's plate model must provide a "
+            "Coastlines layer."
+        )
+    _logger.info(f"Using continent obstacle files: {continent_obstacle_files}")
+
+    return dict(
+        continent_obstacle_features=continent_obstacle_files,
+        shortest_path_grid_subdivision_depth=args.shortest_path_grid_depth,
+    )
+
+
 def _run_generate_distance_grids(args):
     age_grid_filenames_and_times, plate_model = _resolve_age_grid_filenames_and_times(
         args
@@ -90,6 +118,7 @@ def _run_generate_distance_grids(args):
     rotation_files, topology_files, proximity_files = (
         _resolve_rotation_topology_proximity_files(args, plate_model)
     )
+    distance_grid_kwargs = _resolve_distance_grid_kwargs(args, plate_model)
 
     generate_distance_grids(
         rotation_model=rotation_files,
@@ -102,6 +131,7 @@ def _run_generate_distance_grids(args):
         anchor_plate_id=args.anchor_plate_id or 0,
         clamp_distance_km=args.clamp_distance_km,
         output_directory=args.output_dir,
+        **distance_grid_kwargs,
     )
     _logger.info(f"Distance grids written to {args.output_dir}")
 
@@ -244,6 +274,31 @@ def _add_distance_arguments(cmd):
         default=3000.0,
         dest="clamp_distance_km",
         help="clamp mean distances above this (km); default: 3000",
+    )
+    cmd.add_argument(
+        "--route-around-continents",
+        action="store_true",
+        dest="route_around_continents",
+        help="route distances around continents instead of a great-circle straight line "
+        "(auto-resolves --continent-obstacles from -m/--model's Coastlines layer if not "
+        "given explicitly)",
+    )
+    cmd.add_argument(
+        "--continent-obstacles",
+        metavar="continent_obstacle_filenames",
+        nargs="+",
+        dest="continent_obstacle_filenames",
+        default=[],
+        help="continent/coastline file(s) to route around; implies --route-around-continents",
+    )
+    cmd.add_argument(
+        "--shortest-path-grid-depth",
+        metavar="shortest_path_grid_subdivision_depth",
+        type=int,
+        default=6,
+        dest="shortest_path_grid_depth",
+        help="subdivision depth of the grid used for continent-obstacle routing "
+        "(spacing = 90/2^depth degrees); default: 6",
     )
 
 

@@ -23,6 +23,7 @@ from .sediment_thickness import (
     _add_common_arguments,
     _add_distance_arguments,
     _resolve_age_grid_filenames_and_times,
+    _resolve_distance_grid_kwargs,
     _resolve_rotation_topology_proximity_files,
 )
 
@@ -37,7 +38,7 @@ def _run_paleobathymetry(args):
         _resolve_rotation_topology_proximity_files(args, plate_model)
     )
 
-    kwargs = {}
+    kwargs = _resolve_distance_grid_kwargs(args, plate_model)
     if args.pybacktrack:
         static_polygon_filename = args.static_polygons or (
             plate_model.get_layer("StaticPolygons") if plate_model else None

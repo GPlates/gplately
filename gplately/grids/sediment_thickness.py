@@ -39,15 +39,15 @@ and ``predict_sediment_thickness.py``), used by both that repository's own workf
 also captures passive margins that existed in the past but not at present day (see that
 function's docstring).
 
-**Not yet included here:** the "continent obstacles" option of the original
-``ocean_basin_proximity.py`` (routing the shortest distance *around* continents, via its
-``shortest_path.py``, rather than a straight great-circle distance) is not ported -- distances
-here are always great-circle. This is a real difference from `simple_paleobathymetry`'s default
-configuration (``proximity.use_continent_obstacles: true``); see the discussion on
-`gplately#444 <https://github.com/GPlates/gplately/issues/444>`__. Nor is the "topological
-proximity features" mode (measuring distance to resolved plate-boundary sections rather than
-static/reconstructed features) -- only non-topological proximity features (e.g. COB line
-segments) are supported.
+`generate_distance_grids`'s `continent_obstacle_features` routes distances *around* continents
+(rather than a great-circle straight line that may cut through land) -- see its docstring and
+:mod:`gplately.lib.shortest_path`, a port of the original ``ocean_basin_proximity.py``'s
+``shortest_path.py``.
+
+**Not yet included here:** the "topological proximity features" mode of the original
+``ocean_basin_proximity.py`` (measuring distance to resolved plate-boundary sections rather
+than static/reconstructed features) -- only non-topological proximity features (e.g. COB line
+segments, or :func:`gplately.generate_passive_margins`'s output) are supported.
 """
 
 import logging
@@ -59,7 +59,13 @@ import pygplates
 
 from ._grids import read_netcdf_grid, sample_grid, write_netcdf_grid
 from .paleobathymetry import dutkiewicz_2017_sediment_thickness
+from ..lib import shortest_path
 from ..ptt.utils.proximity_query import find_closest_geometries_to_points
+
+_DEFAULT_PLATE_BOUNDARY_OBSTACLE_FEATURE_TYPES = (
+    pygplates.FeatureType.gpml_mid_ocean_ridge,
+    pygplates.FeatureType.gpml_subduction_zone,
+)
 
 logger = logging.getLogger("gplately")
 
@@ -112,6 +118,9 @@ def _accumulate_mean_distance_for_age_grid(
     time_increment,
     max_reconstruction_time,
     distance_threshold_radians,
+    shortest_path_grid=None,
+    continent_obstacle_features=None,
+    plate_boundary_obstacle_feature_types=None,
 ):
     """Reconstruct one age grid's ocean points backward through time, accumulating each
     point's mean distance (km) to the nearest proximity feature over its lifetime.
@@ -142,6 +151,12 @@ def _accumulate_mean_distance_for_age_grid(
         if max_reconstruction_time is not None and time > max_reconstruction_time:
             break
 
+        # Built once per time step; used below for point-stepping, and (if routing around
+        # continents) to also resolve plate-boundary obstacles at this time.
+        topological_model = pygplates.TopologicalModel(
+            topological_features, rotation_model
+        )
+
         # Reconstruct the (non-topological) proximity features to the current time.
         reconstructed_feature_geometries = []
         pygplates.reconstruct(
@@ -152,28 +167,72 @@ def _accumulate_mean_distance_for_age_grid(
             for reconstructed_feature_geometry in reconstructed_feature_geometries
         ]
 
-        # Distance (great circle) from each currently-active point to the nearest proximity
-        # geometry, at this reconstruction time.
-        closest_geometries = find_closest_geometries_to_points(
-            current_points,
-            proximity_geometries,
-            distance_threshold_radians=distance_threshold_radians,
-        )
-        for point_index, closest_geometry in enumerate(closest_geometries):
-            distance_radians = (
-                closest_geometry[0] if closest_geometry is not None else math.pi
+        if shortest_path_grid is not None:
+            # Distance routed *around* continent obstacles, at this reconstruction time.
+            obstacle_geometries = []
+            reconstructed_obstacle_feature_geometries = []
+            pygplates.reconstruct(
+                continent_obstacle_features,
+                rotation_model,
+                reconstructed_obstacle_feature_geometries,
+                time,
             )
-            flat_index = current_indices[point_index]
-            sum_distance_km[flat_index] += (
-                distance_radians * pygplates.Earth.mean_radius_in_kms
+            obstacle_geometries.extend(
+                reconstructed_obstacle_feature_geometry.get_reconstructed_geometry()
+                for reconstructed_obstacle_feature_geometry in reconstructed_obstacle_feature_geometries
             )
-            num_distance[flat_index] += 1
+            if plate_boundary_obstacle_feature_types:
+                for (
+                    resolved_topological_section
+                ) in topological_model.topological_snapshot(
+                    time
+                ).get_resolved_topological_sections():
+                    if (
+                        resolved_topological_section.get_feature().get_feature_type()
+                        not in plate_boundary_obstacle_feature_types
+                    ):
+                        continue
+                    for (
+                        shared_sub_segment
+                    ) in resolved_topological_section.get_shared_sub_segments():
+                        obstacle_geometries.append(
+                            shared_sub_segment.get_resolved_geometry()
+                        )
+
+            obstacle_grid = shortest_path_grid.create_obstacle_grid(obstacle_geometries)
+            shortest_path_distance_grid = obstacle_grid.create_distance_grid(
+                proximity_geometries, distance_threshold_radians
+            )
+
+            for point_index, point in enumerate(current_points):
+                distance_radians = shortest_path_distance_grid.shortest_distance(point)
+                if distance_radians is None:
+                    distance_radians = math.pi
+                flat_index = current_indices[point_index]
+                sum_distance_km[flat_index] += (
+                    distance_radians * pygplates.Earth.mean_radius_in_kms
+                )
+                num_distance[flat_index] += 1
+        else:
+            # Distance (great circle) from each currently-active point to the nearest proximity
+            # geometry, at this reconstruction time.
+            closest_geometries = find_closest_geometries_to_points(
+                current_points,
+                proximity_geometries,
+                distance_threshold_radians=distance_threshold_radians,
+            )
+            for point_index, closest_geometry in enumerate(closest_geometries):
+                distance_radians = (
+                    closest_geometry[0] if closest_geometry is not None else math.pi
+                )
+                flat_index = current_indices[point_index]
+                sum_distance_km[flat_index] += (
+                    distance_radians * pygplates.Earth.mean_radius_in_kms
+                )
+                num_distance[flat_index] += 1
 
         # Step the still-active points back one time increment (younger to older); drop any
         # that the topological model deactivates, or that reach their formation time.
-        topological_model = pygplates.TopologicalModel(
-            topological_features, rotation_model
-        )
         reconstructed_time_span = topological_model.reconstruct_geometry(
             current_points,
             initial_time=time,
@@ -221,6 +280,9 @@ def generate_distance_grids(
     clamp_distance_km=None,
     proximity_feature_types=None,
     distance_threshold_radians=None,
+    continent_obstacle_features=None,
+    plate_boundary_obstacle_feature_types=_DEFAULT_PLATE_BOUNDARY_OBSTACLE_FEATURE_TYPES,
+    shortest_path_grid_subdivision_depth=6,
     output_directory=None,
 ):
     """For each ocean point in each age grid, compute its lifetime-mean distance (km) to the
@@ -267,6 +329,22 @@ def generate_distance_grids(
         ``["gpml:PassiveContinentalBoundary"]``) before measuring distance.
     distance_threshold_radians : float, optional
         Reject/ignore proximities further than this (radians). ``None`` means no threshold.
+    continent_obstacle_features : any argument accepted by pygplates.FeaturesFunctionArgument, optional
+        If given, distances are routed *around* these (reconstructed) obstacle geometries
+        (typically continent/coastline polygons) instead of being a great-circle straight line
+        -- see :mod:`gplately.lib.shortest_path`. ``None`` (the default) uses plain great-circle
+        distance, which can be misleading where land lies between a point and the nearest
+        margin (e.g. across a narrow isthmus).
+    plate_boundary_obstacle_feature_types : sequence of pygplates.FeatureType, optional
+        Only used when `continent_obstacle_features` is given: resolved plate-boundary sections
+        of these feature types are *also* treated as obstacles at each time (default: mid-ocean
+        ridges and subduction zones, matching the original workflow). Pass an empty sequence to
+        only use `continent_obstacle_features`.
+    shortest_path_grid_subdivision_depth : int, default: 6
+        Only used when `continent_obstacle_features` is given: subdivision depth of the
+        :class:`gplately.lib.shortest_path.Grid` used to route around obstacles -- spacing is
+        ``90 / 2^depth`` degrees (default: 1.40625 degrees, matching the original workflow).
+        Higher values are more accurate but slower.
     output_directory : str, optional
         If given, write each time's grid to
         ``<output_directory>/mean_distance_<grid_spacing>d_<time>.nc``.
@@ -278,11 +356,6 @@ def generate_distance_grids(
         ``(lon, lat, grid)`` tuple: 1-D longitude/latitude coordinate arrays and a 2-D
         ``(lat, lon)`` array of lifetime-mean distance in kilometres (NaN where the age grid
         has no data).
-
-    Notes
-    -----
-    Distances are always great-circle (straight-line); routing the shortest path *around*
-    continents is not currently supported (see the module docstring).
     """
     rotation_model = pygplates.RotationModel(
         rotation_model, default_anchor_plate_id=anchor_plate_id
@@ -305,6 +378,22 @@ def generate_distance_grids(
     topological_feature_list = pygplates.FeaturesFunctionArgument(
         topological_features
     ).get_features()
+
+    shortest_path_grid = None
+    continent_obstacle_feature_list = None
+    if continent_obstacle_features is not None:
+        shortest_path_grid = shortest_path.Grid(shortest_path_grid_subdivision_depth)
+        continent_obstacle_feature_list = pygplates.FeaturesFunctionArgument(
+            continent_obstacle_features
+        ).get_features()
+        plate_boundary_obstacle_feature_types = [
+            (
+                pygplates.FeatureType.create_from_qualified_string(feature_type)
+                if isinstance(feature_type, str)
+                else feature_type
+            )
+            for feature_type in (plate_boundary_obstacle_feature_types or [])
+        ]
 
     lon_1d, lat_1d, lon_flat, lat_flat = generate_input_points_grid(grid_spacing)
     num_output_points = lon_flat.size
@@ -350,6 +439,9 @@ def generate_distance_grids(
                 time_increment=time_increment,
                 max_reconstruction_time=max_reconstruction_time,
                 distance_threshold_radians=distance_threshold_radians,
+                shortest_path_grid=shortest_path_grid,
+                continent_obstacle_features=continent_obstacle_feature_list,
+                plate_boundary_obstacle_feature_types=plate_boundary_obstacle_feature_types,
             )
             if clamp_distance_km is not None:
                 mean_distance_km = np.where(

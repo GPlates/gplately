@@ -75,6 +75,50 @@ def test_generate_distance_grids(
     assert np.all(grid[finite] <= 3000.0)
 
 
+def test_generate_distance_grids_with_continent_obstacles(
+    gplately_muller_reconstruction_files,
+    gplately_muller_static_geometries,
+    synthetic_age_grid_filename,
+):
+    # Routing around continents should never produce a *shorter* path than a great-circle
+    # line, on average -- some individual grid points can come out slightly shorter due to
+    # the underlying grid's node-interpolation smoothing (see gplately.lib.shortest_path),
+    # but the aggregate effect across many points should be unambiguously non-negative, and
+    # at least some points (where a great-circle line cuts through land) should come out
+    # meaningfully longer.
+    rotation_model, topology_features, _ = gplately_muller_reconstruction_files
+    coastlines, _, cobs = gplately_muller_static_geometries
+
+    age_grid_filenames_and_times = [(synthetic_age_grid_filename, 0.0)]
+    common_kwargs = dict(
+        rotation_model=rotation_model,
+        proximity_features=cobs,
+        topological_features=topology_features,
+        age_grid_filenames_and_times=age_grid_filenames_and_times,
+        grid_spacing=10.0,
+        time_increment=1,
+        max_reconstruction_time=5,
+        clamp_distance_km=None,
+    )
+
+    great_circle_grids = generate_distance_grids(**common_kwargs)
+    routed_grids = generate_distance_grids(
+        continent_obstacle_features=coastlines,
+        shortest_path_grid_subdivision_depth=5,
+        **common_kwargs,
+    )
+
+    _, _, great_circle_grid = great_circle_grids[0.0]
+    _, _, routed_grid = routed_grids[0.0]
+
+    finite = np.isfinite(great_circle_grid) & np.isfinite(routed_grid)
+    assert finite.any()
+    diff = routed_grid[finite] - great_circle_grid[finite]
+
+    assert diff.mean() >= 0.0
+    assert diff.max() > 20.0  # at least one point should show real routing effect
+
+
 def test_generate_distance_grids_output_directory(
     tmp_path,
     gplately_muller_reconstruction_files,

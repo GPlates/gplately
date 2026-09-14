@@ -39,9 +39,6 @@ full derivation and references). Paleobathymetry is computed as::
   <https://github.com/GPlates/gplately/issues/447>`__) to merge in pyBacktrack's present-day
   paleobathymetry (requires the optional ``pybacktrack`` package).
 
-**Not yet included here**: :mod:`gplately.grids.sediment_thickness`'s Step 2 does not yet
-support routing distances *around* continents (it uses great-circle distance); see that
-module's docstring.
 """
 
 import math
@@ -373,6 +370,9 @@ def simple_paleobathymetry(
     richards_table_filename=None,
     output_directory=None,
     sediment_thickness_kwargs=None,
+    continent_obstacle_features=None,
+    plate_boundary_obstacle_feature_types=None,
+    shortest_path_grid_subdivision_depth=6,
     pybacktrack=False,
     static_polygon_filename=None,
     present_day_age_grid_filename=None,
@@ -391,9 +391,6 @@ def simple_paleobathymetry(
     pyBacktrack's present-day paleobathymetry (see
     :func:`gplately.grids.pybacktrack_paleobathymetry.merge_pybacktrack_paleobathymetry`) to
     also cover submerged continental crust and crust that has since subducted.
-
-    See the module docstring for what this does *not* include (continent-obstacle routing in
-    Step 2).
 
     Parameters
     ----------
@@ -416,6 +413,10 @@ def simple_paleobathymetry(
         Extra keyword arguments passed to :func:`dutkiewicz_2017_sediment_thickness` (via
         :func:`gplately.generate_sediment_thickness_grids`), e.g. to
         override the default Dutkiewicz et al. (2017) constants.
+    continent_obstacle_features, plate_boundary_obstacle_feature_types, shortest_path_grid_subdivision_depth
+        Passed to :func:`gplately.generate_distance_grids` (Step 2); if `continent_obstacle_features`
+        is given, distances are routed *around* continents instead of a great-circle straight
+        line -- see that function's docstring.
     pybacktrack : bool, default: False
         If true, additionally run Step 5 (requires the optional `pybacktrack` package, plus
         `output_directory`, `static_polygon_filename` and `present_day_age_grid_filename`).
@@ -455,6 +456,19 @@ def simple_paleobathymetry(
         else None
     )
 
+    distance_grid_kwargs = {}
+    if continent_obstacle_features is not None:
+        distance_grid_kwargs["continent_obstacle_features"] = (
+            continent_obstacle_features
+        )
+        distance_grid_kwargs["shortest_path_grid_subdivision_depth"] = (
+            shortest_path_grid_subdivision_depth
+        )
+        if plate_boundary_obstacle_feature_types is not None:
+            distance_grid_kwargs["plate_boundary_obstacle_feature_types"] = (
+                plate_boundary_obstacle_feature_types
+            )
+
     distance_grids = generate_distance_grids(
         rotation_model=rotation_model,
         proximity_features=proximity_features,
@@ -466,6 +480,7 @@ def simple_paleobathymetry(
         anchor_plate_id=anchor_plate_id,
         clamp_distance_km=clamp_distance_km,
         output_directory=distance_output_dir,
+        **distance_grid_kwargs,
     )
     sediment_thickness_grids = generate_sediment_thickness_grids(
         age_grid_filenames_and_times,
