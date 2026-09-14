@@ -21,6 +21,19 @@ For various reasons, GPlately may not install or function correctly on some comp
 To address this, we've prepared a Docker image with a fully working GPlately installation. 
 See `this web page <installation.html#use-docker>`__.
 
+Jupyter Notebook kernel dies when running example workflows with Docker.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If the Jupyter Notebook kernel dies when running with Docker, it could be due to insufficient memory. Try reducing the number of parallel processes. Or you can increase the memory allocated to Docker with `--memory=24g` when starting the Docker container.
+
+You may also need to increase the memory allocated to Docker Desktop on your host machine. For example, on
+macOS (Docker Desktop):
+
+- Open Docker Desktop → Settings (gear icon) → Resources → Advanced.
+- Drag the Memory slider up (or type a value) — set it to something like 24G.
+- Click Apply & Restart 
+- Re-check: docker info | grep -i "Total Memory"
+
 Failed to import PyGMT.
 ~~~~~~~~~~~~~~~~~~~~~~~
 
