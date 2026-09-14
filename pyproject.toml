@@ -57,6 +57,7 @@ gplately = ["data/*.*"]
 
 [project.optional-dependencies]
 dev = ["black", "bumpver", "isort", "pip-tools", "pytest"]
+paleobathymetry = ["pybacktrack"]
 
 [project.urls]
 Homepage = "https://github.com/GPlates/gplately"
