@@ -67,6 +67,10 @@ from .grids.sediment_thickness import (
     generate_sediment_thickness_grids,
 )
 from .grids.pybacktrack_paleobathymetry import merge_pybacktrack_paleobathymetry
+from .grids.continent_contouring import (
+    passive_margin_polylines,
+    generate_passive_margins,
+)
 from .grids import (
     read_netcdf_grid,
     write_netcdf_grid,

@@ -32,6 +32,13 @@ and ``predict_sediment_thickness.py``), used by both that repository's own workf
   grid above into a predicted sediment-thickness grid, via
   :func:`gplately.dutkiewicz_2017_sediment_thickness`.
 
+`generate_distance_grids`'s `proximity_features` need not be a static COB line-segment file --
+:func:`gplately.generate_passive_margins`'s dynamically-contoured
+``passive_margin_features`` (`gplately#446
+<https://github.com/GPlates/gplately/issues/446>`__) can be passed straight in instead, which
+also captures passive margins that existed in the past but not at present day (see that
+function's docstring).
+
 **Not yet included here:** the "continent obstacles" option of the original
 ``ocean_basin_proximity.py`` (routing the shortest distance *around* continents, via its
 ``shortest_path.py``, rather than a straight great-circle distance) is not ported -- distances

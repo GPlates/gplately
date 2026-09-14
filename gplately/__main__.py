@@ -26,6 +26,7 @@ from gplately import __version__
 
 from .commands import (
     seafloor_grids,
+    continent_contouring,
     feature_filter_cmd,
     list_models,
     paleobathymetry,
@@ -128,6 +129,9 @@ def main():
 
     # add "paleobathymetry" sub-command
     paleobathymetry.add_parser(subparser)
+
+    # add "generate-passive-margins" sub-command
+    continent_contouring.add_parser(subparser)
 
     # add "fix crossovers" sub-command
     fix_crossovers_cmd = subparser.add_parser(
