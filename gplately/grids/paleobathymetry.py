@@ -34,14 +34,14 @@ full derivation and references). Paleobathymetry is computed as::
 * :func:`simple_paleobathymetry` -- run Steps 1-4 end to end, calling
   :mod:`gplately.grids.sediment_thickness` (`gplately#445 <https://github.com/GPlates/gplately/issues/445>`__)
   for Step 2 (each ocean point's lifetime-mean distance to the nearest passive continental
-  margin).
+  margin), and optionally Step 5, calling
+  :mod:`gplately.grids.pybacktrack_paleobathymetry` (`gplately#447
+  <https://github.com/GPlates/gplately/issues/447>`__) to merge in pyBacktrack's present-day
+  paleobathymetry (requires the optional ``pybacktrack`` package).
 
-**Not yet included here** (see `gplately#444 <https://github.com/GPlates/gplately/issues/444>`__
-for status): Step 5, which merges this module's output with pyBacktrack's present-day
-paleobathymetry to also cover submerged continental crust and long-subducted ocean crust --
-tracked in `gplately#447 <https://github.com/GPlates/gplately/issues/447>`__. Also,
-:mod:`gplately.grids.sediment_thickness`'s Step 2 does not yet support routing distances
-*around* continents (it uses great-circle distance); see that module's docstring.
+**Not yet included here**: :mod:`gplately.grids.sediment_thickness`'s Step 2 does not yet
+support routing distances *around* continents (it uses great-circle distance); see that
+module's docstring.
 """
 
 import math
@@ -373,8 +373,12 @@ def simple_paleobathymetry(
     richards_table_filename=None,
     output_directory=None,
     sediment_thickness_kwargs=None,
+    pybacktrack=False,
+    static_polygon_filename=None,
+    present_day_age_grid_filename=None,
+    pybacktrack_kwargs=None,
 ):
-    """Run the full *simple_paleobathymetry* workflow (Steps 1-4) end to end.
+    """Run the full *simple_paleobathymetry* workflow (Steps 1-4, optionally 5) end to end.
 
     For each given time: Step 2 reconstructs ocean points backward through time to compute
     their lifetime-mean distance to the nearest passive continental margin
@@ -383,10 +387,13 @@ def simple_paleobathymetry(
     (:func:`gplately.generate_sediment_thickness_grids`, which calls
     :func:`dutkiewicz_2017_sediment_thickness`); Step 1 converts seafloor age to basement depth
     (:func:`age_to_basement_depth`); and Step 4 combines them into paleobathymetry
-    (:func:`paleobathymetry`).
+    (:func:`paleobathymetry`). If `pybacktrack` is true, Step 5 additionally merges in
+    pyBacktrack's present-day paleobathymetry (see
+    :func:`gplately.grids.pybacktrack_paleobathymetry.merge_pybacktrack_paleobathymetry`) to
+    also cover submerged continental crust and crust that has since subducted.
 
     See the module docstring for what this does *not* include (continent-obstacle routing in
-    Step 2, and Step 5 / pyBacktrack).
+    Step 2).
 
     Parameters
     ----------
@@ -402,18 +409,35 @@ def simple_paleobathymetry(
     output_directory : str, optional
         If given, intermediate distance/sediment-thickness grids and the final paleobathymetry
         grids (``paleobathymetry_<time>Ma.nc``) are all written under this directory (in
-        ``Distances/``, ``SedimentThickness/`` and directly here, respectively).
+        ``Distances/``, ``SedimentThickness/`` and directly here, respectively). **Required**
+        if `pybacktrack` is true, since Step 5 merges the Step 4 grids by reading them back off
+        disk.
     sediment_thickness_kwargs : dict, optional
         Extra keyword arguments passed to :func:`dutkiewicz_2017_sediment_thickness` (via
         :func:`gplately.generate_sediment_thickness_grids`), e.g. to
         override the default Dutkiewicz et al. (2017) constants.
+    pybacktrack : bool, default: False
+        If true, additionally run Step 5 (requires the optional `pybacktrack` package, plus
+        `output_directory`, `static_polygon_filename` and `present_day_age_grid_filename`).
+    static_polygon_filename : str, optional
+        Static polygons for Step 5 (pyBacktrack uses these to assign plate IDs); required if
+        `pybacktrack` is true.
+    present_day_age_grid_filename : str, optional
+        The seafloor-age grid at 0 Ma, for Step 5 (regardless of the times being computed --
+        pyBacktrack backtracks from the present day); required if `pybacktrack` is true.
+    pybacktrack_kwargs : dict, optional
+        Extra keyword arguments passed to
+        :func:`gplately.grids.pybacktrack_paleobathymetry.merge_pybacktrack_paleobathymetry`.
 
     Returns
     -------
     dict
         Maps each time (as given in `age_grid_filenames_and_times`) to a ``(lon, lat, grid)``
         tuple: 1-D longitude/latitude coordinate arrays and a 2-D ``(lat, lon)`` array of
-        paleobathymetry in metres, negative downwards.
+        paleobathymetry in metres, negative downwards. Reflects Step 4's output even when
+        `pybacktrack` is true (Step 5's merged grids are written to
+        ``<output_directory>/PaleobathymetryPyBacktrack/`` but not re-loaded into the returned
+        dict, to avoid a second, potentially large, disk read).
     """
     # Imported here, not at module level, to avoid a circular import: sediment_thickness
     # imports dutkiewicz_2017_sediment_thickness from this module.
@@ -488,5 +512,47 @@ def simple_paleobathymetry(
                 output_directory, "paleobathymetry_{:.0f}Ma.nc".format(time)
             )
             write_netcdf_grid(output_path, paleobathymetry_m)
+
+    if pybacktrack:
+        if not output_directory:
+            raise ValueError(
+                "pybacktrack=True requires output_directory (Step 5 merges the Step 4 "
+                "grids by reading them back off disk)."
+            )
+        if not static_polygon_filename:
+            raise ValueError("pybacktrack=True requires static_polygon_filename.")
+        if not present_day_age_grid_filename:
+            raise ValueError(
+                "pybacktrack=True requires present_day_age_grid_filename (the age grid at 0 Ma)."
+            )
+
+        # Imported here, not at module level: pybacktrack is an optional dependency, and this
+        # module (gplately.grids.pybacktrack_paleobathymetry) only imports it lazily too.
+        from .pybacktrack_paleobathymetry import merge_pybacktrack_paleobathymetry
+
+        times = [time for _, time in age_grid_filenames_and_times]
+        pybacktrack_output_dir = os.path.join(
+            output_directory, "PaleobathymetryPyBacktrack"
+        )
+        os.makedirs(pybacktrack_output_dir, exist_ok=True)
+
+        merge_pybacktrack_paleobathymetry(
+            output_file_prefix=os.path.join(
+                pybacktrack_output_dir, "paleobathymetry_${time}Ma.nc"
+            ),
+            merge_paleobathymetry_filename_format=os.path.join(
+                output_directory, "paleobathymetry_${time}Ma.nc"
+            ),
+            rotation_filenames=rotation_model,
+            static_polygon_filename=static_polygon_filename,
+            present_day_age_grid_filename=present_day_age_grid_filename,
+            grid_spacing_degrees=grid_spacing,
+            oldest_time=max(times),
+            youngest_time=min(times),
+            time_increment=time_increment,
+            age_depth_model=age_depth_model,
+            anchor_plate_id=anchor_plate_id,
+            **(pybacktrack_kwargs or {}),
+        )
 
     return results

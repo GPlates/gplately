@@ -37,6 +37,32 @@ def _run_paleobathymetry(args):
         _resolve_rotation_topology_proximity_files(args, plate_model)
     )
 
+    kwargs = {}
+    if args.pybacktrack:
+        static_polygon_filename = args.static_polygons or (
+            plate_model.get_layer("StaticPolygons") if plate_model else None
+        )
+        present_day_age_grid_filename = args.present_day_age_grid or (
+            plate_model.get_age_grid(0) if plate_model else None
+        )
+        if not static_polygon_filename:
+            raise Exception(
+                "--pybacktrack requires --static-polygons (unless -m/--model's plate "
+                "model provides a StaticPolygons layer)."
+            )
+        if not present_day_age_grid_filename:
+            raise Exception(
+                "--pybacktrack requires --present-day-age-grid (unless -m/--model is used, "
+                "which fetches the age grid at 0 Ma automatically)."
+            )
+        if isinstance(static_polygon_filename, (list, tuple)):
+            static_polygon_filename = static_polygon_filename[0]
+        kwargs.update(
+            pybacktrack=True,
+            static_polygon_filename=static_polygon_filename,
+            present_day_age_grid_filename=present_day_age_grid_filename,
+        )
+
     simple_paleobathymetry(
         rotation_model=rotation_files,
         proximity_features=proximity_files,
@@ -50,6 +76,7 @@ def _run_paleobathymetry(args):
         clamp_distance_km=args.clamp_distance_km,
         richards_table_filename=args.richards_table,
         output_directory=args.output_dir,
+        **kwargs,
     )
     _logger.info(f"Paleobathymetry grids written to {args.output_dir}")
 
@@ -60,15 +87,17 @@ def add_parser(parser):
     cmd = parser.add_parser(
         "paleobathymetry",
         aliases=("pb",),
-        help="Run the simple_paleobathymetry workflow (Steps 1-4) end to end.",
+        help="Run the simple_paleobathymetry workflow (Steps 1-4, optionally 5) end to end.",
         add_help=True,
         description=(
             "Reconstruct paleobathymetry of ocean crust from a seafloor-age grid: age -> "
             "basement depth (Step 1), distance to the nearest passive continental margin "
             "(Step 2), predicted sediment thickness (Step 3), and isostatically-compensated "
-            "paleobathymetry (Step 4). A port of EarthByte's simple_paleobathymetry workflow; "
-            "see gplately.grids.paleobathymetry for the Python API and its docstring for what "
-            "is not yet included (continent-obstacle routing, pyBacktrack merge).\n\n"
+            "paleobathymetry (Step 4). Optionally (--pybacktrack) also merge in pyBacktrack's "
+            "present-day paleobathymetry (Step 5) to also cover submerged continental crust "
+            "and crust that has since subducted. A port of EarthByte's simple_paleobathymetry "
+            "workflow; see gplately.grids.paleobathymetry for the Python API and its docstring "
+            "for what is not yet included (continent-obstacle routing in Step 2).\n\n"
             "Example usage:\n"
             "    gplately pb output_dir -m muller2025 --proximity-features cobs.gpml -e 0 -s 10\n"
         ),
@@ -91,5 +120,30 @@ def add_parser(parser):
         dest="richards_table",
         help="age-depth lookup table for --age-depth-model rhcw18; "
         "default: the table shipped with gplately",
+    )
+    cmd.add_argument(
+        "--pybacktrack",
+        action="store_true",
+        dest="pybacktrack",
+        help="also run Step 5: merge in pyBacktrack's present-day paleobathymetry, to also "
+        "cover submerged continental crust and crust that has since subducted. Requires the "
+        "optional 'pybacktrack' package (pip install pybacktrack, or gplately[paleobathymetry]).",
+    )
+    cmd.add_argument(
+        "--static-polygons",
+        metavar="static_polygon_filename",
+        default=None,
+        dest="static_polygons",
+        help="static polygons, for --pybacktrack (pyBacktrack uses these to assign plate IDs); "
+        "required unless -m/--model's plate model provides a StaticPolygons layer",
+    )
+    cmd.add_argument(
+        "--present-day-age-grid",
+        metavar="present_day_age_grid_filename",
+        default=None,
+        dest="present_day_age_grid",
+        help="the seafloor-age grid at 0 Ma, for --pybacktrack (regardless of -e/-s, since "
+        "pyBacktrack backtracks from the present day); default: fetched automatically "
+        "when -m/--model is used",
     )
     cmd.set_defaults(func=_run_paleobathymetry)
