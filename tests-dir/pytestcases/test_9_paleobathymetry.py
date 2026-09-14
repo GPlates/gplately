@@ -3,7 +3,7 @@ import pytest
 from conftest import logger
 
 import gplately
-from gplately.paleobathymetry import (
+from gplately.grids.paleobathymetry import (
     AGE_DEPTH_MODELS,
     age_to_basement_depth,
     dutkiewicz_2017_sediment_thickness,

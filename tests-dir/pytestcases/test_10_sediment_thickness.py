@@ -3,7 +3,7 @@ import pytest
 from conftest import logger
 
 import gplately
-from gplately.sediment_thickness import (
+from gplately.grids.sediment_thickness import (
     generate_distance_grids,
     generate_input_points_grid,
     generate_sediment_thickness_grids,

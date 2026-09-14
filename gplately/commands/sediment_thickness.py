@@ -22,7 +22,7 @@ import os
 from plate_model_manager import PlateModelManager
 
 from ..grids import read_netcdf_grid
-from ..sediment_thickness import (
+from ..grids.sediment_thickness import (
     generate_distance_grids,
     generate_sediment_thickness_grids,
 )

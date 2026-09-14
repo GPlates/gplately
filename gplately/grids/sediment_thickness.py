@@ -30,7 +30,7 @@ and ``predict_sediment_thickness.py``), used by both that repository's own workf
   passive-margin continent-ocean-boundary line segments).
 * :func:`generate_sediment_thickness_grids` -- combine a seafloor-age grid with the distance
   grid above into a predicted sediment-thickness grid, via
-  :func:`gplately.paleobathymetry.dutkiewicz_2017_sediment_thickness`.
+  :func:`gplately.dutkiewicz_2017_sediment_thickness`.
 
 **Not yet included here:** the "continent obstacles" option of the original
 ``ocean_basin_proximity.py`` (routing the shortest distance *around* continents, via its
@@ -50,9 +50,9 @@ import os
 import numpy as np
 import pygplates
 
-from .grids._grids import read_netcdf_grid, sample_grid, write_netcdf_grid
+from ._grids import read_netcdf_grid, sample_grid, write_netcdf_grid
 from .paleobathymetry import dutkiewicz_2017_sediment_thickness
-from .ptt.utils.proximity_query import find_closest_geometries_to_points
+from ..ptt.utils.proximity_query import find_closest_geometries_to_points
 
 logger = logging.getLogger("gplately")
 
@@ -373,7 +373,7 @@ def generate_sediment_thickness_grids(
     """Predict compacted sediment thickness by combining seafloor-age and distance-to-margin grids.
 
     For each time, samples the age grid onto the distance grid's points and evaluates
-    :func:`gplately.paleobathymetry.dutkiewicz_2017_sediment_thickness`.
+    :func:`gplately.dutkiewicz_2017_sediment_thickness`.
 
     Parameters
     ----------
@@ -388,7 +388,7 @@ def generate_sediment_thickness_grids(
         ``<output_directory>/sediment_thickness_<time>Ma.nc``.
     **sediment_thickness_kwargs
         Passed through to
-        :func:`gplately.paleobathymetry.dutkiewicz_2017_sediment_thickness` (e.g. to override
+        :func:`gplately.dutkiewicz_2017_sediment_thickness` (e.g. to override
         the default Dutkiewicz et al. 2017 constants).
 
     Returns

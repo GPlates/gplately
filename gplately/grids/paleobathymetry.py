@@ -32,7 +32,7 @@ full derivation and references). Paleobathymetry is computed as::
   and sediment thickness into paleobathymetry, correcting for sediment loading (Sykes, 1996;
   Step 4).
 * :func:`simple_paleobathymetry` -- run Steps 1-4 end to end, calling
-  :mod:`gplately.sediment_thickness` (`gplately#445 <https://github.com/GPlates/gplately/issues/445>`__)
+  :mod:`gplately.grids.sediment_thickness` (`gplately#445 <https://github.com/GPlates/gplately/issues/445>`__)
   for Step 2 (each ocean point's lifetime-mean distance to the nearest passive continental
   margin).
 
@@ -40,8 +40,8 @@ full derivation and references). Paleobathymetry is computed as::
 for status): Step 5, which merges this module's output with pyBacktrack's present-day
 paleobathymetry to also cover submerged continental crust and long-subducted ocean crust --
 tracked in `gplately#447 <https://github.com/GPlates/gplately/issues/447>`__. Also,
-:mod:`gplately.sediment_thickness`'s Step 2 does not yet support routing distances *around*
-continents (it uses great-circle distance); see that module's docstring.
+:mod:`gplately.grids.sediment_thickness`'s Step 2 does not yet support routing distances
+*around* continents (it uses great-circle distance); see that module's docstring.
 """
 
 import math
@@ -50,7 +50,7 @@ from importlib.resources import files
 
 import numpy as np
 
-from .grids._grids import read_netcdf_grid, sample_grid, write_netcdf_grid
+from ._grids import read_netcdf_grid, sample_grid, write_netcdf_grid
 
 __all__ = [
     "AGE_DEPTH_MODELS",
@@ -378,9 +378,9 @@ def simple_paleobathymetry(
 
     For each given time: Step 2 reconstructs ocean points backward through time to compute
     their lifetime-mean distance to the nearest passive continental margin
-    (:func:`gplately.sediment_thickness.generate_distance_grids`); Step 3 predicts sediment
+    (:func:`gplately.generate_distance_grids`); Step 3 predicts sediment
     thickness from that distance and seafloor age
-    (:func:`gplately.sediment_thickness.generate_sediment_thickness_grids`, which calls
+    (:func:`gplately.generate_sediment_thickness_grids`, which calls
     :func:`dutkiewicz_2017_sediment_thickness`); Step 1 converts seafloor age to basement depth
     (:func:`age_to_basement_depth`); and Step 4 combines them into paleobathymetry
     (:func:`paleobathymetry`).
@@ -391,7 +391,7 @@ def simple_paleobathymetry(
     Parameters
     ----------
     rotation_model, proximity_features, topological_features, age_grid_filenames_and_times, grid_spacing, time_increment, max_reconstruction_time, anchor_plate_id, clamp_distance_km
-        Passed to :func:`gplately.sediment_thickness.generate_distance_grids`; see its
+        Passed to :func:`gplately.generate_distance_grids`; see its
         docstring. `proximity_features` should be passive-margin continent-ocean-boundary line
         segments (not polygons -- see the *simple_paleobathymetry* README's Step 2 for why).
     age_depth_model : str, default: "gdh1"
@@ -405,7 +405,7 @@ def simple_paleobathymetry(
         ``Distances/``, ``SedimentThickness/`` and directly here, respectively).
     sediment_thickness_kwargs : dict, optional
         Extra keyword arguments passed to :func:`dutkiewicz_2017_sediment_thickness` (via
-        :func:`gplately.sediment_thickness.generate_sediment_thickness_grids`), e.g. to
+        :func:`gplately.generate_sediment_thickness_grids`), e.g. to
         override the default Dutkiewicz et al. (2017) constants.
 
     Returns
