@@ -52,6 +52,14 @@ from . import auxiliary, ptt
 from .auxiliary import get_plate_reconstruction, get_gplot
 from .data_server import DataServer
 from .raster import Raster
+from .paleobathymetry import (
+    AGE_DEPTH_MODELS,
+    DUTKIEWICZ_2017_SEDIMENT_THICKNESS,
+    age_to_basement_depth,
+    dutkiewicz_2017_sediment_thickness,
+    sediment_isostatic_correction,
+    paleobathymetry,
+)
 from .grids import (
     read_netcdf_grid,
     write_netcdf_grid,
