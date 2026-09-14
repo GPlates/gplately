@@ -9,12 +9,11 @@
 import gplately
 
 version = gplately.__version__
-release = ".".join(version.split(".")[:2])
+release = ".".join(version.split(".")[:3])  # major.minor.micro
 
 project = "gplately"
 copyright = "2023-2026, The University of Sydney"
 author = "EarthByte Group"
-release = "2.0.0"
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
