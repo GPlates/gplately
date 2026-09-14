@@ -16,6 +16,7 @@ from gplately.grids.paleobathymetry import (
     dutkiewicz_2017_sediment_thickness,
     paleobathymetry,
     sediment_isostatic_correction,
+    simple_paleobathymetry,
 )
 from gplately.grids.sediment_thickness import (
     generate_distance_grids,
@@ -75,6 +76,15 @@ def test_age_to_basement_depth_gdh1_reference_values():
         ]
     )
     np.testing.assert_allclose(depth, expected)
+
+
+def test_age_to_basement_depth_rhcw18_negative_age_is_ridge_crest_not_sea_level():
+    # Tiny negative ages (floating-point/grid-interpolation noise right at a ridge) must be
+    # clamped to the table's ridge-crest depth (~-2500 m), not fall through to np.interp's
+    # `left` fallback taken literally as 0 m (sea level) -- see age_to_basement_depth().
+    depth = age_to_basement_depth(np.array([-0.01, 0.0]), model="rhcw18")
+    assert depth[0] < -2000.0
+    np.testing.assert_allclose(depth[0], depth[1], atol=1.0)
 
 
 def test_dutkiewicz_sediment_thickness_positive_and_masked():
@@ -306,6 +316,32 @@ def test_generate_sediment_thickness_grids_missing_time_raises():
         )
 
 
+def test_simple_paleobathymetry_sediment_thickness_kwargs_can_override_max_distance_km(
+    gplately_muller_reconstruction_files,
+    gplately_muller_static_geometries,
+    synthetic_age_grid_filename,
+):
+    # simple_paleobathymetry() always passes clamp_distance_km through to
+    # generate_sediment_thickness_grids() as max_distance_km; a caller-supplied
+    # sediment_thickness_kwargs["max_distance_km"] (a documented override) must not collide
+    # with that and raise "got multiple values for keyword argument".
+    rotation_model, topology_features, _ = gplately_muller_reconstruction_files
+    _, _, cobs = gplately_muller_static_geometries
+
+    result = simple_paleobathymetry(
+        rotation_model=rotation_model,
+        proximity_features=cobs,
+        topological_features=topology_features,
+        age_grid_filenames_and_times=[(synthetic_age_grid_filename, 0.0)],
+        grid_spacing=10.0,
+        max_reconstruction_time=5,
+        clamp_distance_km=3000.0,
+        sediment_thickness_kwargs={"max_distance_km": 5000.0},
+    )
+
+    assert set(result.keys()) == {0.0}
+
+
 def test_public_api_exports_sediment_thickness():
     for name in (
         "generate_input_points_grid",
@@ -448,6 +484,24 @@ def test_passive_margin_polylines_splits_around_active_segment():
         for margin in margins
     ]
     assert margin_lons == [[0.0, 20.0, 40.0], [60.0, 80.0]]
+
+
+def test_passive_margin_polylines_merges_across_closed_ring_seam():
+    # A closed ring (points[0] == points[-1], as continent contours are) with exactly one
+    # active edge, located away from the arbitrary start/end point. Without the seam fix,
+    # the single remaining passive arc would be incorrectly split into two polylines at the
+    # array boundary (points[0]/points[-1]) instead of returned as one.
+    lons = [0.0, 45.0, 90.0, 135.0, 180.0, 225.0, 270.0, 315.0, 0.0]
+    ring = pygplates.PolylineOnSphere([(0.0, lon) for lon in lons])
+    # Near the midpoint of the (180, 225) edge only.
+    subduction_zone = pygplates.PolylineOnSphere([(0.5, 195.0), (0.5, 210.0)])
+
+    margins = passive_margin_polylines(
+        ring, [subduction_zone], max_distance_radians=np.radians(1.1)
+    )
+
+    assert len(margins) == 1
+    assert len(list(margins[0].get_points())) == len(lons) - 1
 
 
 def test_generate_passive_margins(

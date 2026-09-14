@@ -21,12 +21,13 @@ import logging
 from plate_model_manager import PlateModelManager
 
 from ..grids.continent_contouring import generate_passive_margins
+from .sediment_thickness import _time_range
 
 _logger = logging.getLogger("gplately")
 
 
 def _run_generate_passive_margins(args):
-    times = list(range(int(args.min_time), int(args.max_time) + 1, int(args.time_step)))
+    times = _time_range(args.min_time, args.max_time, args.time_step)
 
     plate_model = None
     if args.model_name:
@@ -42,11 +43,19 @@ def _run_generate_passive_margins(args):
         plate_model.get_rotation_model() if plate_model else None
     )
     topology_files = args.topology_filenames or (
-        plate_model.get_layer("Topologies") if plate_model else None
+        plate_model.get_layer("Topologies", return_none_if_not_exist=True)
+        if plate_model
+        else None
     )
     continent_files = args.continent_filenames or (
-        plate_model.get_layer("ContinentalPolygons") if plate_model else None
+        plate_model.get_layer("ContinentalPolygons", return_none_if_not_exist=True)
+        if plate_model
+        else None
     )
+    if continent_files and plate_model and "Cratons" in plate_model.get_avail_layers():
+        # Cratons are stored as a separate layer for some models; merge them in, matching
+        # gplately agegrid's own continent-file resolution (commands/seafloor_grids.py).
+        continent_files = continent_files + plate_model.get_layer("Cratons")
     if not rotation_files or not topology_files:
         raise Exception(
             "No rotation/topology files found: use -m/--model, or --rotations/--topologies."

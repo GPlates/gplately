@@ -30,8 +30,23 @@ from ..grids.sediment_thickness import (
 _logger = logging.getLogger("gplately")
 
 
+def _time_range(min_time, max_time, time_step):
+    """min_time, max_time, time_step -> a list of times, min_time to max_time inclusive.
+
+    Unlike ``range(int(min_time), int(max_time) + 1, int(time_step))``, this works for
+    fractional (sub-Myr) values -- --min-time/--max-time/--time-step are all declared as
+    floats on the CLI, so truncating them to int here would silently corrupt (or, for a
+    time_step below 1, crash outright: ``range()`` rejects a step of 0) a perfectly valid
+    request like ``--time-step 0.5``.
+    """
+    if time_step <= 0:
+        raise ValueError("time_step must be positive.")
+    num_steps = int(round((max_time - min_time) / time_step)) + 1
+    return [min_time + i * time_step for i in range(num_steps)]
+
+
 def _resolve_age_grid_filenames_and_times(args):
-    times = list(range(int(args.min_time), int(args.max_time) + 1, int(args.time_step)))
+    times = _time_range(args.min_time, args.max_time, args.time_step)
     if args.model_name:
         plate_model = PlateModelManager().get_model(
             args.model_name, data_dir=args.plate_model_repo
@@ -59,7 +74,9 @@ def _resolve_rotation_topology_proximity_files(args, plate_model):
         plate_model.get_rotation_model() if plate_model else None
     )
     topology_files = args.topology_filenames or (
-        plate_model.get_layer("Topologies") if plate_model else None
+        plate_model.get_layer("Topologies", return_none_if_not_exist=True)
+        if plate_model
+        else None
     )
     proximity_files = args.proximity_filenames or (
         plate_model.get_layer("COBs", return_none_if_not_exist=True)

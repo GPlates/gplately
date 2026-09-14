@@ -94,6 +94,22 @@ def passive_margin_polylines(
                 return True
         return False
 
+    # Continent contours are closed rings (points[0] == points[-1]). If we split them
+    # starting from points[0] as-is, a passive-margin stretch that happens to straddle that
+    # arbitrary start/end point would be cut into two separate output polylines instead of
+    # one. Avoid this by rotating the ring to start right after an active edge (if any),
+    # so the array boundary never falls in the middle of a passive stretch.
+    if points[0] == points[-1] and len(points) > 2:
+        unique_points = points[:-1]
+        n = len(unique_points)
+        for offset in range(n):
+            if _near_subduction(unique_points[offset - 1], unique_points[offset]):
+                rotated = unique_points[offset:] + unique_points[:offset]
+                points = rotated + [rotated[0]]
+                break
+        # If no active edge was found, the whole ring is one passive margin; leave `points`
+        # as-is (the loop below will still return it as a single closed polyline).
+
     margins = []
     run = [points[0]]
     for i in range(1, len(points)):

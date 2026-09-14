@@ -34,7 +34,7 @@ gplately reset_feature_type -s gpml:ClosedContinentalBoundary -t gpml:Unclassifi
 
 ./unittest/test_feature_filter.sh
 ./unittest/test_reset_feature_type.sh
-./unittest/test_seafloor_gridding.sh
+./unittest/test-seafloor-gridding.sh
 
 rm test-gpmdb.gpmlz test-gplates-combine.gpmlz test-gplates-reset.gpmlz
 rm -r test-paleobathymetry test-distance-grids test-sediment-grids

@@ -17,6 +17,9 @@
 
 import argparse
 import logging
+import tempfile
+
+import pygplates
 
 from ..grids.paleobathymetry import AGE_DEPTH_MODELS, simple_paleobathymetry
 from .sediment_thickness import (
@@ -57,7 +60,22 @@ def _run_paleobathymetry(args):
                 "which fetches the age grid at 0 Ma automatically)."
             )
         if isinstance(static_polygon_filename, (list, tuple)):
-            static_polygon_filename = static_polygon_filename[0]
+            if len(static_polygon_filename) > 1:
+                # pyBacktrack's static_polygon_filename takes exactly one file; merge
+                # rather than silently dropping every file but the first.
+                merged = pygplates.FeatureCollection()
+                for filename in static_polygon_filename:
+                    merged.add(pygplates.FeatureCollection(filename))
+                merged_file = tempfile.NamedTemporaryFile(suffix=".gpmlz", delete=False)
+                merged_file.close()
+                merged.write(merged_file.name)
+                _logger.info(
+                    f"Merged {len(static_polygon_filename)} StaticPolygons files into "
+                    f"{merged_file.name} for --pybacktrack"
+                )
+                static_polygon_filename = merged_file.name
+            else:
+                static_polygon_filename = static_polygon_filename[0]
         kwargs.update(
             pybacktrack=True,
             static_polygon_filename=static_polygon_filename,

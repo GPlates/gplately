@@ -46,6 +46,7 @@ import os
 from importlib.resources import files
 
 import numpy as np
+import pygplates
 
 from ._grids import read_netcdf_grid, sample_grid, write_netcdf_grid
 
@@ -164,7 +165,13 @@ def age_to_basement_depth(age, model="gdh1", richards_table_filename=None):
         ages_tbl, depths_tbl = _load_richards_table(richards_table_filename)
         # Ages older than the table's range are held at its deepest value (np.interp's
         # default `right`); depths are negated to match this module's sign convention.
-        depth[valid] = -1.0 * np.interp(age[valid], ages_tbl, depths_tbl, left=0.0)
+        # Tiny negative ages (floating-point/grid-interpolation noise right at a ridge) are
+        # clamped to 0 first, so they get the table's actual ridge-crest depth rather than
+        # np.interp's `left` fallback (which would otherwise be taken literally as 0 m --
+        # sea level -- like the other three models, this model's zero-age depth should be
+        # ~-2500 m, not 0 m).
+        clamped_age = np.clip(age[valid], 0.0, None)
+        depth[valid] = -1.0 * np.interp(clamped_age, ages_tbl, depths_tbl)
 
     elif key == "parsons_sclater":
         neg = valid & (age < 0)
@@ -482,12 +489,16 @@ def simple_paleobathymetry(
         output_directory=distance_output_dir,
         **distance_grid_kwargs,
     )
+    # clamp_distance_km is the default for max_distance_km, but an explicit
+    # sediment_thickness_kwargs["max_distance_km"] (a documented override) must win rather
+    # than colliding with it as a duplicate keyword argument.
+    sediment_thickness_grid_kwargs = {"max_distance_km": clamp_distance_km}
+    sediment_thickness_grid_kwargs.update(sediment_thickness_kwargs or {})
     sediment_thickness_grids = generate_sediment_thickness_grids(
         age_grid_filenames_and_times,
         distance_grids,
         output_directory=sediment_thickness_output_dir,
-        max_distance_km=clamp_distance_km,
-        **(sediment_thickness_kwargs or {}),
+        **sediment_thickness_grid_kwargs,
     )
 
     if output_directory:
@@ -539,6 +550,12 @@ def simple_paleobathymetry(
         if not present_day_age_grid_filename:
             raise ValueError(
                 "pybacktrack=True requires present_day_age_grid_filename (the age grid at 0 Ma)."
+            )
+        if isinstance(rotation_model, pygplates.RotationModel):
+            raise TypeError(
+                "pybacktrack=True requires rotation_model to be filename(s), not an "
+                "already-constructed pygplates.RotationModel -- pyBacktrack builds its own "
+                "rotation model internally and needs the raw file path(s)."
             )
 
         # Imported here, not at module level: pybacktrack is an optional dependency, and this
