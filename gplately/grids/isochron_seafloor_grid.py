@@ -19,7 +19,6 @@ import logging
 import numpy as np
 import pygplates
 import xarray
-import pygmt
 from enum import Enum, auto
 from pathlib import Path
 from ..reconstruction import PlateReconstruction
@@ -164,6 +163,8 @@ class IsochronSeafloorGrid:
         """
         Generate the seafloor grids by isochron interpolation.
         """
+        import pygmt
+
         if output_scalar_types is None:
             output_scalar_types = _DEFAULT_OUTPUT_SCALAR_TYPES
 

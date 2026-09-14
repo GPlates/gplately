@@ -29,19 +29,33 @@ from ..utils.io_utils import to_geographic_data_array, load_data_array_from_netc
 
 logger = logging.getLogger("gplately")
 pygmt = None
-try:
-    import pygmt
+_pygmt_import_attempted = False
 
-    pygmt.config(
-        FONT_ANNOT=8,
-        FONT_LABEL=8,
-        FONT=8,
-        MAP_TICK_PEN="0.75p",
-        MAP_FRAME_PEN="0.75p",
-        MAP_TICK_LENGTH_PRIMARY="4p",
-    )
-except:
-    logger.error("Failed to import PyGMT. PyGMT requires Python>=3.11.")
+
+def _ensure_pygmt():
+    """Import pygmt (and apply its one-time config) on first use, not at module load --
+    PyGMT is a large, slow-to-import optional plotting backend (see gplately#451), so
+    importing gplately should not pay its cost unless PygmtPlotEngine is actually used.
+    """
+    global pygmt, _pygmt_import_attempted
+    if _pygmt_import_attempted:
+        return pygmt
+    _pygmt_import_attempted = True
+    try:
+        import pygmt as _pygmt_module
+
+        _pygmt_module.config(
+            FONT_ANNOT=8,
+            FONT_LABEL=8,
+            FONT=8,
+            MAP_TICK_PEN="0.75p",
+            MAP_FRAME_PEN="0.75p",
+            MAP_TICK_LENGTH_PRIMARY="4p",
+        )
+        pygmt = _pygmt_module
+    except Exception:
+        logger.error("Failed to import PyGMT. PyGMT requires Python>=3.11.")
+    return pygmt
 
 
 class PygmtPlotEngine(PlotEngine):
@@ -50,6 +64,7 @@ class PygmtPlotEngine(PlotEngine):
     # NW's example is at https://gist.github.com/nickywright/f53018a8eda29223cca6f39ab2cfa25d
 
     def __init__(self):
+        _ensure_pygmt()
         assert pygmt is not None, "PyGMT must be available to use PygmtPlotEngine."
         super().__init__()
 

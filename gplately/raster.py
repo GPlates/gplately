@@ -23,7 +23,6 @@ from pathlib import Path
 import warnings
 from multiprocessing import cpu_count
 from typing import List, Tuple, Union, cast, overload, Literal
-import pygmt
 from shapely import polygons
 from xarray.core.types import InterpOptions
 
@@ -563,6 +562,8 @@ class Raster(object):
         >>> val = np.random.uniform(0, 100, 500)
         >>> raster = Raster.from_points(lon, lat, val, spacing="0.05d")
         """
+        import pygmt
+
         lon = np.asarray(lon, dtype=float)
         lat = np.asarray(lat, dtype=float)
         values = np.asarray(values, dtype=float)
