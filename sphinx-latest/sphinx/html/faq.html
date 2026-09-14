@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Troubleshooting and FAQ &mdash; gplately 2.0.0 documentation</title>
+  <title>Troubleshooting and FAQ &mdash; gplately 2.1.0rc0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
 
@@ -14,7 +14,7 @@
     <link rel="shortcut icon" href="_static/favicon.ico"/>
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="_static/documentation_options.js?v=51b770b3"></script>
+      <script src="_static/documentation_options.js?v=c9ae2a7e"></script>
       <script src="_static/doctools.js?v=fd6eb6e6"></script>
       <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/js/theme.js"></script>
@@ -52,6 +52,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#troubleshooting">Troubleshooting</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#it-is-taking-conda-forever-to-solve-the-environment-during-the-gplately-installation">It is taking Conda forever to solve the environment during the GPlately installation.</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#unable-to-install-or-use-gplately-on-my-computer">Unable to install or use GPlately on my computer.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#jupyter-notebook-kernel-dies-when-running-example-workflows-with-docker">Jupyter Notebook kernel dies when running example workflows with Docker.</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#failed-to-import-pygmt">Failed to import PyGMT.</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#tcl-error-using-python-3-13-0-on-windows">Tcl error using Python 3.13.0 on Windows.</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#parallel-code-running-slower-than-serial-code">Parallel code running slower than serial code.</a></li>
@@ -121,6 +122,18 @@
 <p>For various reasons, GPlately may not install or function correctly on some computers.
 To address this, we’ve prepared a Docker image with a fully working GPlately installation.
 See <a class="reference external" href="installation.html#use-docker">this web page</a>.</p>
+</section>
+<section id="jupyter-notebook-kernel-dies-when-running-example-workflows-with-docker">
+<h3>Jupyter Notebook kernel dies when running example workflows with Docker.<a class="headerlink" href="#jupyter-notebook-kernel-dies-when-running-example-workflows-with-docker" title="Link to this heading"></a></h3>
+<p>If the Jupyter Notebook kernel dies when running with Docker, it could be due to insufficient memory. Try reducing the number of parallel processes. Or you can increase the memory allocated to Docker with <cite>–memory=24g</cite> when starting the Docker container.</p>
+<p>You may also need to increase the memory allocated to Docker Desktop on your host machine. For example, on
+macOS (Docker Desktop):</p>
+<ul class="simple">
+<li><p>Open Docker Desktop → Settings (gear icon) → Resources → Advanced.</p></li>
+<li><p>Drag the Memory slider up (or type a value) — set it to something like 24G.</p></li>
+<li><p>Click Apply &amp; Restart</p></li>
+<li><p>Re-check: docker info | grep -i “Total Memory”</p></li>
+</ul>
 </section>
 <section id="failed-to-import-pygmt">
 <h3>Failed to import PyGMT.<a class="headerlink" href="#failed-to-import-pygmt" title="Link to this heading"></a></h3>
