@@ -28,6 +28,7 @@ from .commands import (
     seafloor_grids,
     feature_filter_cmd,
     list_models,
+    paleobathymetry,
     regrid,
     reset_feature_type,
     rotate_grid,
@@ -124,6 +125,9 @@ def main():
 
     # add "generate-distance-grids"/"generate-sediment-grids" sub-commands
     sediment_thickness.add_parser(subparser)
+
+    # add "paleobathymetry" sub-command
+    paleobathymetry.add_parser(subparser)
 
     # add "fix crossovers" sub-command
     fix_crossovers_cmd = subparser.add_parser(

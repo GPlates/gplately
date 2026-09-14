@@ -54,11 +54,7 @@ def _resolve_age_grid_filenames_and_times(args):
     return age_grid_filenames_and_times, plate_model if args.model_name else None
 
 
-def _run_generate_distance_grids(args):
-    age_grid_filenames_and_times, plate_model = _resolve_age_grid_filenames_and_times(
-        args
-    )
-
+def _resolve_rotation_topology_proximity_files(args, plate_model):
     rotation_files = args.rotation_filenames or (
         plate_model.get_rotation_model() if plate_model else None
     )
@@ -84,6 +80,16 @@ def _run_generate_distance_grids(args):
     _logger.info(f"Using rotation files: {rotation_files}")
     _logger.info(f"Using topology files: {topology_files}")
     _logger.info(f"Using proximity feature files: {proximity_files}")
+    return rotation_files, topology_files, proximity_files
+
+
+def _run_generate_distance_grids(args):
+    age_grid_filenames_and_times, plate_model = _resolve_age_grid_filenames_and_times(
+        args
+    )
+    rotation_files, topology_files, proximity_files = (
+        _resolve_rotation_topology_proximity_files(args, plate_model)
+    )
 
     generate_distance_grids(
         rotation_model=rotation_files,
@@ -197,6 +203,50 @@ def _add_common_arguments(cmd):
     )
 
 
+def _add_distance_arguments(cmd):
+    cmd.add_argument(
+        "--proximity-features",
+        metavar="proximity_filenames",
+        nargs="+",
+        dest="proximity_filenames",
+        default=[],
+        help="passive-margin continent-ocean-boundary line-segment file(s); "
+        "required unless -m/--model's plate model provides a COBs layer",
+    )
+    cmd.add_argument(
+        "--rotations",
+        metavar="rotation_filenames",
+        nargs="+",
+        dest="rotation_filenames",
+        default=[],
+        help="alternative to -m/--model",
+    )
+    cmd.add_argument(
+        "--topologies",
+        metavar="topology_filenames",
+        nargs="+",
+        dest="topology_filenames",
+        default=[],
+        help="alternative to -m/--model",
+    )
+    cmd.add_argument(
+        "--max-reconstruction-time",
+        metavar="max_reconstruction_time",
+        type=float,
+        default=None,
+        dest="max_reconstruction_time",
+        help="do not reconstruct ocean points older than this (Ma); default: unlimited",
+    )
+    cmd.add_argument(
+        "--clamp-distance-km",
+        metavar="clamp_distance_km",
+        type=float,
+        default=3000.0,
+        dest="clamp_distance_km",
+        help="clamp mean distances above this (km); default: 3000",
+    )
+
+
 def add_parser(parser):
     """add command line argument parsers for 'generate-distance-grids' and 'generate-sediment-grids'"""
 
@@ -215,47 +265,7 @@ def add_parser(parser):
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     _add_common_arguments(distance_cmd)
-    distance_cmd.add_argument(
-        "--proximity-features",
-        metavar="proximity_filenames",
-        nargs="+",
-        dest="proximity_filenames",
-        default=[],
-        help="passive-margin continent-ocean-boundary line-segment file(s); "
-        "required unless -m/--model's plate model provides a COBs layer",
-    )
-    distance_cmd.add_argument(
-        "--rotations",
-        metavar="rotation_filenames",
-        nargs="+",
-        dest="rotation_filenames",
-        default=[],
-        help="alternative to -m/--model",
-    )
-    distance_cmd.add_argument(
-        "--topologies",
-        metavar="topology_filenames",
-        nargs="+",
-        dest="topology_filenames",
-        default=[],
-        help="alternative to -m/--model",
-    )
-    distance_cmd.add_argument(
-        "--max-reconstruction-time",
-        metavar="max_reconstruction_time",
-        type=float,
-        default=None,
-        dest="max_reconstruction_time",
-        help="do not reconstruct ocean points older than this (Ma); default: unlimited",
-    )
-    distance_cmd.add_argument(
-        "--clamp-distance-km",
-        metavar="clamp_distance_km",
-        type=float,
-        default=3000.0,
-        dest="clamp_distance_km",
-        help="clamp mean distances above this (km); default: 3000",
-    )
+    _add_distance_arguments(distance_cmd)
     distance_cmd.set_defaults(func=_run_generate_distance_grids)
 
     sediment_cmd = parser.add_parser(
