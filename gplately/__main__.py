@@ -80,6 +80,17 @@ class ArgParser(argparse.ArgumentParser):
         sys.exit(1)
 
 
+def _hide_alias(subparser, alias: str, cmd: argparse.ArgumentParser):
+    """Register *alias* as a working subcommand name without showing it in --help.
+
+    argparse's `aliases=` shows every alias in the subcommand list and usage
+    line; the old underscore-separated names (issue #450) should keep working
+    but stay out of --help, so they're added directly to the subparsers
+    action's name->parser map instead.
+    """
+    subparser._name_parser_map[alias] = cmd
+
+
 def main():
     parser = ArgParser()
 
@@ -90,6 +101,7 @@ def main():
         dest="command",
         title="subcommands",
         description="valid subcommands",
+        metavar="<subcommand>",
     )
     # add "list models" sub-command
     list_models.add_parser(subparser)
@@ -124,72 +136,84 @@ def main():
     # add "fix crossovers" sub-command
     fix_crossovers_cmd = subparser.add_parser(
         "fix-crossovers",
-        aliases=("fix_crossovers", "fc"),
+        aliases=("fc",),
         help="Loads one or more input rotation files, fixes any crossovers and saves the rotations to output rotation files.",
         add_help=True,
     )
+    _hide_alias(subparser, "fix_crossovers", fix_crossovers_cmd)
     fix_crossovers.add_arguments(fix_crossovers_cmd)
 
     # add "remove plate rotations" sub-command
     remove_plate_rotations_cmd = subparser.add_parser(
         "remove-rotations",
-        aliases=("remove_rotations", "rr"),
+        aliases=("rr",),
         help="Remove one or more plate IDs from a rotation model (consisting of one or more rotation files).",
         add_help=True,
     )
+    _hide_alias(subparser, "remove_rotations", remove_plate_rotations_cmd)
     remove_plate_rotations.add_arguments(remove_plate_rotations_cmd)
 
     # add "cleanup topologies" sub-command
     cleanup_topologies_cmd = subparser.add_parser(
         "cleanup-topologies",
-        aliases=("cleanup_topologies", "ct"),
+        aliases=("ct",),
         help="Remove any regular features not referenced by topological features.",
         add_help=True,
     )
+    _hide_alias(subparser, "cleanup_topologies", cleanup_topologies_cmd)
     cleanup_topologies.add_arguments(cleanup_topologies_cmd)
 
     # add "convert_xy_to_gplates" sub-command
     convert_xy_to_gplates_cmd = subparser.add_parser(
         "convert-xy-to-gplates",
-        aliases=("convert_xy_to_gplates", "cxg"),
+        aliases=("cxg",),
         help="Converts geometry in one or more input ascii files (such as '.xy' files) to output files suitable for loading into GPlates.",
         add_help=True,
     )
+    _hide_alias(subparser, "convert_xy_to_gplates", convert_xy_to_gplates_cmd)
     convert_xy_to_gplates.add_arguments(convert_xy_to_gplates_cmd)
 
     # add "diagnose_rotations" sub-command
     diagnose_rotations_cmd = subparser.add_parser(
         "diagnose-rotations",
-        aliases=("diagnose_rotations", "dr"),
+        aliases=("dr",),
         help="Diagnose one or more rotation files to check for inconsistencies.",
         add_help=True,
     )
+    _hide_alias(subparser, "diagnose_rotations", diagnose_rotations_cmd)
     diagnose_rotations.add_arguments(diagnose_rotations_cmd)
 
     # add "resolve_topologies" sub-command
     resolve_topologies_cmd = subparser.add_parser(
         "resolve-topologies",
-        aliases=("resolve_topologies", "rt"),
+        aliases=("rt",),
         help="Resolve topological plate polygons (and deforming networks) and saves (to separate files) the resolved topologies, and their boundary sections as subduction zones, mid-ocean ridges (ridge/transform) and others (not subduction zones or mid-ocean ridges).",
         add_help=True,
     )
+    _hide_alias(subparser, "resolve_topologies", resolve_topologies_cmd)
     resolve_topologies.add_arguments(resolve_topologies_cmd)
 
     # add "rotation_tools" sub-command
     rotation_tools_cmd = subparser.add_parser(
         "rotation-tools",
-        aliases=("rotation_tools", "rots"),
+        aliases=("rots",),
         help="Calculate stage rotations between consecutive finite rotations in plate pairs.",
         add_help=True,
     )
+    _hide_alias(subparser, "rotation_tools", rotation_tools_cmd)
     rotation_tools.add_arguments(rotation_tools_cmd)
 
     # add "separate_ridge_transform_segments" sub-command
     separate_ridge_transform_segments_cmd = subparser.add_parser(
         "separate-ridge-transform-segments",
-        aliases=("separate_ridge_transform_segments", "srts"),
+        aliases=("srts",),
         help="Split the geometries of isochrons and mid-ocean ridges into ridge and transform segments.",
         add_help=True,
+    )
+    _hide_alias(
+        subparser,
+        "separate_ridge_transform_segments",
+        separate_ridge_transform_segments_cmd,
     )
     separate_ridge_transform_segments.add_arguments(
         separate_ridge_transform_segments_cmd
@@ -198,10 +222,11 @@ def main():
     # add "subduction_convergence" sub-command
     subduction_convergence_cmd = subparser.add_parser(
         "subduction-convergence",
-        aliases=("subduction_convergence", "sc"),
+        aliases=("sc",),
         help="Find the convergence rates along trenches (subduction zones) over time.",
         add_help=True,
     )
+    _hide_alias(subparser, "subduction_convergence", subduction_convergence_cmd)
     subduction_convergence.add_arguments(subduction_convergence_cmd)
 
     # add "gpmdb" sub-command
@@ -215,11 +240,12 @@ def main():
     # add "get_cli_config_example" sub-command
     get_cli_config_example_cmd = subparser.add_parser(
         "get-cli-config-example",
-        aliases=("get_cli_config_example", "gcce"),
+        aliases=("gcce",),
         help="Print an example CLI configuration in TOML format to stdout (for use with --config); "
-        "redirect it to save, e.g. 'gplately get_cli_config_example > my-gplately-cli-config.toml'",
+        "redirect it to save, e.g. 'gplately get-cli-config-example > my-gplately-cli-config.toml'",
         add_help=True,
     )
+    _hide_alias(subparser, "get_cli_config_example", get_cli_config_example_cmd)
     get_cli_config_example_cmd.set_defaults(
         func=lambda args: _print_cli_config_example()
     )
