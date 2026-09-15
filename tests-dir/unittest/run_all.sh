@@ -6,6 +6,8 @@ export GPLATELY_DISABLE_DEV_WARNING=true
 
 BASEDIR=$(dirname "$0")
 
+$BASEDIR/test_data_server.py
+
 $BASEDIR/test_age_grid.py
 
 $BASEDIR/test_anchor_plate_id.py save
@@ -13,8 +15,6 @@ $BASEDIR/test_anchor_plate_id.py save
 $BASEDIR/test_continent_contouring.py
 
 $BASEDIR/test_crustal_production.py
-
-$BASEDIR/test_data_server.py
 
 $BASEDIR/test_discretize_polyline.py 
 
