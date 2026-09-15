@@ -2,6 +2,11 @@
 
 set -euo pipefail
 
+# Allow this script to be invoked from any directory (e.g. `./tests-dir/test-cli.sh`
+# from the repo root), since it references other scripts with paths relative to
+# tests-dir/.
+cd "$(dirname "${BASH_SOURCE[0]}")"
+
 gplately list
 
 gplately get-cli-config-example
