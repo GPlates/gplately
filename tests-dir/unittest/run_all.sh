@@ -4,7 +4,19 @@ set -euo pipefail
 
 export GPLATELY_DISABLE_DEV_WARNING=true
 
-BASEDIR=$(dirname "$0")
+# Resolve to an absolute path so $BASEDIR/... below still works correctly
+# after cd'ing into RUN_OUTPUT_DIR.
+BASEDIR=$(cd "$(dirname "$0")" && pwd)
+
+# Most of the individual test scripts (and common.py's OUTPUT_DIR/log files)
+# write to paths relative to the current working directory rather than to
+# $BASEDIR, which scatters caches/logs/plots across wherever this script
+# happened to be invoked from. Run everything from inside one dedicated,
+# gitignored directory instead, so it's a single `rm -rf` to clean up.
+RUN_OUTPUT_DIR="${GPLATELY_UNITTEST_OUTPUT_DIR:-$BASEDIR/run-all-output}"
+mkdir -p "$RUN_OUTPUT_DIR"
+cd "$RUN_OUTPUT_DIR"
+echo "All test output will be written under: $RUN_OUTPUT_DIR"
 
 $BASEDIR/test_data_server.py
 
@@ -49,7 +61,7 @@ jupyter nbconvert \
     --execute \
     --ExecutePreprocessor.force_raise_errors=True \
     --output test_raster_tmp.ipynb \
-    --output-dir $BASEDIR \
+    --output-dir . \
     $BASEDIR/test_raster.ipynb
 
 jupyter nbconvert \
@@ -57,7 +69,7 @@ jupyter nbconvert \
     --execute \
     --ExecutePreprocessor.force_raise_errors=True \
     --output test_pygmt_tmp.ipynb \
-    --output-dir $BASEDIR \
+    --output-dir . \
     $BASEDIR/test_pygmt.ipynb
 
   $BASEDIR/test_feature_filter.sh
