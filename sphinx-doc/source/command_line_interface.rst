@@ -199,7 +199,7 @@ Remove any regular features not referenced by topological features. Also availab
 
 .. code:: console
 
-   $ gplately cleanup-topologies -o cleanup_topologies_ -- topologies.gpml
+   $ gplately cleanup-topologies -o cleanup-topologies- -- topologies.gpml
 
 
 convert-xy-to-gplates (cxg)

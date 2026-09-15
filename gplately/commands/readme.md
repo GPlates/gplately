@@ -133,7 +133,7 @@ GPlately comes with a suite of useful command line tools. These tools are design
 
   Example:
 
-  - `gplately cleanup-topologies -o cleanup_topologies_ -- topologies.gpml`
+  - `gplately cleanup-topologies -o cleanup-topologies- -- topologies.gpml`
     (remove all features which are not referenced by any topological feature from topologies.gpml)
 
 ### 🟢 **convert-xy-to-gplates (cxg)**
