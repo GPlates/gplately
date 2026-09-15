@@ -123,7 +123,8 @@ def main():
 
     # add "fix crossovers" sub-command
     fix_crossovers_cmd = subparser.add_parser(
-        "fix_crossovers",
+        "fix-crossovers",
+        aliases=("fix_crossovers", "fc"),
         help="Loads one or more input rotation files, fixes any crossovers and saves the rotations to output rotation files.",
         add_help=True,
     )
@@ -131,7 +132,8 @@ def main():
 
     # add "remove plate rotations" sub-command
     remove_plate_rotations_cmd = subparser.add_parser(
-        "remove_rotations",
+        "remove-rotations",
+        aliases=("remove_rotations", "rr"),
         help="Remove one or more plate IDs from a rotation model (consisting of one or more rotation files).",
         add_help=True,
     )
@@ -139,7 +141,8 @@ def main():
 
     # add "cleanup topologies" sub-command
     cleanup_topologies_cmd = subparser.add_parser(
-        "cleanup_topologies",
+        "cleanup-topologies",
+        aliases=("cleanup_topologies", "ct"),
         help="Remove any regular features not referenced by topological features.",
         add_help=True,
     )
@@ -147,7 +150,8 @@ def main():
 
     # add "convert_xy_to_gplates" sub-command
     convert_xy_to_gplates_cmd = subparser.add_parser(
-        "convert_xy_to_gplates",
+        "convert-xy-to-gplates",
+        aliases=("convert_xy_to_gplates", "cxg"),
         help="Converts geometry in one or more input ascii files (such as '.xy' files) to output files suitable for loading into GPlates.",
         add_help=True,
     )
@@ -155,7 +159,8 @@ def main():
 
     # add "diagnose_rotations" sub-command
     diagnose_rotations_cmd = subparser.add_parser(
-        "diagnose_rotations",
+        "diagnose-rotations",
+        aliases=("diagnose_rotations", "dr"),
         help="Diagnose one or more rotation files to check for inconsistencies.",
         add_help=True,
     )
@@ -163,7 +168,8 @@ def main():
 
     # add "resolve_topologies" sub-command
     resolve_topologies_cmd = subparser.add_parser(
-        "resolve_topologies",
+        "resolve-topologies",
+        aliases=("resolve_topologies", "rt"),
         help="Resolve topological plate polygons (and deforming networks) and saves (to separate files) the resolved topologies, and their boundary sections as subduction zones, mid-ocean ridges (ridge/transform) and others (not subduction zones or mid-ocean ridges).",
         add_help=True,
     )
@@ -171,7 +177,8 @@ def main():
 
     # add "rotation_tools" sub-command
     rotation_tools_cmd = subparser.add_parser(
-        "rotation_tools",
+        "rotation-tools",
+        aliases=("rotation_tools", "rots"),
         help="Calculate stage rotations between consecutive finite rotations in plate pairs.",
         add_help=True,
     )
@@ -179,7 +186,8 @@ def main():
 
     # add "separate_ridge_transform_segments" sub-command
     separate_ridge_transform_segments_cmd = subparser.add_parser(
-        "separate_ridge_transform_segments",
+        "separate-ridge-transform-segments",
+        aliases=("separate_ridge_transform_segments", "srts"),
         help="Split the geometries of isochrons and mid-ocean ridges into ridge and transform segments.",
         add_help=True,
     )
@@ -189,7 +197,8 @@ def main():
 
     # add "subduction_convergence" sub-command
     subduction_convergence_cmd = subparser.add_parser(
-        "subduction_convergence",
+        "subduction-convergence",
+        aliases=("subduction_convergence", "sc"),
         help="Find the convergence rates along trenches (subduction zones) over time.",
         add_help=True,
     )
@@ -205,7 +214,8 @@ def main():
 
     # add "get_cli_config_example" sub-command
     get_cli_config_example_cmd = subparser.add_parser(
-        "get_cli_config_example",
+        "get-cli-config-example",
+        aliases=("get_cli_config_example", "gcce"),
         help="Print an example CLI configuration in TOML format to stdout (for use with --config); "
         "redirect it to save, e.g. 'gplately get_cli_config_example > my-gplately-cli-config.toml'",
         add_help=True,

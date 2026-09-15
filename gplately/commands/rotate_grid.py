@@ -57,7 +57,8 @@ def add_parser(parser):
     """Add command line argument parser."""
 
     cmd = parser.add_parser(
-        "rotate_grid",
+        "rotate-grid",
+        aliases=("rotate_grid", "rtg"),
         help=help_str,
         add_help=True,
         description=__description__,

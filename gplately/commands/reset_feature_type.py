@@ -44,7 +44,8 @@ Example usage:
 def add_parser(subparser):
     """add `reset_feature_type` command line argument parser"""
     reset_feature_type_cmd = subparser.add_parser(
-        "reset_feature_type",
+        "reset-feature-type",
+        aliases=("reset_feature_type", "rft"),
         help=help_str,
         add_help=True,
         description=__description__,
