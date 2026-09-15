@@ -22,13 +22,6 @@ import logging
 from typing import Optional, Union
 
 logger = logging.getLogger("gplately")
-try:
-    import pygmt
-except ImportError:
-    logger.error(
-        "Failed to import PyGMT. Make sure PyGMT is installed. PyGMT requires Python>=3.11."
-    )
-    pygmt = None
 from plate_model_manager import PlateModel, PlateModelManager
 
 from .data_server import DataServer
@@ -204,7 +197,9 @@ def get_pygmt_basemap_figure(
        a ``pygmt.Figure()`` object for map plotting
 
     """
-    if pygmt is None:
+    try:
+        import pygmt
+    except ImportError:
         raise ModuleNotFoundError(
             "PyGMT is not available. Please install PyGMT to use this function."
         )

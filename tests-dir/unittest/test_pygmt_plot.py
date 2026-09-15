@@ -34,10 +34,12 @@ if __name__ == "__main__":
         data=topo_file, plate_reconstruction=gplot.plate_reconstruction
     ).reconstruct(time=reconstruction_time)
 
+    from importlib.resources import files
+
     gplot.plot_grid(
         fig,
         "AgeGrids",
-        cmap="create-age-grids-video/agegrid.cpt",
+        cmap=str(files("gplately").joinpath("data", "agegrid.cpt")),
         nan_transparent=True,
         # shading=True,
         # shading="+a315+ne0.6",
