@@ -61,7 +61,7 @@ single GPlately task:
 (The `Examples` folder also contains `PNG_reconstruction_copper_deposits.ipynb`, a larger
 standalone worked example, which is not listed above.)
 
-## Sample workflows
+## Sample Workflows
 
 To see GPlately in action, launch a Jupyter Notebook environment and check out the sample
 notebooks listed below.
