@@ -2,6 +2,10 @@
 
 set -euo pipefail
 
+# Allow this script to be invoked from any directory; the .toml config files
+# and output directory below are relative to this script's own location.
+cd "$(dirname "${BASH_SOURCE[0]}")"
+
 gplately ag seafloor-gridding-test-output/test-1-gplately-cli-config --config gplately-cli-config.toml
 
 gplately ag seafloor-gridding-test-output/test-2-isochron-seafloor-gridding-1 --config isochron-seafloor-gridding-1.toml
