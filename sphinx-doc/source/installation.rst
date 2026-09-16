@@ -59,6 +59,96 @@ GPlately can also be installed using pip_.
 
 .. _`editable mode`: https://pip.pypa.io/en/stable/topics/local-project-installs/#editable-installs
 
+If you are planning to *develop* GPlately rather than just use a local checkout,
+see `Install from source code`_ below for the prerequisites and the commands to
+run the tests and build the documentation.
+
+
+.. _install-from-source-code:
+
+Install from source code
+------------------------
+
+This section covers setting up GPlately for development. GPlately itself is pure
+Python, so there is no compiler or native build step — the only native piece is
+its ``pygplates`` dependency (see `Prerequisites`_).
+
+Prerequisites
+~~~~~~~~~~~~~
+
+- Python 3.10 or newer.
+- ``pygplates`` available in the environment **before** installing GPlately.
+  ``pyproject.toml`` declares it as ``pygplates>=1.0.0`` and PyPI ships wheels
+  for CPython 3.8–3.13, so on those versions a plain ``pip install`` resolves it.
+  There is no CPython 3.14 wheel yet (expected with the pyGPlates 1.1 release),
+  so on 3.14 install it from the `conda-forge channel`_, from the project's
+  `Docker image`_ (see `Use Docker`_), or from a local pyGPlates build.
+
+Clone and install in editable mode
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. code:: console
+
+    $ git clone https://github.com/GPlates/gplately.git
+    $ cd gplately
+    $ pip install -e .
+    $ pip install -e ".[dev]"   # adds black, isort, bumpver, pip-tools, pytest
+
+.. note::
+
+    ✏️ The ``.[dev]`` extra only brings in the development tools. If your
+    ``pygplates`` comes from conda-forge, activate that environment (or
+    ``micromamba activate gplately``) first so the editable install lands in it.
+
+Run the tests
+~~~~~~~~~~~~~
+
+The suite that CI runs is ``tests-dir/pytestcases``; the folder is called
+``tests-dir`` rather than ``tests`` to avoid clashes with Python packaging.
+
+.. code:: console
+
+    $ python -m pytest -vv tests-dir/pytestcases
+
+Some raster cases are gated behind ``GPLATELY_TEST_LEVEL`` and download large
+files, so they are skipped by default. To include them:
+
+.. code:: console
+
+    $ GPLATELY_TEST_LEVEL=100 python -m pytest -vv tests-dir/pytestcases
+
+There are further entry points that need a working environment and network
+access (see ``tests-dir/readme.md``): ``./tests-dir/test-cli.sh`` for CLI smoke
+tests and ``./scripts/run_all_notebooks.sh`` to execute the example notebooks.
+The scripts under ``tests-dir/unittest/`` need human/visual verification and are
+not part of the regular suite.
+
+The tests pull the plate models and rasters they need at run time via
+``plate_model_manager`` instead of using committed fixtures, so expect a
+``data-cache/`` and a ``plate-model-repo/`` directory to appear next to your
+clone on the first run.
+
+Build the documentation
+~~~~~~~~~~~~~~~~~~~~~~~
+
+The Sphinx sources live in ``sphinx-doc/source``:
+
+.. code:: console
+
+    $ pip install -U sphinx sphinx_rtd_theme
+    $ sphinx-autogen -o sphinx-doc/source/generated sphinx-doc/source/*.rst
+    $ cd sphinx-doc && make html
+
+``scripts/build-sphinx-doc.sh`` wraps the same steps, but it assumes micromamba
+and an environment named ``gplately`` — the three commands above are the portable
+version.
+
+.. note::
+
+    ✏️ An editable install reports an inexact version number (for example
+    ``2.1.0.post13+...``) because the version is derived from the Git state. That
+    is expected — GPlately warns about it on import — and not a sign of a broken
+    install.
 
 Use Docker
 ----------
@@ -109,6 +199,7 @@ Visit this `Docker README page`_ for more details about using Docker with GPlate
 .. _pip: https://pip.pypa.io/en/stable/
 .. _PyPI: https://pypi.org/project/gplately/
 .. _`GitHub GPlately repository`: https://github.com/GPlates/gplately.git
+.. _`Docker image`: https://hub.docker.com/r/gplates/gplately/tags
 .. _`Docker README page`: https://github.com/GPlates/gplately/tree/master/docker/README.md 
 .. _`GPlately commands`: command_line_interface.html
 .. _`Jupyter Notebook`: https://jupyter-notebook.readthedocs.io/en/latest/ 
