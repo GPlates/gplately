@@ -114,19 +114,33 @@
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">"gplately"</span><span class="p">)</span>
 <span class="n">pygmt</span> <span class="o">=</span> <span class="kc">None</span>
-<span class="k">try</span><span class="p">:</span>
-    <span class="kn">import</span><span class="w"> </span><span class="nn">pygmt</span>
+<span class="n">_pygmt_import_attempted</span> <span class="o">=</span> <span class="kc">False</span>
 
-    <span class="n">pygmt</span><span class="o">.</span><span class="n">config</span><span class="p">(</span>
-        <span class="n">FONT_ANNOT</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
-        <span class="n">FONT_LABEL</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
-        <span class="n">FONT</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
-        <span class="n">MAP_TICK_PEN</span><span class="o">=</span><span class="s2">"0.75p"</span><span class="p">,</span>
-        <span class="n">MAP_FRAME_PEN</span><span class="o">=</span><span class="s2">"0.75p"</span><span class="p">,</span>
-        <span class="n">MAP_TICK_LENGTH_PRIMARY</span><span class="o">=</span><span class="s2">"4p"</span><span class="p">,</span>
-    <span class="p">)</span>
-<span class="k">except</span><span class="p">:</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">"Failed to import PyGMT. PyGMT requires Python&gt;=3.11."</span><span class="p">)</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_ensure_pygmt</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">"""Import pygmt (and apply its one-time config) on first use, not at module load --</span>
+<span class="sd">    PyGMT is a large, slow-to-import optional plotting backend (see gplately#451), so</span>
+<span class="sd">    importing gplately should not pay its cost unless PygmtPlotEngine is actually used.</span>
+<span class="sd">    """</span>
+    <span class="k">global</span> <span class="n">pygmt</span><span class="p">,</span> <span class="n">_pygmt_import_attempted</span>
+    <span class="k">if</span> <span class="n">_pygmt_import_attempted</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">pygmt</span>
+    <span class="n">_pygmt_import_attempted</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">pygmt</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">_pygmt_module</span>
+
+        <span class="n">_pygmt_module</span><span class="o">.</span><span class="n">config</span><span class="p">(</span>
+            <span class="n">FONT_ANNOT</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
+            <span class="n">FONT_LABEL</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
+            <span class="n">FONT</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
+            <span class="n">MAP_TICK_PEN</span><span class="o">=</span><span class="s2">"0.75p"</span><span class="p">,</span>
+            <span class="n">MAP_FRAME_PEN</span><span class="o">=</span><span class="s2">"0.75p"</span><span class="p">,</span>
+            <span class="n">MAP_TICK_LENGTH_PRIMARY</span><span class="o">=</span><span class="s2">"4p"</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">pygmt</span> <span class="o">=</span> <span class="n">_pygmt_module</span>
+    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">"Failed to import PyGMT. PyGMT requires Python&gt;=3.11."</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">pygmt</span>
 
 
 <div class="viewcode-block" id="PygmtPlotEngine">
@@ -139,6 +153,7 @@
 <div class="viewcode-block" id="PygmtPlotEngine.__init__">
 <a class="viewcode-back" href="../../../generated/gplately.PygmtPlotEngine.html#gplately.PygmtPlotEngine.__init__">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">_ensure_pygmt</span><span class="p">()</span>
         <span class="k">assert</span> <span class="n">pygmt</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">"PyGMT must be available to use PygmtPlotEngine."</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span></div>
 

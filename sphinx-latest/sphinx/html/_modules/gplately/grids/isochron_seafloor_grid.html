@@ -104,7 +104,6 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pygplates</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">xarray</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">pygmt</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">enum</span><span class="w"> </span><span class="kn">import</span> <span class="n">Enum</span><span class="p">,</span> <span class="n">auto</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">..reconstruction</span><span class="w"> </span><span class="kn">import</span> <span class="n">PlateReconstruction</span>
@@ -256,6 +255,8 @@
 <span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Generate the seafloor grids by isochron interpolation.</span>
 <span class="sd">        """</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">pygmt</span>
+
         <span class="k">if</span> <span class="n">output_scalar_types</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">output_scalar_types</span> <span class="o">=</span> <span class="n">_DEFAULT_OUTPUT_SCALAR_TYPES</span>
 

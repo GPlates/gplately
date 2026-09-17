@@ -24,7 +24,7 @@ See `this web page <installation.html#use-docker>`__.
 Jupyter Notebook kernel dies when running example workflows with Docker.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-If the Jupyter Notebook kernel dies when running with Docker, it could be due to insufficient memory. Try reducing the number of parallel processes. Or you can increase the memory allocated to Docker with `--memory=24g` when starting the Docker container.
+If the Jupyter Notebook kernel dies when running with Docker, it could be due to insufficient memory. Try reducing the number of parallel processes. Or you can increase the memory allocated with `--memory=24g` when starting the Docker container.
 
 You may also need to increase the memory allocated to Docker Desktop on your host machine. For example, on
 macOS (Docker Desktop):
