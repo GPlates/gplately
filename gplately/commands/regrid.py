@@ -63,7 +63,7 @@ def add_parser(parser):
     )
     grid_cmd.add_argument(
         "-d",
-        "--significant_digits",
+        "--significant-digits",
         metavar="DIGITS",
         type=int,
         help="Round to specified number of significant digits",
@@ -71,12 +71,25 @@ def add_parser(parser):
         dest="significant_digits",
     )
     grid_cmd.add_argument(
+        "--significant_digits",
+        type=int,
+        default=None,
+        dest="significant_digits",
+        help=argparse.SUPPRESS,
+    )
+    grid_cmd.add_argument(
         "-j",
-        "--n_jobs",
+        "--n-jobs",
         help="number of processes to use; default if specified: use all CPU available",
         metavar="N_JOBS",
         default=None,
         dest="n_jobs",
+    )
+    grid_cmd.add_argument(
+        "--n_jobs",
+        default=None,
+        dest="n_jobs",
+        help=argparse.SUPPRESS,
     )
 
 

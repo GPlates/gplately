@@ -141,48 +141,82 @@ def add_arguments(parser: argparse.ArgumentParser):
     )
     parser.add_argument(
         "-c",
-        "--crossover_threshold_degrees",
+        "--crossover-threshold-degrees",
+        dest="crossover_threshold_degrees",
         type=parse_positive_number,
         help="If specified then crossovers are fixed only if post-crossover rotation latitude, "
         "longitude or angle differ from those in pre-crossover rotation by the specified amount "
         "(in degrees). This is useful for some PLATES rotation files that are typically accurate "
         "to 2 decimal places (or threshold of 0.01).",
     )
+    parser.add_argument(
+        "--crossover_threshold_degrees",
+        dest="crossover_threshold_degrees",
+        type=parse_positive_number,
+        help=argparse.SUPPRESS,
+    )
 
     # Can specify only one of '-x' or '-g'.
     crossover_type_group = parser.add_mutually_exclusive_group()
     crossover_type_group.add_argument(
         "-x",
-        "--default_xo_ys",
+        "--default-xo-ys",
         action="store_true",
         dest="crossover_type_default_xo_ys",
         help="If specified, then if a crossover's type is unknown it will default to "
         '"synch old crossover and stages", which is equivalent to the "@xo_ys" comment tag.',
     )
     crossover_type_group.add_argument(
+        "--default_xo_ys",
+        action="store_true",
+        dest="crossover_type_default_xo_ys",
+        help=argparse.SUPPRESS,
+    )
+    crossover_type_group.add_argument(
         "-g",
-        "--default_xo_ig",
+        "--default-xo-ig",
         action="store_true",
         dest="crossover_type_default_xo_ig",
         help="If specified, then if a crossover's type is unknown it will default to "
         'ignoring the crossover, which is equivalent to the "@xo_ig" comment tag.',
     )
+    crossover_type_group.add_argument(
+        "--default_xo_ig",
+        action="store_true",
+        dest="crossover_type_default_xo_ig",
+        help=argparse.SUPPRESS,
+    )
 
     parser.add_argument(
         "-i",
-        "--ignore_moving_plates",
+        "--ignore-moving-plates",
+        dest="ignore_moving_plates",
         type=parse_positive_number,
         nargs="+",
         metavar="MOVING_PLATE_ID",
         help="If specified then is a list of moving plate ids to ignore when fixing crossovers.",
     )
     parser.add_argument(
+        "--ignore_moving_plates",
+        dest="ignore_moving_plates",
+        type=parse_positive_number,
+        nargs="+",
+        help=argparse.SUPPRESS,
+    )
+    parser.add_argument(
         "-s",
-        "--output_filename_suffix",
+        "--output-filename-suffix",
+        dest="output_filename_suffix",
         type=str,
         default="{0}".format(DEFAULT_OUTPUT_FILENAME_SUFFIX),
         help="The suffix to append to each input rotation filename to get each output rotation "
         "filename - the default suffix is '{0}'".format(DEFAULT_OUTPUT_FILENAME_SUFFIX),
+    )
+    parser.add_argument(
+        "--output_filename_suffix",
+        dest="output_filename_suffix",
+        type=str,
+        help=argparse.SUPPRESS,
     )
 
     parser.add_argument(

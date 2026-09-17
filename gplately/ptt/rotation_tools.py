@@ -273,22 +273,37 @@ def add_arguments(parser: argparse.ArgumentParser):
 
     parser.add_argument(
         "-p",
-        "--plate_pairs",
+        "--plate-pairs",
+        dest="plate_pairs",
         nargs="+",
         action=PlatePairsAction,
         metavar="moving_plate_id fixed_plate_id",
         help="One or more moving/fixed plate pairs to limit operation to. "
         "If not specified then defaults to all plate pairs.",
     )
+    parser.add_argument(
+        "--plate_pairs",
+        dest="plate_pairs",
+        nargs="+",
+        action=PlatePairsAction,
+        help=argparse.SUPPRESS,
+    )
 
     parser.add_argument(
         "-o",
-        "--output_filename_prefix",
+        "--output-filename-prefix",
+        dest="output_filename_prefix",
         type=str,
-        metavar="output_filename_prefix",
+        metavar="OUTPUT_FILENAME_PREFIX",
         help="Optional output filename prefix. If one is provided then an output rotation file "
         "is created for each input rotation file by prefixing the input filenames. "
         "If no filename prefix is provided then the input files are overwritten.",
+    )
+    parser.add_argument(
+        "--output_filename_prefix",
+        dest="output_filename_prefix",
+        type=str,
+        help=argparse.SUPPRESS,
     )
 
     parser.add_argument(
