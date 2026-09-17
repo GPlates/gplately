@@ -18,6 +18,7 @@
 """DataServer class for downloading plate model files and rasters."""
 
 import logging
+import time
 from pathlib import Path
 from typing import List, Union
 
@@ -31,6 +32,7 @@ from pygplates import (
     FeatureCollection as _FeatureCollection,
 )
 from matplotlib import image
+import requests
 from plate_model_manager import (
     PlateModelManager,
     PresentDayRasterManager,
@@ -756,18 +758,37 @@ class DataServer(object):
         file_url, file_pattern = database[feature_data_id_string]
         file_path = f"{DataServer._path_to_cache()}/{feature_data_id_string}"
         logger.info(file_path)
-        downloader = FileDownloader(file_url, f"{file_path}/.metadata.json", file_path)
 
-        # only re-download when necessary
-        if downloader.check_if_file_need_update():
-            downloader.download_file_and_update_metadata()
-        else:
-            if downloader.check_if_expire_date_need_update():
-                downloader.update_metadata()
-            else:
-                logger.debug(
-                    f"The local files in {file_path} are still good. Will not download again at this moment."
+        # This legacy EarthByte webdav endpoint intermittently hangs or drops
+        # the connection. Without a bounded timeout a single bad attempt can
+        # block for the OS's full TCP connect timeout (up to ~75s on macOS),
+        # and the failure has been observed to be transient (a retry a few
+        # seconds later succeeds), so use a bounded timeout and a few retries.
+        downloader = FileDownloader(
+            file_url, f"{file_path}/.metadata.json", file_path, timeout=(15, 60)
+        )
+
+        max_attempts = 3
+        for attempt in range(1, max_attempts + 1):
+            try:
+                # only re-download when necessary
+                if downloader.check_if_file_need_update():
+                    downloader.download_file_and_update_metadata()
+                else:
+                    if downloader.check_if_expire_date_need_update():
+                        downloader.update_metadata()
+                    else:
+                        logger.debug(
+                            f"The local files in {file_path} are still good. Will not download again at this moment."
+                        )
+                break
+            except requests.exceptions.RequestException as e:
+                if attempt == max_attempts:
+                    raise
+                logger.warning(
+                    f"Attempt {attempt}/{max_attempts} to reach {file_url} failed ({e!r}); retrying..."
                 )
+                time.sleep(2 * attempt)
 
         feature_files = list(Path(file_path).rglob(file_pattern))
         if len(feature_files) == 0:

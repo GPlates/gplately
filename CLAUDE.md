@@ -45,7 +45,7 @@ Build docs:
 ./scripts/build-sphinx-doc.sh
 ```
 
-CLI entry point (`gplately = "gplately.__main__:main"`), exposes many subcommands (`list_models`, `combine`, `feature_filter`, `reset_feature_type`, `seafloor_grids`, `regrid`, `rotate_grid`, `fix_crossovers`, `remove_rotations`, `cleanup_topologies`, `convert_xy_to_gplates`, `diagnose_rotations`, `resolve_topologies`, `rotation_tools`, `separate_ridge_transform_segments`, `subduction_convergence`, `gpmdb`, `get_cli_config_example`):
+CLI entry point (`gplately = "gplately.__main__:main"`), exposes many subcommands (`list_models`, `combine`, `feature_filter`, `reset-feature-type`, `seafloor_grids`, `regrid`, `rotate-grid`, `fix-crossovers`, `remove-rotations`, `cleanup-topologies`, `convert-xy-to-gplates`, `diagnose-rotations`, `resolve-topologies`, `rotation-tools`, `separate-ridge-transform-segments`, `subduction-convergence`, `gpmdb`, `get-cli-config-example`). Subcommand names use hyphens, not underscores (issue #450); most also have a short alias (e.g. `rft` for `reset-feature-type` - run `gplately <subcommand> -h` to see it), and the old underscore-separated names still work as backward-compatible aliases.
 ```
 gplately <subcommand> --help
 ```

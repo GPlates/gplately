@@ -51,6 +51,12 @@ if [ ! -d "${src_dir}" ]; then
   exit 1
 fi
 
+# Matplotlib prints "Matplotlib is building the font cache; this may take a
+# moment." to stderr the first time it's imported. Inside a notebook that
+# stderr output is captured as a cell output and ends up baked into the
+# published HTML, so build the cache here, before any notebook runs.
+python -c "import matplotlib.pyplot" >/dev/null 2>&1 || true
+
 for notebook in "$@"; do
   source_path="${src_dir}/${notebook}.ipynb"
   if [ ! -f "${source_path}" ]; then

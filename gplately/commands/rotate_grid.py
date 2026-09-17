@@ -57,12 +57,15 @@ def add_parser(parser):
     """Add command line argument parser."""
 
     cmd = parser.add_parser(
-        "rotate_grid",
+        "rotate-grid",
+        aliases=("rtg",),
         help=help_str,
         add_help=True,
         description=__description__,
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
+    # keep the old underscore name working (issue #450) without showing it in --help
+    parser._name_parser_map["rotate_grid"] = cmd
 
     cmd.set_defaults(func=_rotate_grid_cmd)
 

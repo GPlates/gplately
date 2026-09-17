@@ -20,3 +20,4 @@ Notebooks/12-GPlately-Regional-Plots-Source-Data/
 Notebooks/WorkflowData/
 *data-cache*
 *unittest-data*
+tests-dir/unittest/run-all-output/

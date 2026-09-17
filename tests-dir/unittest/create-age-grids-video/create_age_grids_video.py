@@ -41,8 +41,8 @@ def plot_map(model, time):
         img.variables["z"],
         origin="lower",
         transform=ccrs.PlateCarree(),
-        extent=[-180, 180, -90, 90],
-        cmap=get_cm_from_gmt_cpt("agegrid.cpt"),
+        extent=(-180, 180, -90, 90),
+        cmap=gplately.plot.get_age_grid_cmap(),
         vmax=350,
         vmin=0,
     )

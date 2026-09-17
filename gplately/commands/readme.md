@@ -2,22 +2,24 @@
 
 GPlately comes with a suite of useful command line tools. These tools are designed as GPlately subcommands. Run `gplately -h` to show the list of tools in a terminal window.
 
+📌 Subcommand names use hyphens (e.g. `reset-feature-type`), and most also have a short alias (e.g. `rft`) -- run `gplately <subcommand> -h` to see a subcommand's short alias. The old underscore-separated names (e.g. `reset_feature_type`) still work too, kept for backward compatibility.
+
 - [__list__](#-list) -- show all available reconstruction models
 - [__combine__](#-combine) -- combine feature collection files
 - [__filter__](#-filter) -- filter feature collection by various criteria 
-- [__reset_feature_type__](#-reset_feature_type) -- change feature type
+- [__reset-feature-type (rft)__](#-reset-feature-type-rft) -- change feature type
 - [__agegrid (ag)__](#-agegrid-ag) -- generate age grids
-- [__fix_crossovers__](#-fix_crossovers) -- fix crossovers
-- [__remove_rotations__](#-remove_rotations) -- remove rotations by plate ID
-- [__cleanup_topologies__](#-cleanup_topologies) -- remove unreferenced features
-- [__convert_xy_to_gplates__](#-convert_xy_to_gplates) -- convert .xy files to a GPlates-compatible file
-- [__diagnose_rotations__](#-diagnose_rotations) -- check rotation files for inconsistencies
-- [__resolve_topologies__](#-resolve_topologies) -- resolve topologies at given times
-- [__rotation_tools__](#-rotation_tools) -- calculate stage rotations  
-- [__separate_ridge_transform_segments__](#-separate_ridge_transform_segments) -- pick out ridge and transform features
-- [__subduction_convergence__](#-subduction_convergence) -- calculate the convergence rates along subduction zones
+- [__fix-crossovers (fc)__](#-fix-crossovers-fc) -- fix crossovers
+- [__remove-rotations (rr)__](#-remove-rotations-rr) -- remove rotations by plate ID
+- [__cleanup-topologies (ct)__](#-cleanup-topologies-ct) -- remove unreferenced features
+- [__convert-xy-to-gplates (cxg)__](#-convert-xy-to-gplates-cxg) -- convert .xy files to a GPlates-compatible file
+- [__diagnose-rotations (dr)__](#-diagnose-rotations-dr) -- check rotation files for inconsistencies
+- [__resolve-topologies (rt)__](#-resolve-topologies-rt) -- resolve topologies at given times
+- [__rotation-tools (rots)__](#-rotation-tools-rots) -- calculate stage rotations  
+- [__separate-ridge-transform-segments (srts)__](#-separate-ridge-transform-segments-srts) -- pick out ridge and transform features
+- [__subduction-convergence (sc)__](#-subduction-convergence-sc) -- calculate the convergence rates along subduction zones
 - [__gpmdb__](#-gpmdb) -- download the paleomagnetic data and create GPlates-compatible VGP features
-- [__rotate_grid__](#-rotate_grid) -- rotate a grid between plate-model reference frames
+- [__rotate-grid (rtg)__](#-rotate-grid-rtg) -- rotate a grid between plate-model reference frames
 
 ### 🟢 **list**
 
@@ -76,24 +78,24 @@ GPlately comes with a suite of useful command line tools. These tools are design
 
   Check out [this shell script](https://github.com/GPlates/gplately/blob/master/tests-dir/unittest/test_feature_filter.sh) for more `gplately filter` examples. 
 
-### 🟢 **reset_feature_type**
+### 🟢 **reset-feature-type (rft)**
 
-  Reset the feature type for the selected features. Run `gplately reset_feature_type -h` to see the details of this subcommand.
+  Reset the feature type for the selected features. Also available as `reset_feature_type`. Run `gplately reset-feature-type -h` to see the details of this subcommand.
 
   Examples: 
 
-  - `gplately reset_feature_type -s gpml:ClosedContinentalBoundary -t gpml:UnclassifiedFeature input_file output_file`
+  - `gplately reset-feature-type -s gpml:ClosedContinentalBoundary -t gpml:UnclassifiedFeature input_file output_file`
     (change all gpml:ClosedContinentalBoundary to gpml:UnclassifiedFeature)
         
-  - `gplately reset_feature_type -s "gpml:ContinentalFragment|gpml:Coastline" -t gpml:UnclassifiedFeature input_file output_file`
+  - `gplately reset-feature-type -s "gpml:ContinentalFragment|gpml:Coastline" -t gpml:UnclassifiedFeature input_file output_file`
     (change all gpml:ContinentalFragment and gpml:Coastline to gpml:UnclassifiedFeature)
         
-  - `gplately reset_feature_type -s ".*" -t gpml:UnclassifiedFeature input_file output_file` 
+  - `gplately reset-feature-type -s ".*" -t gpml:UnclassifiedFeature input_file output_file` 
     (change all feature types to gpml:UnclassifiedFeature)     
 
-  If you are using Docker, prefix `docker run gplates/gplately ` to the command, such as `docker run gplates/gplately gplately reset_feature_type -s ".*" -t gpml:UnclassifiedFeature input_file output_file`.
+  If you are using Docker, prefix `docker run gplates/gplately ` to the command, such as `docker run gplates/gplately gplately reset-feature-type -s ".*" -t gpml:UnclassifiedFeature input_file output_file`.
 
-  Check out [this shell script](https://github.com/GPlates/gplately/blob/master/tests-dir/unittest/test_reset_feature_type.sh) for more `gplately reset_feature_type` examples. 
+  Check out [this shell script](https://github.com/GPlates/gplately/blob/master/tests-dir/unittest/test_reset_feature_type.sh) for more `gplately reset-feature-type` examples. 
 
 ### 🟢 **agegrid (ag)**
 
@@ -107,86 +109,86 @@ GPlately comes with a suite of useful command line tools. These tools are design
   - `gplately ag rotations.rot topologies.gpmlz output -c continental_polygons.gpmlz -e 0 -s 10`
     (create age grids from 10Ma to 0Ma with 1Myr increment using the specified reconstruction files)
 
-### 🟢 **fix_crossovers**
+### 🟢 **fix-crossovers (fc)**
 
-  Fixes crossovers in rotation file(s). Run `gplately fix_crossovers -h` to see the details of this subcommand.
+  Fixes crossovers in rotation file(s). Also available as `fix_crossovers`. Run `gplately fix-crossovers -h` to see the details of this subcommand.
 
   Example:
 
-  - `gplately fix_crossovers -d -c 0.01 -i 201 701 -- input_rotations1.rot input_rotations2.rot`
+  - `gplately fix-crossovers -d -c 0.01 -i 201 701 -- input_rotations1.rot input_rotations2.rot`
     (fix crossovers in two rotation files with a threshold 0.01 degree and ignore plate ID 201 and 701)
 
-### 🟢 **remove_rotations**
+### 🟢 **remove-rotations (rr)**
 
-  Remove one or more plate IDs from a rotation model (consisting of one or more rotation files). Run `gplately remove_rotations -h` to see the details of this subcommand.
+  Remove one or more plate IDs from a rotation model (consisting of one or more rotation files). Also available as `remove_rotations`. Run `gplately remove-rotations -h` to see the details of this subcommand.
 
   Example:
 
-  - `gplately remove_rotations -p 70 4 3 1 -o removed_ref_frames_ -- rotations.rot`
+  - `gplately remove-rotations -p 70 4 3 1 -o removed_ref_frames_ -- rotations.rot`
     (remove plate IDs 70,4,3 and 1 from a rotation file)
 
-### 🟢 **cleanup_topologies**
+### 🟢 **cleanup-topologies (ct)**
 
-  Remove any regular features not referenced by topological features. Run `gplately cleanup_topologies -h` to see the details of this subcommand.
+  Remove any regular features not referenced by topological features. Also available as `cleanup_topologies`. Run `gplately cleanup-topologies -h` to see the details of this subcommand.
 
   Example:
 
-  - `gplately cleanup_topologies -o cleanup_topologies_ -- topologies.gpml`
+  - `gplately cleanup-topologies -o cleanup-topologies- -- topologies.gpml`
     (remove all features which are not referenced by any topological feature from topologies.gpml)
 
-### 🟢 **convert_xy_to_gplates**
+### 🟢 **convert-xy-to-gplates (cxg)**
 
-  Converts geometry in one or more input ascii files (such as '.xy' files) to output files suitable for loading into GPlates. Run `gplately convert_xy_to_gplates -h` to see the details of this subcommand.
+  Converts geometry in one or more input ascii files (such as '.xy' files) to output files suitable for loading into GPlates. Also available as `convert_xy_to_gplates`. Run `gplately convert-xy-to-gplates -h` to see the details of this subcommand.
 
   Example:
 
-  - `gplately convert_xy_to_gplates -e shp -- input1.xy input2.xy`
+  - `gplately convert-xy-to-gplates -e shp -- input1.xy input2.xy`
     (convert two .xy file into a shapefile)
 
-### 🟢 **diagnose_rotations**
+### 🟢 **diagnose-rotations (dr)**
 
-  Diagnose one or more rotation files to check for inconsistencies. Run `gplately diagnose_rotations -h` to see the details of this subcommand.
+  Diagnose one or more rotation files to check for inconsistencies. Also available as `diagnose_rotations`. Run `gplately diagnose-rotations -h` to see the details of this subcommand.
 
   Example:
 
-  - `gplately diagnose_rotations input_rotations1.rot input_rotations2.rot`
+  - `gplately diagnose-rotations input_rotations1.rot input_rotations2.rot`
     (check two rotation files and print the diagnostic results on screen)
 
-### 🟢 **resolve_topologies**
+### 🟢 **resolve-topologies (rt)**
 
-  Resolve topological plate polygons (and deforming networks) and saves (to separate files) the resolved topologies, and their boundary sections as subduction zones, mid-ocean ridges (ridge/transform) and others (not subduction zones or mid-ocean ridges). Run `gplately resolve_topologies -h` to see the details of this subcommand.
+  Resolve topological plate polygons (and deforming networks) and saves (to separate files) the resolved topologies, and their boundary sections as subduction zones, mid-ocean ridges (ridge/transform) and others (not subduction zones or mid-ocean ridges). Also available as `resolve_topologies`. Run `gplately resolve-topologies -h` to see the details of this subcommand.
 
   Example:
 
-  - `gplately resolve_topologies -r rotations1.rot rotations2.rot -m topologies1.gpml topologies2.gpml -t 10`
+  - `gplately resolve-topologies -r rotations1.rot rotations2.rot -m topologies1.gpml topologies2.gpml -t 10`
     (resolve topologies at 10Ma)
 
 
-### 🟢 **rotation_tools**
+### 🟢 **rotation-tools (rots)**
 
-  Calculate stage rotations between consecutive finite rotations in plate pairs. Run `gplately rotation_tools -h` to see the details of this subcommand.
+  Calculate stage rotations between consecutive finite rotations in plate pairs. Also available as `rotation_tools`. Run `gplately rotation-tools -h` to see the details of this subcommand.
 
   Example:
 
-  - `gplately rotation_tools -p 701 0 -o stage_ -- rotations.rot`
+  - `gplately rotation-tools -p 701 0 -o stage_ -- rotations.rot`
     (calculate stage rotations for moving plate 701 relative to the fixed plate 0)
 
-### 🟢 **separate_ridge_transform_segments**
+### 🟢 **separate-ridge-transform-segments (srts)**
 
-  Split the geometries of isochrons and mid-ocean ridges into ridge and transform segments. Run `gplately separate_ridge_transform_segments -h` to see the details of this subcommand.
+  Split the geometries of isochrons and mid-ocean ridges into ridge and transform segments. Also available as `separate_ridge_transform_segments`. Run `gplately separate-ridge-transform-segments -h` to see the details of this subcommand.
 
   Example:
 
-  - `gplately separate_ridge_transform_segments -r rotations.rot -d 45 -s _ridges -t _transforms -- spreading_features.gpml`
+  - `gplately separate-ridge-transform-segments -r rotations.rot -d 45 -s _ridges -t _transforms -- spreading_features.gpml`
     (pick out ridge and transform features from the file spreading_features.gpml)
 
-### 🟢 **subduction_convergence**
+### 🟢 **subduction-convergence (sc)**
 
-  Find the convergence rates along trenches (subduction zones) over time. Run `gplately subduction_convergence -h` to see the details of this subcommand.
+  Find the convergence rates along trenches (subduction zones) over time. Also available as `subduction_convergence`. Run `gplately subduction-convergence -h` to see the details of this subcommand.
 
   Example:
 
-  - `gplately subduction_convergence -r rotations.rot -m topologies.gpml -t 0 200 -i 1 -v 1 -d 0.5 -e xy -- convergence`
+  - `gplately subduction-convergence -r rotations.rot -m topologies.gpml -t 0 200 -i 1 -v 1 -d 0.5 -e xy -- convergence`
     (calculate the convergence rates along subduction zones from 200Ma to 0Ma)
 
 ### 🟢 **gpmdb**
@@ -199,17 +201,17 @@ GPlately comes with a suite of useful command line tools. These tools are design
     (download the paleomagnetic data and generate GPlates-compatible VGP features using the zahirovic2022 reconstruction model)
 
 
-### 🟢 **rotate_grid**
+### 🟢 **rotate-grid (rtg)**
 
-  Rotate a grid (or all grids in a folder) between plate-model reference frames. Run `gplately rotate_grid -h` to see the details of this subcommand.
+  Rotate a grid (or all grids in a folder) between plate-model reference frames. Also available as `rotate_grid`. Run `gplately rotate-grid -h` to see the details of this subcommand.
 
   Examples:
 
-  - `gplately rotate_grid input.nc output.nc --from-model Alfonso2024 --to-model Alfonso2024 --from-anchor 0 --to-anchor 701701 --time 100`
+  - `gplately rotate-grid input.nc output.nc --from-model Alfonso2024 --to-model Alfonso2024 --from-anchor 0 --to-anchor 701701 --time 100`
     (rotate input.nc at 100 Ma from the Alfonso2024 mantle frame to the Alfonso2024 pmag frame)
 
-  - `gplately rotate_grid input_dir output_dir --from-model Alfonso2024 --to-model Alfonso2024 --from-anchor 0 --to-anchor 701701`
+  - `gplately rotate-grid input_dir output_dir --from-model Alfonso2024 --to-model Alfonso2024 --from-anchor 0 --to-anchor 701701`
     (rotate all .nc files in input_dir; reconstruction times are deduced from filenames such as paleobathymetry_103Ma.nc)
 
-  - `gplately rotate_grid input.nc output.nc --from-rotation-files from.rot --to-rotation-files to.rot --time 100`
+  - `gplately rotate-grid input.nc output.nc --from-rotation-files from.rot --to-rotation-files to.rot --time 100`
     (rotate using local rotation files instead of a named model)
