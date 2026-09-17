@@ -478,7 +478,7 @@ def add_arguments(parser: argparse.ArgumentParser):
         "input_filenames",
         type=unicode_filename,
         nargs="+",
-        metavar="input_filename",
+        metavar="input-filename",
         help="The ascii input files containing the geometry in latitude/longitude coordinates.",
     )
 

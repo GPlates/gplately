@@ -752,6 +752,7 @@ def add_arguments(parser: argparse.ArgumentParser):
         type=str,
         nargs="?",
         default="{0}".format(DEFAULT_OUTPUT_FILENAME_PREFIX),
+        metavar="output-filename-prefix",
         help="The prefix of the output files containing the resolved topological boundaries and sections "
         "- the default prefix is '{0}'".format(DEFAULT_OUTPUT_FILENAME_PREFIX),
     )

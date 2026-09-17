@@ -1850,6 +1850,7 @@ def add_arguments(parser: argparse.ArgumentParser):
     parser.add_argument(
         "output_filename_prefix",
         type=str,
+        metavar="output-filename-prefix",
         help="The output filename prefix. An output file is created for each geological time in the sequence where "
         "the filename suffix contains the time and the filename extension.",
     )

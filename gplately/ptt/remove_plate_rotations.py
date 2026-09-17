@@ -716,7 +716,7 @@ def add_arguments(parser):
         "input_rotation_filenames",
         type=str,
         nargs="+",
-        metavar="input_rotation_filename",
+        metavar="input-rotation-filename",
         help="One or more rotation files of a rotation model.",
     )
 

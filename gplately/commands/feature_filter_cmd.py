@@ -70,10 +70,16 @@ def add_parser(subparser):
 
     # feature filter command arguments
     filter_cmd.set_defaults(func=run_filter_feature_collection)
-    filter_cmd.add_argument("filter_input_file", type=str, help="the input file")
+    filter_cmd.add_argument(
+        "filter_input_file",
+        type=str,
+        metavar="filter-input-file",
+        help="the input file",
+    )
     filter_cmd.add_argument(
         "filter_output_file",
         type=str,
+        metavar="filter-output-file",
         help="the output file into which the filtered feature collection will be saved",
     )
 

@@ -309,7 +309,7 @@ def add_arguments(parser: argparse.ArgumentParser):
         "rotation_filenames",
         type=str,
         nargs="+",
-        metavar="rotation_filename",
+        metavar="rotation-filename",
         help="One or more rotation filenames.",
     )
 

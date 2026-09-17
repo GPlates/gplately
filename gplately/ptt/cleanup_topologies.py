@@ -482,7 +482,7 @@ def add_arguments(parser: argparse.ArgumentParser):
         "input_filenames",
         type=str,
         nargs="+",
-        metavar="input_filename",
+        metavar="input-filename",
         help="One or more files containing topological features and features referenced by them.",
     )
 
