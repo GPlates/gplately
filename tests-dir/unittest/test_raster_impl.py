@@ -19,16 +19,6 @@ print(gplately.__file__)
 
 turn_on_debug_logging()
 
-cpt_file = "agegrid.cpt"
-if not os.path.isfile(cpt_file):
-    import urllib.request
-
-    urllib.request.urlretrieve(
-        "https://raw.githubusercontent.com/GPlates/gplately/refs/heads/master/tests-dir/unittest/create-age-grids-video/agegrid.cpt",
-        cpt_file,
-    )
-from gplately.plot.gmt_cpt import get_cmap_from_gmt_cpt
-
 model_name = "Muller2025"
 plate_model = PlateModelManager().get_model(model_name, data_dir=MODEL_REPO_DIR)
 np.set_printoptions(suppress=True)
@@ -85,7 +75,7 @@ def test_raster_query():
         marker="o",
         s=2,
         transform=ccrs.PlateCarree(),
-        cmap=get_cmap_from_gmt_cpt(cpt_file),
+        cmap=gplately.plot.get_age_grid_cmap(),
         vmax=200,
         vmin=0,
     )
@@ -107,7 +97,7 @@ def test_raster_clip_by_extent():
     clipped_raster.plot(
         ax=ax,
         transform=ccrs.PlateCarree(),
-        cmap=get_cmap_from_gmt_cpt(cpt_file),
+        cmap=gplately.plot.get_age_grid_cmap(),
         vmax=200,
         vmin=0,
     )
