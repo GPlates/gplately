@@ -44,12 +44,15 @@ Example usage:
 def add_parser(subparser):
     """add `reset_feature_type` command line argument parser"""
     reset_feature_type_cmd = subparser.add_parser(
-        "reset_feature_type",
+        "reset-feature-type",
+        aliases=("rft",),
         help=help_str,
         add_help=True,
         description=__description__,
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
+    # keep the old underscore name working (issue #450) without showing it in --help
+    subparser._name_parser_map["reset_feature_type"] = reset_feature_type_cmd
 
     reset_feature_type_cmd.set_defaults(func=reset_feature_type)
     reset_feature_type_cmd.add_argument("input_file", type=str, help="the input file")

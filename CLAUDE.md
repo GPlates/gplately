@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 GPlately is an object-oriented Python interface to pyGPlates for plate tectonic reconstruction (points, lines, polygons, and rasters through deep geologic time, plate velocities, subduction/spreading rates, and paleomap plotting).
 
-`pygplates` is a required native dependency and is **not** pip-installable — it must come from conda-forge or the project's Docker image. Local dev/test environments are conda/micromamba-based (see `tests-dir/test-env.yml`, `conda/`, `docker/`).
+`pygplates` is a required native dependency, declared in `pyproject.toml` as `pygplates>=1.0.0`. PyPI ships wheels for CPython 3.8–3.13, so a plain `pip install` works on those versions. There is no 3.14 wheel yet (expected with the pyGPlates 1.1 release), so on Python 3.14 pygplates must come from conda-forge, the project's Docker image, or a local build. Dev/test environments are conda/micromamba-based (see `tests-dir/test-env.yml`, `conda/`, `docker/`).
 
 ## Commands
 
@@ -45,7 +45,7 @@ Build docs:
 ./scripts/build-sphinx-doc.sh
 ```
 
-CLI entry point (`gplately = "gplately.__main__:main"`), exposes many subcommands (`list_models`, `combine`, `feature_filter`, `reset_feature_type`, `seafloor_grids`, `regrid`, `rotate_grid`, `fix_crossovers`, `remove_rotations`, `cleanup_topologies`, `convert_xy_to_gplates`, `diagnose_rotations`, `resolve_topologies`, `rotation_tools`, `separate_ridge_transform_segments`, `subduction_convergence`, `gpmdb`, `get_cli_config_example`):
+CLI entry point (`gplately = "gplately.__main__:main"`), exposes many subcommands (`list_models`, `combine`, `feature_filter`, `reset-feature-type`, `seafloor_grids`, `regrid`, `rotate-grid`, `fix-crossovers`, `remove-rotations`, `cleanup-topologies`, `convert-xy-to-gplates`, `diagnose-rotations`, `resolve-topologies`, `rotation-tools`, `separate-ridge-transform-segments`, `subduction-convergence`, `gpmdb`, `get-cli-config-example`). Subcommand names use hyphens, not underscores (issue #450); most also have a short alias (e.g. `rft` for `reset-feature-type` - run `gplately <subcommand> -h` to see it), and the old underscore-separated names still work as backward-compatible aliases.
 ```
 gplately <subcommand> --help
 ```
