@@ -47,9 +47,9 @@ tries to deduce it from the filename by looking for a number immediately
 followed by "Ma" (e.g. paleobathymetry_103Ma.nc → 103.0 Ma).
 
 Example usage:
-    - gplately rotate_grid input.nc output.nc --from-model Alfonso2024 --to-model Alfonso2024 --from-anchor 0 --to-anchor 701701 --time 100
-    - gplately rotate_grid input_dir output_dir --from-model Alfonso2024 --to-model Alfonso2024 --from-anchor 0 --to-anchor 701701
-    - gplately rotate_grid input.nc output.nc --from-rotation-files from.rot --to-rotation-files to.rot --time 100
+    - gplately rotate-grid input.nc output.nc --from-model Alfonso2024 --to-model Alfonso2024 --from-anchor 0 --to-anchor 701701 --time 100
+    - gplately rotate-grid input-dir output-dir --from-model Alfonso2024 --to-model Alfonso2024 --from-anchor 0 --to-anchor 701701
+    - gplately rotate-grid input.nc output.nc --from-rotation-files from.rot --to-rotation-files to.rot --time 100
 """
 
 
@@ -70,12 +70,12 @@ def add_parser(parser):
     cmd.set_defaults(func=_rotate_grid_cmd)
 
     cmd.add_argument(
-        metavar="INPUT",
+        metavar="input",
         help="input grid file (.nc) or directory containing .nc files",
         dest="input_path",
     )
     cmd.add_argument(
-        metavar="OUTPUT",
+        metavar="output",
         help="output grid file (.nc) or output directory",
         dest="output_path",
     )

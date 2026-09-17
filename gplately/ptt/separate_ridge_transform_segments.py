@@ -620,45 +620,75 @@ def add_arguments(parser: argparse.ArgumentParser):
 
     parser.set_defaults(func=main)
 
-    parser.add_argument(
+    rotation_filenames_group = parser.add_mutually_exclusive_group(required=True)
+    rotation_filenames_group.add_argument(
         "-r",
-        "--rotation_filenames",
+        "--rotation-filenames",
+        dest="rotation_filenames",
         type=str,
         nargs="+",
-        required=True,
         metavar="rotation_filename",
         help="One or more rotation files.",
+    )
+    rotation_filenames_group.add_argument(
+        "--rotation_filenames",
+        dest="rotation_filenames",
+        type=str,
+        nargs="+",
+        help=argparse.SUPPRESS,
     )
 
     parser.add_argument(
         "-s",
-        "--output_ridges_filename_suffix",
+        "--output-ridges-filename-suffix",
+        dest="output_ridges_filename_suffix",
         type=str,
         default="{0}".format(DEFAULT_OUTPUT_RIDGES_FILENAME_SUFFIX),
         help="The suffix to append to each input filename to get each output ridges filename - "
         "the default suffix is '{0}'".format(DEFAULT_OUTPUT_RIDGES_FILENAME_SUFFIX),
     )
     parser.add_argument(
+        "--output_ridges_filename_suffix",
+        dest="output_ridges_filename_suffix",
+        type=str,
+        help=argparse.SUPPRESS,
+    )
+    parser.add_argument(
         "-t",
-        "--output_transforms_filename_suffix",
+        "--output-transforms-filename-suffix",
+        dest="output_transforms_filename_suffix",
         type=str,
         default="{0}".format(DEFAULT_OUTPUT_TRANSFORMS_FILENAME_SUFFIX),
         help="The suffix to append to each input filename to get each output transforms filename - "
         "the default suffix is '{0}'".format(DEFAULT_OUTPUT_TRANSFORMS_FILENAME_SUFFIX),
     )
+    parser.add_argument(
+        "--output_transforms_filename_suffix",
+        dest="output_transforms_filename_suffix",
+        type=str,
+        help=argparse.SUPPRESS,
+    )
 
     parser.add_argument(
         "-d",
-        "--transform_segment_deviation_degrees",
+        "--transform-segment-deviation-degrees",
+        dest="transform_segment_deviation_degrees",
         type=float,
         default="{0}".format(DEFAULT_TRANSFORM_SEGMENT_DEVIATION_DEGREES),
         help="How many degrees a spreading segment can deviate from the stage pole before it's considered a transform segment - "
         "default is '{0}'".format(DEFAULT_TRANSFORM_SEGMENT_DEVIATION_DEGREES),
     )
+    parser.add_argument(
+        "--transform_segment_deviation_degrees",
+        dest="transform_segment_deviation_degrees",
+        type=float,
+        help=argparse.SUPPRESS,
+    )
 
     parser.add_argument(
         "-f",
-        "--spreading_feature_types",
+        "--spreading-feature-types",
+        dest="spreading_feature_types",
         type=str,
         nargs="+",
         metavar="spreading_feature_type",
@@ -669,12 +699,19 @@ def add_arguments(parser: argparse.ArgumentParser):
         "For example, mid-ocean ridges are specified as MidOceanRidge (without the gpml: prefix). "
         "Defaults to splitting all features (although features that are not spreading are ignored).",
     )
+    parser.add_argument(
+        "--spreading_feature_types",
+        dest="spreading_feature_types",
+        type=str,
+        nargs="+",
+        help=argparse.SUPPRESS,
+    )
 
     parser.add_argument(
         "input_filenames",
         type=str,
         nargs="+",
-        metavar="input_filename",
+        metavar="input-filename",
         help="One or more input filenames (original files).",
     )
 

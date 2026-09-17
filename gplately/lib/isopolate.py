@@ -2145,6 +2145,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "output_filename",
         type=str,
+        metavar="output-filename",
         help="The output file containing the interpolated features.",
     )
 

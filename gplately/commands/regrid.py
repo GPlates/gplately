@@ -43,12 +43,12 @@ def add_parser(parser):
     # regrid command arguments
     grid_cmd.set_defaults(func=_regrid_netcdf4)
     grid_cmd.add_argument(
-        metavar="INPUT_FILE",
+        metavar="input-file",
         help="input file or directory",
         dest="input_grid_filename",
     )
     grid_cmd.add_argument(
-        metavar="OUTPUT_FILE",
+        metavar="output-file",
         help="output file or directory",
         dest="output_grid_filename",
     )
@@ -63,7 +63,7 @@ def add_parser(parser):
     )
     grid_cmd.add_argument(
         "-d",
-        "--significant_digits",
+        "--significant-digits",
         metavar="DIGITS",
         type=int,
         help="Round to specified number of significant digits",
@@ -71,12 +71,25 @@ def add_parser(parser):
         dest="significant_digits",
     )
     grid_cmd.add_argument(
+        "--significant_digits",
+        type=int,
+        default=None,
+        dest="significant_digits",
+        help=argparse.SUPPRESS,
+    )
+    grid_cmd.add_argument(
         "-j",
-        "--n_jobs",
+        "--n-jobs",
         help="number of processes to use; default if specified: use all CPU available",
         metavar="N_JOBS",
         default=None,
         dest="n_jobs",
+    )
+    grid_cmd.add_argument(
+        "--n_jobs",
+        default=None,
+        dest="n_jobs",
+        help=argparse.SUPPRESS,
     )
 
 
