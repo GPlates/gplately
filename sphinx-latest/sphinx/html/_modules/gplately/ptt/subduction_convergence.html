@@ -1756,23 +1756,39 @@
 
     <span class="n">parser</span><span class="o">.</span><span class="n">set_defaults</span><span class="p">(</span><span class="n">func</span><span class="o">=</span><span class="n">main</span><span class="p">)</span>
 
-    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+    <span class="n">rotation_filenames_group</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">add_mutually_exclusive_group</span><span class="p">(</span><span class="n">required</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">rotation_filenames_group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
         <span class="s2">"-r"</span><span class="p">,</span>
-        <span class="s2">"--rotation_filenames"</span><span class="p">,</span>
+        <span class="s2">"--rotation-filenames"</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">"rotation_filenames"</span><span class="p">,</span>
         <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
         <span class="n">nargs</span><span class="o">=</span><span class="s2">"+"</span><span class="p">,</span>
-        <span class="n">required</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
         <span class="n">metavar</span><span class="o">=</span><span class="s2">"rotation_filename"</span><span class="p">,</span>
         <span class="n">help</span><span class="o">=</span><span class="s2">"One or more rotation files."</span><span class="p">,</span>
     <span class="p">)</span>
-    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
-        <span class="s2">"-m"</span><span class="p">,</span>
-        <span class="s2">"--topology_filenames"</span><span class="p">,</span>
+    <span class="n">rotation_filenames_group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">"--rotation_filenames"</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">"rotation_filenames"</span><span class="p">,</span>
         <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
         <span class="n">nargs</span><span class="o">=</span><span class="s2">"+"</span><span class="p">,</span>
-        <span class="n">required</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="n">argparse</span><span class="o">.</span><span class="n">SUPPRESS</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">topology_filenames_group</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">add_mutually_exclusive_group</span><span class="p">(</span><span class="n">required</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">topology_filenames_group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">"-m"</span><span class="p">,</span>
+        <span class="s2">"--topology-filenames"</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">"topology_filenames"</span><span class="p">,</span>
+        <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
+        <span class="n">nargs</span><span class="o">=</span><span class="s2">"+"</span><span class="p">,</span>
         <span class="n">metavar</span><span class="o">=</span><span class="s2">"topology_filename"</span><span class="p">,</span>
         <span class="n">help</span><span class="o">=</span><span class="s2">"One or more topology files to generate resolved subducting lines."</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">topology_filenames_group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">"--topology_filenames"</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">"topology_filenames"</span><span class="p">,</span>
+        <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
+        <span class="n">nargs</span><span class="o">=</span><span class="s2">"+"</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="n">argparse</span><span class="o">.</span><span class="n">SUPPRESS</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
         <span class="s2">"-a"</span><span class="p">,</span>
@@ -1787,14 +1803,22 @@
     <span class="n">threshold_sampling_distance_group</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">add_mutually_exclusive_group</span><span class="p">()</span>
     <span class="n">threshold_sampling_distance_group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
         <span class="s2">"-d"</span><span class="p">,</span>
-        <span class="s2">"--threshold_sampling_distance_degrees"</span><span class="p">,</span>
+        <span class="s2">"--threshold-sampling-distance-degrees"</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">"threshold_sampling_distance_degrees"</span><span class="p">,</span>
         <span class="nb">type</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
         <span class="n">help</span><span class="o">=</span><span class="s2">"Threshold sampling distance along trenches (in degrees). "</span>
         <span class="s2">"Defaults to </span><span class="si">{0}</span><span class="s2"> degrees."</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">DEFAULT_THRESHOLD_SAMPLING_DISTANCE_DEGREES</span><span class="p">),</span>
     <span class="p">)</span>
     <span class="n">threshold_sampling_distance_group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">"--threshold_sampling_distance_degrees"</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">"threshold_sampling_distance_degrees"</span><span class="p">,</span>
+        <span class="nb">type</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="n">argparse</span><span class="o">.</span><span class="n">SUPPRESS</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">threshold_sampling_distance_group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
         <span class="s2">"-k"</span><span class="p">,</span>
-        <span class="s2">"--threshold_sampling_distance_kms"</span><span class="p">,</span>
+        <span class="s2">"--threshold-sampling-distance-kms"</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">"threshold_sampling_distance_kms"</span><span class="p">,</span>
         <span class="nb">type</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
         <span class="n">help</span><span class="o">=</span><span class="s2">"Threshold sampling distance along trenches (in Kms). "</span>
         <span class="s2">"Defaults to </span><span class="si">{0:.2f}</span><span class="s2"> Kms (which is equivalent to </span><span class="si">{1}</span><span class="s2"> degrees)."</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
@@ -1802,10 +1826,17 @@
             <span class="n">DEFAULT_THRESHOLD_SAMPLING_DISTANCE_DEGREES</span><span class="p">,</span>
         <span class="p">),</span>
     <span class="p">)</span>
+    <span class="n">threshold_sampling_distance_group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">"--threshold_sampling_distance_kms"</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">"threshold_sampling_distance_kms"</span><span class="p">,</span>
+        <span class="nb">type</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="n">argparse</span><span class="o">.</span><span class="n">SUPPRESS</span><span class="p">,</span>
+    <span class="p">)</span>
 
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
         <span class="s2">"-t"</span><span class="p">,</span>
-        <span class="s2">"--time_range"</span><span class="p">,</span>
+        <span class="s2">"--time-range"</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">"time_range"</span><span class="p">,</span>
         <span class="nb">type</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
         <span class="n">nargs</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
         <span class="n">metavar</span><span class="o">=</span><span class="p">(</span><span class="s2">"young_time"</span><span class="p">,</span> <span class="s2">"old_time"</span><span class="p">),</span>
@@ -1814,6 +1845,13 @@
         <span class="s2">"Defaults to </span><span class="si">{0}</span><span class="s2"> -&gt; </span><span class="si">{1}</span><span class="s2"> Ma."</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
             <span class="n">DEFAULT_TIME_RANGE_YOUNG_TIME</span><span class="p">,</span> <span class="n">DEFAULT_TIME_RANGE_OLD_TIME</span>
         <span class="p">),</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">"--time_range"</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">"time_range"</span><span class="p">,</span>
+        <span class="nb">type</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
+        <span class="n">nargs</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="n">argparse</span><span class="o">.</span><span class="n">SUPPRESS</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">parse_positive_number</span><span class="p">(</span><span class="n">value_string</span><span class="p">):</span>
@@ -1829,26 +1867,41 @@
 
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
         <span class="s2">"-i"</span><span class="p">,</span>
-        <span class="s2">"--time_increment"</span><span class="p">,</span>
+        <span class="s2">"--time-increment"</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">"time_increment"</span><span class="p">,</span>
         <span class="nb">type</span><span class="o">=</span><span class="n">parse_positive_number</span><span class="p">,</span>
         <span class="n">default</span><span class="o">=</span><span class="n">DEFAULT_TIME_INCREMENT</span><span class="p">,</span>
         <span class="n">help</span><span class="o">=</span><span class="s2">"The time increment in My. Defaults to </span><span class="si">{0}</span><span class="s2"> My."</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
             <span class="n">DEFAULT_TIME_INCREMENT</span>
         <span class="p">),</span>
     <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">"--time_increment"</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">"time_increment"</span><span class="p">,</span>
+        <span class="nb">type</span><span class="o">=</span><span class="n">parse_positive_number</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="n">argparse</span><span class="o">.</span><span class="n">SUPPRESS</span><span class="p">,</span>
+    <span class="p">)</span>
 
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
         <span class="s2">"-v"</span><span class="p">,</span>
-        <span class="s2">"--velocity_delta_time"</span><span class="p">,</span>
+        <span class="s2">"--velocity-delta-time"</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">"velocity_delta_time"</span><span class="p">,</span>
         <span class="nb">type</span><span class="o">=</span><span class="n">parse_positive_number</span><span class="p">,</span>
         <span class="n">default</span><span class="o">=</span><span class="n">DEFAULT_VELOCITY_DELTA_TIME</span><span class="p">,</span>
         <span class="n">help</span><span class="o">=</span><span class="s2">"The delta time interval used to calculate velocities in My. "</span>
         <span class="s2">"Defaults to </span><span class="si">{0}</span><span class="s2"> My."</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">DEFAULT_VELOCITY_DELTA_TIME</span><span class="p">),</span>
     <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">"--velocity_delta_time"</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">"velocity_delta_time"</span><span class="p">,</span>
+        <span class="nb">type</span><span class="o">=</span><span class="n">parse_positive_number</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="n">argparse</span><span class="o">.</span><span class="n">SUPPRESS</span><span class="p">,</span>
+    <span class="p">)</span>
 
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
         <span class="s2">"-x"</span><span class="p">,</span>
-        <span class="s2">"--extra_output_parameters"</span><span class="p">,</span>
+        <span class="s2">"--extra-output-parameters"</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">"extra_output_parameters"</span><span class="p">,</span>
         <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
         <span class="n">nargs</span><span class="o">=</span><span class="s2">"+"</span><span class="p">,</span>
         <span class="n">metavar</span><span class="o">=</span><span class="s2">"output_parameter"</span><span class="p">,</span>
@@ -1859,34 +1912,63 @@
             <span class="s2">", "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">_OUTPUT_PARAMETER_NAME_LIST</span><span class="p">)</span>
         <span class="p">),</span>
     <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">"--extra_output_parameters"</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">"extra_output_parameters"</span><span class="p">,</span>
+        <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
+        <span class="n">nargs</span><span class="o">=</span><span class="s2">"+"</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="n">argparse</span><span class="o">.</span><span class="n">SUPPRESS</span><span class="p">,</span>
+    <span class="p">)</span>
 
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
         <span class="s2">"-g"</span><span class="p">,</span>
-        <span class="s2">"--output_gpml_filename"</span><span class="p">,</span>
+        <span class="s2">"--output-gpml-filename"</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">"output_gpml_filename"</span><span class="p">,</span>
         <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
         <span class="n">help</span><span class="o">=</span><span class="s2">"Optional GPML output filename to contain the subduction convergence data for all specified times. "</span>
         <span class="s2">"This can then be loaded into GPlates to display the data as scalar coverages."</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">"--output_gpml_filename"</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">"output_gpml_filename"</span><span class="p">,</span>
+        <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="n">argparse</span><span class="o">.</span><span class="n">SUPPRESS</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
         <span class="s2">"output_filename_prefix"</span><span class="p">,</span>
         <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
+        <span class="n">metavar</span><span class="o">=</span><span class="s2">"output-filename-prefix"</span><span class="p">,</span>
         <span class="n">help</span><span class="o">=</span><span class="s2">"The output filename prefix. An output file is created for each geological time in the sequence where "</span>
         <span class="s2">"the filename suffix contains the time and the filename extension."</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
         <span class="s2">"-e"</span><span class="p">,</span>
-        <span class="s2">"--output_filename_extension"</span><span class="p">,</span>
+        <span class="s2">"--output-filename-extension"</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">"output_filename_extension"</span><span class="p">,</span>
         <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
         <span class="n">default</span><span class="o">=</span><span class="s2">"xy"</span><span class="p">,</span>
         <span class="n">help</span><span class="o">=</span><span class="s1">'The output xy filename extension. Defaults to "xy".'</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">"--output_filename_extension"</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">"output_filename_extension"</span><span class="p">,</span>
+        <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="n">argparse</span><span class="o">.</span><span class="n">SUPPRESS</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
         <span class="s2">"-w"</span><span class="p">,</span>
-        <span class="s2">"--ignore_topology_warnings"</span><span class="p">,</span>
+        <span class="s2">"--ignore-topology-warnings"</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">"ignore_topology_warnings"</span><span class="p">,</span>
         <span class="n">action</span><span class="o">=</span><span class="s2">"store_true"</span><span class="p">,</span>
         <span class="n">help</span><span class="o">=</span><span class="s2">"If specified then topology warnings are ignored (not output). "</span>
         <span class="s2">"These are the warnings about not finding the overriding and subducting plates."</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">"--ignore_topology_warnings"</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">"ignore_topology_warnings"</span><span class="p">,</span>
+        <span class="n">action</span><span class="o">=</span><span class="s2">"store_true"</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="n">argparse</span><span class="o">.</span><span class="n">SUPPRESS</span><span class="p">,</span>
     <span class="p">)</span>
 
 

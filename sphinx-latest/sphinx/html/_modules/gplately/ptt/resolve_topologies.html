@@ -695,23 +695,39 @@
 
     <span class="n">parser</span><span class="o">.</span><span class="n">set_defaults</span><span class="p">(</span><span class="n">func</span><span class="o">=</span><span class="n">main</span><span class="p">)</span>
 
-    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+    <span class="n">rotation_filenames_group</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">add_mutually_exclusive_group</span><span class="p">(</span><span class="n">required</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">rotation_filenames_group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
         <span class="s2">"-r"</span><span class="p">,</span>
-        <span class="s2">"--rotation_filenames"</span><span class="p">,</span>
+        <span class="s2">"--rotation-filenames"</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">"rotation_filenames"</span><span class="p">,</span>
         <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
         <span class="n">nargs</span><span class="o">=</span><span class="s2">"+"</span><span class="p">,</span>
-        <span class="n">required</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
         <span class="n">metavar</span><span class="o">=</span><span class="s2">"rotation_filename"</span><span class="p">,</span>
         <span class="n">help</span><span class="o">=</span><span class="s2">"One or more rotation files."</span><span class="p">,</span>
     <span class="p">)</span>
-    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
-        <span class="s2">"-m"</span><span class="p">,</span>
-        <span class="s2">"--topology_filenames"</span><span class="p">,</span>
+    <span class="n">rotation_filenames_group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">"--rotation_filenames"</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">"rotation_filenames"</span><span class="p">,</span>
         <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
         <span class="n">nargs</span><span class="o">=</span><span class="s2">"+"</span><span class="p">,</span>
-        <span class="n">required</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="n">argparse</span><span class="o">.</span><span class="n">SUPPRESS</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">topology_filenames_group</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">add_mutually_exclusive_group</span><span class="p">(</span><span class="n">required</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">topology_filenames_group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">"-m"</span><span class="p">,</span>
+        <span class="s2">"--topology-filenames"</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">"topology_filenames"</span><span class="p">,</span>
+        <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
+        <span class="n">nargs</span><span class="o">=</span><span class="s2">"+"</span><span class="p">,</span>
         <span class="n">metavar</span><span class="o">=</span><span class="s2">"topology_filename"</span><span class="p">,</span>
         <span class="n">help</span><span class="o">=</span><span class="s2">"One or more topology files."</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">topology_filenames_group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">"--topology_filenames"</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">"topology_filenames"</span><span class="p">,</span>
+        <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
+        <span class="n">nargs</span><span class="o">=</span><span class="s2">"+"</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="n">argparse</span><span class="o">.</span><span class="n">SUPPRESS</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
         <span class="s2">"-a"</span><span class="p">,</span>
@@ -728,24 +744,41 @@
     <span class="p">)</span>
     <span class="n">reconstruction_times_argument_group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
         <span class="s2">"-t"</span><span class="p">,</span>
-        <span class="s2">"--reconstruction_times"</span><span class="p">,</span>
+        <span class="s2">"--reconstruction-times"</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">"reconstruction_times"</span><span class="p">,</span>
         <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span>
         <span class="n">nargs</span><span class="o">=</span><span class="s2">"+"</span><span class="p">,</span>
         <span class="n">metavar</span><span class="o">=</span><span class="s2">"reconstruction_time"</span><span class="p">,</span>
         <span class="n">help</span><span class="o">=</span><span class="s2">"One or more times at which to reconstruct/resolve topologies."</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="n">reconstruction_times_argument_group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">"--reconstruction_times"</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">"reconstruction_times"</span><span class="p">,</span>
+        <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span>
+        <span class="n">nargs</span><span class="o">=</span><span class="s2">"+"</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="n">argparse</span><span class="o">.</span><span class="n">SUPPRESS</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">reconstruction_times_argument_group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
         <span class="s2">"-i"</span><span class="p">,</span>
-        <span class="s2">"--reconstruction_time_range"</span><span class="p">,</span>
+        <span class="s2">"--reconstruction-time-range"</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">"reconstruction_time_range"</span><span class="p">,</span>
         <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span>
         <span class="n">nargs</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
         <span class="n">metavar</span><span class="o">=</span><span class="p">(</span><span class="s2">"young_time"</span><span class="p">,</span> <span class="s2">"old_time"</span><span class="p">),</span>
         <span class="n">help</span><span class="o">=</span><span class="s2">"The time range (in Ma) from young time to old time over which to reconstruct/resolve topologies (in increments of 1Myr)."</span><span class="p">,</span>
     <span class="p">)</span>
+    <span class="n">reconstruction_times_argument_group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">"--reconstruction_time_range"</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">"reconstruction_time_range"</span><span class="p">,</span>
+        <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span>
+        <span class="n">nargs</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="n">argparse</span><span class="o">.</span><span class="n">SUPPRESS</span><span class="p">,</span>
+    <span class="p">)</span>
 
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
         <span class="s2">"-d"</span><span class="p">,</span>
-        <span class="s2">"--transform_segment_deviation_degrees"</span><span class="p">,</span>
+        <span class="s2">"--transform-segment-deviation-degrees"</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">"transform_segment_deviation_degrees"</span><span class="p">,</span>
         <span class="nb">type</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
         <span class="n">default</span><span class="o">=</span><span class="s2">"</span><span class="si">{0}</span><span class="s2">"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
             <span class="n">separate_ridge_transform_segments</span><span class="o">.</span><span class="n">DEFAULT_TRANSFORM_SEGMENT_DEVIATION_DEGREES</span>
@@ -755,10 +788,17 @@
             <span class="n">separate_ridge_transform_segments</span><span class="o">.</span><span class="n">DEFAULT_TRANSFORM_SEGMENT_DEVIATION_DEGREES</span>
         <span class="p">),</span>
     <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">"--transform_segment_deviation_degrees"</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">"transform_segment_deviation_degrees"</span><span class="p">,</span>
+        <span class="nb">type</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="n">argparse</span><span class="o">.</span><span class="n">SUPPRESS</span><span class="p">,</span>
+    <span class="p">)</span>
 
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
         <span class="s2">"-e"</span><span class="p">,</span>
-        <span class="s2">"--output_filename_extension"</span><span class="p">,</span>
+        <span class="s2">"--output-filename-extension"</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">"output_filename_extension"</span><span class="p">,</span>
         <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
         <span class="n">default</span><span class="o">=</span><span class="s2">"</span><span class="si">{0}</span><span class="s2">"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">DEFAULT_OUTPUT_FILENAME_EXTENSION</span><span class="p">),</span>
         <span class="n">help</span><span class="o">=</span><span class="s2">"The filename extension of the output files containing the resolved topological boundaries and sections "</span>
@@ -766,22 +806,42 @@
             <span class="n">DEFAULT_OUTPUT_FILENAME_EXTENSION</span>
         <span class="p">),</span>
     <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">"--output_filename_extension"</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">"output_filename_extension"</span><span class="p">,</span>
+        <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="n">argparse</span><span class="o">.</span><span class="n">SUPPRESS</span><span class="p">,</span>
+    <span class="p">)</span>
 
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
         <span class="s2">"-nb"</span><span class="p">,</span>
-        <span class="s2">"--no_output_boundaries"</span><span class="p">,</span>
+        <span class="s2">"--no-output-boundaries"</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">"no_output_boundaries"</span><span class="p">,</span>
         <span class="n">action</span><span class="o">=</span><span class="s2">"store_true"</span><span class="p">,</span>
         <span class="n">help</span><span class="o">=</span><span class="s2">"Do not write geometries of resolved topologies and their boundaries to files. "</span>
         <span class="s1">'This is most useful when used with the "-l" option to generate only the text file containing boundary lengths. '</span>
         <span class="s2">"By default geometry files are written."</span><span class="p">,</span>
     <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">"--no_output_boundaries"</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">"no_output_boundaries"</span><span class="p">,</span>
+        <span class="n">action</span><span class="o">=</span><span class="s2">"store_true"</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="n">argparse</span><span class="o">.</span><span class="n">SUPPRESS</span><span class="p">,</span>
+    <span class="p">)</span>
 
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
         <span class="s2">"-l"</span><span class="p">,</span>
-        <span class="s2">"--output_boundary_lengths"</span><span class="p">,</span>
+        <span class="s2">"--output-boundary-lengths"</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">"output_boundary_lengths"</span><span class="p">,</span>
         <span class="n">action</span><span class="o">=</span><span class="s2">"store_true"</span><span class="p">,</span>
         <span class="n">help</span><span class="o">=</span><span class="s2">"Also generate a text file containing the total boundary lengths (in kms) of the resolved topology boundary sections "</span>
         <span class="s2">"for the requested reconstruction times. By default no text file is generated."</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">"--output_boundary_lengths"</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">"output_boundary_lengths"</span><span class="p">,</span>
+        <span class="n">action</span><span class="o">=</span><span class="s2">"store_true"</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="n">argparse</span><span class="o">.</span><span class="n">SUPPRESS</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
@@ -789,6 +849,7 @@
         <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
         <span class="n">nargs</span><span class="o">=</span><span class="s2">"?"</span><span class="p">,</span>
         <span class="n">default</span><span class="o">=</span><span class="s2">"</span><span class="si">{0}</span><span class="s2">"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">DEFAULT_OUTPUT_FILENAME_PREFIX</span><span class="p">),</span>
+        <span class="n">metavar</span><span class="o">=</span><span class="s2">"output-filename-prefix"</span><span class="p">,</span>
         <span class="n">help</span><span class="o">=</span><span class="s2">"The prefix of the output files containing the resolved topological boundaries and sections "</span>
         <span class="s2">"- the default prefix is '</span><span class="si">{0}</span><span class="s2">'"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">DEFAULT_OUTPUT_FILENAME_PREFIX</span><span class="p">),</span>
     <span class="p">)</span>
