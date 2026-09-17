@@ -3,9 +3,22 @@ Functions
 
 This page lists the assorted functions of the GPlately Python package.
 
+
 .. contents::
    :local:
    :depth: 3
+
+Paleobathymetry
+-----------------
+.. autosummary::
+   :nosignatures:
+   :toctree: generated
+
+   gplately.simple_paleobathymetry
+   gplately.generate_distance_grids
+   gplately.generate_sediment_thickness_grids
+   gplately.age_to_basement_depth
+
 
 Reconstruction
 --------------

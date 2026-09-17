@@ -164,6 +164,85 @@ Generate seafloor age grids for a plate reconstruction model.
    Some example configuration files are available in the ``tests-dir/unittest/`` folder of the GPlately repository.
    And you can also run ``gplately get-cli-config-example`` to get an example configuration file.
 
+paleobathymetry (pb)
+---------------------
+
+Run the *simple_paleobathymetry* workflow end to end: seafloor age → basement depth (Step 1),
+distance to the nearest passive continental margin (Step 2), predicted sediment thickness (Step 3),
+and isostatically-compensated paleobathymetry (Step 4). Optionally also merges in pyBacktrack's
+present-day paleobathymetry (Step 5) to cover submerged continental crust and crust that has since
+subducted.
+
+👉 generate paleobathymetry grids from 10 Ma to 0 Ma for the `muller2025` reconstruction model
+
+.. code:: console
+
+   $ gplately pb output -m muller2025 --proximity-features cobs.gpml -e 0 -s 10
+
+👉 also route distances around continents instead of a straight line, and merge in pyBacktrack's present-day paleobathymetry
+
+.. code:: console
+
+   $ gplately pb output -m muller2025 --proximity-features cobs.gpml -e 0 -s 10 --route-around-continents --pybacktrack
+
+.. note::
+
+   The Plate Model Manager does not deliver passive-margin continent-ocean-boundary (COB) line
+   segments for most models, so ``--proximity-features`` is usually required (unless you generate
+   dynamically-contoured passive margins with ``gplately generate-passive-margins`` and pass those
+   instead).
+
+.. seealso::
+
+   ``gplately generate-distance-grids`` / ``gplately generate-sediment-grids`` run Steps 2 and 3
+   individually; ``gplately generate-passive-margins`` can generate a dynamically-contoured
+   proximity target instead of a static COB file.
+
+generate-distance-grids (gdg)
+------------------------------
+
+For each ocean point in a seafloor-age grid, reconstruct it backward through time and compute its
+lifetime-mean distance to the nearest passive continental margin (Step 2 of the paleobathymetry
+workflow, see ``gplately paleobathymetry``).
+
+👉 generate distance-to-margin grids from 10 Ma to 0 Ma
+
+.. code:: console
+
+   $ gplately gdg output -m muller2025 --proximity-features cobs.gpml -e 0 -s 10
+
+👉 route distances around continents instead of a straight line
+
+.. code:: console
+
+   $ gplately gdg output -m muller2025 --proximity-features cobs.gpml -e 0 -s 10 --route-around-continents
+
+generate-sediment-grids (gsg)
+------------------------------
+
+Combine a seafloor-age grid with the distance-to-passive-margin grids from
+``gplately generate-distance-grids`` into predicted compacted sediment-thickness grids
+(Dutkiewicz et al., 2017) (Step 3 of the paleobathymetry workflow).
+
+👉 predict sediment thickness from previously-generated distance grids
+
+.. code:: console
+
+   $ gplately gsg output -m muller2025 -e 0 -s 10 --distance-grids-dir distances/
+
+generate-passive-margins (gpm)
+---------------------------------
+
+Dynamically contour continents through time and split each contour into passive-margin segments,
+as an alternative to a static continent-ocean-boundary (COB) line-segment file for
+``gplately generate-distance-grids``/``gplately paleobathymetry``.
+
+👉 generate passive margins from 100 Ma to 0 Ma for the `muller2025` reconstruction model
+
+.. code:: console
+
+   $ gplately gpm output -m muller2025 -e 0 -s 100
+
 fix-crossovers (fc)
 ---------------------
 
