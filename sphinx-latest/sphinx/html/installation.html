@@ -21,7 +21,7 @@
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Minimal Working Example" href="basic_usages.html" />
-    <link rel="prev" title="GPlately 2.1.0rc0 Documentation" href="index.html" /> 
+    <link rel="prev" title="GPlately 2.1.0rc0.post1+git.00dee6de Documentation" href="index.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -46,9 +46,10 @@
               <p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
 <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Installation</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#use-conda-recommended">Use Conda (recommended)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#use-micromamba-or-conda-recommended">Use Micromamba or Conda (recommended)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#use-pip">Use Pip</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#use-docker">Use Docker</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#install-from-source-code">Install from source code</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="basic_usages.html">Minimal Working Example</a></li>
@@ -94,23 +95,32 @@
 <span id="gplately-installation"></span><h1>Installation<a class="headerlink" href="#installation" title="Link to this heading"></a></h1>
 <nav class="contents local" id="contents">
 <ul class="simple">
-<li><p><a class="reference internal" href="#use-conda-recommended" id="id1">Use Conda (recommended)</a></p></li>
+<li><p><a class="reference internal" href="#use-micromamba-or-conda-recommended" id="id1">Use Micromamba or Conda (recommended)</a></p></li>
 <li><p><a class="reference internal" href="#use-pip" id="id2">Use Pip</a></p></li>
 <li><p><a class="reference internal" href="#use-docker" id="id3">Use Docker</a></p></li>
+<li><p><a class="reference internal" href="#install-from-source-code" id="id4">Install from source code</a></p></li>
 </ul>
 </nav>
-<section id="use-conda-recommended">
-<h2><a class="toc-backref" href="#id1" role="doc-backlink">Use Conda (recommended)</a><a class="headerlink" href="#use-conda-recommended" title="Link to this heading"></a></h2>
-<p>The latest stable public release of <strong>GPlately</strong> can be installed using <a class="reference external" href="https://docs.conda.io/projects/conda/en/latest/index.html">conda</a> from the <a class="reference external" href="https://conda-forge.org/">conda-forge channel</a>.
-The following commands will create a new conda environment called <strong>my-gplately-conda-env</strong> and install GPlately within that environment.</p>
-<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>conda<span class="w"> </span>create<span class="w"> </span>-n<span class="w"> </span>my-gplately-conda-env
-<span class="gp">$ </span>conda<span class="w"> </span>activate<span class="w"> </span>my-gplately-conda-env
-<span class="gp">$ </span>conda<span class="w"> </span>install<span class="w"> </span>-c<span class="w"> </span>conda-forge<span class="w"> </span>gplately
+<section id="use-micromamba-or-conda-recommended">
+<h2><a class="toc-backref" href="#id1" role="doc-backlink">Use Micromamba or Conda (recommended)</a><a class="headerlink" href="#use-micromamba-or-conda-recommended" title="Link to this heading"></a></h2>
+<p>The latest stable public release of <strong>GPlately</strong> can be installed using <a class="reference external" href="https://mamba.readthedocs.io/en/latest/user_guide/micromamba.html">micromamba</a> or <a class="reference external" href="https://docs.conda.io/projects/conda/en/latest/index.html">conda</a> from the <a class="reference external" href="https://conda-forge.org/">conda-forge channel</a>.
+<strong>micromamba</strong> is preferred — it resolves environments faster and is much less likely to get stuck than conda — but the same
+commands work with conda too; just swap <code class="docutils literal notranslate"><span class="pre">conda</span></code> for <code class="docutils literal notranslate"><span class="pre">micromamba</span></code> (or vice versa).</p>
+<p>The following commands will create a new environment called <strong>my-gplately-env</strong> and install GPlately within it.</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>micromamba<span class="w"> </span>create<span class="w"> </span>-n<span class="w"> </span>my-gplately-env
+<span class="gp">$ </span>micromamba<span class="w"> </span>activate<span class="w"> </span>my-gplately-env
+<span class="gp">$ </span>micromamba<span class="w"> </span>install<span class="w"> </span>-c<span class="w"> </span>conda-forge<span class="w"> </span>gplately
 </pre></div>
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>If conda gets <strong>stuck while solving the environment</strong> during the installation of GPlately, you can try to use <a class="reference external" href="https://mamba.readthedocs.io/en/latest/user_guide/micromamba.html">micromamba</a> instead.</p>
+<p>✏️ Using conda instead? Run the same three commands with <code class="docutils literal notranslate"><span class="pre">conda</span></code> in place of <code class="docutils literal notranslate"><span class="pre">micromamba</span></code>:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>conda<span class="w"> </span>create<span class="w"> </span>-n<span class="w"> </span>my-gplately-env
+<span class="gp">$ </span>conda<span class="w"> </span>activate<span class="w"> </span>my-gplately-env
+<span class="gp">$ </span>conda<span class="w"> </span>install<span class="w"> </span>-c<span class="w"> </span>conda-forge<span class="w"> </span>gplately
+</pre></div>
+</div>
+<p>If conda gets <strong>stuck while solving the environment</strong>, switching to <a class="reference external" href="https://mamba.readthedocs.io/en/latest/user_guide/micromamba.html">micromamba</a> usually fixes it.</p>
 </div>
 </section>
 <section id="use-pip">
@@ -170,6 +180,46 @@ In <strong>PowerShell</strong>, you can use “$PWD” if your script is in the 
 <li><p><a class="reference external" href="https://github.com/GPlates/gplately/pkgs/container/gplately">https://github.com/GPlates/gplately/pkgs/container/gplately</a></p></li>
 </ul>
 <p>Visit this <a class="reference external" href="https://github.com/GPlates/gplately/tree/master/docker/README.md">Docker README page</a> for more details about using Docker with GPlately.</p>
+<hr class="docutils" />
+<p>If you are planning to <em>develop</em> GPlately or contribute to the project, you may want to install it from source code. See the next section for instructions.</p>
+</section>
+<section id="install-from-source-code">
+<h2><a class="toc-backref" href="#id4" role="doc-backlink">Install from source code</a><a class="headerlink" href="#install-from-source-code" title="Link to this heading"></a></h2>
+<p>This section covers setting up GPlately for development.</p>
+<p>👉 Install GPlately via micromamba first.</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>micromamba<span class="w"> </span>create<span class="w"> </span>-n<span class="w"> </span>my-gplately-env
+<span class="gp">$ </span>micromamba<span class="w"> </span>activate<span class="w"> </span>my-gplately-env
+<span class="gp">$ </span>micromamba<span class="w"> </span>install<span class="w"> </span>-c<span class="w"> </span>conda-forge<span class="w"> </span>gplately
+</pre></div>
+</div>
+<p>👉 Clone and install GPlately in editable mode.</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/GPlates/gplately.git
+<span class="gp">$ </span><span class="nb">cd</span><span class="w"> </span>gplately
+<span class="gp">$ </span>pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span>.
+<span class="gp">$ </span>pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span><span class="s2">".[dev]"</span><span class="w">   </span><span class="c1"># adds black, isort, bumpver, pip-tools, pytest</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>✏️ The <code class="docutils literal notranslate"><span class="pre">.[dev]</span></code> extra only brings in the development tools specified in the <code class="docutils literal notranslate"><span class="pre">pyproject.toml</span></code> file.</p>
+</div>
+<p>👉 Run the tests.</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>python<span class="w"> </span>-m<span class="w"> </span>pytest<span class="w"> </span>-vv<span class="w"> </span>tests-dir/pytestcases
+</pre></div>
+</div>
+<p>Some raster cases are gated behind <code class="docutils literal notranslate"><span class="pre">GPLATELY_TEST_LEVEL</span></code> and download large
+files, so they are skipped by default. To include them:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span><span class="nv">GPLATELY_TEST_LEVEL</span><span class="o">=</span><span class="m">100</span><span class="w"> </span>python<span class="w"> </span>-m<span class="w"> </span>pytest<span class="w"> </span>-vv<span class="w"> </span>tests-dir/pytestcases
+</pre></div>
+</div>
+<p>See <code class="docutils literal notranslate"><span class="pre">tests-dir/readme.md</span></code> for more details.</p>
+<p>👉 Build the documentation.</p>
+<p>The Sphinx sources live in <code class="docutils literal notranslate"><span class="pre">sphinx-doc/source</span></code>:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>pip<span class="w"> </span>install<span class="w"> </span>-U<span class="w"> </span>sphinx<span class="w"> </span>sphinx_rtd_theme
+<span class="gp">$ </span>sphinx-autogen<span class="w"> </span>-o<span class="w"> </span>sphinx-doc/source/generated<span class="w"> </span>sphinx-doc/source/*.rst
+<span class="gp">$ </span><span class="nb">cd</span><span class="w"> </span>sphinx-doc<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>make<span class="w"> </span>html
+</pre></div>
+</div>
 </section>
 </section>
 
@@ -177,7 +227,7 @@ In <strong>PowerShell</strong>, you can use “$PWD” if your script is in the 
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="index.html" class="btn btn-neutral float-left" title="GPlately 2.1.0rc0 Documentation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="index.html" class="btn btn-neutral float-left" title="GPlately 2.1.0rc0.post1+git.00dee6de Documentation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
         <a href="basic_usages.html" class="btn btn-neutral float-right" title="Minimal Working Example" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
