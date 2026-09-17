@@ -598,23 +598,39 @@ def add_arguments(parser: argparse.ArgumentParser):
 
     parser.set_defaults(func=main)
 
-    parser.add_argument(
+    rotation_filenames_group = parser.add_mutually_exclusive_group(required=True)
+    rotation_filenames_group.add_argument(
         "-r",
-        "--rotation_filenames",
+        "--rotation-filenames",
+        dest="rotation_filenames",
         type=str,
         nargs="+",
-        required=True,
         metavar="rotation_filename",
         help="One or more rotation files.",
     )
-    parser.add_argument(
-        "-m",
-        "--topology_filenames",
+    rotation_filenames_group.add_argument(
+        "--rotation_filenames",
+        dest="rotation_filenames",
         type=str,
         nargs="+",
-        required=True,
+        help=argparse.SUPPRESS,
+    )
+    topology_filenames_group = parser.add_mutually_exclusive_group(required=True)
+    topology_filenames_group.add_argument(
+        "-m",
+        "--topology-filenames",
+        dest="topology_filenames",
+        type=str,
+        nargs="+",
         metavar="topology_filename",
         help="One or more topology files.",
+    )
+    topology_filenames_group.add_argument(
+        "--topology_filenames",
+        dest="topology_filenames",
+        type=str,
+        nargs="+",
+        help=argparse.SUPPRESS,
     )
     parser.add_argument(
         "-a",
@@ -631,24 +647,41 @@ def add_arguments(parser: argparse.ArgumentParser):
     )
     reconstruction_times_argument_group.add_argument(
         "-t",
-        "--reconstruction_times",
+        "--reconstruction-times",
+        dest="reconstruction_times",
         type=int,
         nargs="+",
         metavar="reconstruction_time",
         help="One or more times at which to reconstruct/resolve topologies.",
     )
     reconstruction_times_argument_group.add_argument(
+        "--reconstruction_times",
+        dest="reconstruction_times",
+        type=int,
+        nargs="+",
+        help=argparse.SUPPRESS,
+    )
+    reconstruction_times_argument_group.add_argument(
         "-i",
-        "--reconstruction_time_range",
+        "--reconstruction-time-range",
+        dest="reconstruction_time_range",
         type=int,
         nargs=2,
         metavar=("young_time", "old_time"),
         help="The time range (in Ma) from young time to old time over which to reconstruct/resolve topologies (in increments of 1Myr).",
     )
+    reconstruction_times_argument_group.add_argument(
+        "--reconstruction_time_range",
+        dest="reconstruction_time_range",
+        type=int,
+        nargs=2,
+        help=argparse.SUPPRESS,
+    )
 
     parser.add_argument(
         "-d",
-        "--transform_segment_deviation_degrees",
+        "--transform-segment-deviation-degrees",
+        dest="transform_segment_deviation_degrees",
         type=float,
         default="{0}".format(
             separate_ridge_transform_segments.DEFAULT_TRANSFORM_SEGMENT_DEVIATION_DEGREES
@@ -658,10 +691,17 @@ def add_arguments(parser: argparse.ArgumentParser):
             separate_ridge_transform_segments.DEFAULT_TRANSFORM_SEGMENT_DEVIATION_DEGREES
         ),
     )
+    parser.add_argument(
+        "--transform_segment_deviation_degrees",
+        dest="transform_segment_deviation_degrees",
+        type=float,
+        help=argparse.SUPPRESS,
+    )
 
     parser.add_argument(
         "-e",
-        "--output_filename_extension",
+        "--output-filename-extension",
+        dest="output_filename_extension",
         type=str,
         default="{0}".format(DEFAULT_OUTPUT_FILENAME_EXTENSION),
         help="The filename extension of the output files containing the resolved topological boundaries and sections "
@@ -669,22 +709,42 @@ def add_arguments(parser: argparse.ArgumentParser):
             DEFAULT_OUTPUT_FILENAME_EXTENSION
         ),
     )
+    parser.add_argument(
+        "--output_filename_extension",
+        dest="output_filename_extension",
+        type=str,
+        help=argparse.SUPPRESS,
+    )
 
     parser.add_argument(
         "-nb",
-        "--no_output_boundaries",
+        "--no-output-boundaries",
+        dest="no_output_boundaries",
         action="store_true",
         help="Do not write geometries of resolved topologies and their boundaries to files. "
         'This is most useful when used with the "-l" option to generate only the text file containing boundary lengths. '
         "By default geometry files are written.",
     )
+    parser.add_argument(
+        "--no_output_boundaries",
+        dest="no_output_boundaries",
+        action="store_true",
+        help=argparse.SUPPRESS,
+    )
 
     parser.add_argument(
         "-l",
-        "--output_boundary_lengths",
+        "--output-boundary-lengths",
+        dest="output_boundary_lengths",
         action="store_true",
         help="Also generate a text file containing the total boundary lengths (in kms) of the resolved topology boundary sections "
         "for the requested reconstruction times. By default no text file is generated.",
+    )
+    parser.add_argument(
+        "--output_boundary_lengths",
+        dest="output_boundary_lengths",
+        action="store_true",
+        help=argparse.SUPPRESS,
     )
 
     parser.add_argument(
@@ -692,6 +752,7 @@ def add_arguments(parser: argparse.ArgumentParser):
         type=str,
         nargs="?",
         default="{0}".format(DEFAULT_OUTPUT_FILENAME_PREFIX),
+        metavar="output-filename-prefix",
         help="The prefix of the output files containing the resolved topological boundaries and sections "
         "- the default prefix is '{0}'".format(DEFAULT_OUTPUT_FILENAME_PREFIX),
     )

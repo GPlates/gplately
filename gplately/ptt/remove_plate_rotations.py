@@ -682,27 +682,41 @@ def add_arguments(parser):
 
     parser.add_argument(
         "-u",
-        "--use_uniform_accuracy_times",
+        "--use-uniform-accuracy-times",
+        dest="use_uniform_accuracy_times",
         action="store_true",
         help='If specified then rotation poles inserted for accuracy (according to "-a" option) will be restricted to times '
         'that are integer multiples of the threshold time interval (specified in the "-a" option).',
     )
+    parser.add_argument(
+        "--use_uniform_accuracy_times",
+        dest="use_uniform_accuracy_times",
+        action="store_true",
+        help=argparse.SUPPRESS,
+    )
 
     parser.add_argument(
         "-o",
-        "--output_filename_prefix",
+        "--output-filename-prefix",
+        dest="output_filename_prefix",
         type=str,
-        metavar="output_filename_prefix",
+        metavar="OUTPUT_FILENAME_PREFIX",
         help="Optional output filename prefix. If one is provided then an output rotation file "
         "is created for each input rotation file by prefixing the input filenames. "
         "If no filename prefix is provided then the input files are overwritten.",
+    )
+    parser.add_argument(
+        "--output_filename_prefix",
+        dest="output_filename_prefix",
+        type=str,
+        help=argparse.SUPPRESS,
     )
 
     parser.add_argument(
         "input_rotation_filenames",
         type=str,
         nargs="+",
-        metavar="input_rotation_filename",
+        metavar="input-rotation-filename",
         help="One or more rotation files of a rotation model.",
     )
 

@@ -430,38 +430,59 @@ def add_arguments(parser: argparse.ArgumentParser):
 
     parser.add_argument(
         "-o",
-        "--output_filename_prefix",
+        "--output-filename-prefix",
+        dest="output_filename_prefix",
         type=str,
-        metavar="output_filename_prefix",
+        metavar="OUTPUT_FILENAME_PREFIX",
         help="Optional output filename prefix. If one is provided then an output file "
         "is created for each input file by prefixing the input filenames. "
         "If no filename prefix is provided then the input files are overwritten.",
     )
+    parser.add_argument(
+        "--output_filename_prefix",
+        dest="output_filename_prefix",
+        type=str,
+        help=argparse.SUPPRESS,
+    )
 
     parser.add_argument(
         "-d",
-        "--removed_features_filename_prefix",
+        "--removed-features-filename-prefix",
+        dest="removed_features_filename_prefix",
         type=str,
-        metavar="removed_features_filename_prefix",
+        metavar="REMOVED_FEATURES_FILENAME_PREFIX",
         help="Option to save removed features in new files with specified filename prefix. "
         "If specified then a file is created for each input file (that has features removed) "
         "by prefixing the input filenames. If no filename prefix is provided then the "
         "removed features are not saved.",
     )
+    parser.add_argument(
+        "--removed_features_filename_prefix",
+        dest="removed_features_filename_prefix",
+        type=str,
+        help=argparse.SUPPRESS,
+    )
 
     parser.add_argument(
         "-p",
-        "--restricted_referenced_time_periods",
+        "--restricted-referenced-time-periods",
+        dest="restricted_referenced_time_periods",
         action="store_true",
         help="If specified then restrict the time periods of features referenced by topologies such that they are "
         "limited by the time periods of the referencing topologies (default is no restriction).",
+    )
+    parser.add_argument(
+        "--restricted_referenced_time_periods",
+        dest="restricted_referenced_time_periods",
+        action="store_true",
+        help=argparse.SUPPRESS,
     )
 
     parser.add_argument(
         "input_filenames",
         type=str,
         nargs="+",
-        metavar="input_filename",
+        metavar="input-filename",
         help="One or more files containing topological features and features referenced by them.",
     )
 

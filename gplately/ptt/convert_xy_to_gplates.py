@@ -391,7 +391,8 @@ def add_arguments(parser: argparse.ArgumentParser):
 
     parser.add_argument(
         "-e",
-        "--output_filename_extension",
+        "--output-filename-extension",
+        dest="output_filename_extension",
         type=str,
         default="{0}".format(DEFAULT_OUTPUT_FILENAME_EXTENSION),
         help="The filename extension of each input filename is changed to get each output filename "
@@ -399,13 +400,26 @@ def add_arguments(parser: argparse.ArgumentParser):
             DEFAULT_OUTPUT_FILENAME_EXTENSION
         ),
     )
+    parser.add_argument(
+        "--output_filename_extension",
+        dest="output_filename_extension",
+        type=str,
+        help=argparse.SUPPRESS,
+    )
 
     parser.add_argument(
         lat_lon_order_option[0],
         lat_lon_order_option[1],
+        dest="lat_lon_order",
         action="store_true",
         help="By default a GMT '.xy' file stores each point in lon/lat order - specifying this option "
         "interprets each point in lat/lon order instead - default order is lon/lat.",
+    )
+    parser.add_argument(
+        "--lat_lon_order",
+        dest="lat_lon_order",
+        action="store_true",
+        help=argparse.SUPPRESS,
     )
 
     geometry_option_group = parser.add_mutually_exclusive_group()
@@ -426,6 +440,7 @@ def add_arguments(parser: argparse.ArgumentParser):
     parser.add_argument(
         scalar_coverages_option[0],
         scalar_coverages_option[1],
+        dest="scalar_coverages",
         type=str,
         nargs="+",
         metavar="scalar_type",
@@ -438,6 +453,13 @@ def add_arguments(parser: argparse.ArgumentParser):
         "extra scalar values for each point (in that order) - so a line containing "
         '"10 20 15 80 48" would have longitude=10, latitude=20, SpreadingRate=15, '
         "SpreadingDirection=80 and SpreadingAsymmetry=48.",
+    )
+    parser.add_argument(
+        "--scalar_coverages",
+        dest="scalar_coverages",
+        type=str,
+        nargs="+",
+        help=argparse.SUPPRESS,
     )
 
     def unicode_filename(value_string):
@@ -456,15 +478,15 @@ def add_arguments(parser: argparse.ArgumentParser):
         "input_filenames",
         type=unicode_filename,
         nargs="+",
-        metavar="input_filename",
+        metavar="input-filename",
         help="The ascii input files containing the geometry in latitude/longitude coordinates.",
     )
 
 
-lat_lon_order_option = ("-l", "--lat_lon_order")
+lat_lon_order_option = ("-l", "--lat-lon-order")
 multipoint_option = ("-m", "--multipoint")
 polygon_option = ("-p", "--polygon")
-scalar_coverages_option = ("-s", "--scalar_coverages")
+scalar_coverages_option = ("-s", "--scalar-coverages")
 
 __description__ = """Converts geometry in one or more input ascii files (such as '.xy' files) to output files suitable for loading into GPlates.
     
