@@ -33,26 +33,26 @@ help_str = "Filter feature collection by various criteria."
 
 __description__ = f"""{help_str}
 
-Examples: 
-    - `gplately filter input_file output_file -n Africa "North America"`
+Examples:
+    - `gplately filter input-file output-file -n Africa "North America"`
         (get features whose name contains "Africa" or "North America")
 
-    - `gplately filter input_file output_file -p 701 714 715 101`
+    - `gplately filter input-file output-file -p 701 714 715 101`
         (get features whose plate ID is one of 701 714 715 101)
-    
-    - `gplately filter input_file output_file --min-birth-age 500`
+
+    - `gplately filter input-file output-file --min-birth-age 500`
         (get features whose birth age is older than 500Myr)
-    
-    - `gplately filter input_file output_file --max-birth-age 500`
+
+    - `gplately filter input-file output-file --max-birth-age 500`
         (get features whose birth age is younger than 500Myr)
-    
-    - `gplately filter input_file output_file -n Africa "North America" -p 701 714 715 101 --min-birth-age 500`
+
+    - `gplately filter input-file output-file -n Africa "North America" -p 701 714 715 101 --min-birth-age 500`
         (get features whose name conains "Africa" or "North America" and plate ID is one of 701 714 715 101 and birth age is older than 500Myr)
-    
-    - `gplately filter input_file output_file -t gpml:Basin`
+
+    - `gplately filter input-file output-file -t gpml:Basin`
         (get all gpml:Basin features)
-    
-    - `gplately filter input_file output_file -t "gpml:IslandArc|gpml:Basin"`
+
+    - `gplately filter input-file output-file -t "gpml:IslandArc|gpml:Basin"`
         (get all gpml:Basin and gpml:IslandArc features)
 
     See https://github.com/GPlates/gplately/blob/master/tests-dir/unittest/test_feature_filter.sh for more examples. 
