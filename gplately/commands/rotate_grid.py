@@ -70,12 +70,12 @@ def add_parser(parser):
     cmd.set_defaults(func=_rotate_grid_cmd)
 
     cmd.add_argument(
-        metavar="INPUT",
+        metavar="input",
         help="input grid file (.nc) or directory containing .nc files",
         dest="input_path",
     )
     cmd.add_argument(
-        metavar="OUTPUT",
+        metavar="output",
         help="output grid file (.nc) or output directory",
         dest="output_path",
     )

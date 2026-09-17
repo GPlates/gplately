@@ -43,12 +43,12 @@ def add_parser(parser):
     # regrid command arguments
     grid_cmd.set_defaults(func=_regrid_netcdf4)
     grid_cmd.add_argument(
-        metavar="INPUT-FILE",
+        metavar="input-file",
         help="input file or directory",
         dest="input_grid_filename",
     )
     grid_cmd.add_argument(
-        metavar="OUTPUT-FILE",
+        metavar="output-file",
         help="output file or directory",
         dest="output_grid_filename",
     )
