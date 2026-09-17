@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 GPlately is an object-oriented Python interface to pyGPlates for plate tectonic reconstruction (points, lines, polygons, and rasters through deep geologic time, plate velocities, subduction/spreading rates, and paleomap plotting).
 
-`pygplates` is a required native dependency and is **not** pip-installable — it must come from conda-forge or the project's Docker image. Local dev/test environments are conda/micromamba-based (see `tests-dir/test-env.yml`, `conda/`, `docker/`).
+`pygplates` is a required native dependency, declared in `pyproject.toml` as `pygplates>=1.0.0`. PyPI ships wheels for CPython 3.8–3.13, so a plain `pip install` works on those versions. There is no 3.14 wheel yet (expected with the pyGPlates 1.1 release), so on Python 3.14 pygplates must come from conda-forge, the project's Docker image, or a local build. Dev/test environments are conda/micromamba-based (see `tests-dir/test-env.yml`, `conda/`, `docker/`).
 
 ## Commands
 
