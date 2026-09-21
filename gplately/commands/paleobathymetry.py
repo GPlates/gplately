@@ -95,6 +95,7 @@ def _run_paleobathymetry(args):
         clamp_distance_km=args.clamp_distance_km,
         richards_table_filename=args.richards_table,
         output_directory=args.output_dir,
+        decimal_places_in_time=args.decimal_places_in_time,
         **kwargs,
     )
     _logger.info(f"Paleobathymetry grids written to {args.output_dir}")

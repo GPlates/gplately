@@ -39,6 +39,11 @@ package (not a gplately dependency -- ``pip install pybacktrack`` or
 :func:`merge_pybacktrack_paleobathymetry` so that importing gplately never requires it.
 """
 
+from ._utils import (
+    DEFAULT_DECIMAL_PLACES_IN_TIME,
+    resolve_decimal_places_in_time,
+)
+
 # Map this module's/`gplately.grids.paleobathymetry`'s `age_depth_model` names onto pyBacktrack's
 # equivalent ocean age -> depth model constant (see gplately.grids.paleobathymetry.AGE_DEPTH_MODELS).
 # pyBacktrack has no equivalent for "parsons_sclater".
@@ -64,6 +69,8 @@ def merge_pybacktrack_paleobathymetry(
     age_depth_model="gdh1",
     anchor_plate_id=0,
     use_all_cpus=False,
+    *,
+    decimal_places_in_time=None,
     **pybacktrack_kwargs,
 ):
     """Compute pyBacktrack paleobathymetry and merge in ``gplately``'s Steps 1-4 grids.
@@ -108,6 +115,13 @@ def merge_pybacktrack_paleobathymetry(
         Should match the `anchor_plate_id` used for Steps 1-4.
     use_all_cpus : bool or int, default: False
         Passed to pyBacktrack: ``True`` to use all CPUs, or a specific number of CPUs to use.
+    decimal_places_in_time : int, optional
+        Decimal places of the reconstruction time in both the output filenames and the ``merge_paleobathymetry_filename_format`` names used to find the Steps 1-4 grids. Defaults to 0,
+        reproducing the filenames of the workflow this was ported from. Times that are not
+        distinct at this resolution would overwrite each other, so a clash raises
+        `ValueError` rather than silently discarding grids -- raise this value when using a
+        fractional time step. It is the same rule as pyBacktrack's
+        ``output_file_decimal_places_in_time``.
     **pybacktrack_kwargs
         Extra keyword arguments passed to ``pybacktrack.reconstruct_paleo_bathymetry_grids()``
         (e.g. to override its bundled lithology/topography/sediment-thickness/crustal-thickness
@@ -136,6 +150,10 @@ def merge_pybacktrack_paleobathymetry(
             "see https://github.com/EarthByte/pyBacktrack."
         ) from exc
 
+    decimal_places_in_time = resolve_decimal_places_in_time(
+        decimal_places_in_time, DEFAULT_DECIMAL_PLACES_IN_TIME
+    )
+
     key = str(age_depth_model).strip().lower()
     if key not in _PYBACKTRACK_AGE_DEPTH_MODEL_ATTRS:
         raise ValueError(
@@ -158,10 +176,10 @@ def merge_pybacktrack_paleobathymetry(
         ocean_age_to_depth_model=ocean_age_to_depth_model,
         anchor_plate_id=anchor_plate_id,
         merge_paleo_bathymetry_filename_format=merge_paleobathymetry_filename_format,
-        merge_paleo_bathymetry_file_decimal_places_in_time=0,
+        merge_paleo_bathymetry_file_decimal_places_in_time=decimal_places_in_time,
         merge_paleo_bathymetry_is_positive_below_sea_level=False,
         output_positive_bathymetry_below_sea_level=False,
-        output_file_decimal_places_in_time=0,
+        output_file_decimal_places_in_time=decimal_places_in_time,
         use_all_cpus=use_all_cpus,
         **pybacktrack_kwargs,
     )

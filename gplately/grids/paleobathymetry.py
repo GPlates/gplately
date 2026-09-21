@@ -49,6 +49,12 @@ import numpy as np
 import pygplates
 
 from ._grids import read_netcdf_grid, sample_grid, write_netcdf_grid
+from ._utils import (
+    DEFAULT_DECIMAL_PLACES_IN_TIME,
+    check_times_are_distinct_in_filenames,
+    format_time_in_filename,
+    resolve_decimal_places_in_time,
+)
 
 __all__ = [
     "AGE_DEPTH_MODELS",
@@ -384,6 +390,8 @@ def simple_paleobathymetry(
     static_polygon_filename=None,
     present_day_age_grid_filename=None,
     pybacktrack_kwargs=None,
+    *,
+    decimal_places_in_time=None,
 ):
     """Run the full *simple_paleobathymetry* workflow (Steps 1-4, optionally 5) end to end.
 
@@ -416,6 +424,16 @@ def simple_paleobathymetry(
         ``Distances/``, ``SedimentThickness/`` and directly here, respectively). **Required**
         if `pybacktrack` is true, since Step 5 merges the Step 4 grids by reading them back off
         disk.
+    decimal_places_in_time : int, optional
+        Decimal places of the reconstruction time in the filenames this writes, and in the
+        names Step 5 uses to find the Step 4 grids again. Defaults to 0 for the
+        sediment-thickness and paleobathymetry grids and 1 for the intermediate distance
+        grids, reproducing the filenames of the workflows each was ported from -- an
+        explicit value applies to all of them. Times that are not
+        distinct at this resolution would overwrite each other, so a clash raises
+        `ValueError` rather than silently discarding grids -- raise this value when using a
+        fractional time step. It is the same rule as pyBacktrack's
+        ``output_file_decimal_places_in_time``.
     sediment_thickness_kwargs : dict, optional
         Extra keyword arguments passed to :func:`dutkiewicz_2017_sediment_thickness` (via
         :func:`gplately.generate_sediment_thickness_grids`), e.g. to
@@ -476,6 +494,24 @@ def simple_paleobathymetry(
                 plate_boundary_obstacle_feature_types
             )
 
+    # Forward the caller's value unresolved to each step, so that when it is None each
+    # output keeps the default that reproduces its own original workflow -- in particular
+    # the distance grids carry one decimal place of time where these grids carry none.
+    # Resolving it here instead would rename the distance grids that the
+    # 'generate-sediment-grids' subcommand later goes looking for.
+    age_grid_filenames_and_times = list(age_grid_filenames_and_times)
+
+    requested_decimal_places_in_time = decimal_places_in_time
+    decimal_places_in_time = resolve_decimal_places_in_time(
+        decimal_places_in_time, DEFAULT_DECIMAL_PLACES_IN_TIME
+    )
+    if output_directory:
+        check_times_are_distinct_in_filenames(
+            [time for _, time in age_grid_filenames_and_times],
+            decimal_places_in_time,
+            "paleobathymetry_{}Ma.nc",
+        )
+
     distance_grids = generate_distance_grids(
         rotation_model=rotation_model,
         proximity_features=proximity_features,
@@ -487,6 +523,7 @@ def simple_paleobathymetry(
         anchor_plate_id=anchor_plate_id,
         clamp_distance_km=clamp_distance_km,
         output_directory=distance_output_dir,
+        decimal_places_in_time=requested_decimal_places_in_time,
         **distance_grid_kwargs,
     )
     # clamp_distance_km is the default for max_distance_km, but an explicit
@@ -498,6 +535,7 @@ def simple_paleobathymetry(
         age_grid_filenames_and_times,
         distance_grids,
         output_directory=sediment_thickness_output_dir,
+        decimal_places_in_time=requested_decimal_places_in_time,
         **sediment_thickness_grid_kwargs,
     )
 
@@ -537,7 +575,10 @@ def simple_paleobathymetry(
 
         if output_directory:
             output_path = os.path.join(
-                output_directory, "paleobathymetry_{:.0f}Ma.nc".format(time)
+                output_directory,
+                "paleobathymetry_{}Ma.nc".format(
+                    format_time_in_filename(time, decimal_places_in_time)
+                ),
             )
             write_netcdf_grid(output_path, paleobathymetry_m)
 
@@ -586,6 +627,7 @@ def simple_paleobathymetry(
             time_increment=time_increment,
             age_depth_model=age_depth_model,
             anchor_plate_id=anchor_plate_id,
+            decimal_places_in_time=requested_decimal_places_in_time,
             **(pybacktrack_kwargs or {}),
         )
 

@@ -22,6 +22,13 @@ import os
 from plate_model_manager import PlateModelManager
 
 from ..grids import read_netcdf_grid
+from ..grids._utils import (
+    DEFAULT_DECIMAL_PLACES_IN_TIME,
+    DEFAULT_DISTANCE_GRID_DECIMAL_PLACES_IN_TIME,
+    check_times_are_distinct_in_filenames,
+    distance_grid_filename,
+    resolve_decimal_places_in_time,
+)
 from ..grids.sediment_thickness import (
     generate_distance_grids,
     generate_sediment_thickness_grids,
@@ -148,6 +155,7 @@ def _run_generate_distance_grids(args):
         anchor_plate_id=args.anchor_plate_id or 0,
         clamp_distance_km=args.clamp_distance_km,
         output_directory=args.output_dir,
+        decimal_places_in_time=args.decimal_places_in_time,
         **distance_grid_kwargs,
     )
     _logger.info(f"Distance grids written to {args.output_dir}")
@@ -156,11 +164,26 @@ def _run_generate_distance_grids(args):
 def _run_generate_sediment_grids(args):
     age_grid_filenames_and_times, _ = _resolve_age_grid_filenames_and_times(args)
 
+    # Check the output names before reading anything: the library raises on a collision,
+    # but only after this function has already read every distance grid off disk.
+    check_times_are_distinct_in_filenames(
+        [time for _, time in age_grid_filenames_and_times],
+        resolve_decimal_places_in_time(
+            args.decimal_places_in_time, DEFAULT_DECIMAL_PLACES_IN_TIME
+        ),
+        "sediment_thickness_{}Ma.nc",
+    )
+
+    # Must match the names generate_distance_grids() wrote, which default to one decimal
+    # place of time rather than the zero used by the paleobathymetry grids.
+    distance_grid_decimal_places = resolve_decimal_places_in_time(
+        args.decimal_places_in_time, DEFAULT_DISTANCE_GRID_DECIMAL_PLACES_IN_TIME
+    )
     distance_grids = {}
     for _, t in age_grid_filenames_and_times:
         distance_path = os.path.join(
             args.distance_grids_dir,
-            "mean_distance_{:.1f}d_{:.1f}.nc".format(args.grid_spacing, t),
+            distance_grid_filename(args.grid_spacing, t, distance_grid_decimal_places),
         )
         grid, lon, lat = read_netcdf_grid(distance_path, return_grids=True)
         distance_grids[t] = (lon, lat, grid)
@@ -169,6 +192,7 @@ def _run_generate_sediment_grids(args):
         age_grid_filenames_and_times,
         distance_grids,
         output_directory=args.output_dir,
+        decimal_places_in_time=args.decimal_places_in_time,
     )
     _logger.info(f"Sediment thickness grids written to {args.output_dir}")
 
@@ -229,6 +253,17 @@ def _add_common_arguments(cmd):
         default=1,
         dest="time_step",
         help="time increment (Myr); default: 1",
+    )
+    cmd.add_argument(
+        "--decimal-places-in-time",
+        metavar="decimal_places_in_time",
+        type=int,
+        default=None,
+        dest="decimal_places_in_time",
+        help="decimal places of the reconstruction time in output filenames; by default 1 "
+        "for the mean-distance grids and 0 for all the others, which reproduces the "
+        "original workflows' names. Raise it when using a fractional time step, otherwise "
+        "consecutive times share a filename and only the last is kept",
     )
     cmd.add_argument(
         "-r",

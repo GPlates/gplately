@@ -82,6 +82,7 @@ def _run_generate_passive_margins(args):
         anchor_plate_id=args.anchor_plate_id or 0,
         time_step=args.time_step,
         output_directory=args.output_dir,
+        decimal_places_in_time=args.decimal_places_in_time,
     )
     _logger.info(f"Passive margins written to {args.output_dir}")
 
@@ -177,6 +178,16 @@ def add_parser(parser):
         default=1,
         dest="time_step",
         help="time increment (Myr); default: 1",
+    )
+    cmd.add_argument(
+        "--decimal-places-in-time",
+        metavar="decimal_places_in_time",
+        type=int,
+        default=None,
+        dest="decimal_places_in_time",
+        help="decimal places of the reconstruction time in output filenames; default: 0, "
+        "which reproduces the original workflow's names. Raise it when using a fractional "
+        "time step, otherwise consecutive times share a filename and only the last is kept",
     )
     cmd.add_argument(
         "-r",

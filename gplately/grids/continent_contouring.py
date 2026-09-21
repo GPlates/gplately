@@ -45,6 +45,12 @@ import os
 import pygplates
 
 from ._grids import write_netcdf_grid
+from ._utils import (
+    DEFAULT_DECIMAL_PLACES_IN_TIME,
+    check_times_are_distinct_in_filenames,
+    format_time_in_filename,
+    resolve_decimal_places_in_time,
+)
 from ..ptt.continent_contours import ContinentContouring
 
 __all__ = ["passive_margin_polylines", "generate_passive_margins"]
@@ -138,6 +144,8 @@ def generate_passive_margins(
     anchor_plate_id=0,
     time_step=1.0,
     output_directory=None,
+    *,
+    decimal_places_in_time=None,
 ):
     """Dynamically contour continents through time and split each contour into passive margins.
 
@@ -184,6 +192,13 @@ def generate_passive_margins(
         ``passive_margin_features.gpmlz`` (the aggregated feature collections, across all
         `times`), plus one ``continent_mask_<time>.nc`` per time (a global grid, 1.0 where
         continental crust, 0.0 elsewhere, at `point_spacing_degrees` resolution).
+    decimal_places_in_time : int, optional
+        Decimal places of the reconstruction time in the ``continent_mask_<time>.nc`` filenames. Defaults to 0,
+        reproducing the filenames of the workflow this was ported from. Times that are not
+        distinct at this resolution would overwrite each other, so a clash raises
+        `ValueError` rather than silently discarding grids -- raise this value when using a
+        fractional time step. It is the same rule as pyBacktrack's
+        ``output_file_decimal_places_in_time``.
 
     Returns
     -------
@@ -231,7 +246,16 @@ def generate_passive_margins(
         max_distance_of_subduction_from_active_margin_kms / earth_radius_km
     )
 
+    # Materialised because the filename check below walks it before the main loop does.
+    times = list(times)
+
+    decimal_places_in_time = resolve_decimal_places_in_time(
+        decimal_places_in_time, DEFAULT_DECIMAL_PLACES_IN_TIME
+    )
     if output_directory:
+        check_times_are_distinct_in_filenames(
+            times, decimal_places_in_time, "continent_mask_{}.nc"
+        )
         os.makedirs(output_directory, exist_ok=True)
 
     contour_features = []
@@ -289,7 +313,10 @@ def generate_passive_margins(
 
         if output_directory:
             mask_path = os.path.join(
-                output_directory, "continent_mask_{:.0f}.nc".format(time)
+                output_directory,
+                "continent_mask_{}.nc".format(
+                    format_time_in_filename(time, decimal_places_in_time)
+                ),
             )
             write_netcdf_grid(mask_path, continent_mask.astype("float64"))
 

@@ -58,6 +58,14 @@ import numpy as np
 import pygplates
 
 from ._grids import read_netcdf_grid, sample_grid, write_netcdf_grid
+from ._utils import (
+    DEFAULT_DECIMAL_PLACES_IN_TIME,
+    DEFAULT_DISTANCE_GRID_DECIMAL_PLACES_IN_TIME,
+    check_times_are_distinct_in_filenames,
+    distance_grid_filename,
+    format_time_in_filename,
+    resolve_decimal_places_in_time,
+)
 from .paleobathymetry import dutkiewicz_2017_sediment_thickness
 from ..lib import shortest_path
 from ..ptt.utils.proximity_query import find_closest_geometries_to_points
@@ -284,6 +292,8 @@ def generate_distance_grids(
     plate_boundary_obstacle_feature_types=_DEFAULT_PLATE_BOUNDARY_OBSTACLE_FEATURE_TYPES,
     shortest_path_grid_subdivision_depth=6,
     output_directory=None,
+    *,
+    decimal_places_in_time=None,
 ):
     """For each ocean point in each age grid, compute its lifetime-mean distance (km) to the
     nearest proximity feature (typically passive continental margins).
@@ -348,6 +358,13 @@ def generate_distance_grids(
     output_directory : str, optional
         If given, write each time's grid to
         ``<output_directory>/mean_distance_<grid_spacing>d_<time>.nc``.
+    decimal_places_in_time : int, optional
+        Decimal places of the reconstruction time in the output filenames. Defaults to 1,
+        reproducing the filenames of the workflow this was ported from. Times that are not
+        distinct at this resolution would overwrite each other, so a clash raises
+        `ValueError` rather than silently discarding grids -- raise this value when using a
+        fractional time step. It is the same rule as pyBacktrack's
+        ``output_file_decimal_places_in_time``.
 
     Returns
     -------
@@ -395,10 +412,23 @@ def generate_distance_grids(
             for feature_type in (plate_boundary_obstacle_feature_types or [])
         ]
 
+    # Materialised because the filename check below walks it before the main loop does.
+    age_grid_filenames_and_times = list(age_grid_filenames_and_times)
+
     lon_1d, lat_1d, lon_flat, lat_flat = generate_input_points_grid(grid_spacing)
     num_output_points = lon_flat.size
 
+    decimal_places_in_time = resolve_decimal_places_in_time(
+        decimal_places_in_time, DEFAULT_DISTANCE_GRID_DECIMAL_PLACES_IN_TIME
+    )
     if output_directory:
+        # Check before computing anything: a collision here would silently discard a grid
+        # that had already cost a full reconstruction to produce.
+        check_times_are_distinct_in_filenames(
+            [time for _, time in age_grid_filenames_and_times],
+            decimal_places_in_time,
+            "mean_distance_{:.1f}d_{{}}.nc".format(grid_spacing),
+        )
         os.makedirs(output_directory, exist_ok=True)
 
     results = {}
@@ -458,7 +488,9 @@ def generate_distance_grids(
         if output_directory:
             output_path = os.path.join(
                 output_directory,
-                "mean_distance_{:.1f}d_{:.1f}.nc".format(grid_spacing, age_grid_time),
+                distance_grid_filename(
+                    grid_spacing, age_grid_time, decimal_places_in_time
+                ),
             )
             write_netcdf_grid(output_path, grid)
 
@@ -469,6 +501,8 @@ def generate_sediment_thickness_grids(
     age_grid_filenames_and_times,
     distance_grids,
     output_directory=None,
+    *,
+    decimal_places_in_time=None,
     **sediment_thickness_kwargs,
 ):
     """Predict compacted sediment thickness by combining seafloor-age and distance-to-margin grids.
@@ -487,6 +521,13 @@ def generate_sediment_thickness_grids(
     output_directory : str, optional
         If given, write each time's grid to
         ``<output_directory>/sediment_thickness_<time>Ma.nc``.
+    decimal_places_in_time : int, optional
+        Decimal places of the reconstruction time in the output filenames. Defaults to 0,
+        reproducing the filenames of the workflow this was ported from. Times that are not
+        distinct at this resolution would overwrite each other, so a clash raises
+        `ValueError` rather than silently discarding grids -- raise this value when using a
+        fractional time step. It is the same rule as pyBacktrack's
+        ``output_file_decimal_places_in_time``.
     **sediment_thickness_kwargs
         Passed through to
         :func:`gplately.dutkiewicz_2017_sediment_thickness` (e.g. to override
@@ -498,7 +539,18 @@ def generate_sediment_thickness_grids(
         Maps each time to a ``(lon, lat, grid)`` tuple: 1-D longitude/latitude coordinate
         arrays and a 2-D ``(lat, lon)`` array of predicted sediment thickness in metres.
     """
+    # Materialised because the filename check below walks it before the main loop does.
+    age_grid_filenames_and_times = list(age_grid_filenames_and_times)
+
+    decimal_places_in_time = resolve_decimal_places_in_time(
+        decimal_places_in_time, DEFAULT_DECIMAL_PLACES_IN_TIME
+    )
     if output_directory:
+        check_times_are_distinct_in_filenames(
+            [time for _, time in age_grid_filenames_and_times],
+            decimal_places_in_time,
+            "sediment_thickness_{}Ma.nc",
+        )
         os.makedirs(output_directory, exist_ok=True)
 
     results = {}
@@ -536,7 +588,10 @@ def generate_sediment_thickness_grids(
 
         if output_directory:
             output_path = os.path.join(
-                output_directory, "sediment_thickness_{:.0f}Ma.nc".format(time)
+                output_directory,
+                "sediment_thickness_{}Ma.nc".format(
+                    format_time_in_filename(time, decimal_places_in_time)
+                ),
             )
             write_netcdf_grid(output_path, sediment_thickness_m)
 
