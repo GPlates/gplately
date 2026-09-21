@@ -421,9 +421,7 @@ def simple_paleobathymetry(
         Passed to :func:`age_to_basement_depth` as `model`.
     richards_table_filename : str, optional
         Passed to :func:`age_to_basement_depth` (only used when `age_depth_model` is
-        ``"rhcw18"``). Cannot be combined with `pybacktrack`: it would change the age-depth
-        relationship for Steps 1-4 only, leaving a step change where Step 5's output is
-        merged in.
+        ``"rhcw18"``). Forwarded to Step 5 as well, so both sides use the same table.
     output_directory : str, optional
         If given, intermediate distance/sediment-thickness grids and the final paleobathymetry
         grids (``paleobathymetry_<time>Ma.nc``) are all written under this directory (in
@@ -450,8 +448,7 @@ def simple_paleobathymetry(
         line -- see that function's docstring.
     pybacktrack : bool, default: False
         If true, additionally run Step 5 (requires the optional `pybacktrack` package, plus
-        `output_directory`, `static_polygon_filename` and `present_day_age_grid_filename`,
-        and an `age_depth_model` that pyBacktrack shares -- ``"gdh1"`` or ``"rhcw18"``).
+        `output_directory`, `static_polygon_filename` and `present_day_age_grid_filename`).
         pyBacktrack generates its output at a single increment rather than at a list of
         times, so that increment is taken from the spacing of the times in
         `age_grid_filenames_and_times`, which must therefore be evenly spaced.
@@ -506,6 +503,13 @@ def simple_paleobathymetry(
 
     age_grid_filenames_and_times = list(age_grid_filenames_and_times)
 
+    # Probed now, and the result thrown away, so that an unusable model name or an
+    # unreadable lookup table is reported before Step 2 runs rather than from Step 4 at the
+    # end of it. (The table is cached, so Step 4 does not pay for this twice.)
+    age_to_basement_depth(
+        0.0, model=age_depth_model, richards_table_filename=richards_table_filename
+    )
+
     # Every Step 5 prerequisite is checked here rather than at the Step 5 call at the end
     # of this function, so that a request Step 5 cannot satisfy is rejected before Steps
     # 1-4 spend hours producing grids it will not be able to merge.
@@ -530,10 +534,6 @@ def simple_paleobathymetry(
             )
         # Imported here for the same reason the Step 5 call below does: pybacktrack is an
         # optional dependency. This function does not need it, only the model name.
-        from .pybacktrack_paleobathymetry import check_age_depth_model_supported
-
-        check_age_depth_model_supported(age_depth_model, richards_table_filename)
-
         # pyBacktrack generates output at one increment between two times, rather than at a
         # list of times, so the times it is asked for must be describable that way.
         pybacktrack_time_increment = uniform_time_step(
@@ -683,6 +683,7 @@ def simple_paleobathymetry(
             # were never written.
             time_increment=pybacktrack_time_increment,
             age_depth_model=age_depth_model,
+            richards_table_filename=richards_table_filename,
             anchor_plate_id=anchor_plate_id,
             decimal_places_in_time=requested_decimal_places_in_time,
             **(pybacktrack_kwargs or {}),

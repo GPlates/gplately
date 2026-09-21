@@ -39,88 +39,81 @@ package (not a gplately dependency -- ``pip install pybacktrack`` or
 :func:`merge_pybacktrack_paleobathymetry` so that importing gplately never requires it.
 """
 
+import functools
+
 from ._utils import (
     DEFAULT_DECIMAL_PLACES_IN_TIME,
     resolve_decimal_places_in_time,
 )
+from .paleobathymetry import age_to_basement_depth
 
-# Map this module's/`gplately.grids.paleobathymetry`'s `age_depth_model` names onto pyBacktrack's
-# equivalent ocean age -> depth model constant (see gplately.grids.paleobathymetry.AGE_DEPTH_MODELS).
-# Only models where the two implementations genuinely agree belong here; the others, and why
-# they are excluded, are in _PYBACKTRACK_UNSUPPORTED_AGE_DEPTH_MODELS below.
-_PYBACKTRACK_AGE_DEPTH_MODEL_ATTRS = {
-    "gdh1": "AGE_TO_DEPTH_MODEL_GDH1",
-    "rhcw18": "AGE_TO_DEPTH_MODEL_RHCW18",
-}
-
-# Models gplately offers for Steps 1-4 that Step 5 will not accept, and why. Spelling the
-# reason out matters for crosby09 in particular, where a superficially matching pyBacktrack
-# constant exists and mapping to it looks obviously right.
-_PYBACKTRACK_UNSUPPORTED_AGE_DEPTH_MODELS = {
-    "parsons_sclater": "pyBacktrack has no equivalent of this model.",
-    "crosby09": (
-        "pyBacktrack's AGE_TO_DEPTH_MODEL_CROSBY_2007 is a different model despite the "
-        "similar name: it is the plate-cooling model of Crosby's 2007 thesis, whereas "
-        "gplately's 'crosby09' is the empirical piecewise fit of Crosby & McKenzie (2009). "
-        "They differ by up to ~218 m over 0-200 Ma (~51 m at the ridge crest), so Steps 1-4 "
-        "computed with one and Step 5 with the other leave a step change at the merge "
-        "boundary. Use 'gdh1' or 'rhcw18', whose pyBacktrack counterparts agree with "
-        "gplately's to within a metre."
-    ),
-}
+__all__ = ["merge_pybacktrack_paleobathymetry", "ocean_age_to_depth_function"]
 
 
-def check_age_depth_model_supported(age_depth_model, richards_table_filename=None):
-    """Return the canonical name of `age_depth_model`, or raise if Step 5 cannot use it.
+@functools.lru_cache(maxsize=1 << 16)
+def _ocean_age_to_depth(age, age_depth_model, richards_table_filename):
+    """pyBacktrack's ocean age -> depth callback, backed by gplately's own conversion.
 
-    Separate from :func:`merge_pybacktrack_paleobathymetry` so that callers running Steps
-    1-4 first can find out before, rather than after, doing that work.
+    Module-level, and reached through a :func:`functools.partial`, so that it survives the
+    pickling pyBacktrack does when ``use_all_cpus`` is set -- a closure would not.
+
+    pyBacktrack measures depth positive-down; this module measures it negative-down.
+
+    Memoised on the exact age, with no rounding, so the values are identical either way.
+    pyBacktrack calls this once per ocean point per decompaction step, and age grids repeat
+    their values heavily, while each call otherwise goes through the array machinery of
+    :func:`gplately.age_to_basement_depth` for a single scalar.
+    """
+    return -float(
+        age_to_basement_depth(
+            float(age),
+            model=age_depth_model,
+            richards_table_filename=richards_table_filename,
+        )
+    )
+
+
+def ocean_age_to_depth_function(age_depth_model, richards_table_filename=None):
+    """The age -> depth callable to hand pyBacktrack for `age_depth_model`.
+
+    pyBacktrack accepts either one of its own enumerated models or a function of age, so it
+    is given gplately's conversion rather than the nearest-looking built-in. Steps 1-4 and
+    Step 5 then use one implementation between them, and agree exactly instead of
+    approximately -- which matters because Step 5's output is merged into Steps 1-4's, and
+    any difference between the two shows up as a step change at the merge boundary.
+
+    Passing a built-in instead would be wrong in three ways. pyBacktrack's ``CROSBY_2007``
+    is not gplately's ``"crosby09"`` despite the name -- the plate-cooling model of Crosby's
+    2007 thesis, against the empirical piecewise fit of Crosby & McKenzie (2009), differing
+    by up to 218 m over 0-200 Ma. ``"parsons_sclater"`` has no built-in at all. And a
+    substituted `richards_table_filename` cannot be handed to pyBacktrack in any form.
 
     Parameters
     ----------
     age_depth_model : str
-        The model name, or any alias :func:`gplately.age_to_basement_depth` accepts.
+        Any model name or alias :func:`gplately.age_to_basement_depth` accepts.
     richards_table_filename : str, optional
-        The lookup table Steps 1-4 would use for ``"rhcw18"``. A substituted table is a
-        different age-depth relationship, and pyBacktrack has no way to be given it, so it
-        is refused for the same reason a different model is.
+        The lookup table for ``"rhcw18"``, if not the one gplately ships.
+
+    Returns
+    -------
+    callable
+        Takes a single non-negative age (Ma) and returns depth in metres, positive-down.
 
     Raises
     ------
     ValueError
-        If `age_depth_model` has no usable pyBacktrack equivalent, or if
-        `richards_table_filename` would make the two sides disagree.
+        If `age_depth_model` is not a model gplately knows.
     """
-    # Imported here rather than at module level to keep this module free of an import back
-    # into gplately.grids.paleobathymetry, which imports this one.
-    from .paleobathymetry import _AGE_DEPTH_MODEL_ALIASES
-
-    # "richards" and "r18" are rhcw18; refusing them would refuse a model that does agree.
-    key = _AGE_DEPTH_MODEL_ALIASES.get(
-        str(age_depth_model).strip().lower(), str(age_depth_model).strip().lower()
+    # Validate now rather than on first call, which happens deep inside pyBacktrack.
+    age_to_basement_depth(
+        0.0, model=age_depth_model, richards_table_filename=richards_table_filename
     )
-    if key in _PYBACKTRACK_AGE_DEPTH_MODEL_ATTRS:
-        if key == "rhcw18" and richards_table_filename is not None:
-            raise ValueError(
-                "richards_table_filename cannot be combined with pyBacktrack: it replaces "
-                "the RHCW18 age-depth table for Steps 1-4 only, and pyBacktrack has no way "
-                "to be given the same table, so Step 5 would keep using its own. That is "
-                "the same step change at the merge boundary that other mismatched models "
-                "are refused for. Drop richards_table_filename, or do not run Step 5."
-            )
-        return key
-
-    reason = _PYBACKTRACK_UNSUPPORTED_AGE_DEPTH_MODELS.get(key)
-    raise ValueError(
-        f"age_depth_model {age_depth_model!r} cannot be used with pyBacktrack. "
-        + (reason + " " if reason else "")
-        + "Supported models are: "
-        + ", ".join(_PYBACKTRACK_AGE_DEPTH_MODEL_ATTRS)
-        + "."
+    return functools.partial(
+        _ocean_age_to_depth,
+        age_depth_model=age_depth_model,
+        richards_table_filename=richards_table_filename,
     )
-
-
-__all__ = ["merge_pybacktrack_paleobathymetry"]
 
 
 def merge_pybacktrack_paleobathymetry(
@@ -136,6 +129,7 @@ def merge_pybacktrack_paleobathymetry(
     age_depth_model="gdh1",
     anchor_plate_id=0,
     use_all_cpus=False,
+    richards_table_filename=None,
     *,
     decimal_places_in_time=None,
     **pybacktrack_kwargs,
@@ -178,12 +172,14 @@ def merge_pybacktrack_paleobathymetry(
         (:func:`gplately.generate_distance_grids`'s `time_increment`), which is a different
         quantity and is usually finer.
     age_depth_model : str, default: "gdh1"
-        One of ``"gdh1"`` or ``"rhcw18"`` (see
-        :data:`gplately.grids.paleobathymetry.AGE_DEPTH_MODELS`). It should match the
-        `age_depth_model` used for Steps 1-4, which is why only these two are accepted:
-        ``"parsons_sclater"`` has no pyBacktrack counterpart, and pyBacktrack's
-        ``CROSBY_2007`` is a different model from gplately's ``"crosby09"`` rather than the
-        same one under another name, and the two differ by up to ~218 m over 0-200 Ma.
+        Any of :data:`gplately.grids.paleobathymetry.AGE_DEPTH_MODELS`, or an alias
+        :func:`gplately.age_to_basement_depth` accepts. Should match the `age_depth_model`
+        used for Steps 1-4: pyBacktrack is given gplately's own conversion rather than one
+        of its built-in models (see :func:`ocean_age_to_depth_function`), so whichever is
+        chosen, both sides compute the same depths.
+    richards_table_filename : str, optional
+        The ``"rhcw18"`` lookup table, if not the one gplately ships. Should match the one
+        used for Steps 1-4, for the same reason.
     anchor_plate_id : int, default: 0
         Should match the `anchor_plate_id` used for Steps 1-4.
     use_all_cpus : bool or int, default: False
@@ -206,8 +202,7 @@ def merge_pybacktrack_paleobathymetry(
     ImportError
         If the optional `pybacktrack` package is not installed.
     ValueError
-        If `age_depth_model` has no usable pyBacktrack equivalent (see
-        :func:`check_age_depth_model_supported`).
+        If `age_depth_model` is not a model gplately knows.
 
     References
     ----------
@@ -228,9 +223,8 @@ def merge_pybacktrack_paleobathymetry(
         decimal_places_in_time, DEFAULT_DECIMAL_PLACES_IN_TIME
     )
 
-    key = check_age_depth_model_supported(age_depth_model)
-    ocean_age_to_depth_model = getattr(
-        pybacktrack, _PYBACKTRACK_AGE_DEPTH_MODEL_ATTRS[key]
+    ocean_age_to_depth_model = ocean_age_to_depth_function(
+        age_depth_model, richards_table_filename
     )
 
     pybacktrack.reconstruct_paleo_bathymetry_grids(

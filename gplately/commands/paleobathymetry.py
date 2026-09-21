@@ -131,17 +131,16 @@ def add_parser(parser):
         choices=AGE_DEPTH_MODELS,
         default="gdh1",
         dest="age_depth_model",
-        help="thermal-subsidence (age -> basement depth) model; default: gdh1. With "
-        "--pybacktrack, only gdh1 and rhcw18 can be used: Step 5 has to compute depths with "
-        "the same model as Steps 1-4, and pyBacktrack shares only those two",
+        help="thermal-subsidence (age -> basement depth) model; default: gdh1. Also used "
+        "by --pybacktrack, so Steps 1-4 and Step 5 agree",
     )
     cmd.add_argument(
         "--richards-table",
         metavar="richards_table",
         default=None,
         dest="richards_table",
-        help="age-depth lookup table for --age-depth-model rhcw18, which cannot be "
-        "combined with --pybacktrack (pyBacktrack would keep using its own table); "
+        help="age-depth lookup table for --age-depth-model rhcw18, used by --pybacktrack "
+        "as well; "
         "default: the table shipped with gplately",
     )
     cmd.add_argument(
@@ -151,7 +150,7 @@ def add_parser(parser):
         help="also run Step 5: merge in pyBacktrack's present-day paleobathymetry, to also "
         "cover submerged continental crust and crust that has since subducted. Requires the "
         "optional 'pybacktrack' package (pip install pybacktrack, or "
-        "gplately[paleobathymetry]), and an --age-depth-model of gdh1 or rhcw18.",
+        "gplately[paleobathymetry]).",
     )
     cmd.add_argument(
         "--static-polygons",

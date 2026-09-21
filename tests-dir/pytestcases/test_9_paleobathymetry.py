@@ -39,8 +39,8 @@ from gplately.grids.paleobathymetry import (
     simple_paleobathymetry,
 )
 from gplately.grids.pybacktrack_paleobathymetry import (
-    check_age_depth_model_supported,
     merge_pybacktrack_paleobathymetry,
+    ocean_age_to_depth_function,
 )
 from gplately.grids.sediment_thickness import (
     _check_proximity_features,
@@ -1288,122 +1288,107 @@ def test_merge_pybacktrack_paleobathymetry_unknown_age_depth_model(
             present_day_age_grid_filename=bundle_data.BUNDLE_AGE_GRID_FILENAME,
             grid_spacing_degrees=10.0,
             oldest_time=1,
-            age_depth_model="parsons_sclater",  # no pyBacktrack equivalent
+            # "parsons_sclater" used to belong here, as the one model with no pyBacktrack
+            # counterpart. pyBacktrack is now given gplately's own conversion instead of one
+            # of its built-in models, so every model gplately knows works -- only a name it
+            # does not know is an error.
+            age_depth_model="not-a-model",
         )
 
 
 # -----------------------------------------------------------------------------
-# Which age-depth models Steps 1-4 and Step 5 can share
+# Steps 1-4 and Step 5 must compute depth with the same model
 # -----------------------------------------------------------------------------
 
 
-@pytest.mark.parametrize("model", ["gdh1", "rhcw18"])
-def test_shared_age_depth_models_are_accepted(model):
-    assert check_age_depth_model_supported(model) == model
+@pytest.mark.parametrize("model", AGE_DEPTH_MODELS)
+def test_every_age_depth_model_can_be_handed_to_pybacktrack(model):
+    """pyBacktrack takes a function of age, so none of gplately's models is out of reach."""
+    assert callable(ocean_age_to_depth_function(model))
 
 
-@pytest.mark.parametrize("model", ["parsons_sclater", "crosby09", "not-a-model"])
-def test_unshared_age_depth_models_are_refused(model):
-    with pytest.raises(ValueError, match="cannot be used with pyBacktrack"):
-        check_age_depth_model_supported(model)
+@pytest.mark.parametrize("alias", ["richards", "r18", "RHCW18", "ghd1", "stein_stein"])
+def test_age_depth_model_aliases_are_accepted(alias):
+    assert callable(ocean_age_to_depth_function(alias))
 
 
-@pytest.mark.parametrize(
-    "alias, canonical",
-    [
-        ("richards", "rhcw18"),
-        ("r18", "rhcw18"),
-        ("RHCW18", "rhcw18"),
-        ("ghd1", "gdh1"),
-        ("stein_stein", "gdh1"),
-    ],
-)
-def test_age_depth_model_aliases_are_resolved(alias, canonical):
-    """age_to_basement_depth() takes these, so refusing them would refuse a valid run."""
-    assert check_age_depth_model_supported(alias) == canonical
+def test_unknown_age_depth_model_is_refused():
+    with pytest.raises(ValueError, match="Unknown age-depth model"):
+        ocean_age_to_depth_function("not-a-model")
 
 
-def test_a_substituted_richards_table_is_refused_with_pybacktrack():
-    """Replacing the RHCW18 table changes the model for Steps 1-4 only.
+def test_the_age_to_depth_callable_survives_pickling():
+    """pyBacktrack pickles this when use_all_cpus is set, and a closure would not survive."""
+    import pickle
 
-    pyBacktrack has no way to be handed the same table, so Step 5 keeps using its own --
-    the same merge-boundary step change that a mismatched model name is refused for.
-    """
-    assert check_age_depth_model_supported("rhcw18", None) == "rhcw18"
-    with pytest.raises(ValueError, match="richards_table_filename"):
-        check_age_depth_model_supported("rhcw18", "my_table.dat")
-
-    # Harmless for a model that never reads the table.
-    assert check_age_depth_model_supported("gdh1", "my_table.dat") == "gdh1"
-
-
-def test_substituted_richards_table_rejected_before_steps_1_to_4_run(
-    synthetic_age_grid_filename, tmp_path
-):
-    with pytest.raises(ValueError, match="richards_table_filename"):
-        simple_paleobathymetry(
-            rotation_model="does-not-exist.rot",
-            proximity_features="does-not-exist.gpml",
-            topological_features="does-not-exist.gpml",
-            age_grid_filenames_and_times=[(synthetic_age_grid_filename, 0.0)],
-            age_depth_model="rhcw18",
-            richards_table_filename="my_table.dat",
-            output_directory=str(tmp_path),
-            pybacktrack=True,
-            static_polygon_filename="does-not-exist.gpml",
-            present_day_age_grid_filename=synthetic_age_grid_filename,
-        )
-
-
-def test_crosby09_refusal_explains_the_name_clash():
-    """The reason matters more than the rule: pyBacktrack has a constant that looks right."""
-    with pytest.raises(ValueError, match="CROSBY_2007"):
-        check_age_depth_model_supported("crosby09")
+    function = ocean_age_to_depth_function("gdh1")
+    assert pickle.loads(pickle.dumps(function))(50.0) == function(50.0)
 
 
 @pytest.mark.skipif(not HAS_PYBACKTRACK, reason="requires the pybacktrack package")
-@pytest.mark.parametrize(
-    "model, pybacktrack_attr",
-    [
-        ("gdh1", "AGE_TO_DEPTH_MODEL_GDH1"),
-        ("rhcw18", "AGE_TO_DEPTH_MODEL_RHCW18"),
-    ],
-)
-def test_accepted_models_really_do_agree_with_pybacktrack(model, pybacktrack_attr):
-    """Step 5 merges its output into Steps 1-4's, so the two must be the same model.
+@pytest.mark.parametrize("model", AGE_DEPTH_MODELS)
+def test_step_5_depths_match_steps_1_to_4_exactly(model):
+    """The property the whole arrangement exists for.
 
-    This is the property the accept-list encodes; asserting it directly means the list
-    cannot quietly grow an entry that does not hold.
+    Step 5's output is merged into Steps 1-4's, so any disagreement between the two shows
+    up as a step change at the merge boundary. Going through gplately's own conversion
+    makes them the same computation rather than two implementations that ought to match.
     """
     import pybacktrack
 
     ages = np.arange(0.0, 200.5, 0.5)
+    ours = -np.asarray(age_to_basement_depth(ages, model=model), dtype=float)
     theirs = np.array(
         [
             pybacktrack.convert_age_to_depth(
-                float(age), getattr(pybacktrack, pybacktrack_attr)
+                float(age), ocean_age_to_depth_function(model)
             )
             for age in ages
         ]
     )
-    # gplately reports depth negative-down, pyBacktrack positive-down.
-    ours = -np.asarray(age_to_basement_depth(ages, model=model), dtype=float)
-
-    assert np.nanmax(np.abs(ours - theirs)) < 1.0
+    np.testing.assert_allclose(theirs, ours, rtol=0, atol=0)
 
 
 @pytest.mark.skipif(not HAS_PYBACKTRACK, reason="requires the pybacktrack package")
-def test_crosby09_and_pybacktrack_crosby_2007_are_different_models():
-    """Why crosby09 is refused, stated as a measurement rather than an assertion.
+def test_a_substituted_richards_table_reaches_step_5_too(tmp_path):
+    """Replacing the RHCW18 table changes the model, so Step 5 has to be given it as well."""
+    import pybacktrack
+
+    table = tmp_path / "table.dat"
+    ages = np.arange(0.0, 401.0, 1.0)
+    np.savetxt(table, np.column_stack([ages, -(2400.0 + 30.0 * np.sqrt(ages))]))
+
+    function = ocean_age_to_depth_function("rhcw18", str(table))
+    sample = np.arange(0.0, 200.5, 0.5)
+    ours = -np.asarray(
+        age_to_basement_depth(
+            sample, model="rhcw18", richards_table_filename=str(table)
+        ),
+        dtype=float,
+    )
+    theirs = np.array(
+        [pybacktrack.convert_age_to_depth(float(age), function) for age in sample]
+    )
+    np.testing.assert_allclose(theirs, ours, rtol=0, atol=0)
+
+    # And it is genuinely a different relationship from the shipped table.
+    shipped = -np.asarray(age_to_basement_depth(sample, model="rhcw18"), dtype=float)
+    assert np.nanmax(np.abs(ours - shipped)) > 100.0
+
+
+@pytest.mark.skipif(not HAS_PYBACKTRACK, reason="requires the pybacktrack package")
+def test_crosby09_is_not_pybacktracks_crosby_2007():
+    """Why a built-in model is not used, recorded as a measurement.
 
     gplately's "crosby09" is Crosby & McKenzie (2009)'s empirical piecewise fit;
-    pyBacktrack's CROSBY_2007 is the plate-cooling model of Crosby's 2007 thesis. Mapping
-    one to the other puts a step change at the depth where Step 5's output is merged in.
+    pyBacktrack's CROSBY_2007 is the plate-cooling model of Crosby's 2007 thesis. The names
+    line up, the models do not, and picking the built-in by name would put a step change at
+    the merge boundary.
     """
     import pybacktrack
 
     ages = np.arange(0.0, 200.5, 0.5)
-    theirs = np.array(
+    built_in = np.array(
         [
             pybacktrack.convert_age_to_depth(
                 float(age), pybacktrack.AGE_TO_DEPTH_MODEL_CROSBY_2007
@@ -1413,24 +1398,34 @@ def test_crosby09_and_pybacktrack_crosby_2007_are_different_models():
     )
     ours = -np.asarray(age_to_basement_depth(ages, model="crosby09"), dtype=float)
 
-    # Far larger than the sub-metre agreement the accepted models show.
-    assert np.nanmax(np.abs(ours - theirs)) > 100.0
-    assert abs(ours[0] - theirs[0]) > 25.0  # they differ at the ridge crest too
+    assert np.nanmax(np.abs(ours - built_in)) > 100.0
+    assert abs(ours[0] - built_in[0]) > 25.0  # they differ at the ridge crest too
 
 
-def test_step_5_rejects_crosby09_before_steps_1_to_4_run(
-    synthetic_age_grid_filename, tmp_path
+def test_the_age_to_depth_callable_is_memoised():
+    """Called once per ocean point per decompaction step, so repeats should be cheap."""
+    function = ocean_age_to_depth_function("rhcw18")
+    first = function(37.5)
+    info_before = ocean_age_to_depth_function("rhcw18").func.cache_info()
+    assert function(37.5) == first
+    info_after = ocean_age_to_depth_function("rhcw18").func.cache_info()
+    assert info_after.hits > info_before.hits
+
+
+@pytest.mark.parametrize("pybacktrack_enabled", [False, True])
+def test_unusable_age_depth_model_reported_before_steps_1_to_4_run(
+    pybacktrack_enabled, synthetic_age_grid_filename, tmp_path
 ):
-    """Finding out after Steps 1-4 have run is finding out too late."""
-    with pytest.raises(ValueError, match="cannot be used with pyBacktrack"):
+    """Finding out from Step 4, after Step 2 has run for hours, is too late."""
+    with pytest.raises(ValueError, match="Unknown age-depth model"):
         simple_paleobathymetry(
             rotation_model="does-not-exist.rot",
             proximity_features="does-not-exist.gpml",
             topological_features="does-not-exist.gpml",
             age_grid_filenames_and_times=[(synthetic_age_grid_filename, 0.0)],
-            age_depth_model="crosby09",
+            age_depth_model="not-a-model",
             output_directory=str(tmp_path),
-            pybacktrack=True,
+            pybacktrack=pybacktrack_enabled,
             static_polygon_filename="does-not-exist.gpml",
             present_day_age_grid_filename=synthetic_age_grid_filename,
         )
