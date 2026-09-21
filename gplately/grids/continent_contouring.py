@@ -25,9 +25,11 @@ engine (:class:`gplately.ptt.continent_contours.ContinentContouring`). See `gpla
 
 The same use case exists in EarthByte's `continent-contouring
 <https://github.com/EarthByte/continent-contouring>`__ as ``create_passive_margins.py``, but
-this is not a port of that: it follows the *simple_paleobathymetry* version, which splits a
+this descends from the *simple_paleobathymetry* version rather than that one: it splits a
 contour by walking ``get_points()`` where ``create_passive_margins.py`` walks
-``get_segments()``, and which had already had bug fixes applied that the other had not. The
+``get_segments()``, and it inherits bug fixes the other had not had applied. One behaviour
+*is* taken from ``create_passive_margins.py`` -- the valid-time epsilon below, which the
+ancestor lacks. The
 parameter defaults here likewise follow the `paleobathymetry-workflow
 <https://github.com/EarthByte/paleobathymetry-workflow>`__ set that
 *simple_paleobathymetry* adopted (0.25 degree spacing, no area threshold, an
@@ -65,7 +67,10 @@ from ._utils import (
 from ..ptt.continent_contours import ContinentContouring
 
 # Subtracted from each feature's begin time so that a feature covering one time slice ends
-# just before the next slice's feature begins. Without it the slices share their boundary
+# just before the next slice's feature begins. Taken from continent-contouring's
+# create_passive_margins.py, which does this in three places; the ancestor this module
+# otherwise follows (simple_paleobathymetry's generate_continent_contours.py) has no
+# equivalent, so this is adopted from the sibling rather than restored from the ancestor. Without it the slices share their boundary
 # instant and every feature overlaps its neighbour there, which shows up in GPlates as two
 # sets of margins drawn on top of each other at every interval boundary.
 _VALID_TIME_EPSILON = 1e-4

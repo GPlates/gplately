@@ -1515,6 +1515,34 @@ def test_the_age_to_depth_callable_is_memoised():
     assert info_after.hits > info_before.hits
 
 
+def test_missing_pybacktrack_reported_before_steps_1_to_4_run(
+    monkeypatch, synthetic_age_grid_filename, tmp_path
+):
+    """The costliest Step 5 prerequisite is that the package is installed at all.
+
+    Every other prerequisite is checked up front; this one used to surface from the import
+    at the Step 5 call, after Steps 1-4 had already run.
+    """
+    import sys
+
+    # Binding the name to None makes `import pybacktrack` raise ImportError.
+    monkeypatch.setitem(sys.modules, "pybacktrack", None)
+
+    with pytest.raises(ImportError):
+        simple_paleobathymetry(
+            rotation_model="does-not-exist.rot",
+            proximity_features="does-not-exist.gpml",
+            topological_features="does-not-exist.gpml",
+            age_grid_filenames_and_times=[(synthetic_age_grid_filename, 0.0)],
+            output_directory=str(tmp_path),
+            pybacktrack=True,
+            static_polygon_filename="does-not-exist.gpml",
+            present_day_age_grid_filename=synthetic_age_grid_filename,
+        )
+    # Nothing was computed on the way to finding out.
+    assert list(tmp_path.iterdir()) == []
+
+
 @pytest.mark.parametrize("pybacktrack_enabled", [False, True])
 def test_unusable_age_depth_model_reported_before_steps_1_to_4_run(
     pybacktrack_enabled, synthetic_age_grid_filename, tmp_path

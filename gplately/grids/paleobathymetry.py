@@ -447,20 +447,28 @@ def simple_paleobathymetry(
         :func:`gplately.generate_sediment_thickness_grids`), e.g. to
         override the default Dutkiewicz et al. (2017) constants.
     continent_obstacle_features, plate_boundary_obstacle_feature_types, shortest_path_grid_subdivision_depth
-        Passed to :func:`gplately.generate_distance_grids` (Step 2). Note that distances go
-        in a straight line unless `continent_obstacle_features` is given, whereas the
-        ``gplately paleobathymetry`` command routes around continents by default (as the
-        original workflow does) by sourcing them from the plate model -- which this function,
-        taking features rather than a model, has no way to do.
-        If `continent_obstacle_features`
-        is given, distances are routed *around* continents instead of a great-circle straight
-        line -- see that function's docstring.
+        Passed to :func:`gplately.generate_distance_grids` (Step 2). If
+        `continent_obstacle_features` is given, distances are routed *around* continents
+        instead of taking a great-circle straight line -- see that function's docstring.
+
+        Note the asymmetry with the command line: ``gplately paleobathymetry`` routes around
+        continents by *default*, as the original workflow does, by sourcing the geometries
+        from the plate model. This function takes features rather than a model, so it has no
+        way to do that, and a straight line is all it can default to.
     pybacktrack : bool, default: False
         If true, additionally run Step 5 (requires the optional `pybacktrack` package, plus
         `output_directory`, `static_polygon_filename` and `present_day_age_grid_filename`).
         pyBacktrack generates its output at a single increment rather than at a list of
         times, so that increment is taken from the spacing of the times in
         `age_grid_filenames_and_times`, which must therefore be evenly spaced.
+
+        pyBacktrack then regenerates those times from that increment, so they have to
+        survive the round trip through `decimal_places_in_time`. They will unless the chosen
+        precision falls exactly at the step's own rounding boundary -- times
+        ``[0, 0.15, 0.3, 0.45]`` at one decimal place, for instance, where Step 4 writes
+        ``_0.5Ma.nc`` and pyBacktrack looks for ``_0.4Ma.nc``. Give the times one more
+        decimal place than the step needs and the question does not arise. The failure is
+        loud, not silent: Step 5 stops on the missing file.
     static_polygon_filename : str, optional
         Static polygons for Step 5 (pyBacktrack uses these to assign plate IDs); required if
         `pybacktrack` is true.
@@ -541,8 +549,12 @@ def simple_paleobathymetry(
                 "already-constructed pygplates.RotationModel -- pyBacktrack builds its own "
                 "rotation model internally and needs the raw file path(s)."
             )
-        # Imported here for the same reason the Step 5 call below does: pybacktrack is an
-        # optional dependency. This function does not need it, only the model name.
+        # Imported here, not at module level, for the same reason the Step 5 call at the
+        # end of this function does it: pybacktrack is an optional dependency. Importing it
+        # now is also the check -- finding out it is missing after Steps 1-4 have run is
+        # finding out too late.
+        import pybacktrack  # noqa: F401
+
         # pyBacktrack generates output at one increment between two times, rather than at a
         # list of times, so the times it is asked for must be describable that way.
         pybacktrack_time_increment = uniform_time_step(

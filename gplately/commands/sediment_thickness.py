@@ -368,8 +368,10 @@ def _add_distance_arguments(cmd):
         nargs="+",
         dest="proximity_filenames",
         default=[],
-        help="passive-margin continent-ocean-boundary line-segment file(s); "
-        "required unless -m/--model's plate model provides a COBs layer",
+        help="passive-margin continent-ocean-boundary line-segment file(s). Always "
+        "required: these are deliberately not taken from -m/--model's plate model, whose "
+        "COBs layer traces the whole continent-ocean boundary including active margins. "
+        "Use 'gplately generate-passive-margins' to produce passive margins",
     )
     cmd.add_argument(
         "--rotations",
