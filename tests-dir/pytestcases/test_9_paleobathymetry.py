@@ -2,6 +2,7 @@ import argparse
 import math
 import os
 
+import netCDF4
 import numpy as np
 import pygplates
 import pytest
@@ -338,6 +339,146 @@ def test_generate_sediment_thickness_grids_missing_time_raises():
             [("does-not-matter.nc", 0.0)],
             distance_grids={},  # no entry for time 0.0
         )
+
+
+# =============================================================================
+# Age grids stored with descending latitude
+# =============================================================================
+
+
+def _write_age_grid_verbatim(path, lon, lat, age):
+    """Write an age grid to netCDF with its coordinate order exactly as given.
+
+    ``gplately.write_netcdf_grid()`` always writes latitude ascending, so it cannot
+    produce the north-up (descending latitude) grids that GDAL writes -- and therefore
+    that any GeoTIFF or GIS round-trip produces. These tests need both orders, so they
+    write the netCDF directly.
+    """
+    with netCDF4.Dataset(str(path), "w") as cdf:
+        cdf.createDimension("lon", len(lon))
+        cdf.createDimension("lat", len(lat))
+        cdf_lon = cdf.createVariable("lon", "f8", ("lon",))
+        cdf_lat = cdf.createVariable("lat", "f8", ("lat",))
+        cdf_z = cdf.createVariable("z", "f4", ("lat", "lon"), fill_value=np.nan)
+        cdf_lon.units = "degrees_east"
+        cdf_lat.units = "degrees_north"
+        cdf_lon[:] = np.asarray(lon)
+        cdf_lat[:] = np.asarray(lat)
+        cdf_z[:, :] = np.asarray(age)
+    return str(path)
+
+
+@pytest.fixture(scope="module")
+def latitude_ordered_age_grids(tmp_path_factory):
+    """The same synthetic age field written twice: latitude ascending, then descending.
+
+    The field increases monotonically from south to north, so reading one as though it
+    were the other mirrors every row rather than leaving the result unchanged.
+
+    The field has no NaNs on purpose. ``sample_grid()`` interpolates with
+    ``scipy.ndimage.map_coordinates(order=1)``, which blends row *i* with row *i+1* even
+    at an exact node; since ``0 * NaN`` is ``NaN``, every NaN spreads one row towards the
+    start of the array. That direction is south in an ascending grid and north in a
+    descending one, so a masked region is never flip-invariant and would mask the
+    geometric property being tested here.
+    """
+    lon = np.linspace(-180.0, 180.0, 37)  # 10 degree spacing
+    lat = np.linspace(-90.0, 90.0, 19)
+    _, lat_2d = np.meshgrid(lon, lat)
+
+    age = (lat_2d + 90.0) / 4.0  # 0-45 Ma, increasing from south to north
+
+    directory = tmp_path_factory.mktemp("latitude_order")
+    ascending = _write_age_grid_verbatim(
+        directory / "age_ascending_0Ma.nc", lon, lat, age
+    )
+    descending = _write_age_grid_verbatim(
+        directory / "age_descending_0Ma.nc", lon, lat[::-1], age[::-1, :]
+    )
+    return ascending, descending
+
+
+def test_descending_latitude_age_grid_stays_descending(latitude_ordered_age_grids):
+    """The fixture must really give us two different storage orders.
+
+    ``read_netcdf_grid()`` re-sorts latitude only when it also has to realign longitudes
+    from 0-360, which these grids do not need, so the descending file comes back
+    descending. Without this the tests below could pass vacuously.
+    """
+    ascending, descending = latitude_ordered_age_grids
+
+    age_up, _, lat_up = gplately.read_netcdf_grid(ascending, return_grids=True)
+    age_down, _, lat_down = gplately.read_netcdf_grid(descending, return_grids=True)
+
+    assert lat_up[0] < lat_up[-1]
+    assert lat_down[0] > lat_down[-1]
+    # The same field, just stored the other way up.
+    np.testing.assert_array_equal(lat_down, lat_up[::-1])
+    np.testing.assert_array_equal(age_down, age_up[::-1, :])
+
+
+def test_sediment_thickness_grids_invariant_to_age_grid_latitude_order(
+    latitude_ordered_age_grids,
+):
+    """Step 3 must read the same ages from a grid whichever way up it is stored.
+
+    ``generate_sediment_thickness_grids()`` samples the age grid onto the distance grid's
+    points. Handing ``sample_grid()`` an unsigned extent reads a descending-latitude grid
+    upside-down, applying southern-hemisphere ages to northern points -- silently, and
+    with entirely plausible-looking output.
+    """
+    ascending, descending = latitude_ordered_age_grids
+
+    lon = np.linspace(-180.0, 180.0, 37)
+    lat = np.linspace(-90.0, 90.0, 19)
+    distance_grids = {0.0: (lon, lat, np.full((lat.size, lon.size), 500.0))}
+
+    _, _, thickness_up = generate_sediment_thickness_grids(
+        [(ascending, 0.0)], distance_grids
+    )[0.0]
+    _, _, thickness_down = generate_sediment_thickness_grids(
+        [(descending, 0.0)], distance_grids
+    )[0.0]
+
+    assert np.isfinite(thickness_up).any()
+    np.testing.assert_allclose(thickness_down, thickness_up, rtol=1e-9)
+
+
+@pytest.mark.skipif(
+    int(os.getenv("GPLATELY_TEST_LEVEL", 0)) < 1,
+    reason="This testcase downloads a full Muller2019 plate model from the Internet. Set GPLATELY_TEST_LEVEL higher than 1 to activate it.",
+)
+def test_simple_paleobathymetry_invariant_to_age_grid_latitude_order(
+    gplately_muller_reconstruction_files,
+    gplately_muller_static_geometries,
+    latitude_ordered_age_grids,
+):
+    """The same property end to end, covering the other two age-grid sampling sites.
+
+    ``simple_paleobathymetry()`` samples the age grid once inside
+    ``generate_distance_grids()`` (to decide which points are ocean, and how old each is)
+    and again for Step 1's basement depth.
+    """
+    rotation_model, topology_features, _ = gplately_muller_reconstruction_files
+    _, _, cobs = gplately_muller_static_geometries
+    ascending, descending = latitude_ordered_age_grids
+
+    def run(age_grid_filename):
+        return simple_paleobathymetry(
+            rotation_model=rotation_model,
+            proximity_features=cobs,
+            topological_features=topology_features,
+            age_grid_filenames_and_times=[(age_grid_filename, 0.0)],
+            grid_spacing=10.0,
+            time_increment=1,
+            max_reconstruction_time=5,
+        )[0.0]
+
+    _, _, depth_up = run(ascending)
+    _, _, depth_down = run(descending)
+
+    assert np.isfinite(depth_up).any()
+    np.testing.assert_allclose(depth_down, depth_up, rtol=1e-9)
 
 
 @pytest.mark.skipif(

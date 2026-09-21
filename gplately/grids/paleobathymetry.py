@@ -517,11 +517,13 @@ def simple_paleobathymetry(
             lat_2d,
             age_grid,
             method="linear",
+            # First/last coordinates, not min/max: a descending latitude axis must keep
+            # its sign, since that is how sample_grid() knows the row order of the grid.
             extent=(
-                float(np.min(grid_lon)),
-                float(np.max(grid_lon)),
-                float(np.min(grid_lat)),
-                float(np.max(grid_lat)),
+                float(grid_lon[0]),
+                float(grid_lon[-1]),
+                float(grid_lat[0]),
+                float(grid_lat[-1]),
             ),
         )
 
