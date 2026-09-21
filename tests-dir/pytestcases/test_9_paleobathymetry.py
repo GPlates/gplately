@@ -1752,7 +1752,9 @@ def test_paleobathymetry_parser_defaults():
     assert args.topology_filenames == []
     assert args.max_reconstruction_time is None
     assert args.clamp_distance_km == 3000.0
-    assert args.route_around_continents is False
+    # Unset, meaning on-but-willing-to-fall-back: routing around continents is the
+    # original workflow's default, and --no-route-around-continents turns it off.
+    assert args.route_around_continents is None
     assert args.continent_obstacle_filenames == []
     assert args.shortest_path_grid_depth == 6
     assert args.age_depth_model == "gdh1"
@@ -1859,6 +1861,85 @@ def test_paleobathymetry_requires_output_dir():
         parser.parse_args(["paleobathymetry"])
 
 
+class _PlateModelStub:
+    """Stands in for a plate_model, with or without a Coastlines layer."""
+
+    def __init__(self, layers):
+        self._layers = layers
+
+    def get_rotation_model(self):
+        return ["rotations.rot"]
+
+    def get_layer(self, name, return_none_if_not_exist=False):
+        layer = self._layers.get(name)
+        if isinstance(layer, Exception):
+            raise layer
+        return layer
+
+
+def _distance_grid_kwargs(argv, layers):
+    parser = _build_subparser(sediment_thickness_cmd.add_parser)
+    args = parser.parse_args(["generate-distance-grids", "outdir"] + argv)
+    return sediment_thickness_cmd._resolve_distance_grid_kwargs(
+        args, _PlateModelStub(layers)
+    )
+
+
+def test_continent_obstacle_routing_is_on_by_default():
+    """The original workflow ships use_continent_obstacles: true; the port had it off."""
+    kwargs = _distance_grid_kwargs([], {"Coastlines": ["coastlines.gpml"]})
+    assert kwargs["continent_obstacle_features"] == ["coastlines.gpml"]
+
+
+def test_continent_obstacle_routing_can_be_turned_off():
+    assert (
+        _distance_grid_kwargs(
+            ["--no-route-around-continents"], {"Coastlines": ["coastlines.gpml"]}
+        )
+        == {}
+    )
+
+
+def test_default_routing_falls_back_when_the_model_has_no_coastlines():
+    """On by default must not mean unable to run against a model without coastlines."""
+    assert _distance_grid_kwargs([], {}) == {}
+
+
+def test_explicitly_requested_routing_will_not_fall_back():
+    """Asking for it and silently not getting it is the failure mode worth avoiding."""
+    with pytest.raises(Exception, match="requires continent/coastline files"):
+        _distance_grid_kwargs(["--route-around-continents"], {})
+
+    # Supplying the files is its own answer -- there is nothing to fall back from.
+    assert _distance_grid_kwargs(["--continent-obstacles", "mine.gpml"], {})[
+        "continent_obstacle_features"
+    ] == ["mine.gpml"]
+
+
+def test_contradictory_obstacle_flags_are_refused():
+    """Supplying files and then switching routing off used to discard them in silence."""
+    with pytest.raises(Exception, match="contradict each other"):
+        _distance_grid_kwargs(
+            ["--continent-obstacles", "mine.gpml", "--no-route-around-continents"], {}
+        )
+
+
+def test_a_failed_coastlines_lookup_does_not_abort_a_default_run():
+    """Routing on by default means every -m/--model run now reaches for Coastlines.
+
+    That lookup can go to the network, and a failure there should not take down a run that
+    never asked to route in the first place.
+    """
+    layers = {"Coastlines": ConnectionError("network is down")}
+    assert _distance_grid_kwargs([], layers) == {}
+
+
+def test_a_failed_coastlines_lookup_does_abort_when_routing_was_asked_for():
+    layers = {"Coastlines": ConnectionError("network is down")}
+    with pytest.raises(ConnectionError):
+        _distance_grid_kwargs(["--route-around-continents"], layers)
+
+
 def test_generate_distance_grids_parser_defaults():
     parser = _build_subparser(sediment_thickness_cmd.add_parser)
     args = parser.parse_args(["generate-distance-grids", "outdir"])
@@ -1876,7 +1957,9 @@ def test_generate_distance_grids_parser_defaults():
     assert args.topology_filenames == []
     assert args.max_reconstruction_time is None
     assert args.clamp_distance_km == 3000.0
-    assert args.route_around_continents is False
+    # Unset, meaning on-but-willing-to-fall-back: routing around continents is the
+    # original workflow's default, and --no-route-around-continents turns it off.
+    assert args.route_around_continents is None
     assert args.continent_obstacle_filenames == []
     assert args.shortest_path_grid_depth == 6
     assert callable(args.func)

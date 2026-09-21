@@ -17,11 +17,22 @@
 
 """Dynamically-contoured passive margins through time.
 
-A port of EarthByte's `continent-contouring
-<https://github.com/EarthByte/continent-contouring>`__ ``create_passive_margins.py`` (the one
-use case that repository contains -- see `gplately#446
-<https://github.com/GPlates/gplately/issues/446>`__), built entirely on gplately's own
-continent-contouring engine (:class:`gplately.ptt.continent_contours.ContinentContouring`).
+A port of `simple_paleobathymetry
+<https://github.com/EarthByte/simple_paleobathymetry>`__'s
+``generate_continent_contours.py``, built entirely on gplately's own continent-contouring
+engine (:class:`gplately.ptt.continent_contours.ContinentContouring`). See `gplately#446
+<https://github.com/GPlates/gplately/issues/446>`__.
+
+The same use case exists in EarthByte's `continent-contouring
+<https://github.com/EarthByte/continent-contouring>`__ as ``create_passive_margins.py``, but
+this is not a port of that: it follows the *simple_paleobathymetry* version, which splits a
+contour by walking ``get_points()`` where ``create_passive_margins.py`` walks
+``get_segments()``, and which had already had bug fixes applied that the other had not. The
+parameter defaults here likewise follow the `paleobathymetry-workflow
+<https://github.com/EarthByte/paleobathymetry-workflow>`__ set that
+*simple_paleobathymetry* adopted (0.25 degree spacing, no area threshold, an
+800,000 km2 exclusion threshold, no buffer, 500 km subduction distance) -- they are
+defensible against that set, and differ from ``create_passive_margins.py``'s.
 
 For each requested time, reconstructed continental polygons are contoured into continents
 (:class:`gplately.ptt.continent_contours.ContouredContinent` -- see that engine); each contour
@@ -111,6 +122,14 @@ def passive_margin_polylines(
     # arbitrary start/end point would be cut into two separate output polylines instead of
     # one. Avoid this by rotating the ring to start right after an active edge (if any),
     # so the array boundary never falls in the middle of a passive stretch.
+    #
+    # This is a deliberate deviation, not a port: no ancestor does it -- neither
+    # simple_paleobathymetry's generate_continent_contours.py nor continent-contouring's
+    # create_passive_margins.py rotates the ring. It is an improvement, in that where a
+    # passive stretch straddles the seam they emit two polylines for what is one margin,
+    # but it means feature counts and individual polyline lengths differ from those
+    # workflows' reference passive_margin_features.gpmlz. The union of arcs is unchanged,
+    # so any comparison against a reference should be made on that rather than on counts.
     if points[0] == points[-1] and len(points) > 2:
         unique_points = points[:-1]
         n = len(unique_points)
@@ -231,6 +250,11 @@ def generate_passive_margins(
         topological_features
     ).get_features()
 
+    # Omitted rather than passed as None when unset, and it has to stay that way: the
+    # engine reads an explicit None as *zero* separation
+    # (gplately.ptt.continent_contours.ContinentContouring), which merges nothing and is a
+    # different result from its own default. "Simplifying" this into an unconditional
+    # keyword argument would change the output without changing anything visible here.
     contourer_kwargs = {}
     if separation_distance_threshold_radians is not None:
         contourer_kwargs["continent_separation_distance_threshold_radians"] = (

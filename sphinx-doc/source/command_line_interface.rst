@@ -179,11 +179,16 @@ subducted.
 
    $ gplately pb output -m muller2025 --proximity-features cobs.gpml -e 0 -s 10
 
-👉 also route distances around continents instead of a straight line, and merge in pyBacktrack's present-day paleobathymetry
+Distances route around continents by default, as in the original workflow, taking the
+continent geometries from the plate model's Coastlines layer (or from
+``--continent-obstacles``). Pass ``--no-route-around-continents`` for straight-line
+great-circle distances, which are much faster but are not what the workflow computes.
+
+👉 straight-line distances, and merge in pyBacktrack's present-day paleobathymetry
 
 .. code:: console
 
-   $ gplately pb output -m muller2025 --proximity-features cobs.gpml -e 0 -s 10 --route-around-continents --pybacktrack
+   $ gplately pb output -m muller2025 --proximity-features cobs.gpml -e 0 -s 10 --no-route-around-continents --pybacktrack
 
 .. note::
 
@@ -211,11 +216,11 @@ workflow, see ``gplately paleobathymetry``).
 
    $ gplately gdg output -m muller2025 --proximity-features cobs.gpml -e 0 -s 10
 
-👉 route distances around continents instead of a straight line
+👉 straight-line distances instead of routing around continents (routing is the default)
 
 .. code:: console
 
-   $ gplately gdg output -m muller2025 --proximity-features cobs.gpml -e 0 -s 10 --route-around-continents
+   $ gplately gdg output -m muller2025 --proximity-features cobs.gpml -e 0 -s 10 --no-route-around-continents
 
 generate-sediment-grids (gsg)
 ------------------------------

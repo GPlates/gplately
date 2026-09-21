@@ -447,7 +447,12 @@ def simple_paleobathymetry(
         :func:`gplately.generate_sediment_thickness_grids`), e.g. to
         override the default Dutkiewicz et al. (2017) constants.
     continent_obstacle_features, plate_boundary_obstacle_feature_types, shortest_path_grid_subdivision_depth
-        Passed to :func:`gplately.generate_distance_grids` (Step 2); if `continent_obstacle_features`
+        Passed to :func:`gplately.generate_distance_grids` (Step 2). Note that distances go
+        in a straight line unless `continent_obstacle_features` is given, whereas the
+        ``gplately paleobathymetry`` command routes around continents by default (as the
+        original workflow does) by sourcing them from the plate model -- which this function,
+        taking features rather than a model, has no way to do.
+        If `continent_obstacle_features`
         is given, distances are routed *around* continents instead of a great-circle straight
         line -- see that function's docstring.
     pybacktrack : bool, default: False

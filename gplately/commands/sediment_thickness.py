@@ -119,20 +119,52 @@ def _resolve_distance_grid_kwargs(args, plate_model):
     (or gplately.grids.paleobathymetry.simple_paleobathymetry()) -- empty if obstacle routing
     was not requested.
     """
-    if not (args.route_around_continents or args.continent_obstacle_filenames):
+    if args.continent_obstacle_filenames and args.route_around_continents is False:
+        raise Exception(
+            "--continent-obstacles and --no-route-around-continents contradict each other: "
+            "the files would be ignored. Drop one."
+        )
+    if args.route_around_continents is False:
         return {}
 
-    continent_obstacle_files = args.continent_obstacle_filenames or (
-        plate_model.get_layer("Coastlines", return_none_if_not_exist=True)
-        if plate_model
-        else None
-    )
+    continent_obstacle_files = args.continent_obstacle_filenames
+    if not continent_obstacle_files and plate_model:
+        try:
+            continent_obstacle_files = plate_model.get_layer(
+                "Coastlines", return_none_if_not_exist=True
+            )
+        except Exception as exc:
+            # This is reached on every -m/--model run now that routing is on by default, and
+            # obtaining the layer can go to the network. A failure here should not take down
+            # a run that would otherwise have worked -- unless routing was asked for.
+            if args.route_around_continents is True:
+                raise
+            _logger.warning(
+                "Could not obtain the plate model's Coastlines layer (%s). Falling back to "
+                "straight-line great-circle distances; pass --continent-obstacles to route "
+                "around continents, or --no-route-around-continents to silence this.",
+                exc,
+            )
+            return {}
+
     if not continent_obstacle_files:
-        raise Exception(
-            "--route-around-continents (or --continent-obstacles) requires continent/coastline "
-            "files: use --continent-obstacles, or -m/--model's plate model must provide a "
-            "Coastlines layer."
+        # Only reachable without --continent-obstacles: files given are always used.
+        if args.route_around_continents is True:
+            raise Exception(
+                "--route-around-continents requires continent/coastline files: use "
+                "--continent-obstacles, or -m/--model's plate model must provide a "
+                "Coastlines layer."
+            )
+        # Routing is on by default, but a plate model without coastlines cannot do it. Fall
+        # back rather than refusing to run at all, and say so -- the distances will differ.
+        _logger.warning(
+            "Routing around continents is on by default, but no continent/coastline files "
+            "are available (no --continent-obstacles, and -m/--model has no Coastlines "
+            "layer). Falling back to straight-line great-circle distances, which will differ "
+            "from the original workflow's output. Pass --no-route-around-continents to "
+            "silence this."
         )
+        return {}
     _logger.info(f"Using continent obstacle files: {continent_obstacle_files}")
 
     return dict(
@@ -373,11 +405,15 @@ def _add_distance_arguments(cmd):
     )
     cmd.add_argument(
         "--route-around-continents",
-        action="store_true",
+        action=argparse.BooleanOptionalAction,
+        # None means "not specified": on, but willing to fall back if the plate model has no
+        # coastlines. An explicit --route-around-continents is not willing to fall back.
+        default=None,
         dest="route_around_continents",
-        help="route distances around continents instead of a great-circle straight line "
-        "(auto-resolves --continent-obstacles from -m/--model's Coastlines layer if not "
-        "given explicitly)",
+        help="route distances around continents instead of a great-circle straight line, as "
+        "the original workflow does; on by default. Continent files come from "
+        "--continent-obstacles, or from -m/--model's Coastlines layer. Pass "
+        "--no-route-around-continents for straight-line distances",
     )
     cmd.add_argument(
         "--continent-obstacles",
@@ -385,7 +421,9 @@ def _add_distance_arguments(cmd):
         nargs="+",
         dest="continent_obstacle_filenames",
         default=[],
-        help="continent/coastline file(s) to route around; implies --route-around-continents",
+        help="continent/coastline file(s) to route around. Routing is on by default, so "
+        "this chooses where the files come from rather than switching anything on, and it "
+        "cannot be combined with --no-route-around-continents",
     )
     cmd.add_argument(
         "--shortest-path-grid-depth",
