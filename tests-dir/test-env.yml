@@ -7,3 +7,4 @@ dependencies:
   - pytest
   - pyyaml
   - pygmt
+  - pybacktrack
