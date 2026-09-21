@@ -17,6 +17,7 @@
 
 import argparse
 import logging
+import os
 import tempfile
 
 import pygplates
@@ -34,6 +35,19 @@ _logger = logging.getLogger("gplately")
 
 
 def _run_paleobathymetry(args):
+    # The merged static-polygons file below, if one is needed, is written inside this and
+    # goes away with it. It used to be a NamedTemporaryFile(delete=False), which nothing
+    # ever deleted -- one abandoned .gpmlz in the system temp directory per run.
+    # ignore_cleanup_errors: the grids are already written by the time this unwinds, so a
+    # file still held open here (Windows, in particular) must not turn a finished run into a
+    # traceback.
+    with tempfile.TemporaryDirectory(
+        prefix="gplately-paleobathymetry-", ignore_cleanup_errors=True
+    ) as scratch_dir:
+        _run_paleobathymetry_in(args, scratch_dir)
+
+
+def _run_paleobathymetry_in(args, scratch_dir):
     age_grid_filenames_and_times, plate_model = _resolve_age_grid_filenames_and_times(
         args
     )
@@ -66,14 +80,15 @@ def _run_paleobathymetry(args):
                 merged = pygplates.FeatureCollection()
                 for filename in static_polygon_filename:
                     merged.add(pygplates.FeatureCollection(filename))
-                merged_file = tempfile.NamedTemporaryFile(suffix=".gpmlz", delete=False)
-                merged_file.close()
-                merged.write(merged_file.name)
+                merged_filename = os.path.join(
+                    scratch_dir, "merged_static_polygons.gpmlz"
+                )
+                merged.write(merged_filename)
                 _logger.info(
                     f"Merged {len(static_polygon_filename)} StaticPolygons files into "
-                    f"{merged_file.name} for --pybacktrack"
+                    f"{merged_filename} for --pybacktrack"
                 )
-                static_polygon_filename = merged_file.name
+                static_polygon_filename = merged_filename
             else:
                 static_polygon_filename = static_polygon_filename[0]
         kwargs.update(
@@ -116,8 +131,10 @@ def add_parser(parser):
             "paleobathymetry (Step 4). Optionally (--pybacktrack) also merge in pyBacktrack's "
             "present-day paleobathymetry (Step 5) to also cover submerged continental crust "
             "and crust that has since subducted. A port of EarthByte's simple_paleobathymetry "
-            "workflow; see gplately.grids.paleobathymetry for the Python API and its docstring "
-            "for what is not yet included (continent-obstacle routing in Step 2).\n\n"
+            "workflow; see gplately.grids.paleobathymetry for the Python API. Step 2 "
+            "routes distances around continents by default, as the original workflow "
+            "does; pass --no-route-around-continents for straight-line great-circle "
+            "distances.\n\n"
             "Example usage:\n"
             "    gplately pb output_dir -m muller2025 --proximity-features cobs.gpml -e 0 -s 10\n"
         ),

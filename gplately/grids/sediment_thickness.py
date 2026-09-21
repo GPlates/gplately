@@ -392,7 +392,18 @@ def generate_distance_grids(
         If given, restrict `proximity_features` to these qualified feature type names (e.g.
         ``["gpml:PassiveContinentalBoundary"]``) before measuring distance.
     distance_threshold_radians : float, optional
-        Reject/ignore proximities further than this (radians). ``None`` means no threshold.
+        Stop looking for a proximity feature beyond this distance (radians). ``None`` (the
+        default) means no limit.
+
+        Note what this does *not* do: a point with no proximity feature within the threshold
+        is not dropped from its own lifetime mean. It is recorded at ``math.pi`` radians --
+        half the Earth's circumference, about 20,015 km -- and averaged in like any other
+        sample, so setting a threshold pulls the affected points' means towards that maximum
+        rather than leaving them out. The same substitution is made for a point that cannot
+        be reached at all when routing around continent obstacles, because the underlying
+        lookup reports both cases the same way. Whether that is the intended behaviour is
+        `gplately#465 <https://github.com/GPlates/gplately/issues/465>`__; this docstring
+        describes what the code does today.
     continent_obstacle_features : any argument accepted by pygplates.FeaturesFunctionArgument, optional
         If given, distances are routed *around* these (reconstructed) obstacle geometries
         (typically continent/coastline polygons) instead of being a great-circle straight line

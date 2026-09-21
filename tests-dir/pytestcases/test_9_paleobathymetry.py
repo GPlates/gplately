@@ -86,6 +86,30 @@ def test_age_to_basement_depth_shape_and_sign(model):
     assert np.all(np.diff(depth[1:]) < 0)
 
 
+def test_the_vendored_age_depth_table_ships_with_its_attribution():
+    """The table has no upstream licence, so its provenance must not get separated from it.
+
+    This checks both are present and readable through the package's own resource path. It
+    does not prove they are packaged: under an editable or source install
+    ``importlib.resources.files("gplately")`` resolves to the in-tree directory, so a
+    regression in pyproject's ``data/*.*`` pattern would still pass here. Verifying that
+    needs the built wheel, which is out of scope for this suite.
+    """
+    from importlib.resources import files
+
+    data = files("gplately") / "data"
+    table = data / "RHCW18_age_depth.dat"
+    readme = data / "RHCW18_age_depth.README.md"
+
+    assert table.is_file(), "the RHCW18 age-depth table is not installed"
+    assert (
+        readme.is_file()
+    ), "the RHCW18 attribution note is not installed beside the table"
+
+    text = readme.read_text(encoding="utf-8")
+    assert "Richards" in text and "no licence" in text.lower()
+
+
 def test_age_to_basement_depth_unknown_model():
     with pytest.raises(ValueError):
         age_to_basement_depth(np.array([10.0]), model="not-a-model")
