@@ -421,7 +421,9 @@ def simple_paleobathymetry(
         Passed to :func:`age_to_basement_depth` as `model`.
     richards_table_filename : str, optional
         Passed to :func:`age_to_basement_depth` (only used when `age_depth_model` is
-        ``"rhcw18"``).
+        ``"rhcw18"``). Cannot be combined with `pybacktrack`: it would change the age-depth
+        relationship for Steps 1-4 only, leaving a step change where Step 5's output is
+        merged in.
     output_directory : str, optional
         If given, intermediate distance/sediment-thickness grids and the final paleobathymetry
         grids (``paleobathymetry_<time>Ma.nc``) are all written under this directory (in
@@ -448,7 +450,8 @@ def simple_paleobathymetry(
         line -- see that function's docstring.
     pybacktrack : bool, default: False
         If true, additionally run Step 5 (requires the optional `pybacktrack` package, plus
-        `output_directory`, `static_polygon_filename` and `present_day_age_grid_filename`).
+        `output_directory`, `static_polygon_filename` and `present_day_age_grid_filename`,
+        and an `age_depth_model` that pyBacktrack shares -- ``"gdh1"`` or ``"rhcw18"``).
         pyBacktrack generates its output at a single increment rather than at a list of
         times, so that increment is taken from the spacing of the times in
         `age_grid_filenames_and_times`, which must therefore be evenly spaced.
@@ -525,6 +528,12 @@ def simple_paleobathymetry(
                 "already-constructed pygplates.RotationModel -- pyBacktrack builds its own "
                 "rotation model internally and needs the raw file path(s)."
             )
+        # Imported here for the same reason the Step 5 call below does: pybacktrack is an
+        # optional dependency. This function does not need it, only the model name.
+        from .pybacktrack_paleobathymetry import check_age_depth_model_supported
+
+        check_age_depth_model_supported(age_depth_model, richards_table_filename)
+
         # pyBacktrack generates output at one increment between two times, rather than at a
         # list of times, so the times it is asked for must be describable that way.
         pybacktrack_time_increment = uniform_time_step(
