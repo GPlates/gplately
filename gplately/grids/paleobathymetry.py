@@ -54,6 +54,7 @@ from ._utils import (
     check_times_are_distinct_in_filenames,
     format_time_in_filename,
     resolve_decimal_places_in_time,
+    uniform_time_step,
 )
 
 __all__ = [
@@ -445,6 +446,9 @@ def simple_paleobathymetry(
     pybacktrack : bool, default: False
         If true, additionally run Step 5 (requires the optional `pybacktrack` package, plus
         `output_directory`, `static_polygon_filename` and `present_day_age_grid_filename`).
+        pyBacktrack generates its output at a single increment rather than at a list of
+        times, so that increment is taken from the spacing of the times in
+        `age_grid_filenames_and_times`, which must therefore be evenly spaced.
     static_polygon_filename : str, optional
         Static polygons for Step 5 (pyBacktrack uses these to assign plate IDs); required if
         `pybacktrack` is true.
@@ -494,13 +498,41 @@ def simple_paleobathymetry(
                 plate_boundary_obstacle_feature_types
             )
 
+    age_grid_filenames_and_times = list(age_grid_filenames_and_times)
+
+    # Every Step 5 prerequisite is checked here rather than at the Step 5 call at the end
+    # of this function, so that a request Step 5 cannot satisfy is rejected before Steps
+    # 1-4 spend hours producing grids it will not be able to merge.
+    pybacktrack_time_increment = None
+    if pybacktrack:
+        if not output_directory:
+            raise ValueError(
+                "pybacktrack=True requires output_directory (Step 5 merges the Step 4 "
+                "grids by reading them back off disk)."
+            )
+        if not static_polygon_filename:
+            raise ValueError("pybacktrack=True requires static_polygon_filename.")
+        if not present_day_age_grid_filename:
+            raise ValueError(
+                "pybacktrack=True requires present_day_age_grid_filename (the age grid at 0 Ma)."
+            )
+        if isinstance(rotation_model, pygplates.RotationModel):
+            raise TypeError(
+                "pybacktrack=True requires rotation_model to be filename(s), not an "
+                "already-constructed pygplates.RotationModel -- pyBacktrack builds its own "
+                "rotation model internally and needs the raw file path(s)."
+            )
+        # pyBacktrack generates output at one increment between two times, rather than at a
+        # list of times, so the times it is asked for must be describable that way.
+        pybacktrack_time_increment = uniform_time_step(
+            [time for _, time in age_grid_filenames_and_times]
+        )
+
     # Forward the caller's value unresolved to each step, so that when it is None each
     # output keeps the default that reproduces its own original workflow -- in particular
     # the distance grids carry one decimal place of time where these grids carry none.
     # Resolving it here instead would rename the distance grids that the
     # 'generate-sediment-grids' subcommand later goes looking for.
-    age_grid_filenames_and_times = list(age_grid_filenames_and_times)
-
     requested_decimal_places_in_time = decimal_places_in_time
     decimal_places_in_time = resolve_decimal_places_in_time(
         decimal_places_in_time, DEFAULT_DECIMAL_PLACES_IN_TIME
@@ -583,24 +615,6 @@ def simple_paleobathymetry(
             write_netcdf_grid(output_path, paleobathymetry_m)
 
     if pybacktrack:
-        if not output_directory:
-            raise ValueError(
-                "pybacktrack=True requires output_directory (Step 5 merges the Step 4 "
-                "grids by reading them back off disk)."
-            )
-        if not static_polygon_filename:
-            raise ValueError("pybacktrack=True requires static_polygon_filename.")
-        if not present_day_age_grid_filename:
-            raise ValueError(
-                "pybacktrack=True requires present_day_age_grid_filename (the age grid at 0 Ma)."
-            )
-        if isinstance(rotation_model, pygplates.RotationModel):
-            raise TypeError(
-                "pybacktrack=True requires rotation_model to be filename(s), not an "
-                "already-constructed pygplates.RotationModel -- pyBacktrack builds its own "
-                "rotation model internally and needs the raw file path(s)."
-            )
-
         # Imported here, not at module level: pybacktrack is an optional dependency, and this
         # module (gplately.grids.pybacktrack_paleobathymetry) only imports it lazily too.
         from .pybacktrack_paleobathymetry import merge_pybacktrack_paleobathymetry
@@ -624,7 +638,12 @@ def simple_paleobathymetry(
             grid_spacing_degrees=grid_spacing,
             oldest_time=max(times),
             youngest_time=min(times),
-            time_increment=time_increment,
+            # pyBacktrack's time_increment is the increment its *output* is generated at,
+            # between youngest_time and oldest_time -- not the increment Step 2 steps the
+            # reconstruction by. Passing the latter makes pyBacktrack generate a different
+            # set of times than Steps 1-4 did, and then look for Step 4 grids at times that
+            # were never written.
+            time_increment=pybacktrack_time_increment,
             age_depth_model=age_depth_model,
             anchor_plate_id=anchor_plate_id,
             decimal_places_in_time=requested_decimal_places_in_time,

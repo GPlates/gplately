@@ -61,7 +61,9 @@ from ._grids import read_netcdf_grid, sample_grid, write_netcdf_grid
 from ._utils import (
     DEFAULT_DECIMAL_PLACES_IN_TIME,
     DEFAULT_DISTANCE_GRID_DECIMAL_PLACES_IN_TIME,
+    check_time_increment_covers_times,
     check_times_are_distinct_in_filenames,
+    time_index_at_or_after,
     distance_grid_filename,
     format_time_in_filename,
     resolve_decimal_places_in_time,
@@ -153,7 +155,7 @@ def _accumulate_mean_distance_for_age_grid(
     ]
     current_indices = np.asarray(flat_indices, dtype="int64")
 
-    time_index = int(math.ceil(age_grid_time / time_increment))
+    time_index = time_index_at_or_after(age_grid_time, time_increment)
     while current_points:
         time = time_index * time_increment
         if max_reconstruction_time is not None and time > max_reconstruction_time:
@@ -322,7 +324,12 @@ def generate_distance_grids(
         Spacing (degrees) of the point grid that distances are computed/output on.
     time_increment : float, default: 1
         Time increment (Myr) used both for stepping the backward reconstruction and for
-        sampling distance along each point's lifetime.
+        sampling distance along each point's lifetime. This is independent of the spacing of
+        the times in `age_grid_filenames_and_times`: a coarser set of output times does not
+        mean coarser sampling. Every one of those times must however be a multiple of this
+        increment, because each age grid's walk starts at its own time snapped up onto the
+        shared grid of multiples -- a time that does not land on that grid would be
+        reconstructed from the wrong starting time. Must be positive.
     max_reconstruction_time : float, optional
         Do not reconstruct any point older than this (Ma). ``None`` means points are
         reconstructed back to their formation age regardless of how old that is (limited only
@@ -373,7 +380,29 @@ def generate_distance_grids(
         ``(lon, lat, grid)`` tuple: 1-D longitude/latitude coordinate arrays and a 2-D
         ``(lat, lon)`` array of lifetime-mean distance in kilometres (NaN where the age grid
         has no data).
+
+    Raises
+    ------
+    ValueError
+        If `time_increment` is not positive, if some time in `age_grid_filenames_and_times`
+        is not a multiple of it, or if two of those times would be written to the same file.
     """
+    # Everything cheap is validated up front, before a single file is opened or a single
+    # point reconstructed: these are the mistakes that would otherwise surface as a wrong
+    # number or a missing grid at the end of a long run.
+    age_grid_filenames_and_times = list(age_grid_filenames_and_times)
+    age_grid_times = [time for _, time in age_grid_filenames_and_times]
+    check_time_increment_covers_times(age_grid_times, time_increment)
+    decimal_places_in_time = resolve_decimal_places_in_time(
+        decimal_places_in_time, DEFAULT_DISTANCE_GRID_DECIMAL_PLACES_IN_TIME
+    )
+    if output_directory:
+        check_times_are_distinct_in_filenames(
+            age_grid_times,
+            decimal_places_in_time,
+            "mean_distance_{:.1f}d_{{}}.nc".format(grid_spacing),
+        )
+
     rotation_model = pygplates.RotationModel(
         rotation_model, default_anchor_plate_id=anchor_plate_id
     )
@@ -412,23 +441,10 @@ def generate_distance_grids(
             for feature_type in (plate_boundary_obstacle_feature_types or [])
         ]
 
-    # Materialised because the filename check below walks it before the main loop does.
-    age_grid_filenames_and_times = list(age_grid_filenames_and_times)
-
     lon_1d, lat_1d, lon_flat, lat_flat = generate_input_points_grid(grid_spacing)
     num_output_points = lon_flat.size
 
-    decimal_places_in_time = resolve_decimal_places_in_time(
-        decimal_places_in_time, DEFAULT_DISTANCE_GRID_DECIMAL_PLACES_IN_TIME
-    )
     if output_directory:
-        # Check before computing anything: a collision here would silently discard a grid
-        # that had already cost a full reconstruction to produce.
-        check_times_are_distinct_in_filenames(
-            [time for _, time in age_grid_filenames_and_times],
-            decimal_places_in_time,
-            "mean_distance_{:.1f}d_{{}}.nc".format(grid_spacing),
-        )
         os.makedirs(output_directory, exist_ok=True)
 
     results = {}

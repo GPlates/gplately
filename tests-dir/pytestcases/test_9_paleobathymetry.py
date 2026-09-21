@@ -18,9 +18,12 @@ from gplately.commands import sediment_thickness as sediment_thickness_cmd
 from gplately.grids._utils import (
     DEFAULT_DECIMAL_PLACES_IN_TIME,
     DEFAULT_DISTANCE_GRID_DECIMAL_PLACES_IN_TIME,
+    check_time_increment_covers_times,
     distance_grid_filename,
     format_time_in_filename,
     resolve_decimal_places_in_time,
+    time_index_at_or_after,
+    uniform_time_step,
 )
 from gplately.grids.continent_contouring import (
     generate_passive_margins,
@@ -425,6 +428,232 @@ def test_descending_latitude_age_grid_stays_descending(latitude_ordered_age_grid
     # The same field, just stored the other way up.
     np.testing.assert_array_equal(lat_down, lat_up[::-1])
     np.testing.assert_array_equal(age_down, age_up[::-1, :])
+
+
+# =============================================================================
+# Output time step vs reconstruction time increment
+# =============================================================================
+
+
+def test_uniform_time_step_recovers_the_output_spacing():
+    assert uniform_time_step([0.0, 10.0, 20.0]) == 10.0
+    assert uniform_time_step([0.0, 0.5, 1.0]) == 0.5
+    assert uniform_time_step([20.0, 0.0, 10.0]) == 10.0  # order must not matter
+    assert uniform_time_step([5.0]) == 1.0  # one time: any positive increment will do
+
+
+def test_uniform_time_step_rejects_uneven_times():
+    """pyBacktrack takes one increment, so uneven times cannot be honoured silently."""
+    with pytest.raises(ValueError, match="evenly spaced"):
+        uniform_time_step([0.0, 10.0, 25.0])
+
+
+def test_time_increment_must_divide_the_output_times():
+    """Each age grid's walk starts at its time snapped up to a multiple of the increment.
+
+    That snapping is what puts every age grid on one shared grid of times, so it stays --
+    but a time that is not a multiple of the increment is then reconstructed from the wrong
+    starting time, which has to be refused rather than silently tolerated.
+    """
+    check_time_increment_covers_times([0.0, 1.0, 2.0], 1.0)
+    check_time_increment_covers_times([0.0, 0.5, 1.0], 0.5)
+    check_time_increment_covers_times([0.0, 10.0, 20.0], 2.0)
+
+    with pytest.raises(ValueError, match="not a multiple of"):
+        check_time_increment_covers_times([0.0, 0.5, 1.0], 1.0)
+
+
+@pytest.mark.parametrize("bad", [0, -1.0])
+def test_time_increment_must_be_positive(bad):
+    """0 used to surface as a bare ZeroDivisionError, and a negative walked backwards."""
+    with pytest.raises(ValueError, match="must be positive"):
+        check_time_increment_covers_times([0.0, 1.0], bad)
+
+
+def test_times_from_a_fractional_step_snap_to_themselves():
+    """Accumulated float error must not push a valid time up onto the next increment.
+
+    The times a fractional step produces are not exact: 0 + 3 * 0.1 is
+    0.30000000000000004, and 0.30000000000000004 / 0.1 is 3.0000000000000004, which a plain
+    ceil() sends to 4 -- reconstructing a 0.3 Ma grid from 0.4 Ma. The validator and the
+    snap share one rule so that every time the validator accepts maps to itself.
+    """
+    times = [i * 0.1 for i in range(11)]
+    assert repr(times[3]) == "0.30000000000000004"  # the case this guards
+
+    check_time_increment_covers_times(times, 0.1)
+    for time in times:
+        snapped = time_index_at_or_after(time, 0.1) * 0.1
+        assert math.isclose(snapped, time, rel_tol=1e-9, abs_tol=1e-9)
+
+    # A time genuinely off the grid still snaps forward, as it must.
+    assert time_index_at_or_after(0.35, 0.1) == 4
+
+
+@pytest.mark.parametrize(
+    "missing",
+    ["output_directory", "static_polygon_filename", "present_day_age_grid_filename"],
+)
+def test_step_5_prerequisites_checked_before_steps_1_to_4(
+    synthetic_age_grid_filename, missing
+):
+    """These used to be checked at the end, after the whole pipeline had already run."""
+    kwargs = dict(
+        rotation_model="does-not-exist.rot",
+        proximity_features="does-not-exist.gpml",
+        topological_features="does-not-exist.gpml",
+        age_grid_filenames_and_times=[(synthetic_age_grid_filename, 0.0)],
+        output_directory="unused",
+        pybacktrack=True,
+        static_polygon_filename="does-not-exist.gpml",
+        present_day_age_grid_filename=synthetic_age_grid_filename,
+    )
+    kwargs[missing] = None
+
+    with pytest.raises(ValueError, match=missing):
+        simple_paleobathymetry(**kwargs)
+
+
+def test_distance_grids_validate_before_opening_any_file():
+    """The check has to precede the rotation/topology file loading, not follow it.
+
+    Every filename here is nonexistent, so anything other than the ValueError below means
+    the validation happened too late to be useful.
+    """
+    with pytest.raises(ValueError, match="not a multiple of"):
+        generate_distance_grids(
+            rotation_model="does-not-exist.rot",
+            proximity_features="does-not-exist.gpml",
+            topological_features="does-not-exist.gpml",
+            age_grid_filenames_and_times=[("does-not-exist.nc", 0.5)],
+            time_increment=1,
+        )
+
+
+def test_uneven_times_rejected_before_steps_1_to_4_run(synthetic_age_grid_filename):
+    """Step 5 cannot express uneven times, and saying so afterwards is no use."""
+    with pytest.raises(ValueError, match="evenly spaced"):
+        simple_paleobathymetry(
+            rotation_model="does-not-exist.rot",
+            proximity_features="does-not-exist.gpml",
+            topological_features="does-not-exist.gpml",
+            age_grid_filenames_and_times=[
+                (synthetic_age_grid_filename, time) for time in (0.0, 10.0, 25.0)
+            ],
+            output_directory="unused",
+            pybacktrack=True,
+            static_polygon_filename="does-not-exist.gpml",
+            present_day_age_grid_filename=synthetic_age_grid_filename,
+        )
+
+
+def test_pybacktrack_gets_the_output_step_not_the_reconstruction_increment(
+    monkeypatch, synthetic_age_grid_filename, tmp_path
+):
+    """Step 5's increment is the spacing of the grids Steps 1-4 wrote.
+
+    It used to be handed Step 2's reconstruction increment. With output every 10 Myr and
+    the default 1 Myr reconstruction increment, pyBacktrack generated 0, 1, 2 ... 20 Ma and
+    went looking for paleobathymetry_1Ma.nc -- files Step 4 never wrote.
+    """
+    from gplately.grids import pybacktrack_paleobathymetry as pybacktrack_module
+    from gplately.grids import sediment_thickness as sediment_thickness_module
+
+    lon = np.linspace(-180.0, 180.0, 37)
+    lat = np.linspace(-90.0, 90.0, 19)
+    times = [0.0, 10.0, 20.0]
+    captured = {}
+
+    monkeypatch.setattr(
+        sediment_thickness_module,
+        "generate_distance_grids",
+        lambda *, age_grid_filenames_and_times, **kwargs: {
+            time: (lon, lat, np.full((lat.size, lon.size), 500.0))
+            for _, time in age_grid_filenames_and_times
+        },
+    )
+    monkeypatch.setattr(
+        sediment_thickness_module,
+        "generate_sediment_thickness_grids",
+        lambda age_grid_filenames_and_times, distance_grids, **kwargs: {
+            time: (lon, lat, np.full((lat.size, lon.size), 100.0))
+            for _, time in age_grid_filenames_and_times
+        },
+    )
+    monkeypatch.setattr(
+        pybacktrack_module,
+        "merge_pybacktrack_paleobathymetry",
+        lambda **kwargs: captured.update(kwargs),
+    )
+
+    simple_paleobathymetry(
+        rotation_model="rotations.rot",
+        proximity_features="cobs.gpml",
+        topological_features="topologies.gpml",
+        age_grid_filenames_and_times=[
+            (synthetic_age_grid_filename, time) for time in times
+        ],
+        time_increment=1,
+        output_directory=str(tmp_path),
+        pybacktrack=True,
+        static_polygon_filename="static_polygons.gpml",
+        present_day_age_grid_filename=synthetic_age_grid_filename,
+    )
+
+    assert captured["time_increment"] == 10.0
+    assert captured["oldest_time"] == 20.0
+    assert captured["youngest_time"] == 0.0
+
+
+@pytest.mark.parametrize(
+    "add_parser, argv",
+    [
+        (paleobathymetry_cmd.add_parser, ["paleobathymetry", "outdir"]),
+        (sediment_thickness_cmd.add_parser, ["generate-distance-grids", "outdir"]),
+    ],
+)
+def test_time_step_and_time_increment_are_independent(add_parser, argv):
+    """--time-step used to set both, so a coarse output step coarsened the sampling too."""
+    parser = _build_subparser(add_parser)
+
+    defaults = parser.parse_args(argv + ["--time-step", "10"])
+    assert defaults.time_step == 10
+    assert defaults.time_increment == 1
+
+    both = parser.parse_args(argv + ["--time-step", "10", "--time-increment", "0.5"])
+    assert both.time_step == 10
+    assert both.time_increment == 0.5
+
+
+def test_distance_grids_cli_passes_the_reconstruction_increment(monkeypatch, tmp_path):
+    """The CLI must hand generate_distance_grids() --time-increment, not --time-step."""
+    captured = {}
+    monkeypatch.setattr(
+        sediment_thickness_cmd,
+        "_resolve_age_grid_filenames_and_times",
+        lambda args: ([("unused.nc", 0.0)], None),
+    )
+    monkeypatch.setattr(
+        sediment_thickness_cmd,
+        "_resolve_rotation_topology_proximity_files",
+        lambda args, plate_model: ("rot", "topo", "cobs"),
+    )
+    monkeypatch.setattr(
+        sediment_thickness_cmd, "_resolve_distance_grid_kwargs", lambda args, model: {}
+    )
+    monkeypatch.setattr(
+        sediment_thickness_cmd,
+        "generate_distance_grids",
+        lambda **kwargs: captured.update(kwargs),
+    )
+
+    parser = _build_subparser(sediment_thickness_cmd.add_parser)
+    args = parser.parse_args(
+        ["generate-distance-grids", str(tmp_path), "--time-step", "10"]
+    )
+    sediment_thickness_cmd._run_generate_distance_grids(args)
+
+    assert captured["time_increment"] == 1
 
 
 # =============================================================================

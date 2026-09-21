@@ -89,7 +89,7 @@ def _run_paleobathymetry(args):
         age_grid_filenames_and_times=age_grid_filenames_and_times,
         age_depth_model=args.age_depth_model,
         grid_spacing=args.grid_spacing,
-        time_increment=args.time_step,
+        time_increment=args.time_increment,
         max_reconstruction_time=args.max_reconstruction_time,
         anchor_plate_id=args.anchor_plate_id or 0,
         clamp_distance_km=args.clamp_distance_km,

@@ -105,7 +105,11 @@ def merge_pybacktrack_paleobathymetry(
     oldest_time, youngest_time : float
         Time range (Ma) to compute, inclusive.
     time_increment : float, default: 1
-        Should match the `time_increment`/`step` used for Steps 1-4.
+        The increment (Myr) that pyBacktrack generates its output at, between `youngest_time`
+        and `oldest_time`. This is the *output* time step -- the spacing of the times Steps
+        1-4 produced grids for -- and not the increment Step 2 stepped its reconstruction by
+        (:func:`gplately.generate_distance_grids`'s `time_increment`), which is a different
+        quantity and is usually finer.
     age_depth_model : str, default: "gdh1"
         One of ``"gdh1"``, ``"rhcw18"`` or ``"crosby09"`` (see
         :data:`gplately.grids.paleobathymetry.AGE_DEPTH_MODELS`; ``"parsons_sclater"`` has no

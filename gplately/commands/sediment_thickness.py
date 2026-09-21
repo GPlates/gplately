@@ -150,7 +150,7 @@ def _run_generate_distance_grids(args):
         topological_features=topology_files,
         age_grid_filenames_and_times=age_grid_filenames_and_times,
         grid_spacing=args.grid_spacing,
-        time_increment=args.time_step,
+        time_increment=args.time_increment,
         max_reconstruction_time=args.max_reconstruction_time,
         anchor_plate_id=args.anchor_plate_id or 0,
         clamp_distance_km=args.clamp_distance_km,
@@ -252,7 +252,11 @@ def _add_common_arguments(cmd):
         type=float,
         default=1,
         dest="time_step",
-        help="time increment (Myr); default: 1",
+        help="spacing (Myr) of the times to generate output for, between --min-time and "
+        "--max-time; default: 1. This selects which times get output; how finely each "
+        "point's lifetime is sampled is --time-increment, which every output time must be "
+        "a multiple of (so a fractional step below 1 Myr needs --time-increment set to "
+        "match)",
     )
     cmd.add_argument(
         "--decimal-places-in-time",
@@ -286,6 +290,16 @@ def _add_common_arguments(cmd):
 
 
 def _add_distance_arguments(cmd):
+    cmd.add_argument(
+        "--time-increment",
+        metavar="time_increment",
+        type=float,
+        default=1,
+        dest="time_increment",
+        help="increment (Myr) used to step the backward reconstruction and sample distance "
+        "along each ocean point's lifetime; default: 1, as in the original workflow. This is "
+        "independent of --time-step: coarser output does not mean coarser sampling",
+    )
     cmd.add_argument(
         "--proximity-features",
         metavar="proximity_filenames",
