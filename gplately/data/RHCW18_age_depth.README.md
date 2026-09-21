@@ -25,17 +25,18 @@ The upstream repository asks that the following be cited when the data is used:
 > dynamics of the oceanic lithosphere-asthenosphere system. *Physics of the Earth and
 > Planetary Interiors*.
 
-## Licence status — unresolved
+## Licence status
 
 **The upstream repository states no licence**, in a `LICENSE` file or in its README; it gives
-only the citation request above. There is therefore no licence for GPlately to restate here,
-and redistributing the file inside a GPL-2.0 package rests on nothing explicit.
+only the citation request above. There is therefore no licence for GPlately to restate.
 
-This is recorded rather than resolved. Closing it needs a decision, not a paragraph:
+**Decision taken:** the citation request is treated as the intended terms. The data is
+redistributed here on that basis, with the attribution above, and users of GPlately's
+`rhcw18` model are asked to cite both papers.
 
-- ask Richards et al. to add a licence upstream, or for permission to redistribute; or
-- fetch the table at run time (e.g. through `plate_model_manager`) instead of vendoring it; or
-- keep it as-is, having judged the citation request to be the intended terms.
-
-Note that pyBacktrack, which also implements RHCW18, does **not** redistribute this file — it
-has its own implementation — so there is no precedent to lean on there.
+Recorded so it is not re-litigated. It is worth revisiting if upstream later adds explicit
+terms, or if a licence is ever needed rather than inferred — in which case the alternatives
+are to ask Richards et al. directly, or to fetch the table at run time (e.g. through
+`plate_model_manager`) rather than vendoring it. Note that pyBacktrack, which also implements
+RHCW18, has its own implementation and does not redistribute this file, so there is no
+precedent to lean on either way.
