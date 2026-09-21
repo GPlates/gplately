@@ -320,6 +320,11 @@ def _check_proximity_features(proximity_features, proximity_feature_types=None):
 
 def generate_distance_grids(
     rotation_model,
+    # Everything after this point must be passed by name. These signatures are long, and
+    # several of their parameters are interchangeable by type but not by meaning -- passing
+    # topological features where proximity features go is silent and produces a plausible
+    # grid. This is also the only chance to impose it: the names are about to be released.
+    *,
     proximity_features,
     topological_features,
     age_grid_filenames_and_times,
@@ -334,7 +339,6 @@ def generate_distance_grids(
     plate_boundary_obstacle_feature_types=_DEFAULT_PLATE_BOUNDARY_OBSTACLE_FEATURE_TYPES,
     shortest_path_grid_subdivision_depth=6,
     output_directory=None,
-    *,
     decimal_places_in_time=None,
 ):
     """For each ocean point in each age grid, compute its lifetime-mean distance (km) to the
@@ -568,8 +572,12 @@ def generate_distance_grids(
 def generate_sediment_thickness_grids(
     age_grid_filenames_and_times,
     distance_grids,
-    output_directory=None,
+    # Everything after this point must be passed by name. These signatures are long, and
+    # several of their parameters are interchangeable by type but not by meaning -- passing
+    # topological features where proximity features go is silent and produces a plausible
+    # grid. This is also the only chance to impose it: the names are about to be released.
     *,
+    output_directory=None,
     decimal_places_in_time=None,
     **sediment_thickness_kwargs,
 ):

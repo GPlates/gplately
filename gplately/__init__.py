@@ -170,6 +170,20 @@ __all__ = [
     "load_feature_collection",
     "get_plate_reconstruction",
     "get_gplot",
+    # paleobathymetry workflow (steps 1-5)
+    "age_to_basement_depth",
+    "generate_input_points_grid",
+    "generate_distance_grids",
+    "generate_passive_margins",
+    "passive_margin_polylines",
+    "generate_sediment_thickness_grids",
+    "dutkiewicz_2017_sediment_thickness",
+    "sediment_isostatic_correction",
+    "paleobathymetry",
+    "simple_paleobathymetry",
+    "merge_pybacktrack_paleobathymetry",
     # constants
     "EARTH_RADIUS",
+    "AGE_DEPTH_MODELS",
+    "DUTKIEWICZ_2017_SEDIMENT_THICKNESS",
 ]

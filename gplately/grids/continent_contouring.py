@@ -138,6 +138,11 @@ def passive_margin_polylines(
 
 def generate_passive_margins(
     rotation_model,
+    # Everything after this point must be passed by name. These signatures are long, and
+    # several of their parameters are interchangeable by type but not by meaning -- passing
+    # topological features where proximity features go is silent and produces a plausible
+    # grid. This is also the only chance to impose it: the names are about to be released.
+    *,
     continent_features,
     topological_features,
     times,
@@ -150,7 +155,6 @@ def generate_passive_margins(
     anchor_plate_id=0,
     time_step=1.0,
     output_directory=None,
-    *,
     decimal_places_in_time=None,
 ):
     """Dynamically contour continents through time and split each contour into passive margins.

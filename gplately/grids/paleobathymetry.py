@@ -71,8 +71,8 @@ __all__ = [
 ]
 
 
-# Four published thermal-subsidence (age -> basement depth) models, keyed by their canonical
-# name plus the alternative spellings accepted by `age_to_basement_depth`'s `model` argument.
+#: Four published thermal-subsidence (age -> basement depth) models, keyed by their canonical
+#: name plus the alternative spellings accepted by `age_to_basement_depth`'s `model` argument.
 AGE_DEPTH_MODELS = ("gdh1", "rhcw18", "parsons_sclater", "crosby09")
 
 _AGE_DEPTH_MODEL_ALIASES = {
@@ -208,13 +208,13 @@ def age_to_basement_depth(age, model="gdh1", richards_table_filename=None):
 # Predicting sediment thickness on vanished ocean crust since 200 Ma. Geochemistry,
 # Geophysics, Geosystems, 18, 4586-4603.
 #
-# The fitted degree-3 polynomial relates the *logarithm* of compacted sediment thickness to
-# standardised seafloor age and standardised distance to the nearest passive continental
-# margin. These are the published constants (also the gplately Zahirovic2022 defaults used by
-# EarthByte's predicting-sediment-thickness and simple_paleobathymetry workflows); distances
-# are in **kilometres**, matching the 0-3000 km calibrated range these constants were fitted
-# over (simple_paleobathymetry's README describes the same constants as metres, which appears
-# to be a documentation error -- see the discussion on gplately#444).
+#: The fitted degree-3 polynomial relates the *logarithm* of compacted sediment thickness to
+#: standardised seafloor age and standardised distance to the nearest passive continental
+#: margin. These are the published constants (also the gplately Zahirovic2022 defaults used by
+#: EarthByte's predicting-sediment-thickness and simple_paleobathymetry workflows); distances
+#: are in **kilometres**, matching the 0-3000 km calibrated range these constants were fitted
+#: over (simple_paleobathymetry's README describes the same constants as metres, which appears
+#: to be a documentation error -- see the discussion on gplately#444).
 DUTKIEWICZ_2017_SEDIMENT_THICKNESS = {
     "mean_age": 61.18406823,
     "mean_distance_km": 1835.28118479,
@@ -375,6 +375,11 @@ def paleobathymetry(basement_depth_m, sediment_thickness_m):
 
 def simple_paleobathymetry(
     rotation_model,
+    # Everything after this point must be passed by name. These signatures are long, and
+    # several of their parameters are interchangeable by type but not by meaning -- passing
+    # topological features where proximity features go is silent and produces a plausible
+    # grid. This is also the only chance to impose it: the names are about to be released.
+    *,
     proximity_features,
     topological_features,
     age_grid_filenames_and_times,
@@ -394,7 +399,6 @@ def simple_paleobathymetry(
     static_polygon_filename=None,
     present_day_age_grid_filename=None,
     pybacktrack_kwargs=None,
-    *,
     decimal_places_in_time=None,
 ):
     """Run the full *simple_paleobathymetry* workflow (Steps 1-4, optionally 5) end to end.

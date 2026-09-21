@@ -118,6 +118,11 @@ def ocean_age_to_depth_function(age_depth_model, richards_table_filename=None):
 
 def merge_pybacktrack_paleobathymetry(
     output_file_prefix,
+    # Everything after this point must be passed by name. These signatures are long, and
+    # several of their parameters are interchangeable by type but not by meaning -- passing
+    # topological features where proximity features go is silent and produces a plausible
+    # grid. This is also the only chance to impose it: the names are about to be released.
+    *,
     merge_paleobathymetry_filename_format,
     rotation_filenames,
     static_polygon_filename,
@@ -130,7 +135,6 @@ def merge_pybacktrack_paleobathymetry(
     anchor_plate_id=0,
     use_all_cpus=False,
     richards_table_filename=None,
-    *,
     decimal_places_in_time=None,
     **pybacktrack_kwargs,
 ):

@@ -1,6 +1,8 @@
 import argparse
+import inspect
 import math
 import os
+import pathlib
 
 import netCDF4
 import numpy as np
@@ -149,6 +151,83 @@ def test_paleobathymetry_combines_basement_and_sediment():
     assert result[0] == basement_depth_m[0]
 
 
+_SPHINX_FUNCTIONS_RST = (
+    pathlib.Path(__file__).resolve().parents[2]
+    / "sphinx-doc"
+    / "source"
+    / "functions.rst"
+)
+
+
+def _assert_public(name):
+    """A name is public when all three of these agree, not just the first.
+
+    `hasattr` alone is what let the whole ported API sit outside ``__all__`` (so
+    ``from gplately import *`` omitted it) and outside the docs (so its docstrings never
+    rendered) while the export tests stayed green.
+    """
+    assert hasattr(gplately, name), f"{name} is not importable from gplately"
+    assert name in gplately.__all__, f"{name} is missing from gplately.__all__"
+    if not _SPHINX_FUNCTIONS_RST.is_file():
+        # Running against an installed package rather than the source tree. Say so, rather
+        # than quietly degrading to the check this was written to replace.
+        pytest.skip(f"no sphinx-doc/ beside the package ({_SPHINX_FUNCTIONS_RST})")
+    assert f"gplately.{name}" in _SPHINX_FUNCTIONS_RST.read_text(
+        encoding="utf-8"
+    ), f"{name} is missing from sphinx-doc/source/functions.rst"
+
+
+def test_star_import_brings_in_the_paleobathymetry_workflow():
+    """``from gplately import *`` used to omit every one of these."""
+    namespace = {}
+    exec("from gplately import *", namespace)
+    for name in (
+        "simple_paleobathymetry",
+        "generate_distance_grids",
+        "generate_passive_margins",
+        "merge_pybacktrack_paleobathymetry",
+        "AGE_DEPTH_MODELS",
+    ):
+        assert name in namespace, f"{name} did not survive a star import"
+
+
+@pytest.mark.parametrize(
+    "name",
+    [
+        "generate_distance_grids",
+        "simple_paleobathymetry",
+        "generate_sediment_thickness_grids",
+        "generate_passive_margins",
+        "merge_pybacktrack_paleobathymetry",
+    ],
+)
+def test_optional_parameters_are_keyword_only(name):
+    """No optional parameter of a workflow entry point may be passed positionally.
+
+    These signatures run to twenty parameters, several interchangeable by type but not by
+    meaning, so a positional call is a silent hazard rather than a convenience. Asserted as
+    a property rather than a list, so a parameter added later is covered too.
+    """
+    signature = inspect.signature(getattr(gplately, name))
+    positional = [
+        parameter
+        for parameter in signature.parameters.values()
+        if parameter.kind is inspect.Parameter.POSITIONAL_OR_KEYWORD
+    ]
+    defaulted = [
+        parameter.name
+        for parameter in positional
+        if parameter.default is not inspect.Parameter.empty
+    ]
+    assert not defaulted, f"{name} can take {defaulted} positionally"
+
+
+def test_everything_in_all_actually_exists():
+    """A stale __all__ entry breaks ``import *`` for everything after it."""
+    missing = [name for name in gplately.__all__ if not hasattr(gplately, name)]
+    assert not missing, f"gplately.__all__ names things that do not exist: {missing}"
+
+
 def test_public_api_exports_paleobathymetry():
     for name in (
         "AGE_DEPTH_MODELS",
@@ -158,7 +237,7 @@ def test_public_api_exports_paleobathymetry():
         "sediment_isostatic_correction",
         "paleobathymetry",
     ):
-        assert hasattr(gplately, name)
+        _assert_public(name)
 
 
 # =============================================================================
@@ -1206,7 +1285,7 @@ def test_public_api_exports_sediment_thickness():
         "generate_sediment_thickness_grids",
         "simple_paleobathymetry",
     ):
-        assert hasattr(gplately, name)
+        _assert_public(name)
 
 
 # =============================================================================
@@ -1432,7 +1511,7 @@ def test_unusable_age_depth_model_reported_before_steps_1_to_4_run(
 
 
 def test_public_api_exports_pybacktrack_paleobathymetry():
-    assert hasattr(gplately, "merge_pybacktrack_paleobathymetry")
+    _assert_public("merge_pybacktrack_paleobathymetry")
 
 
 # =============================================================================
