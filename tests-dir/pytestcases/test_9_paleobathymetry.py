@@ -1,4 +1,5 @@
 import math
+import os
 
 import numpy as np
 import pygplates
@@ -174,6 +175,10 @@ def test_generate_input_points_grid_invalid_spacing():
         generate_input_points_grid(0.0)
 
 
+@pytest.mark.skipif(
+    int(os.getenv("GPLATELY_TEST_LEVEL", 0)) < 1,
+    reason="This testcase downloads a full Muller2019 plate model from the Internet. Set GPLATELY_TEST_LEVEL higher than 1 to activate it.",
+)
 def test_generate_distance_grids(
     gplately_muller_reconstruction_files,
     gplately_muller_static_geometries,
@@ -205,6 +210,10 @@ def test_generate_distance_grids(
     assert np.all(grid[finite] <= 3000.0)
 
 
+@pytest.mark.skipif(
+    int(os.getenv("GPLATELY_TEST_LEVEL", 0)) < 1,
+    reason="This testcase downloads a full Muller2019 plate model from the Internet. Set GPLATELY_TEST_LEVEL higher than 1 to activate it.",
+)
 def test_generate_distance_grids_with_continent_obstacles(
     gplately_muller_reconstruction_files,
     gplately_muller_static_geometries,
@@ -249,6 +258,10 @@ def test_generate_distance_grids_with_continent_obstacles(
     assert diff.max() > 20.0  # at least one point should show real routing effect
 
 
+@pytest.mark.skipif(
+    int(os.getenv("GPLATELY_TEST_LEVEL", 0)) < 1,
+    reason="This testcase downloads a full Muller2019 plate model from the Internet. Set GPLATELY_TEST_LEVEL higher than 1 to activate it.",
+)
 def test_generate_distance_grids_output_directory(
     tmp_path,
     gplately_muller_reconstruction_files,
@@ -274,6 +287,10 @@ def test_generate_distance_grids_output_directory(
     assert (output_dir / "mean_distance_10.0d_0.0.nc").is_file()
 
 
+@pytest.mark.skipif(
+    int(os.getenv("GPLATELY_TEST_LEVEL", 0)) < 1,
+    reason="This testcase downloads a full Muller2019 plate model from the Internet. Set GPLATELY_TEST_LEVEL higher than 1 to activate it.",
+)
 def test_generate_sediment_thickness_grids(
     gplately_muller_reconstruction_files,
     gplately_muller_static_geometries,
@@ -316,6 +333,10 @@ def test_generate_sediment_thickness_grids_missing_time_raises():
         )
 
 
+@pytest.mark.skipif(
+    int(os.getenv("GPLATELY_TEST_LEVEL", 0)) < 1,
+    reason="This testcase downloads a full Muller2019 plate model from the Internet. Set GPLATELY_TEST_LEVEL higher than 1 to activate it.",
+)
 def test_simple_paleobathymetry_sediment_thickness_kwargs_can_override_max_distance_km(
     gplately_muller_reconstruction_files,
     gplately_muller_static_geometries,
@@ -504,6 +525,10 @@ def test_passive_margin_polylines_merges_across_closed_ring_seam():
     assert len(list(margins[0].get_points())) == len(lons) - 1
 
 
+@pytest.mark.skipif(
+    int(os.getenv("GPLATELY_TEST_LEVEL", 0)) < 1,
+    reason="This testcase downloads a full Muller2019 plate model from the Internet. Set GPLATELY_TEST_LEVEL higher than 1 to activate it.",
+)
 def test_generate_passive_margins(
     gplately_muller_reconstruction_files, gplately_muller_static_geometries
 ):
@@ -536,6 +561,10 @@ def test_generate_passive_margins(
     assert 0.0 < mask.mean() < 1.0
 
 
+@pytest.mark.skipif(
+    int(os.getenv("GPLATELY_TEST_LEVEL", 0)) < 1,
+    reason="This testcase downloads a full Muller2019 plate model from the Internet. Set GPLATELY_TEST_LEVEL higher than 1 to activate it.",
+)
 def test_generate_passive_margins_output_directory(
     tmp_path, gplately_muller_reconstruction_files, gplately_muller_static_geometries
 ):
