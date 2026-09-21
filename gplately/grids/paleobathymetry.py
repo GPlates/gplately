@@ -41,6 +41,7 @@ full derivation and references). Paleobathymetry is computed as::
 
 """
 
+import logging
 import math
 import os
 from importlib.resources import files
@@ -56,6 +57,8 @@ from ._utils import (
     resolve_decimal_places_in_time,
     uniform_time_step,
 )
+
+logger = logging.getLogger("gplately")
 
 __all__ = [
     "AGE_DEPTH_MODELS",
@@ -561,6 +564,32 @@ def simple_paleobathymetry(
     # clamp_distance_km is the default for max_distance_km, but an explicit
     # sediment_thickness_kwargs["max_distance_km"] (a documented override) must win rather
     # than colliding with it as a duplicate keyword argument.
+    # generate_distance_grids() skips an age grid it found nothing usable in, so the later
+    # steps work from what it actually produced rather than from what was asked for.
+    skipped = [
+        filename
+        for filename, time in age_grid_filenames_and_times
+        if time not in distance_grids
+    ]
+    if skipped:
+        if pybacktrack:
+            raise ValueError(
+                "Step 5 cannot run because Step 2 skipped "
+                f"{len(skipped)} age grid(s) with no usable data ({skipped}): it merges the "
+                "Step 4 grids by filename, and those times will have no grid. Remove those "
+                "age grids from age_grid_filenames_and_times, or set pybacktrack=False."
+            )
+        logger.warning(
+            "Continuing without %d age grid(s) that Step 2 skipped: %s",
+            len(skipped),
+            skipped,
+        )
+        age_grid_filenames_and_times = [
+            (filename, time)
+            for filename, time in age_grid_filenames_and_times
+            if time in distance_grids
+        ]
+
     sediment_thickness_grid_kwargs = {"max_distance_km": clamp_distance_km}
     sediment_thickness_grid_kwargs.update(sediment_thickness_kwargs or {})
     sediment_thickness_grids = generate_sediment_thickness_grids(

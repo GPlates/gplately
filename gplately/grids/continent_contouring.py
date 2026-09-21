@@ -53,6 +53,12 @@ from ._utils import (
 )
 from ..ptt.continent_contours import ContinentContouring
 
+# Subtracted from each feature's begin time so that a feature covering one time slice ends
+# just before the next slice's feature begins. Without it the slices share their boundary
+# instant and every feature overlaps its neighbour there, which shows up in GPlates as two
+# sets of margins drawn on top of each other at every interval boundary.
+_VALID_TIME_EPSILON = 1e-4
+
 __all__ = ["passive_margin_polylines", "generate_passive_margins"]
 
 
@@ -297,7 +303,8 @@ def generate_passive_margins(
                 contour_feature = pygplates.Feature()
                 contour_feature.set_geometry(contour)
                 contour_feature.set_valid_time(
-                    time + 0.5 * time_step, time - 0.5 * time_step
+                    time + 0.5 * time_step - _VALID_TIME_EPSILON,
+                    time - 0.5 * time_step,
                 )
                 contour_features.append(contour_feature)
 
@@ -307,7 +314,8 @@ def generate_passive_margins(
                     margin_feature = pygplates.Feature()
                     margin_feature.set_geometry(margin)
                     margin_feature.set_valid_time(
-                        time + 0.5 * time_step, time - 0.5 * time_step
+                        time + 0.5 * time_step - _VALID_TIME_EPSILON,
+                        time - 0.5 * time_step,
                     )
                     passive_margin_features.append(margin_feature)
 

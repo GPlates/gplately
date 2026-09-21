@@ -85,11 +85,13 @@ def _resolve_rotation_topology_proximity_files(args, plate_model):
         if plate_model
         else None
     )
-    proximity_files = args.proximity_filenames or (
-        plate_model.get_layer("COBs", return_none_if_not_exist=True)
-        if plate_model
-        else None
-    )
+    # Deliberately not falling back to plate_model.get_layer("COBs"), as the original
+    # workflow refuses to in three separate places. A COBs layer traces the whole
+    # continent-ocean boundary, active margins included, where this workflow wants passive
+    # margins only -- so ocean points beside a subduction zone come out close to a "margin".
+    # What the layer contains also varies by model: muller2019's is line segments, while
+    # merdith2021's and the COB Terranes sets are largely polygons, which are worse again.
+    proximity_files = args.proximity_filenames or None
     if not rotation_files or not topology_files:
         raise Exception(
             "No rotation/topology files found: use -m/--model, or --rotations/--topologies."
@@ -97,8 +99,12 @@ def _resolve_rotation_topology_proximity_files(args, plate_model):
     if not proximity_files:
         raise Exception(
             "No proximity feature files found: use --proximity-features to supply "
-            "passive-margin continent-ocean-boundary line segments (the Plate Model "
-            "Manager does not deliver these for most models)."
+            "passive-margin continent-ocean-boundary line segments. These are deliberately "
+            "not taken from -m/--model's plate model: a COBs layer traces the entire "
+            "continent-ocean boundary, active margins included, so using it reports ocean "
+            "points beside a subduction zone as close to a passive margin. Use "
+            "'gplately generate-passive-margins' to produce passive margins, or pass the "
+            "model's COBs explicitly if that approximation is what you want."
         )
 
     _logger.info(f"Using rotation files: {rotation_files}")
@@ -180,13 +186,37 @@ def _run_generate_sediment_grids(args):
         args.decimal_places_in_time, DEFAULT_DISTANCE_GRID_DECIMAL_PLACES_IN_TIME
     )
     distance_grids = {}
+    missing = []
     for _, t in age_grid_filenames_and_times:
         distance_path = os.path.join(
             args.distance_grids_dir,
             distance_grid_filename(args.grid_spacing, t, distance_grid_decimal_places),
         )
+        if not os.path.isfile(distance_path):
+            # 'generate-distance-grids' writes nothing for an age grid it found no usable
+            # data in, so one absent file is a skip rather than a mistake. All of them
+            # absent is a mistake.
+            missing.append(distance_path)
+            continue
         grid, lon, lat = read_netcdf_grid(distance_path, return_grids=True)
         distance_grids[t] = (lon, lat, grid)
+
+    if not distance_grids:
+        raise Exception(
+            f"No distance grids found in {args.distance_grids_dir!r} for times "
+            f"{[t for _, t in age_grid_filenames_and_times]}. Check --distance-grids-dir, "
+            "--grid-spacing and --decimal-places-in-time match the "
+            "'generate-distance-grids' run that produced them."
+        )
+    if missing:
+        _logger.warning(
+            "Skipping %d time(s) with no distance grid: %s", len(missing), missing
+        )
+        age_grid_filenames_and_times = [
+            (filename, t)
+            for filename, t in age_grid_filenames_and_times
+            if t in distance_grids
+        ]
 
     generate_sediment_thickness_grids(
         age_grid_filenames_and_times,

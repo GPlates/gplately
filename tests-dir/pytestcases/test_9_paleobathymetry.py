@@ -26,6 +26,7 @@ from gplately.grids._utils import (
     uniform_time_step,
 )
 from gplately.grids.continent_contouring import (
+    _VALID_TIME_EPSILON,
     generate_passive_margins,
     passive_margin_polylines,
 )
@@ -41,6 +42,7 @@ from gplately.grids.pybacktrack_paleobathymetry import (
     merge_pybacktrack_paleobathymetry,
 )
 from gplately.grids.sediment_thickness import (
+    _check_proximity_features,
     generate_distance_grids,
     generate_input_points_grid,
     generate_sediment_thickness_grids,
@@ -428,6 +430,196 @@ def test_descending_latitude_age_grid_stays_descending(latitude_ordered_age_grid
     # The same field, just stored the other way up.
     np.testing.assert_array_equal(lat_down, lat_up[::-1])
     np.testing.assert_array_equal(age_down, age_up[::-1, :])
+
+
+# =============================================================================
+# Refusing inputs that produce plausible but wrong numbers
+# =============================================================================
+
+
+def _feature_with_geometry(geometry, name):
+    feature = pygplates.Feature()
+    feature.set_geometry(geometry)
+    feature.set_name(name)
+    return feature
+
+
+def test_proximity_polylines_are_accepted():
+    _check_proximity_features(
+        [
+            _feature_with_geometry(
+                pygplates.PolylineOnSphere([(0, 0), (0, 10), (10, 10)]), "a margin"
+            )
+        ]
+    )
+
+
+def test_proximity_polygons_are_refused():
+    """A continent-ocean boundary polygon wraps active margins as well as passive ones.
+
+    Plate models ship exactly such polygons under the name "COBs", so this is the easy
+    mistake to make, and it yields a plausible grid of wrong numbers rather than an error.
+    """
+    polygon = _feature_with_geometry(
+        pygplates.PolygonOnSphere([(0, 0), (0, 10), (10, 10)]), "Africa COB"
+    )
+    with pytest.raises(ValueError, match="polygon"):
+        _check_proximity_features([polygon])
+    with pytest.raises(ValueError, match="Africa COB"):
+        _check_proximity_features([polygon])
+
+
+def test_empty_proximity_features_are_refused():
+    """Nothing to measure to means every point reports half the Earth's circumference.
+
+    Reachable through a proximity_feature_types filter that matches nothing, which produces
+    a full grid of ~20,000 km rather than an error.
+    """
+    with pytest.raises(ValueError, match="empty"):
+        _check_proximity_features([])
+
+    # The reachable way to get here: a feature-type filter that matches nothing.
+    with pytest.raises(ValueError, match="gpml:PassiveContinentalBoundary"):
+        _check_proximity_features([], ["gpml:PassiveContinentalBoundary"])
+
+
+def test_cli_skips_times_whose_distance_grid_was_never_written(monkeypatch, tmp_path):
+    """'generate-distance-grids' writes nothing for an age grid it skipped.
+
+    One absent file is that skip, and the remaining times should still be processed; all of
+    them absent means the directory or the naming options are wrong, which is an error.
+    """
+    times = [0.0, 1.0]
+    monkeypatch.setattr(
+        sediment_thickness_cmd,
+        "_resolve_age_grid_filenames_and_times",
+        lambda args: ([("unused.nc", time) for time in times], None),
+    )
+    captured = {}
+    monkeypatch.setattr(
+        sediment_thickness_cmd,
+        "generate_sediment_thickness_grids",
+        lambda pairs, distance_grids, **kwargs: captured.update(
+            pairs=pairs, distance_grids=distance_grids
+        ),
+    )
+    monkeypatch.setattr(
+        sediment_thickness_cmd,
+        "read_netcdf_grid",
+        lambda path, **kwargs: (np.zeros((2, 2)), np.zeros(2), np.zeros(2)),
+    )
+
+    args = argparse.Namespace(
+        distance_grids_dir=str(tmp_path),
+        grid_spacing=0.5,
+        output_dir=str(tmp_path),
+        decimal_places_in_time=None,
+    )
+
+    # Nothing written at all: that is a mistake, not a skip.
+    with pytest.raises(Exception, match="No distance grids found"):
+        sediment_thickness_cmd._run_generate_sediment_grids(args)
+
+    # Only 1 Ma written: 0 Ma was skipped upstream, so carry on with what exists.
+    (tmp_path / distance_grid_filename(0.5, 1.0, 1)).write_text("")
+    sediment_thickness_cmd._run_generate_sediment_grids(args)
+    assert [time for _, time in captured["pairs"]] == [1.0]
+    assert sorted(captured["distance_grids"]) == [1.0]
+
+
+def test_cli_does_not_take_proximity_features_from_the_plate_model():
+    """The plate model's COBs layer must not be used as a silent fallback."""
+
+    class PlateModelWithCOBs:
+        def get_rotation_model(self):
+            return ["rotations.rot"]
+
+        def get_layer(self, name, return_none_if_not_exist=False):
+            return [f"{name.lower()}.gpml"]
+
+    args = argparse.Namespace(
+        rotation_filenames=None, topology_filenames=None, proximity_filenames=[]
+    )
+    with pytest.raises(Exception, match="--proximity-features"):
+        sediment_thickness_cmd._resolve_rotation_topology_proximity_files(
+            args, PlateModelWithCOBs()
+        )
+
+
+@pytest.mark.skipif(
+    int(os.getenv("GPLATELY_TEST_LEVEL", 0)) < 1,
+    reason="This testcase downloads a full Muller2019 plate model from the Internet. Set GPLATELY_TEST_LEVEL higher than 1 to activate it.",
+)
+def test_an_all_nan_age_grid_produces_no_output(
+    gplately_muller_reconstruction_files,
+    gplately_muller_static_geometries,
+    tmp_path,
+):
+    """An age grid with nothing usable in it used to write a grid of NaN.
+
+    A file full of NaN is indistinguishable from a real result until something reads it, so
+    the original workflow warns and moves on instead.
+    """
+    rotation_model, topology_features, _ = gplately_muller_reconstruction_files
+    _, _, cobs = gplately_muller_static_geometries
+
+    empty_age_grid = str(tmp_path / "all_nan_0Ma.nc")
+    gplately.write_netcdf_grid(empty_age_grid, np.full((19, 37), np.nan))
+
+    results = generate_distance_grids(
+        rotation_model=rotation_model,
+        proximity_features=cobs,
+        topological_features=topology_features,
+        age_grid_filenames_and_times=[(empty_age_grid, 0.0)],
+        grid_spacing=10.0,
+        max_reconstruction_time=3,
+        output_directory=str(tmp_path),
+    )
+
+    assert results == {}
+    assert list(tmp_path.glob("mean_distance_*.nc")) == []
+
+
+@pytest.mark.skipif(
+    int(os.getenv("GPLATELY_TEST_LEVEL", 0)) < 1,
+    reason="This testcase downloads a full Muller2019 plate model from the Internet. Set GPLATELY_TEST_LEVEL higher than 1 to activate it.",
+)
+def test_adjacent_time_slices_do_not_overlap(
+    gplately_muller_reconstruction_files, gplately_muller_static_geometries
+):
+    """Each slice's features must end just before the next slice's begin.
+
+    Without the epsilon both slices are valid at the instant they share, and GPlates draws
+    two sets of margins on top of each other at every interval boundary.
+    """
+    rotation_model, topology_features, _ = gplately_muller_reconstruction_files
+    _, continental_polygons, _ = gplately_muller_static_geometries
+    time_step = 1.0
+
+    result = generate_passive_margins(
+        rotation_model=rotation_model,
+        continent_features=continental_polygons,
+        topological_features=topology_features,
+        times=[0.0, time_step],
+        point_spacing_degrees=4.0,
+        time_step=time_step,
+    )
+
+    valid_times = [
+        feature.get_valid_time() for feature in result["continent_contour_features"]
+    ]
+    boundary = 0.0 + 0.5 * time_step  # shared by the 0 Ma and 1 Ma slices
+    valid_at_boundary = [
+        (begin, end) for begin, end in valid_times if end <= boundary <= begin
+    ]
+    # Exactly one slice may claim the boundary instant, never both -- and at least one
+    # feature must reach it, or this would pass simply by finding no features.
+    assert valid_at_boundary
+    assert all(
+        math.isclose(end, boundary, rel_tol=0, abs_tol=1e-9)
+        for begin, end in valid_at_boundary
+    ), valid_at_boundary
+    assert _VALID_TIME_EPSILON > 0
 
 
 # =============================================================================

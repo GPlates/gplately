@@ -47,7 +47,8 @@ function's docstring).
 **Not yet included here:** the "topological proximity features" mode of the original
 ``ocean_basin_proximity.py`` (measuring distance to resolved plate-boundary sections rather
 than static/reconstructed features) -- only non-topological proximity features (e.g. COB line
-segments, or :func:`gplately.generate_passive_margins`'s output) are supported.
+segments, or the ``passive_margin_features`` from
+:func:`gplately.generate_passive_margins`) are supported.
 """
 
 import logging
@@ -278,6 +279,45 @@ def _accumulate_mean_distance_for_age_grid(
     return mean_distance_km
 
 
+def _check_proximity_features(proximity_features, proximity_feature_types=None):
+    """Refuse proximity features that cannot give a meaningful distance to a margin.
+
+    Both cases here produce a complete, plausible-looking grid of wrong numbers rather than
+    an error: nothing to measure to puts every point at the maximum possible distance, and a
+    polygon measures to the wrong thing.
+
+    Passing whole continent-ocean boundary polygons here is the easy mistake to make, since
+    plate models ship them and they are named for the same thing. A polygon outline wraps
+    the *whole* continent, active margins included, so ocean points beside a subduction zone
+    come out close to a "margin" when the workflow means passive margins only. The result is
+    a plausible grid of wrong numbers, so it is refused rather than warned about.
+    """
+    if not proximity_features:
+        raise ValueError(
+            "proximity_features is empty"
+            + (
+                f" after filtering by proximity_feature_types {list(proximity_feature_types)}"
+                if proximity_feature_types
+                else ""
+            )
+            + ": every point would be reported at the maximum possible distance (half the "
+            "Earth's circumference) rather than at a distance to anything."
+        )
+
+    for feature in proximity_features:
+        for geometry in feature.get_all_geometries():
+            if isinstance(geometry, pygplates.PolygonOnSphere):
+                raise ValueError(
+                    "proximity_features contains a polygon "
+                    f"({feature.get_name() or feature.get_feature_id().get_string()!r}), "
+                    "but this expects passive-margin line segments. A continent-ocean "
+                    "boundary polygon outlines the whole continent, active margins "
+                    "included, so ocean points near a subduction zone would be reported "
+                    "as close to a passive margin. Use line geometries -- e.g. the output "
+                    "of gplately.generate_passive_margins()."
+                )
+
+
 def generate_distance_grids(
     rotation_model,
     proximity_features,
@@ -311,8 +351,11 @@ def generate_distance_grids(
         The rotation model.
     proximity_features : any argument accepted by pygplates.FeaturesFunctionArgument
         Non-topological features to measure distance to -- e.g. passive-margin
-        continent-ocean-boundary line segments. Must be line/point/polygon geometries, not
-        topological plate boundaries.
+        continent-ocean-boundary line segments, or the ``passive_margin_features`` from
+        :func:`gplately.generate_passive_margins`. Must be line (or point) geometries, and
+        not topological plate boundaries. Polygons are refused: a continent outline runs
+        along active margins as well as passive ones, so measuring to it gives plausible
+        numbers that mean the wrong thing.
     topological_features : any argument accepted by pygplates.FeaturesFunctionArgument
         The topological plate boundary / network features used to reconstruct ocean points
         backward through time.
@@ -376,16 +419,19 @@ def generate_distance_grids(
     Returns
     -------
     dict
-        Maps each reconstruction time (as given in `age_grid_filenames_and_times`) to a
-        ``(lon, lat, grid)`` tuple: 1-D longitude/latitude coordinate arrays and a 2-D
-        ``(lat, lon)`` array of lifetime-mean distance in kilometres (NaN where the age grid
-        has no data).
+        Maps reconstruction time to a ``(lon, lat, grid)`` tuple: 1-D longitude/latitude
+        coordinate arrays and a 2-D ``(lat, lon)`` array of lifetime-mean distance in
+        kilometres (NaN where the age grid has no data). An age grid with no input points
+        inside it at all is warned about and skipped, so it has no entry here and no output
+        file -- callers should not assume every time in `age_grid_filenames_and_times` is
+        present.
 
     Raises
     ------
     ValueError
         If `time_increment` is not positive, if some time in `age_grid_filenames_and_times`
-        is not a multiple of it, or if two of those times would be written to the same file.
+        is not a multiple of it, if two of those times would be written to the same file, or
+        if `proximity_features` is empty or contains polygons.
     """
     # Everything cheap is validated up front, before a single file is opened or a single
     # point reconstructed: these are the mistakes that would otherwise surface as a wrong
@@ -407,6 +453,8 @@ def generate_distance_grids(
         rotation_model, default_anchor_plate_id=anchor_plate_id
     )
 
+    # Checked before anything is reconstructed, but necessarily after the features are
+    # loaded, since it is their geometry type that matters.
     proximity_feature_list = pygplates.FeaturesFunctionArgument(
         proximity_features
     ).get_features()
@@ -420,6 +468,7 @@ def generate_distance_grids(
             for feature in proximity_feature_list
             if feature.get_feature_type() in feature_types
         ]
+    _check_proximity_features(proximity_feature_list, proximity_feature_types)
 
     topological_feature_list = pygplates.FeaturesFunctionArgument(
         topological_features
@@ -469,34 +518,37 @@ def generate_distance_grids(
         valid = np.isfinite(ages)
 
         if not np.any(valid):
+            # No output for this age grid at all, rather than a grid of NaN: a file full of
+            # NaN is indistinguishable from a real result until something reads it.
             logger.warning(
-                "All input points are outside the age grid: %s", age_grid_filename
+                "Skipping %s: all input points are outside the age grid",
+                age_grid_filename,
             )
-            mean_distance_km = np.full(num_output_points, np.nan, dtype="float64")
-        else:
-            mean_distance_km = _accumulate_mean_distance_for_age_grid(
-                flat_indices=np.flatnonzero(valid),
-                point_lons=lon_flat[valid],
-                point_lats=lat_flat[valid],
-                point_ages=ages[valid],
-                age_grid_time=age_grid_time,
-                num_output_points=num_output_points,
-                rotation_model=rotation_model,
-                proximity_features=proximity_feature_list,
-                topological_features=topological_feature_list,
-                time_increment=time_increment,
-                max_reconstruction_time=max_reconstruction_time,
-                distance_threshold_radians=distance_threshold_radians,
-                shortest_path_grid=shortest_path_grid,
-                continent_obstacle_features=continent_obstacle_feature_list,
-                plate_boundary_obstacle_feature_types=plate_boundary_obstacle_feature_types,
+            continue
+
+        mean_distance_km = _accumulate_mean_distance_for_age_grid(
+            flat_indices=np.flatnonzero(valid),
+            point_lons=lon_flat[valid],
+            point_lats=lat_flat[valid],
+            point_ages=ages[valid],
+            age_grid_time=age_grid_time,
+            num_output_points=num_output_points,
+            rotation_model=rotation_model,
+            proximity_features=proximity_feature_list,
+            topological_features=topological_feature_list,
+            time_increment=time_increment,
+            max_reconstruction_time=max_reconstruction_time,
+            distance_threshold_radians=distance_threshold_radians,
+            shortest_path_grid=shortest_path_grid,
+            continent_obstacle_features=continent_obstacle_feature_list,
+            plate_boundary_obstacle_feature_types=plate_boundary_obstacle_feature_types,
+        )
+        if clamp_distance_km is not None:
+            mean_distance_km = np.where(
+                mean_distance_km > clamp_distance_km,
+                clamp_distance_km,
+                mean_distance_km,
             )
-            if clamp_distance_km is not None:
-                mean_distance_km = np.where(
-                    mean_distance_km > clamp_distance_km,
-                    clamp_distance_km,
-                    mean_distance_km,
-                )
 
         grid = mean_distance_km.reshape(lat_1d.size, lon_1d.size)
         results[age_grid_time] = (lon_1d, lat_1d, grid)
@@ -574,7 +626,9 @@ def generate_sediment_thickness_grids(
         if time not in distance_grids:
             raise KeyError(
                 f"No distance grid for time {time} (age grid {age_grid_filename!r}); "
-                "did you pass the same age_grid_filenames_and_times to generate_distance_grids?"
+                "either a different age_grid_filenames_and_times was passed to "
+                "generate_distance_grids, or it skipped this age grid because none of the "
+                "input points fell inside it (check the log for a warning)."
             )
         lon, lat, distance_km = distance_grids[time]
 
