@@ -51,7 +51,7 @@ if get_test_local_code_flag():
 
 def _get_topo_raster():
     data_dir = Path(__file__).resolve().parent / "unittest-data"
-    topo_file = PresentDayRasterManager(data_dir=data_dir).get_raster("topography")
+    topo_file = PresentDayRasterManager(data_dir=str(data_dir)).get_raster("topography")
 
     try:
         raster_xr = xr.open_dataarray(topo_file)

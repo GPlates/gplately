@@ -1,22 +1,88 @@
-# This workflow will upload a Python Package using Twine when a release is published.
+# This workflow builds GPlately's Python distributions and uploads them to PyPI
+# via Trusted Publishing (OIDC) when a release is published.
 
-name: Upload Python Package to PyPI
+name: Upload GPlately Python Package to PyPI
 
 on:
   release:
     types: [published]
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: Git tag to build and upload, usually matching the published release
+        required: true
+        type: string
 
 permissions:
   contents: read
 
 jobs:
-  deploy:
+  upload-to-pypi:
+    name: Upload GPlately Python Package to PyPI
     runs-on: ubuntu-latest
+    environment: pypi
+    permissions:
+      # IMPORTANT: this permission is mandatory for Trusted Publishing (OIDC)
+      id-token: write
+    env:
+      RELEASE_TAG: ${{ github.event_name == 'release' && github.event.release.tag_name || inputs.release_tag }}
 
     steps:
+      - name: Validate release tag
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const releaseTag = process.env.RELEASE_TAG?.trim();
+
+            if (!releaseTag) {
+              core.setFailed('A release tag is required to publish to PyPI.');
+              return;
+            }
+
+            if (!/^[A-Za-z0-9._/-]+$/.test(releaseTag)) {
+              core.setFailed(`Invalid release tag "${releaseTag}". Use only letters, numbers, dot, underscore, slash, and hyphen.`);
+              return;
+            }
+
+            try {
+              await github.rest.git.getRef({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                ref: `tags/${releaseTag}`,
+              });
+            } catch (error) {
+              core.setFailed(`Release tag "${releaseTag}" does not exist in this repository.`);
+              return;
+            }
+
+            core.info(`Validated release tag ${releaseTag}.`);
+
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Publish package
+        with:
+          ref: ${{ env.RELEASE_TAG }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Build distributions
         run: |
-          chmod +x ./scripts/pypi-publish.sh
-          ./scripts/pypi-publish.sh '${{secrets.PYPI_API_TOKEN}}'
+          python -m pip install --upgrade build
+          python -m build
+
+      - name: Publish package distributions to TestPyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          repository-url: https://test.pypi.org/legacy/
+        # No credentials needed here: TestPyPI is configured to trust this
+        # repository/workflow via Trusted Publishing (OIDC), which mints a
+        # short-lived token automatically using the id-token permission above.
+
+      - name: Publish package distributions to PyPI
+        if: github.event_name == 'release'
+        uses: pypa/gh-action-pypi-publish@release/v1
+        # No credentials needed here: PyPI is configured to trust this
+        # repository/workflow via Trusted Publishing (OIDC), which mints a
+        # short-lived token automatically using the id-token permission above.

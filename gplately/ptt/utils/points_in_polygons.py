@@ -1,5 +1,5 @@
 #
-#    Copyright (C) 2017-2020 The University of Sydney, Australia
+#    Copyright (C) 2017-2026 The University of Sydney, Australia
 #
 #    This program is free software; you can redistribute it and/or modify it under
 #    the terms of the GNU General Public License, version 2, as published by
@@ -17,7 +17,7 @@
 
 
 """
-Efficient point-in-polygon testing when there are many relatively uniformly spaced points to be tested against polygons. 
+Efficient point-in-polygon testing when there are many relatively uniformly spaced points to be tested against polygons.
 
 For example, to find the plate ID of the polygon containing each point in a sequence of points:
 
@@ -68,7 +68,6 @@ for point_index, polygon_feature_list in enumerate(polygon_features_containing_p
 ```
 
 """
-
 
 from __future__ import print_function
 

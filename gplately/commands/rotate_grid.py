@@ -27,7 +27,7 @@ from typing import List, Optional, Union
 
 from plate_model_manager import PlateModel, PlateModelManager  # type: ignore
 
-from ..grids import Raster
+from ..raster import Raster
 
 logger = logging.getLogger("gplately")
 
@@ -47,9 +47,9 @@ tries to deduce it from the filename by looking for a number immediately
 followed by "Ma" (e.g. paleobathymetry_103Ma.nc → 103.0 Ma).
 
 Example usage:
-    - gplately rotate_grid input.nc output.nc --from-model Alfonso2024 --to-model Alfonso2024 --from-anchor 0 --to-anchor 701701 --time 100
-    - gplately rotate_grid input_dir output_dir --from-model Alfonso2024 --to-model Alfonso2024 --from-anchor 0 --to-anchor 701701
-    - gplately rotate_grid input.nc output.nc --from-rotation-files from.rot --to-rotation-files to.rot --time 100
+    - gplately rotate-grid input.nc output.nc --from-model Alfonso2024 --to-model Alfonso2024 --from-anchor 0 --to-anchor 701701 --time 100
+    - gplately rotate-grid input-dir output-dir --from-model Alfonso2024 --to-model Alfonso2024 --from-anchor 0 --to-anchor 701701
+    - gplately rotate-grid input.nc output.nc --from-rotation-files from.rot --to-rotation-files to.rot --time 100
 """
 
 
@@ -57,22 +57,25 @@ def add_parser(parser):
     """Add command line argument parser."""
 
     cmd = parser.add_parser(
-        "rotate_grid",
+        "rotate-grid",
+        aliases=("rtg",),
         help=help_str,
         add_help=True,
         description=__description__,
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
+    # keep the old underscore name working (issue #450) without showing it in --help
+    parser._name_parser_map["rotate_grid"] = cmd
 
     cmd.set_defaults(func=_rotate_grid_cmd)
 
     cmd.add_argument(
-        metavar="INPUT",
+        metavar="input",
         help="input grid file (.nc) or directory containing .nc files",
         dest="input_path",
     )
     cmd.add_argument(
-        metavar="OUTPUT",
+        metavar="output",
         help="output grid file (.nc) or output directory",
         dest="output_path",
     )

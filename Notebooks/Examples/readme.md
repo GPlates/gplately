@@ -1,29 +1,45 @@
-This folder contains a collection of examples to help you get started with GPlately. These examples are designed to be short and focus on specific tasks. You can copy and modify the example code to fit your needs.
+# GPlately Example Notebooks
 
-#### 🌰 [Hello World!](hello_world.ipynb)
+This directory contains focused examples for common GPlately workflows.
+Each notebook demonstrates one task so you can quickly copy, adapt, and run it.
 
-If you're new to GPlately, this 'Hello World!' example is the perfect starting point.
+## Available Examples
 
-#### 🌰 [introducing_plate_model_manager.py](introducing_plate_model_manager.py)
+### [01-HelloWorld.ipynb](01-HelloWorld.ipynb)
+The minimal working example — create a paleo-map with GPlately in a few lines.
 
-Demonstrate how to use the PlateModelManager module in general.
+### [02-PlateModelManager.ipynb](02-PlateModelManager.ipynb)
+Use `PlateModelManager` to access plate model files.
 
-#### 🌰 [working_with_plate_model_manager.py](working_with_plate_model_manager.py)
+### [03-PlotWithCartopy.ipynb](03-PlotWithCartopy.ipynb)
+Build a more detailed paleo-map with Cartopy.
 
-Demonstrate how to use the PlateModelManager module with GPlately.
+### [04-PlotWithPyGMT.ipynb](04-PlotWithPyGMT.ipynb)
+Plot maps using GPlately's PyGMT integration.
 
-#### 🌰 [plot_map_with_cartopy.py](plot_map_with_cartopy.py)
+### [05-ReconstructFiles.ipynb](05-ReconstructFiles.ipynb)
+Reconstruct shapefiles with GPlately.
 
-Demonstrate how GPlately plots maps using Cartopy.
+### [06-LoadPlateModelFromFiles.ipynb](06-LoadPlateModelFromFiles.ipynb)
+Use your own local plate model and reconstruct points.
 
-#### 🌰 [plot_map_with_pygmt.py](plot_map_with_pygmt.py)
+### [07-SaveReconstructedData.ipynb](07-SaveReconstructedData.ipynb)
+Save reconstructed data to shapefiles and other formats.
 
-Demonstrate how GPlately plots maps using pygmt.
+### [08-UseAuxiliaryFunctions.ipynb](08-UseAuxiliaryFunctions.ipynb)
+Quickly create `PlateReconstruction` and `PlotTopologies` objects with `gplately.auxiliary`.
 
-#### 🌰 [save_reconstructed_data.py](save_reconstructed_data.py)
+### [09-IcosahedronMesh.ipynb](09-IcosahedronMesh.ipynb)
+Generate and plot an icosahedron mesh.
 
-Demonstrate how to save the reconstructed data to files.
+### [10-ColorMapAndColorPaletteTable.ipynb](10-ColorMapAndColorPaletteTable.ipynb)
+Work with Matplotlib colormaps and GMT Color Palette Tables (CPT).
 
-#### 🌰 [data_server.py](data_server.py)
+### [PNG_reconstruction_copper_deposits.ipynb](PNG_reconstruction_copper_deposits.ipynb)
+A larger, standalone worked example: reconstructing Papua New Guinea copper deposit locations
+through time.
 
-Demonstrate how to use the DataServer class.
+## Notes
+
+- Some examples require external datasets and may download inputs on first run.
+- PyGMT examples require a working GMT/PyGMT environment (see [`docker/env.yaml`](../../docker/env.yaml)).

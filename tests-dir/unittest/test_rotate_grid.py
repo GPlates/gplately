@@ -40,7 +40,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-os.environ["DISABLE_GPLATELY_DEV_WARNING"] = "true"
+os.environ["GPLATELY_DISABLE_DEV_WARNING"] = "true"
 
 import numpy as np
 import requests

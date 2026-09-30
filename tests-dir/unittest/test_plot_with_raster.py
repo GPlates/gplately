@@ -6,11 +6,11 @@ import sys
 # pyright: reportMissingModuleSource=false
 import xarray as xr
 
-os.environ["DISABLE_GPLATELY_DEV_WARNING"] = "true"
+os.environ["GPLATELY_DISABLE_DEV_WARNING"] = "true"
 
 from gplately.auxiliary import get_gplot
 
-os.environ["DISABLE_GPLATELY_DEV_WARNING"] = "true"
+os.environ["GPLATELY_DISABLE_DEV_WARNING"] = "true"
 import cartopy.crs as ccrs
 import matplotlib.pyplot as plt
 from common import MODEL_REPO_DIR, save_fig, _get_topo_raster

@@ -1,5 +1,5 @@
 #
-#    Copyright (C) 2016-2025 The University of Sydney, Australia
+#    Copyright (C) 2016-2026 The University of Sydney, Australia
 #
 #    This program is free software; you can redistribute it and/or modify it under
 #    the terms of the GNU General Public License, version 2, as published by
@@ -163,6 +163,7 @@ def subduction_convergence(
     anchor_plate_id=None,
     include_slab_topologies=False,
     include_network_boundaries=False,
+    include_all_subducting_boundary_types=False,
     **kwargs,
 ):
     """Find the convergence and absolute velocities sampled along trenches (subduction zones) at a particular geological time.
@@ -218,6 +219,10 @@ def subduction_convergence(
     include_network_boundaries : bool, default False
         Whether to calculate subduction convergence along network boundaries that are not also plate boundaries (defaults to False).
         If a deforming network shares a boundary with a plate then it'll get included regardless of this option.
+    include_all_subducting_boundary_types : bool, default False
+        If ``False`` (the default), only features of type ``SubductionZone`` that have a subduction polarity are sampled.
+        If ``True``, all features that have a subduction polarity are sampled regardless of feature type
+        (e.g. also includes ``OrogenicBelt`` features that have a subduction polarity).
     output_distance_to_nearest_edge_of_trench : bool, default=False
         Append the distance (in degrees) along the trench line to the nearest trench edge to each returned sample point.
         A trench edge is the farthermost location on the current trench feature that contributes to a plate boundary.
@@ -330,10 +335,16 @@ def subduction_convergence(
 
     # Iterate over the shared boundary sections of all resolved topologies.
     for shared_boundary_section in shared_boundary_sections:
-        # Skip sections that are not subduction zones (trenches).
+        feature = shared_boundary_section.get_feature()
+        # Skip sections that do not have a subduction polarity.
         if (
-            shared_boundary_section.get_feature().get_feature_type()
-            != pygplates.FeatureType.gpml_subduction_zone
+            feature.get_enumeration(pygplates.PropertyName.gpml_subduction_polarity)
+            is None
+        ):
+            continue
+        # By default only include SubductionZone features (not other types such as OrogenicBelt that can also have a subduction polarity).
+        if not include_all_subducting_boundary_types and (
+            feature.get_feature_type() != pygplates.FeatureType.gpml_subduction_zone
         ):
             continue
 
@@ -1657,23 +1668,39 @@ def add_arguments(parser: argparse.ArgumentParser):
 
     parser.set_defaults(func=main)
 
-    parser.add_argument(
+    rotation_filenames_group = parser.add_mutually_exclusive_group(required=True)
+    rotation_filenames_group.add_argument(
         "-r",
-        "--rotation_filenames",
+        "--rotation-filenames",
+        dest="rotation_filenames",
         type=str,
         nargs="+",
-        required=True,
         metavar="rotation_filename",
         help="One or more rotation files.",
     )
-    parser.add_argument(
-        "-m",
-        "--topology_filenames",
+    rotation_filenames_group.add_argument(
+        "--rotation_filenames",
+        dest="rotation_filenames",
         type=str,
         nargs="+",
-        required=True,
+        help=argparse.SUPPRESS,
+    )
+    topology_filenames_group = parser.add_mutually_exclusive_group(required=True)
+    topology_filenames_group.add_argument(
+        "-m",
+        "--topology-filenames",
+        dest="topology_filenames",
+        type=str,
+        nargs="+",
         metavar="topology_filename",
         help="One or more topology files to generate resolved subducting lines.",
+    )
+    topology_filenames_group.add_argument(
+        "--topology_filenames",
+        dest="topology_filenames",
+        type=str,
+        nargs="+",
+        help=argparse.SUPPRESS,
     )
     parser.add_argument(
         "-a",
@@ -1688,14 +1715,22 @@ def add_arguments(parser: argparse.ArgumentParser):
     threshold_sampling_distance_group = parser.add_mutually_exclusive_group()
     threshold_sampling_distance_group.add_argument(
         "-d",
-        "--threshold_sampling_distance_degrees",
+        "--threshold-sampling-distance-degrees",
+        dest="threshold_sampling_distance_degrees",
         type=float,
         help="Threshold sampling distance along trenches (in degrees). "
         "Defaults to {0} degrees.".format(DEFAULT_THRESHOLD_SAMPLING_DISTANCE_DEGREES),
     )
     threshold_sampling_distance_group.add_argument(
+        "--threshold_sampling_distance_degrees",
+        dest="threshold_sampling_distance_degrees",
+        type=float,
+        help=argparse.SUPPRESS,
+    )
+    threshold_sampling_distance_group.add_argument(
         "-k",
-        "--threshold_sampling_distance_kms",
+        "--threshold-sampling-distance-kms",
+        dest="threshold_sampling_distance_kms",
         type=float,
         help="Threshold sampling distance along trenches (in Kms). "
         "Defaults to {0:.2f} Kms (which is equivalent to {1} degrees).".format(
@@ -1703,10 +1738,17 @@ def add_arguments(parser: argparse.ArgumentParser):
             DEFAULT_THRESHOLD_SAMPLING_DISTANCE_DEGREES,
         ),
     )
+    threshold_sampling_distance_group.add_argument(
+        "--threshold_sampling_distance_kms",
+        dest="threshold_sampling_distance_kms",
+        type=float,
+        help=argparse.SUPPRESS,
+    )
 
     parser.add_argument(
         "-t",
-        "--time_range",
+        "--time-range",
+        dest="time_range",
         type=float,
         nargs=2,
         metavar=("young_time", "old_time"),
@@ -1715,6 +1757,13 @@ def add_arguments(parser: argparse.ArgumentParser):
         "Defaults to {0} -> {1} Ma.".format(
             DEFAULT_TIME_RANGE_YOUNG_TIME, DEFAULT_TIME_RANGE_OLD_TIME
         ),
+    )
+    parser.add_argument(
+        "--time_range",
+        dest="time_range",
+        type=float,
+        nargs=2,
+        help=argparse.SUPPRESS,
     )
 
     def parse_positive_number(value_string):
@@ -1730,26 +1779,41 @@ def add_arguments(parser: argparse.ArgumentParser):
 
     parser.add_argument(
         "-i",
-        "--time_increment",
+        "--time-increment",
+        dest="time_increment",
         type=parse_positive_number,
         default=DEFAULT_TIME_INCREMENT,
         help="The time increment in My. Defaults to {0} My.".format(
             DEFAULT_TIME_INCREMENT
         ),
     )
+    parser.add_argument(
+        "--time_increment",
+        dest="time_increment",
+        type=parse_positive_number,
+        help=argparse.SUPPRESS,
+    )
 
     parser.add_argument(
         "-v",
-        "--velocity_delta_time",
+        "--velocity-delta-time",
+        dest="velocity_delta_time",
         type=parse_positive_number,
         default=DEFAULT_VELOCITY_DELTA_TIME,
         help="The delta time interval used to calculate velocities in My. "
         "Defaults to {0} My.".format(DEFAULT_VELOCITY_DELTA_TIME),
     )
+    parser.add_argument(
+        "--velocity_delta_time",
+        dest="velocity_delta_time",
+        type=parse_positive_number,
+        help=argparse.SUPPRESS,
+    )
 
     parser.add_argument(
         "-x",
-        "--extra_output_parameters",
+        "--extra-output-parameters",
+        dest="extra_output_parameters",
         type=str,
         nargs="+",
         metavar="output_parameter",
@@ -1760,34 +1824,63 @@ def add_arguments(parser: argparse.ArgumentParser):
             ", ".join(_OUTPUT_PARAMETER_NAME_LIST)
         ),
     )
+    parser.add_argument(
+        "--extra_output_parameters",
+        dest="extra_output_parameters",
+        type=str,
+        nargs="+",
+        help=argparse.SUPPRESS,
+    )
 
     parser.add_argument(
         "-g",
-        "--output_gpml_filename",
+        "--output-gpml-filename",
+        dest="output_gpml_filename",
         type=str,
         help="Optional GPML output filename to contain the subduction convergence data for all specified times. "
         "This can then be loaded into GPlates to display the data as scalar coverages.",
+    )
+    parser.add_argument(
+        "--output_gpml_filename",
+        dest="output_gpml_filename",
+        type=str,
+        help=argparse.SUPPRESS,
     )
 
     parser.add_argument(
         "output_filename_prefix",
         type=str,
+        metavar="output-filename-prefix",
         help="The output filename prefix. An output file is created for each geological time in the sequence where "
         "the filename suffix contains the time and the filename extension.",
     )
     parser.add_argument(
         "-e",
-        "--output_filename_extension",
+        "--output-filename-extension",
+        dest="output_filename_extension",
         type=str,
         default="xy",
         help='The output xy filename extension. Defaults to "xy".',
     )
     parser.add_argument(
+        "--output_filename_extension",
+        dest="output_filename_extension",
+        type=str,
+        help=argparse.SUPPRESS,
+    )
+    parser.add_argument(
         "-w",
-        "--ignore_topology_warnings",
+        "--ignore-topology-warnings",
+        dest="ignore_topology_warnings",
         action="store_true",
         help="If specified then topology warnings are ignored (not output). "
         "These are the warnings about not finding the overriding and subducting plates.",
+    )
+    parser.add_argument(
+        "--ignore_topology_warnings",
+        dest="ignore_topology_warnings",
+        action="store_true",
+        help=argparse.SUPPRESS,
     )
 
 

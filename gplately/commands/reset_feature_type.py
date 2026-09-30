@@ -1,5 +1,5 @@
 #
-#    Copyright (C) 2024-2025 The University of Sydney, Australia
+#    Copyright (C) 2024-2026 The University of Sydney, Australia
 #
 #    This program is free software; you can redistribute it and/or modify it under
 #    the terms of the GNU General Public License, version 2, as published by
@@ -27,15 +27,15 @@ help_str = "Reset the feature type for the selected features. "
 
 __description__ = f"""{help_str}
 
-Example usage: 
-    - `gplately reset_feature_type -s gpml:ClosedContinentalBoundary -t gpml:UnclassifiedFeature input_file output_file`
+Example usage:
+    - `gplately reset-feature-type -s gpml:ClosedContinentalBoundary -t gpml:UnclassifiedFeature input-file output-file`
         (change all gpml:ClosedContinentalBoundary to gpml:UnclassifiedFeature)
-        
-    - `gplately reset_feature_type -s "gpml:ContinentalFragment|gpml:Coastline" -t gpml:UnclassifiedFeature input_file output_file`
+
+    - `gplately reset-feature-type -s "gpml:ContinentalFragment|gpml:Coastline" -t gpml:UnclassifiedFeature input-file output-file`
         (change all gpml:ContinentalFragment and gpml:Coastline to gpml:UnclassifiedFeature)
-        
-    - `gplately reset_feature_type -s ".*" -t gpml:UnclassifiedFeature input_file output_file` 
-        (change all feature types to gpml:UnclassifiedFeature)     
+
+    - `gplately reset-feature-type -s ".*" -t gpml:UnclassifiedFeature input-file output-file`
+        (change all feature types to gpml:UnclassifiedFeature)
 
     See https://github.com/GPlates/gplately/blob/master/tests-dir/unittest/test_reset_feature_type.sh for more examples. 
 """
@@ -44,18 +44,24 @@ Example usage:
 def add_parser(subparser):
     """add `reset_feature_type` command line argument parser"""
     reset_feature_type_cmd = subparser.add_parser(
-        "reset_feature_type",
+        "reset-feature-type",
+        aliases=("rft",),
         help=help_str,
         add_help=True,
         description=__description__,
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
+    # keep the old underscore name working (issue #450) without showing it in --help
+    subparser._name_parser_map["reset_feature_type"] = reset_feature_type_cmd
 
     reset_feature_type_cmd.set_defaults(func=reset_feature_type)
-    reset_feature_type_cmd.add_argument("input_file", type=str, help="the input file")
+    reset_feature_type_cmd.add_argument(
+        "input_file", type=str, metavar="input-file", help="the input file"
+    )
     reset_feature_type_cmd.add_argument(
         "output_file",
         type=str,
+        metavar="output-file",
         help="the output file into which the new features will be saved",
     )
 

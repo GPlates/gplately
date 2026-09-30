@@ -1,5 +1,5 @@
 #
-#    Copyright (C) 2019-2025 The University of Sydney, Australia
+#    Copyright (C) 2019-2026 The University of Sydney, Australia
 #
 #    This program is free software; you can redistribute it and/or modify it under
 #    the terms of the GNU General Public License, version 2, as published by
@@ -273,29 +273,44 @@ def add_arguments(parser: argparse.ArgumentParser):
 
     parser.add_argument(
         "-p",
-        "--plate_pairs",
+        "--plate-pairs",
+        dest="plate_pairs",
         nargs="+",
         action=PlatePairsAction,
         metavar="moving_plate_id fixed_plate_id",
         help="One or more moving/fixed plate pairs to limit operation to. "
         "If not specified then defaults to all plate pairs.",
     )
+    parser.add_argument(
+        "--plate_pairs",
+        dest="plate_pairs",
+        nargs="+",
+        action=PlatePairsAction,
+        help=argparse.SUPPRESS,
+    )
 
     parser.add_argument(
         "-o",
-        "--output_filename_prefix",
+        "--output-filename-prefix",
+        dest="output_filename_prefix",
         type=str,
-        metavar="output_filename_prefix",
+        metavar="OUTPUT_FILENAME_PREFIX",
         help="Optional output filename prefix. If one is provided then an output rotation file "
         "is created for each input rotation file by prefixing the input filenames. "
         "If no filename prefix is provided then the input files are overwritten.",
+    )
+    parser.add_argument(
+        "--output_filename_prefix",
+        dest="output_filename_prefix",
+        type=str,
+        help=argparse.SUPPRESS,
     )
 
     parser.add_argument(
         "input_rotation_filenames",
         type=str,
         nargs="+",
-        metavar="input_rotation_filename",
+        metavar="input-rotation-filename",
         help="One or more rotation files to perform an operation on.",
     )
 

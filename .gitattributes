@@ -6,3 +6,7 @@
 *.{icns,ico,gz,dbf,shp,shx,png} binary
 
 *.sh text eol=lf
+
+*.ipynb filter=nbstripout
+*.zpln filter=nbstripout
+*.ipynb diff=ipynb

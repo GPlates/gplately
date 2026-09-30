@@ -3,17 +3,11 @@
 # This test script generates a sample plot using the PygmtPlotEngine.
 
 import os
-from pathlib import Path
-
-# pyright: reportMissingImports=false
 
 import pygmt
-import xarray as xr
-
-os.environ["DISABLE_GPLATELY_DEV_WARNING"] = "true"
 
 from gplately.auxiliary import get_gplot, get_pygmt_basemap_figure
-from gplately.mapping.pygmt_plot import PygmtPlotEngine
+from gplately.plot.pygmt_plot import PygmtPlotEngine
 from gplately import Raster
 from plate_model_manager import PresentDayRasterManager
 
@@ -40,10 +34,12 @@ if __name__ == "__main__":
         data=topo_file, plate_reconstruction=gplot.plate_reconstruction
     ).reconstruct(time=reconstruction_time)
 
+    from importlib.resources import files
+
     gplot.plot_grid(
         fig,
         "AgeGrids",
-        cmap="create-age-grids-video/agegrid.cpt",
+        cmap=str(files("gplately").joinpath("data", "agegrid.cpt")),
         nan_transparent=True,
         # shading=True,
         # shading="+a315+ne0.6",
@@ -81,9 +77,13 @@ if __name__ == "__main__":
         offset="j0/-0.5c",
     )
     with pygmt.config(FONT_ANNOT_PRIMARY=4):
-        fig.legend(position="jBL+o-1.0/0", box="+gwhite+p0.25p")
+        fig.legend(position="jBL+o-1.0/0", box="+gwhite+p0.25p")  # type: ignore
 
-    fig.show(width=1200, crop="+m0.4c")
-    output_file = "./output/test-pygmt-plot.pdf"
-    fig.savefig(output_file, crop="+m0.4c")
-    print(f"The figure has been saved to: {output_file}.")
+    import sys
+
+    if not "save" in sys.argv:
+        fig.show(width=1200, crop="+m0.4c")
+    else:
+        output_file = "./output/test-pygmt-plot.pdf"
+        fig.savefig(output_file, crop="+m0.4c")  # type: ignore
+        print(f"The figure has been saved to: {output_file}.")

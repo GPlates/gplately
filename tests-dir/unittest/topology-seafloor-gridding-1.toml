@@ -1,0 +1,5 @@
+model_name = "zahirovic2022"
+max_time = 410
+min_time = 400
+time_interval  =2
+grid_spacing = 0.5	

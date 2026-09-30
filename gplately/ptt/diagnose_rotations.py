@@ -1,5 +1,5 @@
 #
-#    Copyright (C) 2020-2025 The University of Sydney, Australia
+#    Copyright (C) 2020-2026 The University of Sydney, Australia
 #
 #    This program is free software; you can redistribute it and/or modify it under
 #    the terms of the GNU General Public License, version 2, as published by
@@ -290,19 +290,26 @@ def add_arguments(parser: argparse.ArgumentParser):
 
     parser.add_argument(
         "-t",
-        "--rotation_threshold_degrees",
+        "--rotation-threshold-degrees",
+        dest="rotation_threshold_degrees",
         type=parse_positive_number,
         default=DEFAULT_ROTATION_THRESHOLD_DEGREES,
         help="Two rotations differ if either the rotation latitude, longitude or angle differ by "
         "the specified amount (in degrees). The default (0.01 degrees) is useful for some "
         "PLATES rotation files that are typically accurate to 2 decimal places.",
     )
+    parser.add_argument(
+        "--rotation_threshold_degrees",
+        dest="rotation_threshold_degrees",
+        type=parse_positive_number,
+        help=argparse.SUPPRESS,
+    )
 
     parser.add_argument(
         "rotation_filenames",
         type=str,
         nargs="+",
-        metavar="rotation_filename",
+        metavar="rotation-filename",
         help="One or more rotation filenames.",
     )
 

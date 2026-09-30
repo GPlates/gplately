@@ -1,5 +1,5 @@
 #
-#    Copyright (C) 2024-2025 The University of Sydney, Australia
+#    Copyright (C) 2024-2026 The University of Sydney, Australia
 #
 #    This program is free software; you can redistribute it and/or modify it under
 #    the terms of the GNU General Public License, version 2, as published by
@@ -27,13 +27,32 @@ If `GeoPandas` is not found on the system, input files are read with
 
 """
 
+import logging
+from pathlib import Path
+from collections.abc import Sequence
+
 # pyright: reportMissingImports=false
 # pyright: reportMissingModuleSource=false
 
 
+import pygplates
 from shapely.geometry import shape
 from shapely.geometry.base import BaseGeometry
 import xarray as xr
+
+logger = logging.getLogger("gplately")
+
+# A feature collection, or something that can be loaded into one (filename(s),
+# Path(s), feature(s), etc.) via load_feature_collection().
+FeatureCollectionInput = (
+    pygplates.FeatureCollection
+    | str
+    | Path
+    | pygplates.Feature
+    | Sequence[str]
+    | Sequence[Path]
+    | Sequence[pygplates.Feature]
+)
 
 gpd = None
 shpreader = None
@@ -158,26 +177,27 @@ def _get_geometries_cartopy(filename, buffer=None):
     with shpreader.Reader(filename) as reader:
         shape_records = reader.shapeRecords()
         shapes = [i.shape for i in shape_records]
-        geoms = [shape(i.__geo_interface__) for i in shapes]
+        geoms = [shape(i.__geo_interface__) for i in shapes]  # type: ignore #why call __geo_interface__? consider using public API instead of private attribute.
     return buffer_func(geoms, buffer)
 
 
 def load_data_array_from_netcdf(filename, var_name=None):
-    """Load a data array from a netCDF file.
+    """Load an xarray.DataArray object from a netCDF file.
 
     Parameters
     ----------
     filename : str
         Path to the netCDF file to be read.
     var_name : str, optional
-        The variable name of the raster data in the netCDF file. If not provided, the first variable in the netCDF file will be used.
+        The variable name of the raster data in the netCDF file.
+        If not provided, the program will try the best to guess.
 
     Returns
     -------
     data_array : xarray.DataArray
         The data array loaded from the netCDF file.
     """
-
+    raster_xr = None
     try:
         raster_xr = xr.open_dataarray(filename)
     except ValueError:
@@ -186,8 +206,19 @@ def load_data_array_from_netcdf(filename, var_name=None):
         if var_name and var_name in dataset.data_vars:
             raster_xr = dataset[var_name]
         else:
-            first_var = next(iter(dataset.data_vars))
-            raster_xr = dataset[first_var]
+            for name in ["z", "data", "values"]:
+                if name in dataset.data_vars:
+                    raster_xr = dataset[name]
+                    if raster_xr.ndim == 2 and len(raster_xr.coords) == 2:
+                        return raster_xr
+
+            for name in dataset.data_vars:
+                raster_xr = dataset[name]
+                if raster_xr.ndim == 2 and len(raster_xr.coords) == 2:
+                    return raster_xr
+    assert (
+        raster_xr is not None
+    ), f"Failed to load a 2D data array from the netCDF file: {filename}"
     return raster_xr
 
 
@@ -256,3 +287,36 @@ def to_geographic_data_array(data_array):
     ret_da.gmt.gtype = 1  # 1 = geographic
     # ret_da.gmt.registration = 0  # 0 = gridline node
     return ret_da
+
+
+def load_feature_collection(
+    source: FeatureCollectionInput,
+) -> pygplates.FeatureCollection:
+    """Load and return a `pygplates.FeatureCollection` object.
+
+    Parameters
+    ----------
+    source : str/`os.PathLike`, or a sequence (eg, `list` or `tuple`) of instances of `pygplates.Feature`_, or a single instance of `pygplates.Feature`_, or an instance of `pygplates.FeatureCollection`_, or a sequence of any combination of those four types
+        Can be a filename, a sequence of features, a single feature,
+        a feature collection, or a sequence (eg, a list or tuple) of any combination of those four types.
+
+    Returns
+    -------
+    `pygplates.FeatureCollection`_
+        A feature collection containing all features. If loading fails, an empty feature collection is returned instead.
+
+
+    .. _pygplates.Feature: https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature
+    .. _pygplates.FeatureCollection: https://www.gplates.org/docs/pygplates/generated/pygplates.featurecollection#pygplates.FeatureCollection
+    """
+    try:
+        return pygplates.FeatureCollection(
+            pygplates.FeaturesFunctionArgument(source).get_features()
+        )
+    except Exception as e:
+        logger.error(
+            "Failed to load feature collection. Expected a feature collection, a filename, a feature, a sequence of features, or a sequence (eg, list or tuple) of any combination of aforementioned four types."
+            + f"The source provided is of {source}. An empty feature collection will be returned."
+        )
+        logger.error(f"Error details: {e}")
+        return pygplates.FeatureCollection()

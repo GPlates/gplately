@@ -6,7 +6,7 @@ import pygplates
 from common import MODEL_REPO_DIR
 from plate_model_manager import PlateModel, PlateModelManager
 
-os.environ["DISABLE_GPLATELY_DEV_WARNING"] = "true"
+os.environ["GPLATELY_DISABLE_DEV_WARNING"] = "true"
 import gplately
 from gplately.ptt import continent_contours
 

@@ -226,7 +226,7 @@ as encoded by a plate reconstruction model.
 
    import os
 
-   os.environ["DISABLE_GPLATELY_DEV_WARNING"] = "true"
+   os.environ["GPLATELY_DISABLE_DEV_WARNING"] = "true"
 
    from gplately import SeafloorGrid, auxiliary
 

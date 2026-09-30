@@ -15,39 +15,31 @@
 #    51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 
-"""DataServer class for downloading plate-model assets and rasters."""
+"""DataServer class for downloading plate model files and rasters."""
 
 import logging
+import time
 from pathlib import Path
-from typing import Union
+from typing import List, Union
 
-from .grids import Raster
+from .raster import Raster
 from .gpml import (
     load_feature_collection_from_files,
 )
 
-# pyright: reportMissingImports=false
-# pyright: reportMissingModuleSource=false
-import pygplates
+from pygplates import (
+    RotationModel as _RotationModel,
+    FeatureCollection as _FeatureCollection,
+)
 from matplotlib import image
-from plate_model_manager import PlateModelManager, PresentDayRasterManager
+import requests
+from plate_model_manager import (
+    PlateModelManager,
+    PresentDayRasterManager,
+    ReferenceFrame,
+    GenerationMethod,
+)
 from plate_model_manager.utils.download import FileDownloader
-
-try:
-    from plate_model_manager import ReferenceFrame, GenerationMethod
-except ImportError:
-    # temporarily keep this for backward compatibility with older versions of plate_model_manager
-    # that do not have ReferenceFrame and GenerationMethod enums
-    # the code below should be remove once we update the minimum required version of plate_model_manager
-    from enum import Enum
-
-    class ReferenceFrame(Enum):
-        PmagReferenceFrame = "PMAG"
-        MantleReferenceFrame = "MantleFrame"
-
-    class GenerationMethod(Enum):
-        Isochrons = "UsingIsochrons"
-        Topologies = "UsingTopologies"
 
 
 import pooch
@@ -188,13 +180,11 @@ class DataServer(object):
                     rot_files, anchor_pid = self.pmm.get_rotation_model(
                         reference_frame=reference_frame
                     )
-                    self._rotation_model = pygplates.RotationModel(
+                    self._rotation_model = _RotationModel(
                         rot_files, default_anchor_plate_id=anchor_pid
                     )
                 else:
-                    self._rotation_model = pygplates.RotationModel(
-                        self.pmm.get_rotation_model()
-                    )
+                    self._rotation_model = _RotationModel(self.pmm.get_rotation_model())
                 self._rotation_model.reconstruction_identifier = self._model_name
                 # Setting an attribute on a pyGPlates object produces the following error in version 1.0 of pyGPlates:
                 #   RuntimeError: Incomplete pickle support (__getstate_manages_dict__ not set)
@@ -221,7 +211,7 @@ class DataServer(object):
                     self.pmm.get_topologies()
                 )
             else:
-                self._topology_features = pygplates.FeatureCollection()
+                self._topology_features = _FeatureCollection()
         return self._topology_features
 
     @property
@@ -233,7 +223,7 @@ class DataServer(object):
                     self.pmm.get_static_polygons()
                 )
             else:
-                self._static_polygons = pygplates.FeatureCollection()
+                self._static_polygons = _FeatureCollection()
         return self._static_polygons
 
     @property
@@ -245,7 +235,7 @@ class DataServer(object):
                     self.pmm.get_coastlines()
                 )
             else:
-                self._coastlines = pygplates.FeatureCollection()
+                self._coastlines = _FeatureCollection()
         return self._coastlines
 
     @property
@@ -257,7 +247,7 @@ class DataServer(object):
                     self.pmm.get_continental_polygons()
                 )
             else:
-                self._continents = pygplates.FeatureCollection()
+                self._continents = _FeatureCollection()
         return self._continents
 
     @property
@@ -267,7 +257,7 @@ class DataServer(object):
             if "COBs" in self._available_layers:
                 self._COBs = load_feature_collection_from_files(self.pmm.get_COBs())
             else:
-                self._COBs = pygplates.FeatureCollection()
+                self._COBs = _FeatureCollection()
         return self._COBs
 
     @property
@@ -398,7 +388,7 @@ class DataServer(object):
     def _get_time_dependent_rasters(
         self,
         name: str,
-        times: Union[int, list[int]],
+        times: Union[int, List[int | float]],
         reference_frame: Union[ReferenceFrame, None] = None,
         generated_from: Union[GenerationMethod, None] = None,
     ):
@@ -454,7 +444,7 @@ class DataServer(object):
 
     def get_age_grid(
         self,
-        times: Union[int, list[int]],
+        times: Union[int, List[int | float]],
         reference_frame: Union[ReferenceFrame, None] = None,
         generated_from: Union[GenerationMethod, None] = None,
     ):
@@ -641,7 +631,7 @@ class DataServer(object):
             if raster_name.lower() == "etopo1_tif":
                 raster.lats = raster.lats[::-1]
             if raster_name.lower() == "etopo1_grd":
-                raster._data = raster._data.astype(float)  # type: ignore
+                raster.data = raster.data.astype(float)  # type: ignore
             return raster
         else:
             raise Exception("The 'raster_name' parameter is required!")
@@ -768,18 +758,37 @@ class DataServer(object):
         file_url, file_pattern = database[feature_data_id_string]
         file_path = f"{DataServer._path_to_cache()}/{feature_data_id_string}"
         logger.info(file_path)
-        downloader = FileDownloader(file_url, f"{file_path}/.metadata.json", file_path)
 
-        # only re-download when necessary
-        if downloader.check_if_file_need_update():
-            downloader.download_file_and_update_metadata()
-        else:
-            if downloader.check_if_expire_date_need_update():
-                downloader.update_metadata()
-            else:
-                logger.debug(
-                    f"The local files in {file_path} are still good. Will not download again at this moment."
+        # This legacy EarthByte webdav endpoint intermittently hangs or drops
+        # the connection. Without a bounded timeout a single bad attempt can
+        # block for the OS's full TCP connect timeout (up to ~75s on macOS),
+        # and the failure has been observed to be transient (a retry a few
+        # seconds later succeeds), so use a bounded timeout and a few retries.
+        downloader = FileDownloader(
+            file_url, f"{file_path}/.metadata.json", file_path, timeout=(15, 60)
+        )
+
+        max_attempts = 3
+        for attempt in range(1, max_attempts + 1):
+            try:
+                # only re-download when necessary
+                if downloader.check_if_file_need_update():
+                    downloader.download_file_and_update_metadata()
+                else:
+                    if downloader.check_if_expire_date_need_update():
+                        downloader.update_metadata()
+                    else:
+                        logger.debug(
+                            f"The local files in {file_path} are still good. Will not download again at this moment."
+                        )
+                break
+            except requests.exceptions.RequestException as e:
+                if attempt == max_attempts:
+                    raise
+                logger.warning(
+                    f"Attempt {attempt}/{max_attempts} to reach {file_url} failed ({e!r}); retrying..."
                 )
+                time.sleep(2 * attempt)
 
         feature_files = list(Path(file_path).rglob(file_pattern))
         if len(feature_files) == 0:
@@ -787,9 +796,9 @@ class DataServer(object):
                 f"No files matching the pattern '{file_pattern}' were found in the downloaded data for '{feature_data_id_string}'."
             )
         elif len(feature_files) == 1:
-            return pygplates.FeatureCollection(str(feature_files[0]))
+            return _FeatureCollection(str(feature_files[0]))
         else:
             fcs = []
             for f in feature_files:
-                fcs.append(pygplates.FeatureCollection(str(f)))
+                fcs.append(_FeatureCollection(str(f)))
             return fcs

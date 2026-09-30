@@ -1,5 +1,5 @@
 #
-#    Copyright (C) 2024-2025 The University of Sydney, Australia
+#    Copyright (C) 2024-2026 The University of Sydney, Australia
 #
 #    This program is free software; you can redistribute it and/or modify it under
 #    the terms of the GNU General Public License, version 2, as published by
@@ -20,8 +20,3 @@ from .polyline import discretize_polyline
 __all__ = [
     "discretize_polyline",
 ]
-
-__pdoc__ = {
-    "quaternions": False,
-    "rotation": False,
-}

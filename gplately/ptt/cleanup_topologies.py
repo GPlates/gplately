@@ -1,5 +1,5 @@
 #
-#    Copyright (C) 2019-2025 The University of Sydney, Australia
+#    Copyright (C) 2019-2026 The University of Sydney, Australia
 #
 #    This program is free software; you can redistribute it and/or modify it under
 #    the terms of the GNU General Public License, version 2, as published by
@@ -23,48 +23,12 @@ including:
 
 """
 
-
 from __future__ import print_function
 
 import argparse
 import os
-import sys
 
 import pygplates
-
-#
-# Python 2 and 3 compatibility.
-#
-# Iterating over a dict.
-try:
-    dict.iteritems
-except AttributeError:
-    # Python 3
-    def itervalues(d):
-        return iter(d.values())
-
-    def iteritems(d):
-        return iter(d.items())
-
-    def listvalues(d):
-        return list(d.values())
-
-    def listitems(d):
-        return list(d.items())
-
-else:
-    # Python 2
-    def itervalues(d):
-        return d.itervalues()
-
-    def iteritems(d):
-        return d.iteritems()
-
-    def listvalues(d):
-        return d.values()
-
-    def listitems(d):
-        return d.items()
 
 
 def remove_features_not_referenced_by_topologies(
@@ -234,7 +198,7 @@ def remove_features_not_referenced_by_topologies(
         for referenced_feature_id, (
             referenced_feature_max_begin_time,
             referenced_feature_min_end_time,
-        ) in iteritems(time_periods_of_referenced_topological_line_features):
+        ) in time_periods_of_referenced_topological_line_features.items():
             referenced_feature = all_features.get(referenced_feature_id)
             if referenced_feature:  # Referenced feature might not actually exist.
                 begin_time, end_time = referenced_feature.get_valid_time()
@@ -299,7 +263,7 @@ def remove_features_not_referenced_by_topologies(
         for referenced_feature_id, (
             referenced_feature_max_begin_time,
             referenced_feature_min_end_time,
-        ) in iteritems(time_periods_of_referenced_non_topological_features):
+        ) in time_periods_of_referenced_non_topological_features.items():
             referenced_feature = all_features.get(referenced_feature_id)
             if referenced_feature:  # Referenced feature might not actually exist.
                 begin_time, end_time = referenced_feature.get_valid_time()
@@ -322,6 +286,7 @@ def remove_features_not_referenced_by_topologies(
         | feature_ids_referenced_by_topological_lines_referenced_by_topological_polygons_and_networks
     )
     for feature_collection in feature_collections:
+        removed_features_collection = None
         # Create an extra feature collection (containing removed features) for each feature collection.
         if removed_features_collections is not None:
             removed_features_collection = pygplates.FeatureCollection()
@@ -336,7 +301,7 @@ def remove_features_not_referenced_by_topologies(
                 feature_index -= 1
 
                 # Keep track of the removed feature if requested.
-                if removed_features_collections is not None:
+                if removed_features_collection is not None:
                     removed_features_collection.add(feature)
 
             feature_index += 1
@@ -465,38 +430,59 @@ def add_arguments(parser: argparse.ArgumentParser):
 
     parser.add_argument(
         "-o",
-        "--output_filename_prefix",
+        "--output-filename-prefix",
+        dest="output_filename_prefix",
         type=str,
-        metavar="output_filename_prefix",
+        metavar="OUTPUT_FILENAME_PREFIX",
         help="Optional output filename prefix. If one is provided then an output file "
         "is created for each input file by prefixing the input filenames. "
         "If no filename prefix is provided then the input files are overwritten.",
     )
+    parser.add_argument(
+        "--output_filename_prefix",
+        dest="output_filename_prefix",
+        type=str,
+        help=argparse.SUPPRESS,
+    )
 
     parser.add_argument(
         "-d",
-        "--removed_features_filename_prefix",
+        "--removed-features-filename-prefix",
+        dest="removed_features_filename_prefix",
         type=str,
-        metavar="removed_features_filename_prefix",
+        metavar="REMOVED_FEATURES_FILENAME_PREFIX",
         help="Option to save removed features in new files with specified filename prefix. "
         "If specified then a file is created for each input file (that has features removed) "
         "by prefixing the input filenames. If no filename prefix is provided then the "
         "removed features are not saved.",
     )
+    parser.add_argument(
+        "--removed_features_filename_prefix",
+        dest="removed_features_filename_prefix",
+        type=str,
+        help=argparse.SUPPRESS,
+    )
 
     parser.add_argument(
         "-p",
-        "--restricted_referenced_time_periods",
+        "--restricted-referenced-time-periods",
+        dest="restricted_referenced_time_periods",
         action="store_true",
         help="If specified then restrict the time periods of features referenced by topologies such that they are "
         "limited by the time periods of the referencing topologies (default is no restriction).",
+    )
+    parser.add_argument(
+        "--restricted_referenced_time_periods",
+        dest="restricted_referenced_time_periods",
+        action="store_true",
+        help=argparse.SUPPRESS,
     )
 
     parser.add_argument(
         "input_filenames",
         type=str,
         nargs="+",
-        metavar="input_filename",
+        metavar="input-filename",
         help="One or more files containing topological features and features referenced by them.",
     )
 
@@ -512,7 +498,7 @@ __description__ = """Remove any regular features not referenced by topological f
     NOTE: Separate the positional and optional arguments with '--' (workaround for bug in argparse module).
     For example...
 
-    %(prog)s -o cleanup_topologies_ -- topologies.gpml
+    %(prog)s -o cleanup-topologies- -- topologies.gpml
     """
 
 
@@ -554,9 +540,13 @@ def main(args):
                 dir,
                 "{0}{1}".format(args.removed_features_filename_prefix, file_basename),
             )
-            removed_features_collections[feature_collection_index].write(
-                removed_features_filename
-            )
+            if (
+                removed_features_collections is not None
+                and feature_collection_index < len(removed_features_collections)
+            ):
+                removed_features_collections[feature_collection_index].write(
+                    removed_features_filename
+                )
 
 
 if __name__ == "__main__":

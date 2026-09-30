@@ -1,0 +1,41 @@
+[seafloorgrid]
+    # There are two methods for generating the seafloor grid: isochron interpolation and topology.
+    # This flag switches between the two methods.
+    use_isochron_interp = true
+
+    # https://gplates.github.io/gplately/latest/sphinx/html/plate_models.html
+    # If the files have been explicitly specified, they may supersede `model_name`.
+    model_name = "zahirovic2022"
+    
+    times = [0, 50, 100, 150]
+    ridges_filenames = "AgeGridInput/Global_EarthByte_GeeK07_Ridges.gpml"
+    isochron_filenames = "AgeGridInput/Global_EarthByte_GeeK07_Isochrons.gpml"
+    isochron_cob_filenames = "AgeGridInput/Global_EarthByte_GeeK07_IsoCOB.gpml"
+    continents_filenames = "AgeGridInput/Global_EarthByte_GeeK07_COB_Terranes_ContinentsOnly.gpml"
+    interval_spacing = 0.5
+    grid_spacing = 0.5	
+
+    # `input_filenames` is a combination of rotation and topology files.
+    # It is recommended to use `rotation_filenames` and `topology_filenames` instead.
+    # input_filenames= []
+
+    # rotation_filenames = []
+    # topology_filenames = []
+    # refinement_levels = 6
+    # ridge_sampling = 0.5
+    # initial_spreadrate = 75
+
+    # `times` will supersede the three arguments below.
+    # min_time = 0,
+    # max_time = 140
+    # time_interval = 1
+    
+    # n_jobs = 2
+
+    # `file_collection` is deprecated. Use `model_name` instead.
+    # file_collection = "zahirovic2022"
+    
+    # include_unmasked = false
+    # resume_from_checkpoints = false
+    # use_continent_contouring = false
+    # anchor_plate_id = 0

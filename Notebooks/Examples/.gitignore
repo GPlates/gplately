@@ -1,0 +1,7 @@
+*.png
+*.pdf
+*.zip
+icosahedron_mesh.gmt
+agegrid.cpt
+plate-model-repo/
+present-day-rasters/
