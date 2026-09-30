@@ -15,6 +15,8 @@ with this program; if not, write to Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """
 
+import warnings
+
 from .oceans import SeafloorGrid
 
 
@@ -23,18 +25,23 @@ class TopologySeafloorGrid(SeafloorGrid):
     A class derived from :class:`SeafloorGrid` for generating seafloor grids using topologies.
     """
 
-    def generate(self, use_topological_model=True):
+    def generate(self, use_topological_model=None):
         """
-        Call :meth:`SeafloorGrid.reconstruct_by_topological_model` or :meth:`SeafloorGrid.reconstruct_by_topologies` to generate the seafloor grids using topologies.
+        Call :meth:`SeafloorGrid.reconstruct_by_topologies` to generate the seafloor grids using topologies.
 
         Parameters
         ----------
         use_topological_model : bool, optional
-            If True, use the `pygplates.TopologicalModel <https://www.gplates.org/docs/pygplates/generated/pygplates.TopologicalModel.html>`_  class to reconstruct seed points.
-            If False, use the GPlately Python code to reconstruct. Default is True.
+            Deprecated, and ignored. It used to choose between two ways of reconstructing the seed points,
+            and there is now only one.
+
+            .. deprecated:: 2.1
 
         """
-        if use_topological_model:
-            return super().reconstruct_by_topological_model()
-        else:
-            return super().reconstruct_by_topologies()
+        if use_topological_model is not None:
+            warnings.warn(
+                "`use_topological_model` keyword argument has been deprecated, it is no longer used",
+                DeprecationWarning,
+                stacklevel=2,
+            )
+        return super().reconstruct_by_topologies()

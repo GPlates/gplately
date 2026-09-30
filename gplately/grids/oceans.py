@@ -1140,7 +1140,7 @@ class SeafloorGrid(object):
     def reconstruct_by_topological_model(self):
         """Alias for :meth:`reconstruct_by_topologies`.
 
-        Introduced in version ``2.0``, this method used to use `pygplates.TopologicalModel`_ class to reconstruct seed points.
+        Introduced in version ``2.0``, this method used to use the `pygplates.TopologicalModel <https://www.gplates.org/docs/pygplates/generated/pygplates.TopologicalModel.html>`_ class to reconstruct seed points.
         Now it's just an alias for :meth:`reconstruct_by_topologies` and is deprecated.
 
         .. deprecated:: 2.1

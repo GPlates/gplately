@@ -62,6 +62,7 @@
 * New `Raster.from_points()` constructor (create a raster from scattered data points).
 * Enhanced `Raster.copy()` and `fill_value` handling.
 * *(pending)* Improved seafloor seed-point reconstruction algorithm — naturally deactivates seed points at convergent boundaries without empirical velocity/distance thresholds ([#413](https://github.com/GPlates/gplately/pull/413)).
+  * There is now one reconstruction method, so these are deprecated: the `subduction_collision_parameters` argument of `SeafloorGrid` and the `use_topological_model` argument of `TopologySeafloorGrid.generate()` (both ignored), and `SeafloorGrid.reconstruct_by_topological_model()` (now an alias of `reconstruct_by_topologies()`).
 * *(pending)* Continental polygon deformation support in seafloor gridding ([#414](https://github.com/GPlates/gplately/pull/414)).
 
 ### Bug Fixes (draft — to be expanded)
