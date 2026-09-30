@@ -637,11 +637,16 @@ class ReconstructByTopologies(object):
                             )
 
                             # Create the *next* line section associated with the current one.
+                            #
+                            # Note: Use the *first* geometry with the property name. The feature is referenced by the
+                            #       current topology, which resolves using the first one found (a topological section
+                            #       can't say which of several same-named geometries it means).
                             next_line_section_property_value = pygplates.GpmlTopologicalSection.create(  # type: ignore
                                 next_line_section_feature,
                                 geometry_property_name=next_line_section_geometry_property_name,
                                 reverse_order=next_line_section_reverse_order,
                                 topological_geometry_type=pygplates.GpmlTopologicalLine,  # type: ignore
+                                property_return=pygplates.PropertyReturn.first,  # type: ignore
                             )
                             if not next_line_section_property_value:
                                 raise RuntimeError(
@@ -717,11 +722,14 @@ class ReconstructByTopologies(object):
                 )
 
                 # Create the *next* boundary section associated with the current one.
+                #
+                # Note: Use the *first* geometry with the property name (see the line section above).
                 next_boundary_section_property_value = pygplates.GpmlTopologicalSection.create(  # type: ignore
                     next_boundary_section_feature,
                     geometry_property_name=next_boundary_section_geometry_property_name,
                     reverse_order=next_boundary_section_reverse_order,
                     topological_geometry_type=pygplates.GpmlTopologicalPolygon,  # type: ignore
+                    property_return=pygplates.PropertyReturn.first,  # type: ignore
                 )
                 if not next_boundary_section_property_value:
                     raise RuntimeError(
