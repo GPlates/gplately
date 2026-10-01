@@ -1147,6 +1147,11 @@ class SeafloorGrid(object):
 
             Use :meth:`reconstruct_by_topologies` instead.
         """
+        warnings.warn(
+            "`reconstruct_by_topological_model()` has been deprecated, use `reconstruct_by_topologies()` instead",
+            DeprecationWarning,
+            stacklevel=2,
+        )
         self.reconstruct_by_topologies()
 
     def reconstruct_by_topologies(self):
