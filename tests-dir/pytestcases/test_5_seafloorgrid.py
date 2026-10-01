@@ -167,25 +167,29 @@ def test_lat_lon_z_to_netCDF(zval_name, seafloorgrid):
         assert ds.getncattr("unique_input_point_count") > 0
 
 
-# SeafloorGrid is a deprecated alias of TopologySeafloorGrid, still importable from its old module paths.
-def test_deprecated_SeafloorGrid_alias(muller_2019_model, gplately_plate_reconstruction_object):
-    # The old import paths (registered in 'sys.modules' by 'gplately/__init__.py').
-    from gplately.oceans import SeafloorGrid as oceans_SeafloorGrid
-    from gplately.grids.oceans import SeafloorGrid as grids_oceans_SeafloorGrid
-
-    assert oceans_SeafloorGrid is gplately.SeafloorGrid
-    assert grids_oceans_SeafloorGrid is gplately.SeafloorGrid
-    assert issubclass(gplately.SeafloorGrid, gplately.TopologySeafloorGrid)
+# SeafloorGrid is a deprecated alias of TopologySeafloorGrid (the same class), still reachable from its old module paths.
+def test_deprecated_SeafloorGrid_alias():
+    import importlib
 
     with pytest.warns(DeprecationWarning, match="TopologySeafloorGrid"):
-        seafloorgrid = gplately.SeafloorGrid(
-            gplately_plate_reconstruction_object,
-            max_time=250,
-            min_time=249,
-            ridge_time_step=1.0,
-            save_directory="test-seafloor-grid",
-            file_collection="Muller2019",
-            grid_spacing=0.25,
-            continent_polygon_features=muller_2019_model.get_continental_polygons(),
-        )
-    assert isinstance(seafloorgrid, gplately.TopologySeafloorGrid)
+        assert gplately.SeafloorGrid is gplately.TopologySeafloorGrid
+    with pytest.warns(DeprecationWarning, match="TopologySeafloorGrid"):
+        from gplately import SeafloorGrid
+    assert SeafloorGrid is gplately.TopologySeafloorGrid
+
+    # The old module paths, both imported and as attributes.
+    for module_name in ("gplately.oceans", "gplately.grids.oceans"):
+        module = importlib.import_module(module_name)
+        with pytest.warns(DeprecationWarning, match="TopologySeafloorGrid"):
+            assert module.SeafloorGrid is gplately.TopologySeafloorGrid
+    with pytest.warns(DeprecationWarning, match="TopologySeafloorGrid"):
+        assert gplately.oceans.SeafloorGrid is gplately.TopologySeafloorGrid
+    with pytest.warns(DeprecationWarning, match="TopologySeafloorGrid"):
+        assert gplately.grids.oceans.SeafloorGrid is gplately.TopologySeafloorGrid
+
+    # Using the current name doesn't warn.
+    import warnings
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("error", DeprecationWarning)
+        from gplately import TopologySeafloorGrid  # noqa: F401

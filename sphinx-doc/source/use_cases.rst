@@ -242,8 +242,8 @@ as encoded by a plate reconstruction model.
       continent_polygon_features=model.get_layer("ContinentalPolygons"),  # the continent polygons
    )
 
-    # Begin automatic gridding!
-    seafloorgrid.reconstruct_by_topologies()
+   # Begin automatic gridding!
+   seafloorgrid.generate()
 
 The `SeafloorGrids example`_ is a tutorial notebook that demonstrates
 how to set up and use the :py:class:`gplately.TopologySeafloorGrid` object, and shows a sample set of output grids. 

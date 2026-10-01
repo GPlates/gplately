@@ -59,9 +59,9 @@ class TopologySeafloorGrid(object):
     By default, continental polygons are reconstructed to mask out continental regions.
 
     Gridding methods in this class have been adapted from Simon Williams' development repository for an
-    [auto-age-gridding workflow](https://github.com/siwill22/agegrid-0.1).
+    `auto-age-gridding workflow <https://github.com/siwill22/agegrid-0.1>`__.
 
-    The sample jupyter notebook [10-SeafloorGrid](https://github.com/GPlates/gplately/blob/master/Notebooks/10-SeafloorGrids.ipynb)
+    The sample jupyter notebook `10-SeafloorGrids <https://github.com/GPlates/gplately/blob/master/Notebooks/10-SeafloorGrids.ipynb>`__
     demonstrates how the functionalities within this class work. Below you can find documentation for each of these functionalities.
 
     Methodology
@@ -77,11 +77,12 @@ class TopologySeafloorGrid(object):
     * continental mask that separates ocean points from continent regions per timestep, and
     * set of points that emerge to the left and right of mid-ocean ridge segments per timestep, as well as the z-value to allocate to these points.
 
-    First, the global domain of initial points is created using [stripy's](https://github.com/underworldcode/stripy/blob/master/stripy/spherical_meshes.py#L27)
+    First, the global domain of initial points is created using `stripy's <https://github.com/underworldcode/stripy/blob/master/stripy/spherical_meshes.py#L27>`__
     icosahedral triangulated mesh. The number of points in this mesh can be controlled using a ``refinement_levels`` integer (the larger this integer,
     the more resolved the initial ocean basin will be).
 
-    ![RefinementLevels](https://raw.githubusercontent.com/GPlates/gplately/master/Notebooks/NotebookFiles/pdoc_Files/seafloorgrid_refinement.png)
+    .. image:: https://raw.githubusercontent.com/GPlates/gplately/master/Notebooks/NotebookFiles/pdoc_Files/seafloorgrid_refinement.png
+        :alt: RefinementLevels
 
     These points are spatially partitioned by plate ID so they can be passed into a point-in-polygon routine.
     This identifies points that lie within continental polygon boundaries and those that are in the ocean. From this, continental masks are built
@@ -93,14 +94,16 @@ class TopologySeafloorGrid(object):
     Thus, the spreading rate grid at ``max_time`` will be uniformly populated with the ``initial_ocean_mean_spreading_rate`` (mm/yr).
     The age grid at ``max_time`` will look like a series of smooth, linear age gradients clearly partitioned by tectonic plates with unique plate IDs:
 
-    ![MaxTimeGrids](https://raw.githubusercontent.com/GPlates/gplately/master/Notebooks/NotebookFiles/pdoc_Files/max_time_grids.png)
+    .. image:: https://raw.githubusercontent.com/GPlates/gplately/master/Notebooks/NotebookFiles/pdoc_Files/max_time_grids.png
+        :alt: MaxTimeGrids
 
     Ridge "line" topologies are resolved at each reconstruction time step and partitioned into segments with a valid stage rotation.
     Each segment is further divided into points at a specified ridge sampling spacing (``ridge_sampling``).
     Each point is ascribed a latitude, longitude, spreading rate and age (from plate reconstruction model files, as opposed to ages of the initial ocean mesh points),
     a point index and the general z-value that will be gridded onto it.
 
-    ![NewRidgePoints](https://raw.githubusercontent.com/GPlates/gplately/master/Notebooks/NotebookFiles/pdoc_Files/new_ridge_points.png)
+    .. image:: https://raw.githubusercontent.com/GPlates/gplately/master/Notebooks/NotebookFiles/pdoc_Files/new_ridge_points.png
+        :alt: NewRidgePoints
 
     Reconstruction by topologies involves determining which points are active and inactive (collided with a continent or subducted at a trench)
     for each reconstruction time step. This is done using a hidden object in :class:`PlateReconstruction` called ``ReconstructByTopologies``.
@@ -267,9 +270,9 @@ class TopologySeafloorGrid(object):
             out after points with plate-model prescribed ages emerge from ridges and spread
             to push them towards collision boundaries (where they are deleted).
         resume_from_checkpoints : bool, default=False
-            If set to ``True``, and gridding was interrupted in a previous run, then SeafloorGrids will resume gridding.
+            If set to ``True``, and gridding was interrupted in a previous run, then gridding will resume.
             All other parameters and input data should remain unchanged when resuming (otherwise the results will be indeterminate).
-            If set to ``False``, SeafloorGrids will start gridding from scratch.
+            If set to ``False``, gridding will start from scratch.
         continent_polygon_features : str/`os.PathLike`, or a sequence (eg, `list` or `tuple`) of instances of `pygplates.Feature`_, or a single instance of `pygplates.Feature`_, or an instance of `pygplates.FeatureCollection`_, or a sequence of any combination of those four types, optional
             Note that this is ignored if ``continent_mask_filename`` is specified, otherwise this argument must be specified.
             These are the continental polygon or COB terrane polygon features to mask the seafloor grids with.
@@ -1849,21 +1852,22 @@ class TopologySeafloorGrid(object):
                 )
 
 
-class SeafloorGrid(TopologySeafloorGrid):
-    """Deprecated alias for :class:`TopologySeafloorGrid`.
+# 'SeafloorGrid' is the pre-2.1 name of TopologySeafloorGrid, kept as a deprecated alias.
+#
+# It is the *same* class (not a subclass), so 'isinstance()' checks and type comparisons work with
+# either name. The warning is raised when the name is looked up (module '__getattr__', PEP 562),
+# which also covers 'gplately.oceans' and 'gplately.grids.oceans' (aliases of this module) and
+# unpickling objects pickled under the old name.
+SEAFLOOR_GRID_DEPRECATION_MESSAGE = (
+    "`SeafloorGrid` has been deprecated, use `TopologySeafloorGrid` instead"
+)
 
-    .. deprecated:: 2.1
 
-        Use :class:`TopologySeafloorGrid` instead (it takes the same arguments).
-    """
-
-    def __init__(self, *args, **kwargs):
-        warnings.warn(
-            "`SeafloorGrid` has been deprecated, use `TopologySeafloorGrid` instead",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        super().__init__(*args, **kwargs)
+def __getattr__(name):
+    if name == "SeafloorGrid":
+        warnings.warn(SEAFLOOR_GRID_DEPRECATION_MESSAGE, DeprecationWarning, stacklevel=2)
+        return TopologySeafloorGrid
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 
 
 def _lat_lon_z_to_netCDF_time(
@@ -1940,6 +1944,8 @@ def _lat_lon_z_to_netCDF_time(
     grid_output = os.path.join(output_dir, grid_basename)
 
     common_metadata = {
+        # Still the class's pre-2.1 name (now a deprecated alias), so that grids written by
+        # TopologySeafloorGrid are labelled the same as before.
         "metadata_source": "GPlately.SeafloorGrid",
         "zvalue_name": zval_name,
         "reconstruction_time_ma": float(time),

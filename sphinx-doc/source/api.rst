@@ -22,7 +22,6 @@ This page lists the main classes of the GPlately Python package.
    gplately.Points
    gplately.Raster
    gplately.PlotTopologies
-   gplately.SeafloorGrid
    gplately.TopologySeafloorGrid
    gplately.IsochronSeafloorGrid
    

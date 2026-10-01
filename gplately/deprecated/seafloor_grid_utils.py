@@ -15,7 +15,7 @@
 #    51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 
-"""Auxiliary functions for SeafloorGrid"""
+"""Auxiliary functions for TopologySeafloorGrid (formerly SeafloorGrid)"""
 
 import numpy as np
 import pygplates
