@@ -68,8 +68,7 @@ from .plot.cartopy_plot import CartopyPlotEngine
 from .plot.plot_engine import PlotEngine
 from .plot.pygmt_plot import PygmtPlotEngine
 from .plot.hillshade import get_topo_cmap
-from .grids.oceans import SeafloorGrid
-from .grids.topology_seafloor_grid import TopologySeafloorGrid
+from .grids.topology_seafloor_grid import TopologySeafloorGrid, SeafloorGrid
 from .grids.isochron_seafloor_grid import IsochronSeafloorGrid, OutputScalarType
 
 from .plot import PlotTopologies
@@ -93,7 +92,7 @@ from .utils.io_utils import load_feature_collection
 # And also do the same thing for deprecated modules for backward compatibility.
 import sys
 from . import plot as _plot
-from .grids import oceans as _oceans
+from .grids import topology_seafloor_grid as _topology_seafloor_grid
 
 # Import the deprecated modules for backward compatibility
 from .deprecated import (
@@ -108,7 +107,10 @@ sys.modules["gplately.pygplates"] = _pygplates
 sys.modules["gplately.download"] = _download
 sys.modules["gplately.data"] = _data
 sys.modules["gplately.parallel"] = _parallel
-sys.modules["gplately.oceans"] = _oceans
+# SeafloorGrid (now a deprecated alias of TopologySeafloorGrid) used to live in "gplately.oceans" and,
+# in 2.1.0rc0, in "gplately.grids.oceans".
+sys.modules["gplately.oceans"] = _topology_seafloor_grid
+sys.modules["gplately.grids.oceans"] = _topology_seafloor_grid
 
 # Clean up namespace
 del _download
@@ -116,7 +118,7 @@ del _data
 del _pygplates
 del _plot
 del _parallel
-del _oceans
+del _topology_seafloor_grid
 del sys
 
 __all__ = [

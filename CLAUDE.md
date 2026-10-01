@@ -64,12 +64,12 @@ Everything lives under `gplately/`. `gplately/__init__.py` is the public API sur
 - `Raster` (`raster.py`) — reconstructs gridded/raster data through time.
 - `PlotTopologies` (`plot/plot_topologies.py`) — builds geopandas GeoDataFrames of reconstructed geometries for a given reconstruction time.
 - `DataServer` (`data_server.py`) — legacy data-fetching interface; newer code should prefer `plate_model_manager`'s `PlateModelManager`/`PresentDayRasterManager`, which `gplately` re-exports directly.
-- `SeafloorGrid` / `TopologySeafloorGrid` / `IsochronSeafloorGrid` (`grids/`) — seafloor age/spreading-rate gridding through time.
+- `TopologySeafloorGrid` / `IsochronSeafloorGrid` (`grids/`) — seafloor age/spreading-rate gridding through time. `SeafloorGrid` is a deprecated alias of `TopologySeafloorGrid`.
 - `auxiliary.py` — `get_plate_reconstruction()` / `get_gplot()` convenience factories that wire the above together from a model name.
 
 **Plotting** (`plot/`): `PlotEngine` (`plot_engine.py`) is an abstract base class with two backends, `CartopyPlotEngine` and `PygmtPlotEngine`; `PlotTopologies` is injected with one of these to render. Add new plotting backends by subclassing `PlotEngine`.
 
-**Gridding** (`grids/`): `oceans.py` holds `SeafloorGrid`; `_grids.py`/`_utils.py` hold shared netCDF grid I/O helpers used across the grid classes.
+**Gridding** (`grids/`): `topology_seafloor_grid.py` holds `TopologySeafloorGrid` (and the deprecated `SeafloorGrid` alias), `isochron_seafloor_grid.py` holds `IsochronSeafloorGrid`; `_grids.py`/`_utils.py` hold shared netCDF grid I/O helpers used across the grid classes.
 
 **Low-level reconstruction math** (`lib/`): `reconstruct.py` (point/velocity reconstruction functions used by `Points`), plus `rotation.py`, `icosahedron.py`, `isopolate.py`, `polyline.py`, `quaternions.py` — geometric/numerical primitives, not typically touched directly by end users.
 

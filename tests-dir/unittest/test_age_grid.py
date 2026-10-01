@@ -7,9 +7,9 @@ os.environ["GPLATELY_DISABLE_DEV_WARNING"] = "true"
 from common import *
 from plate_model_manager import PlateModel, PlateModelManager
 
-from gplately import PlateReconstruction, SeafloorGrid
+from gplately import PlateReconstruction, TopologySeafloorGrid
 
-# test using SeafloorGrid class to generate age grids.
+# test using TopologySeafloorGrid class to generate age grids.
 
 
 def main():
@@ -39,7 +39,7 @@ def main():
 
     if True:
         # test the reconstruct_by_topologies method (*without* continent contouring)
-        grid = SeafloorGrid(
+        grid = TopologySeafloorGrid(
             reconstruction,
             min_time=400,
             max_time=410,
@@ -57,14 +57,14 @@ def main():
 
         grid.reconstruct_by_topologies()
         for val in (
-            SeafloorGrid.SEAFLOOR_AGE_KEY,
-            SeafloorGrid.SPREADING_RATE_KEY,
+            TopologySeafloorGrid.SEAFLOOR_AGE_KEY,
+            TopologySeafloorGrid.SPREADING_RATE_KEY,
         ):
             grid.lat_lon_z_to_netCDF(val, unmasked=False)
 
     if True:
         # test the reconstruct_by_topologies method (*with* continent contouring)
-        grid = SeafloorGrid(
+        grid = TopologySeafloorGrid(
             reconstruction,
             min_time=400,
             max_time=410,
@@ -82,8 +82,8 @@ def main():
 
         grid.reconstruct_by_topologies()
         for val in (
-            SeafloorGrid.SEAFLOOR_AGE_KEY,
-            SeafloorGrid.SPREADING_RATE_KEY,
+            TopologySeafloorGrid.SEAFLOOR_AGE_KEY,
+            TopologySeafloorGrid.SPREADING_RATE_KEY,
         ):
             grid.lat_lon_z_to_netCDF(val)
 

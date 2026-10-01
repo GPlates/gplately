@@ -12,10 +12,10 @@ import gplately
 
 logger.info(__name__)
 
-# ========================================= <gplately.SeafloorGrid> =========================================
+# ========================================= <gplately.TopologySeafloorGrid> =========================================
 
 """ 
-A series of automated tests that ensure GPlately's <SeafloorGrid> object can be initialised and all gridding
+A series of automated tests that ensure GPlately's <TopologySeafloorGrid> object can be initialised and all gridding
 routines can be performed. The routines must also return sensible grids - for example, spreading rate grids 
 must not have an excessive amount of NaN entries (which may mean incorrect masking has occurred).
 The following methods in the object are tested:
@@ -29,15 +29,15 @@ time step).
 """
 
 zval_names = [
-    gplately.SeafloorGrid.SEAFLOOR_AGE_KEY,
-    gplately.SeafloorGrid.SPREADING_RATE_KEY,
+    gplately.TopologySeafloorGrid.SEAFLOOR_AGE_KEY,
+    gplately.TopologySeafloorGrid.SPREADING_RATE_KEY,
 ]
 
 
 # CALL THE SEAFLOORGRID OBJECT
-def test_gplately_SeafloorGrid_object(seafloorgrid):
+def test_gplately_TopologySeafloorGrid_object(seafloorgrid):
     # assert gplot, "No <gplately.PlotTopologies> object made with {}.".format(model)
-    assert seafloorgrid, "Unable to create a <gplately.SeafloorGrid> object with \
+    assert seafloorgrid, "Unable to create a <gplately.TopologySeafloorGrid> object with \
     Müller et al. (2019) at a max time of {} Ma, and a min time of {} Ma.".format(
         gridding_times[1], gridding_times[0]
     )
@@ -78,15 +78,15 @@ def _reconstruct_by_topologies(time, seafloorgrid, clean=False):
 
     unique_data = curr_data.drop_duplicates(
         subset=[
-            gplately.SeafloorGrid.CURRENT_LONGITUDES_KEY,
-            gplately.SeafloorGrid.CURRENT_LATITUDES_KEY,
+            gplately.TopologySeafloorGrid.CURRENT_LONGITUDES_KEY,
+            gplately.TopologySeafloorGrid.CURRENT_LATITUDES_KEY,
         ]
     )
 
     # Gridding input critical data
-    age_data = np.array(unique_data[gplately.SeafloorGrid.SEAFLOOR_AGE_KEY].to_list())
+    age_data = np.array(unique_data[gplately.TopologySeafloorGrid.SEAFLOOR_AGE_KEY].to_list())
     spreading_rate_data = np.array(
-        unique_data[gplately.SeafloorGrid.SPREADING_RATE_KEY].to_list()
+        unique_data[gplately.TopologySeafloorGrid.SPREADING_RATE_KEY].to_list()
     )
 
     # Ensure spreading rate is sensible at max_time; namely that
@@ -165,3 +165,27 @@ def test_lat_lon_z_to_netCDF(zval_name, seafloorgrid):
         assert ds.getncattr("zvalue_name") == zval_name
         assert ds.getncattr("reconstruction_time_ma") == pytest.approx(time)
         assert ds.getncattr("unique_input_point_count") > 0
+
+
+# SeafloorGrid is a deprecated alias of TopologySeafloorGrid, still importable from its old module paths.
+def test_deprecated_SeafloorGrid_alias(muller_2019_model, gplately_plate_reconstruction_object):
+    # The old import paths (registered in 'sys.modules' by 'gplately/__init__.py').
+    from gplately.oceans import SeafloorGrid as oceans_SeafloorGrid
+    from gplately.grids.oceans import SeafloorGrid as grids_oceans_SeafloorGrid
+
+    assert oceans_SeafloorGrid is gplately.SeafloorGrid
+    assert grids_oceans_SeafloorGrid is gplately.SeafloorGrid
+    assert issubclass(gplately.SeafloorGrid, gplately.TopologySeafloorGrid)
+
+    with pytest.warns(DeprecationWarning, match="TopologySeafloorGrid"):
+        seafloorgrid = gplately.SeafloorGrid(
+            gplately_plate_reconstruction_object,
+            max_time=250,
+            min_time=249,
+            ridge_time_step=1.0,
+            save_directory="test-seafloor-grid",
+            file_collection="Muller2019",
+            grid_spacing=0.25,
+            continent_polygon_features=muller_2019_model.get_continental_polygons(),
+        )
+    assert isinstance(seafloorgrid, gplately.TopologySeafloorGrid)

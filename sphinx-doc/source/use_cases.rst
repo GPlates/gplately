@@ -214,10 +214,10 @@ The `02-PlateReconstructions.ipynb`_ Jupyter Notebook is available in the GitHub
       :width: 600
       :alt: PlotTopologiesDemo
 
-SeafloorGrid
-------------
+TopologySeafloorGrid
+--------------------
 
-The :py:class:`gplately.SeafloorGrid` class wraps an automatic workflow to grid seafloor ages and seafloor spreading rates
+The :py:class:`gplately.TopologySeafloorGrid` class wraps an automatic workflow to grid seafloor ages and seafloor spreading rates
 as encoded by a plate reconstruction model.
 
 .. code-block:: python
@@ -228,13 +228,13 @@ as encoded by a plate reconstruction model.
 
    os.environ["GPLATELY_DISABLE_DEV_WARNING"] = "true"
 
-   from gplately import SeafloorGrid, auxiliary
+   from gplately import TopologySeafloorGrid, auxiliary
 
    model = auxiliary.get_plate_model("Muller2019")
    plate_reconstruction = auxiliary.get_plate_reconstruction(model)
 
    # Set up automatic gridding from 5Ma to present day
-   seafloorgrid = SeafloorGrid(
+   seafloorgrid = TopologySeafloorGrid(
       plate_reconstruction=plate_reconstruction,  # the PlateReconstruction object
       max_time=5,  # start time (Ma)
       min_time=0,  # end time (Ma)
@@ -246,7 +246,7 @@ as encoded by a plate reconstruction model.
     seafloorgrid.reconstruct_by_topologies()
 
 The `SeafloorGrids example`_ is a tutorial notebook that demonstrates
-how to set up and use the :py:class:`gplately.SeafloorGrid` object, and shows a sample set of output grids. 
+how to set up and use the :py:class:`gplately.TopologySeafloorGrid` object, and shows a sample set of output grids. 
 The latest `10-SeafloorGrids.ipynb`_ Jupyter Notebook is available in the GitHub GPlately repository.
 
 .. _`SeafloorGrids example`: ../../notebook-html//10-SeafloorGrids.html
