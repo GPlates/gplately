@@ -77,7 +77,7 @@ Workflows
    Using pyGPlates to create motion paths and flowlines for points on a tectonic plate to illustrate the plate's
    trajectory through geological time.
 - `10 - Seafloor Grid`_
-   Defines the parameters needed to set up a :py:class:`gplately.SeafloorGrid` object and demonstrates
+   Defines the parameters needed to set up a :py:class:`gplately.TopologySeafloorGrid` object and demonstrates
    how to produce age and spreading rate grids from a set of plate reconstruction model files.
 - `11 - Andes Fluxes`_
    Demonstrates how the reconstructed subduction history along the Andean margin can potentially be used in
