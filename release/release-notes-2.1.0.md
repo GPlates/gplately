@@ -61,6 +61,7 @@
 * New `PlateReconstruction.shallow_copy()` method.
 * New `Raster.from_points()` constructor (create a raster from scattered data points).
 * Enhanced `Raster.copy()` and `fill_value` handling.
+* Seafloor gridding has two classes, each with a `generate()` method: `TopologySeafloorGrid` (by reconstructing seed points with topologies) and the new `IsochronSeafloorGrid` (by interpolating between isochrons). `TopologySeafloorGrid` is the former `SeafloorGrid`, which remains as a deprecated alias (also importable from `gplately.oceans`).
 * *(pending)* Improved seafloor seed-point reconstruction algorithm — naturally deactivates seed points at convergent boundaries without empirical velocity/distance thresholds ([#413](https://github.com/GPlates/gplately/pull/413)).
 * *(pending)* Continental polygon deformation support in seafloor gridding ([#414](https://github.com/GPlates/gplately/pull/414)).
 

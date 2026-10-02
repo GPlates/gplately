@@ -64,12 +64,12 @@ Everything lives under `gplately/`. `gplately/__init__.py` is the public API sur
 - `Raster` (`raster.py`) — reconstructs gridded/raster data through time.
 - `PlotTopologies` (`plot/plot_topologies.py`) — builds geopandas GeoDataFrames of reconstructed geometries for a given reconstruction time.
 - `DataServer` (`data_server.py`) — legacy data-fetching interface; newer code should prefer `plate_model_manager`'s `PlateModelManager`/`PresentDayRasterManager`, which `gplately` re-exports directly.
-- `SeafloorGrid` / `TopologySeafloorGrid` / `IsochronSeafloorGrid` (`grids/`) — seafloor age/spreading-rate gridding through time.
+- `TopologySeafloorGrid` / `IsochronSeafloorGrid` (`grids/`) — seafloor age/spreading-rate gridding through time. `SeafloorGrid` is a deprecated alias of `TopologySeafloorGrid`.
 - `auxiliary.py` — `get_plate_reconstruction()` / `get_gplot()` convenience factories that wire the above together from a model name.
 
 **Plotting** (`plot/`): `PlotEngine` (`plot_engine.py`) is an abstract base class with two backends, `CartopyPlotEngine` and `PygmtPlotEngine`; `PlotTopologies` is injected with one of these to render. Add new plotting backends by subclassing `PlotEngine`.
 
-**Gridding** (`grids/`): `oceans.py` holds `SeafloorGrid`; `_grids.py`/`_utils.py` hold shared netCDF grid I/O helpers used across the grid classes.
+**Gridding** (`grids/`): `topology_seafloor_grid.py` holds `TopologySeafloorGrid` (and the deprecated `SeafloorGrid` alias), `isochron_seafloor_grid.py` holds `IsochronSeafloorGrid`; `_grids.py`/`_utils.py` hold shared netCDF grid I/O helpers used across the grid classes.
 
 **Low-level reconstruction math** (`lib/`): `reconstruct.py` (point/velocity reconstruction functions used by `Points`), plus `rotation.py`, `icosahedron.py`, `isopolate.py`, `polyline.py`, `quaternions.py` — geometric/numerical primitives, not typically touched directly by end users.
 
@@ -77,7 +77,7 @@ Everything lives under `gplately/`. `gplately/__init__.py` is the public API sur
 
 **CLI subcommands** (`commands/`): implementations for `gplately`-CLI-only subcommands (`feature_filter_cmd.py`, `list_models.py`, `regrid.py`, `reset_feature_type.py`, `rotate_grid.py`, `seafloor_grids.py`) that aren't part of `ptt/`. Each module exposes an `add_parser(subparser)` used by `__main__.py`.
 
-**Backward compatibility** (`deprecated/`): `gplately/__init__.py` registers these modules into `sys.modules` under old import paths (`gplately.mapping`, `gplately.pygplates`, `gplately.download`, `gplately.data`, `gplately.parallel`, `gplately.oceans`) so pre-refactor import paths keep working. When renaming/moving public functionality, add a shim here rather than breaking old imports.
+**Backward compatibility** (`deprecated/`): `gplately/__init__.py` registers these modules into `sys.modules` under old import paths (`gplately.mapping`, `gplately.pygplates`, `gplately.download`, `gplately.data`, `gplately.parallel`, `gplately.oceans`, `gplately.grids.oceans`) so pre-refactor import paths keep working. Registering in `sys.modules` makes `import x.y` work but not attribute access (`gplately.oceans`), which the package's module-level `__getattr__` provides; a deprecated class alias such as `SeafloorGrid` is also served from a `__getattr__` that warns. When renaming/moving public functionality, add a shim here rather than breaking old imports.
 
 **Shared utilities** (`utils/`): `check_pmm.py` enforces the `plate-model-manager` version required by the installed `gplately` (via `REQUIRED_PMM_VERSION`, checked at import time in `__init__.py`); `log_utils.py` sets up logging on import (`gplately.log`, `gplately-pytest.log`, `ptt.log` files); `feature_filter.py` / `feature_transformer.py` back the `feature_filter` CLI command; `io_utils.py` has `load_feature_collection`.
 

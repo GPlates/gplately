@@ -75,7 +75,7 @@ notebooks listed below.
 - [**07 - Plate Tectonic Stats**](07-WorkingWithPlateTectonicStats.ipynb): Calculate and plot subduction zone and ridge data (convergence/spreading velocities, subduction angles, subduction zone and ridge lengths, crustal surface areas produced and subducted, etc.).
 - [**08 - Predicting Slab Flux**](08-PredictingSlabFlux.ipynb): Predicting the average slab dip angle of subducting oceanic lithosphere.
 - [**09 - Motion Paths and Flowlines**](09-CreatingMotionPathsAndFlowlines.ipynb): Using pyGPlates to create motion paths and flowlines of points on a tectonic plate to illustrate the plate's trajectory through geological time.
-- [**10 - Seafloor Grid**](10-SeafloorGrids.ipynb): Defines the parameters needed to set up a `SeafloorGrid` object, and demonstrates how to produce age and spreading rate grids from a set of plate reconstruction model files.
+- [**10 - Seafloor Grid**](10-SeafloorGrids.ipynb): Defines the parameters needed to set up a `TopologySeafloorGrid` object, and demonstrates how to produce age and spreading rate grids from a set of plate reconstruction model files.
 - [**11 - Andes Fluxes**](11-AndesFluxes.ipynb): Demonstrates how the reconstructed subduction history along the Andean margin can be used in plate kinematics analysis and data mining.
 - [**12 - Mutschler World Porphyry Copper Deposits Regional Plots**](12-MutschlerWorldPorphyryCopperDepositsRegionalPlots.ipynb): Generates regional plots for Mutschler world porphyry copper deposits.
 - [**13 - Reconstructing Zircon Data**](13-ReconstructingZirconData.ipynb): Demonstrates how to reconstruct and plot zircon data on a global map through geological time.
