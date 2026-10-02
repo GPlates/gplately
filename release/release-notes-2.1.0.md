@@ -63,6 +63,7 @@
 * Enhanced `Raster.copy()` and `fill_value` handling.
 * Seafloor gridding has two classes, each with a `generate()` method: `TopologySeafloorGrid` (by reconstructing seed points with topologies) and the new `IsochronSeafloorGrid` (by interpolating between isochrons). `TopologySeafloorGrid` is the former `SeafloorGrid`, which remains as a deprecated alias (also importable from `gplately.oceans`).
 * *(pending)* Improved seafloor seed-point reconstruction algorithm — naturally deactivates seed points at convergent boundaries without empirical velocity/distance thresholds ([#413](https://github.com/GPlates/gplately/pull/413)).
+  * There is now one reconstruction method, so these are deprecated: the `subduction_collision_parameters` argument of `TopologySeafloorGrid` and the `use_topological_model` argument of `TopologySeafloorGrid.generate()` (both ignored), and `TopologySeafloorGrid.reconstruct_by_topological_model()` (now an alias of `reconstruct_by_topologies()`).
 * *(pending)* Continental polygon deformation support in seafloor gridding ([#414](https://github.com/GPlates/gplately/pull/414)).
 
 ### Bug Fixes (draft — to be expanded)
