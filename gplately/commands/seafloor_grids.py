@@ -29,7 +29,6 @@ from pygplates import FeaturesFunctionArgument
 
 from ..reconstruction import PlateReconstruction
 from .. import (
-    SeafloorGrid,
     IsochronSeafloorGrid,
     TopologySeafloorGrid,
     OutputScalarType,
@@ -339,7 +338,7 @@ def add_parser(parser):
         "-j",
         "--n-jobs",
         type=int,  # NOTE: previously missing, so a CLI-provided value stayed a
-        # str and would misbehave when handed to multiprocessing/SeafloorGrid.
+        # str and would misbehave when handed to multiprocessing/TopologySeafloorGrid.
         help="number of processes to use; default: use all CPU available",
         metavar="n_jobs",
         dest="n_jobs",
@@ -536,8 +535,8 @@ def _run_topology_seafloor_gridding(
 
         grid.generate()
         for val in (
-            SeafloorGrid.SEAFLOOR_AGE_KEY,
-            SeafloorGrid.SPREADING_RATE_KEY,
+            TopologySeafloorGrid.SEAFLOOR_AGE_KEY,
+            TopologySeafloorGrid.SPREADING_RATE_KEY,
         ):
             grid.lat_lon_z_to_netCDF(val, unmasked=include_unmasked)
 

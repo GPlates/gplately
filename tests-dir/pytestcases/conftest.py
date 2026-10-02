@@ -178,7 +178,7 @@ def gplately_seafloorgrid_object(
 ):
     model = gplately_plate_reconstruction_object
 
-    seafloorgrid = gplately.SeafloorGrid(
+    seafloorgrid = gplately.TopologySeafloorGrid(
         model,
         max_time=250,
         min_time=249,

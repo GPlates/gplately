@@ -24,6 +24,12 @@ from ._utils import num_grid_points
 # For historical reasons, Raster is also available in gplately.grids, but this is deprecated and has been removed.
 # This error will be raised if someone tries to import Raster from gplately.grids.
 def __getattr__(name):
+    # 'gplately.grids.oceans' (2.1.0rc0) is now 'gplately.grids.topology_seafloor_grid'. It's also registered in
+    # 'sys.modules' (see 'gplately/__init__.py'), but that alone doesn't make it an attribute of this package.
+    if name == "oceans":
+        from . import topology_seafloor_grid
+
+        return topology_seafloor_grid
     if name in ["Raster"]:
         raise ImportError(
             f"The Raster class has been taken out of gplately.grids. Use `from gplately import Raster` instead of `from gplately.grids import Raster`"

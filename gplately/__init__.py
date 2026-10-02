@@ -68,7 +68,6 @@ from .plot.cartopy_plot import CartopyPlotEngine
 from .plot.plot_engine import PlotEngine
 from .plot.pygmt_plot import PygmtPlotEngine
 from .plot.hillshade import get_topo_cmap
-from .grids.oceans import SeafloorGrid
 from .grids.topology_seafloor_grid import TopologySeafloorGrid
 from .grids.isochron_seafloor_grid import IsochronSeafloorGrid, OutputScalarType
 
@@ -93,7 +92,7 @@ from .utils.io_utils import load_feature_collection
 # And also do the same thing for deprecated modules for backward compatibility.
 import sys
 from . import plot as _plot
-from .grids import oceans as _oceans
+from .grids import topology_seafloor_grid as _topology_seafloor_grid
 
 # Import the deprecated modules for backward compatibility
 from .deprecated import (
@@ -108,7 +107,10 @@ sys.modules["gplately.pygplates"] = _pygplates
 sys.modules["gplately.download"] = _download
 sys.modules["gplately.data"] = _data
 sys.modules["gplately.parallel"] = _parallel
-sys.modules["gplately.oceans"] = _oceans
+# The module holding SeafloorGrid (now a deprecated alias of TopologySeafloorGrid) used to be "gplately.oceans"
+# and, in 2.1.0rc0, "gplately.grids.oceans" (also reachable as attributes; see "__getattr__" below and in "grids").
+sys.modules["gplately.oceans"] = _topology_seafloor_grid
+sys.modules["gplately.grids.oceans"] = _topology_seafloor_grid
 
 # Clean up namespace
 del _download
@@ -116,7 +118,7 @@ del _data
 del _pygplates
 del _plot
 del _parallel
-del _oceans
+del _topology_seafloor_grid
 del sys
 
 __all__ = [
@@ -129,7 +131,6 @@ __all__ = [
     "PlotTopologies",
     "Points",
     "Raster",
-    "SeafloorGrid",
     "IsochronSeafloorGrid",
     "TopologySeafloorGrid",
     # other classes
@@ -154,3 +155,20 @@ __all__ = [
     # constants
     "EARTH_RADIUS",
 ]
+
+
+def __getattr__(name):
+    # 'SeafloorGrid' is a deprecated alias of TopologySeafloorGrid (the same class), so warn when it's looked up.
+    # Note: It's not in '__all__', so that 'from gplately import *' doesn't warn.
+    if name == "SeafloorGrid":
+        import warnings
+        from .grids.topology_seafloor_grid import SEAFLOOR_GRID_DEPRECATION_MESSAGE
+
+        warnings.warn(SEAFLOOR_GRID_DEPRECATION_MESSAGE, DeprecationWarning, stacklevel=2)
+        return TopologySeafloorGrid
+    # 'gplately.oceans' is in 'sys.modules' (above), but importing it that way doesn't make it an attribute.
+    if name == "oceans":
+        from .grids import topology_seafloor_grid
+
+        return topology_seafloor_grid
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
