@@ -759,7 +759,9 @@ class Points(object):
             (which is the anchor plate that the initial points at the initial time are relative to).
 
         return_array : bool, default=False
-            Return a 2-tuple of ``numpy.ndarray``, rather than a :class:`Points` object.
+            Return longitude and latitude arrays, in that order, rather than a
+            :class:`Points` object. If ``return_point_indices`` is also True,
+            append the point indices to the returned tuple.
 
         return_point_indices : bool, default=False
             Return the indices of the points that are reconstructed.
@@ -776,6 +778,19 @@ class Points(object):
             If ``return_point_indices`` is True, return the indices of the returned points (that are reconstructed).
             This array is the same size as ``rlons`` and ``rlats`` (or size of ``reconstructed_points``).
             These are indices into ``self.lons``, ``self.lats``, ``self.plate_id`` and ``self.age``.
+
+        Notes
+        -----
+        The return value depends on both flags:
+
+        * Both flags False: ``reconstructed_points``.
+        * Only ``return_point_indices`` True:
+          ``(reconstructed_points, point_indices)``.
+        * Only ``return_array`` True: ``(rlons, rlats)``.
+        * Both flags True: ``(rlons, rlats, point_indices)``.
+
+        Coordinate arrays use GPlately's longitude-first order, which differs
+        from the latitude-first tuples returned by pyGPlates point objects.
         """
         if anchor_plate_id is None:
             anchor_plate_id = self.anchor_plate_id
