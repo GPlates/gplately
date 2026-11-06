@@ -748,6 +748,18 @@ class Points(object):
         Only those points that are reconstructable (See :ref:`Notes <points-note>`) and that have ages greater than or equal
         to ``time`` (ie, at points that exist at ``time``) are reconstructed.
 
+        What is returned depends on ``return_array`` and ``return_point_indices``:
+
+        * Both False: ``reconstructed_points`` (a single :class:`Points` object, not a tuple).
+        * Only ``return_point_indices`` True: ``(reconstructed_points, point_indices)``.
+        * Only ``return_array`` True: ``(rlons, rlats)``.
+        * Both True: ``(rlons, rlats, point_indices)``.
+
+        .. note::
+
+            Longitudes come before latitudes, following the GMT convention used throughout GPlately.
+            This is the opposite of pyGPlates, where ``pygplates.PointOnSphere.to_lat_lon()`` returns ``(lat, lon)``.
+
         Parameters
         ----------
         time : float
@@ -778,19 +790,6 @@ class Points(object):
             If ``return_point_indices`` is True, return the indices of the returned points (that are reconstructed).
             This array is the same size as ``rlons`` and ``rlats`` (or size of ``reconstructed_points``).
             These are indices into ``self.lons``, ``self.lats``, ``self.plate_id`` and ``self.age``.
-
-        Notes
-        -----
-        The return value depends on both flags:
-
-        * Both flags False: ``reconstructed_points``.
-        * Only ``return_point_indices`` True:
-          ``(reconstructed_points, point_indices)``.
-        * Only ``return_array`` True: ``(rlons, rlats)``.
-        * Both flags True: ``(rlons, rlats, point_indices)``.
-
-        Coordinate arrays use GPlately's longitude-first order, which differs
-        from the latitude-first tuples returned by pyGPlates point objects.
         """
         if anchor_plate_id is None:
             anchor_plate_id = self.anchor_plate_id
@@ -1788,8 +1787,8 @@ class Points(object):
         output_name=None,
         return_array=False,
     ):
-        """Rotate a grid defined in one plate model reference frame within a :class:`Raster` object to another plate
-        reconstruction model reference frame.
+        """Reconstruct the points to ``reconstruction_time``, then rotate them from one plate model reference frame
+        to another plate reconstruction model reference frame.
 
         Parameters
         ----------
@@ -1798,12 +1797,12 @@ class Points(object):
         from_rotation_features_or_model : str/os.PathLike, list of str/os.PathLike, or instance of pygplates.RotationModel
             A filename, or a list of filenames, or a pyGPlates
             RotationModel object that defines the rotation model
-            that the input grid is currently associated with.
+            that the input points are currently associated with.
             ``self.plate_reconstruction.rotation_model`` is default.
         to_rotation_features_or_model : str/os.PathLike, list of str/os.PathLike, or instance of pygplates.RotationModel
             A filename, or a list of filenames, or a pyGPlates
             RotationModel object that defines the rotation model
-            that the input grid shall be rotated with.
+            that the input points shall be rotated with.
             ``self.plate_reconstruction.rotation_model`` is default.
         from_rotation_reference_plate : int, default = 0
             The current reference plate for the plate model the points
@@ -1815,12 +1814,17 @@ class Points(object):
             An arbitrary placeholder reference frame with which
             to define the "from" and "to" reference frames.
         output_name : str, default None
-            If passed, the rotated points are saved as a gpml to this filename.
+            Not yet implemented. Passing anything other than None raises ``NotImplementedError``.
+        return_array : bool, default=False
+            Return a 2-tuple ``(rlons, rlats)`` of longitude and latitude arrays (in that order),
+            rather than a :class:`Points` object.
 
         Returns
         -------
-        Points
-            An instance of the :class:`Points` object containing the rotated points.
+        rotated_points : :class:`Points`
+            If ``return_array`` is False, return the rotated points in a :class:`Points` object.
+        rlons, rlats : ndarray
+            If ``return_array`` is True, return the longitude and latitude coordinate arrays of the rotated points.
         """
         if output_name is not None:
             raise NotImplementedError("'output_name' parameter is not implemented")
