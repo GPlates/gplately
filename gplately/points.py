@@ -479,7 +479,7 @@ class Points(object):
         self.feature_collection = _FeatureCollection(self.features)
 
         # Restore the point attributes on the (rebuilt) point features.
-        self.add_attributes(**self.attributes)
+        self._set_feature_attributes(self.attributes.keys())
 
         # Restore the unpicklable entries.
         #
@@ -670,13 +670,18 @@ class Points(object):
 
         if any(kwargs):
             # add these to the FeatureCollection
-            for f, feature in enumerate(self.feature_collection):
-                for key in keys:
-                    # extract value for each row in attribute
-                    val = self.attributes[key][f]
+            self._set_feature_attributes(keys)
 
-                    # set this attribute on the feature
-                    feature.set_shapefile_attribute(key, val)
+    def _set_feature_attributes(self, keys):
+        """Set the attributes with the specified keys (in :py:attr:`attributes`) on the point features.
+
+        The attribute values are matched to the point features by *position*
+        (eg, a pandas Series is not indexed by its labels).
+        """
+        for key in keys:
+            # Iterating over an attribute (list, tuple, numpy array, pandas Series, etc) is by position.
+            for feature, value in zip(self.feature_collection, self.attributes[key]):
+                feature.set_shapefile_attribute(key, value)
 
     def get_geopandas_dataframe(self):
         """Return a ``geopandas.GeoDataFrame`` object for the points.
@@ -751,17 +756,46 @@ class Points(object):
         ``point_indices`` is an integer array of point indices (into ``self.lons``, ``self.lats``, etc),
         so that each attribute stays aligned with the points kept (eg, the points that are reconstructed).
 
-        Attributes that are lists (or tuples) are returned as lists, so the type of each attribute value
-        is unchanged. Any other attribute (eg, a numpy array or a pandas Series) is indexed by *position*
-        and returned as a numpy array.
+        Each attribute is indexed by *position* and keeps its type: a numpy array, list, tuple or
+        pandas Series is returned as the same type. Any other sequence is returned as a numpy array.
         """
         attributes_subset = {}
         for key, attribute in self.attributes.items():
-            if isinstance(attribute, (list, tuple)):
-                attributes_subset[key] = [attribute[index] for index in point_indices]
+            if isinstance(attribute, np.ndarray):
+                attribute_subset = attribute[point_indices]
+            elif isinstance(attribute, list):
+                attribute_subset = [attribute[index] for index in point_indices]
+            elif isinstance(attribute, tuple):
+                attribute_subset = tuple(attribute[index] for index in point_indices)
+            elif hasattr(attribute, "iloc"):
+                # A pandas Series (index by position, not by label).
+                attribute_subset = attribute.iloc[point_indices]
             else:
-                attributes_subset[key] = np.asarray(attribute)[point_indices]
+                attribute_subset = np.asarray(attribute)[point_indices]
+            attributes_subset[key] = attribute_subset
         return attributes_subset
+
+    def _subset(self, point_indices, lons, lats, time, anchor_plate_id):
+        """Return a new :class:`Points` containing a subset of the points at new locations.
+
+        ``point_indices`` is an integer array of point indices (into ``self.lons``, ``self.lats``, etc).
+        ``lons`` and ``lats`` are the new locations of those points (eg, reconstructed to ``time``,
+        relative to ``anchor_plate_id``), and so must be the same size as ``point_indices``.
+
+        All per-point data (plate IDs, ages and attributes) is restricted to the same subset of points,
+        so it stays aligned with ``lons`` and ``lats``.
+        """
+        points_subset = Points(
+            self.plate_reconstruction,
+            lons,
+            lats,
+            time=time,
+            plate_id=self.plate_id[point_indices],
+            age=self.age[point_indices],
+            anchor_plate_id=anchor_plate_id,
+        )
+        points_subset.add_attributes(**self._attributes_subset(point_indices))
+        return points_subset
 
     def reconstruct(
         self, time, anchor_plate_id=None, return_array=False, return_point_indices=False
@@ -903,17 +937,8 @@ class Points(object):
         if return_array:
             return_tuple += rlons, rlats
         else:
-            reconstructed_points = Points(
-                self.plate_reconstruction,
-                rlons,
-                rlats,
-                time=time,
-                plate_id=self.plate_id[point_indices],
-                age=self.age[point_indices],
-                anchor_plate_id=anchor_plate_id,
-            )
-            reconstructed_points.add_attributes(
-                **self._attributes_subset(point_indices)
+            reconstructed_points = self._subset(
+                point_indices, rlons, rlats, time, anchor_plate_id
             )
             return_tuple += (reconstructed_points,)
 
@@ -1081,15 +1106,16 @@ class Points(object):
                         rpoint.to_lat_lon() for rpoint in reconstructed_points_sub
                     ]
 
-        rlonslats = lat_lon_points[valid_mask]  # remove invalid points
+        # Indices of the valid points (used to remove invalid points).
+        point_indices = np.flatnonzero(valid_mask)
+
+        rlonslats = lat_lon_points[point_indices]
         rlons = rlonslats[:, 1]
         rlats = rlonslats[:, 0]
 
         return_tuple = (rlons, rlats)
 
         if return_point_indices:
-            all_point_indices = np.arange(self.size, dtype=int)
-            point_indices = all_point_indices[valid_mask]  # remove invalid points
             return_tuple += (point_indices,)
 
         return return_tuple
@@ -1303,21 +1329,22 @@ class Points(object):
                         rpoint.to_lat_lon() for rpoint in reconstructed_points_sub
                     ]
 
-        velocities = north_east_velocities[valid_mask]  # remove invalid points
+        # Indices of the valid points (used to remove invalid points).
+        point_indices = np.flatnonzero(valid_mask)
+
+        velocities = north_east_velocities[point_indices]
         velocity_lons = velocities[:, 1]  # east
         velocity_lats = velocities[:, 0]  # north
 
         return_tuple = velocity_lons, velocity_lats
 
         if return_reconstructed_points:
-            rlonslats = lat_lon_points[valid_mask]  # remove invalid points
+            rlonslats = lat_lon_points[point_indices]
             rlons = rlonslats[:, 1]
             rlats = rlonslats[:, 0]
             return_tuple += (rlons, rlats)
 
         if return_point_indices:
-            all_point_indices = np.arange(self.size, dtype=int)
-            point_indices = all_point_indices[valid_mask]  # remove invalid points
             return_tuple += (point_indices,)
 
         return return_tuple
@@ -1930,16 +1957,13 @@ class Points(object):
         if return_array:
             return_tuple += out_lon, out_lat
         else:
-            rotated_points = Points(
-                self.plate_reconstruction,
+            rotated_points = self._subset(
+                point_indices,
                 out_lon,
                 out_lat,
-                time=reconstruction_time,
-                plate_id=self.plate_id[point_indices],
-                age=self.age[point_indices],
-                anchor_plate_id=to_rotation_reference_plate,
+                reconstruction_time,
+                to_rotation_reference_plate,
             )
-            rotated_points.add_attributes(**self._attributes_subset(point_indices))
             return_tuple += (rotated_points,)
 
         if return_point_indices:
