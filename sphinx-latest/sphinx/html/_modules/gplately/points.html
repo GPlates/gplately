@@ -99,6 +99,7 @@
 <span class="c1">#    with this program; if not, write to Free Software Foundation, Inc.,</span>
 <span class="c1">#    51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.</span>
 <span class="c1">#</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">copy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">_copy</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Union</span>
 
@@ -567,6 +568,9 @@
         <span class="c1"># Create a collection of the point features.</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">feature_collection</span> <span class="o">=</span> <span class="n">_FeatureCollection</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">features</span><span class="p">)</span>
 
+        <span class="c1"># Restore the point attributes on the (rebuilt) point features.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_feature_attributes</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+
         <span class="c1"># Restore the unpicklable entries.</span>
         <span class="c1">#</span>
         <span class="c1"># This includes pygplates reconstructed feature geometries and resolved topological geometries.</span>
@@ -688,7 +692,8 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">age</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span>
             <span class="n">anchor_plate_id</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">anchor_plate_id</span><span class="p">,</span>
         <span class="p">)</span>
-        <span class="n">gpts</span><span class="o">.</span><span class="n">add_attributes</span><span class="p">(</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">copy</span><span class="p">())</span>
+        <span class="c1"># Deep copy the attributes so the copy does not share attribute arrays/lists with this object.</span>
+        <span class="n">gpts</span><span class="o">.</span><span class="n">add_attributes</span><span class="p">(</span><span class="o">**</span><span class="n">_copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">attributes</span><span class="p">))</span>
 
         <span class="k">return</span> <span class="n">gpts</span></div>
 
@@ -760,14 +765,19 @@
 
         <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">kwargs</span><span class="p">):</span>
             <span class="c1"># add these to the FeatureCollection</span>
-            <span class="k">for</span> <span class="n">f</span><span class="p">,</span> <span class="n">feature</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">feature_collection</span><span class="p">):</span>
-                <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">:</span>
-                    <span class="c1"># extract value for each row in attribute</span>
-                    <span class="n">val</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">attributes</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="n">f</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_set_feature_attributes</span><span class="p">(</span><span class="n">keys</span><span class="p">)</span></div>
 
-                    <span class="c1"># set this attribute on the feature</span>
-                    <span class="n">feature</span><span class="o">.</span><span class="n">set_shapefile_attribute</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">val</span><span class="p">)</span></div>
 
+    <span class="k">def</span><span class="w"> </span><span class="nf">_set_feature_attributes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">keys</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Set the attributes with the specified keys (in :py:attr:`attributes`) on the point features.</span>
+
+<span class="sd">        The attribute values are matched to the point features by *position*</span>
+<span class="sd">        (eg, a pandas Series is not indexed by its labels).</span>
+<span class="sd">        """</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">:</span>
+            <span class="c1"># Iterating over an attribute (list, tuple, numpy array, pandas Series, etc) is by position.</span>
+            <span class="k">for</span> <span class="n">feature</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">feature_collection</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">attributes</span><span class="p">[</span><span class="n">key</span><span class="p">]):</span>
+                <span class="n">feature</span><span class="o">.</span><span class="n">set_shapefile_attribute</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
 
 <div class="viewcode-block" id="Points.get_geopandas_dataframe">
 <a class="viewcode-back" href="../../generated/gplately.Points.html#gplately.Points.get_geopandas_dataframe">[docs]</a>
@@ -841,6 +851,53 @@
         <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isscalar</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_time</span><span class="p">):</span>
             <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">point_indices</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">_time</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_time</span><span class="p">[</span><span class="n">point_indices</span><span class="p">]</span>  <span class="c1"># type: ignore</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_attributes_subset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">point_indices</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Return a copy of :py:attr:`attributes` restricted to a subset of the points.</span>
+
+<span class="sd">        ``point_indices`` is an integer array of point indices (into ``self.lons``, ``self.lats``, etc),</span>
+<span class="sd">        so that each attribute stays aligned with the points kept (eg, the points that are reconstructed).</span>
+
+<span class="sd">        Each attribute is indexed by *position* and keeps its type: a numpy array, list, tuple or</span>
+<span class="sd">        pandas Series is returned as the same type. Any other sequence is returned as a numpy array.</span>
+<span class="sd">        """</span>
+        <span class="n">attributes_subset</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">attribute</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">attribute</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+                <span class="n">attribute_subset</span> <span class="o">=</span> <span class="n">attribute</span><span class="p">[</span><span class="n">point_indices</span><span class="p">]</span>
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">attribute</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+                <span class="n">attribute_subset</span> <span class="o">=</span> <span class="p">[</span><span class="n">attribute</span><span class="p">[</span><span class="n">index</span><span class="p">]</span> <span class="k">for</span> <span class="n">index</span> <span class="ow">in</span> <span class="n">point_indices</span><span class="p">]</span>
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">attribute</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
+                <span class="n">attribute_subset</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">attribute</span><span class="p">[</span><span class="n">index</span><span class="p">]</span> <span class="k">for</span> <span class="n">index</span> <span class="ow">in</span> <span class="n">point_indices</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">attribute</span><span class="p">,</span> <span class="s2">"iloc"</span><span class="p">):</span>
+                <span class="c1"># A pandas Series (index by position, not by label).</span>
+                <span class="n">attribute_subset</span> <span class="o">=</span> <span class="n">attribute</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">point_indices</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">attribute_subset</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">attribute</span><span class="p">)[</span><span class="n">point_indices</span><span class="p">]</span>
+            <span class="n">attributes_subset</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">attribute_subset</span>
+        <span class="k">return</span> <span class="n">attributes_subset</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_subset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">point_indices</span><span class="p">,</span> <span class="n">lons</span><span class="p">,</span> <span class="n">lats</span><span class="p">,</span> <span class="n">time</span><span class="p">,</span> <span class="n">anchor_plate_id</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Return a new :class:`Points` containing a subset of the points at new locations.</span>
+
+<span class="sd">        ``point_indices`` is an integer array of point indices (into ``self.lons``, ``self.lats``, etc).</span>
+<span class="sd">        ``lons`` and ``lats`` are the new locations of those points (eg, reconstructed to ``time``,</span>
+<span class="sd">        relative to ``anchor_plate_id``), and so must be the same size as ``point_indices``.</span>
+
+<span class="sd">        All per-point data (plate IDs, ages and attributes) is restricted to the same subset of points,</span>
+<span class="sd">        so it stays aligned with ``lons`` and ``lats``.</span>
+<span class="sd">        """</span>
+        <span class="n">points_subset</span> <span class="o">=</span> <span class="n">Points</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">plate_reconstruction</span><span class="p">,</span>
+            <span class="n">lons</span><span class="p">,</span>
+            <span class="n">lats</span><span class="p">,</span>
+            <span class="n">time</span><span class="o">=</span><span class="n">time</span><span class="p">,</span>
+            <span class="n">plate_id</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">plate_id</span><span class="p">[</span><span class="n">point_indices</span><span class="p">],</span>
+            <span class="n">age</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">age</span><span class="p">[</span><span class="n">point_indices</span><span class="p">],</span>
+            <span class="n">anchor_plate_id</span><span class="o">=</span><span class="n">anchor_plate_id</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">points_subset</span><span class="o">.</span><span class="n">add_attributes</span><span class="p">(</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">_attributes_subset</span><span class="p">(</span><span class="n">point_indices</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">points_subset</span>
 
 <div class="viewcode-block" id="Points.reconstruct">
 <a class="viewcode-back" href="../../generated/gplately.Points.html#gplately.Points.reconstruct">[docs]</a>
@@ -972,7 +1029,10 @@
                     <span class="n">rpoint</span><span class="o">.</span><span class="n">to_lat_lon</span><span class="p">()</span> <span class="k">for</span> <span class="n">rpoint</span> <span class="ow">in</span> <span class="n">reconstructed_points_sub</span>
                 <span class="p">]</span>
 
-        <span class="n">rlonslats</span> <span class="o">=</span> <span class="n">lat_lon_points</span><span class="p">[</span><span class="n">valid_mask</span><span class="p">]</span>  <span class="c1"># remove invalid points</span>
+        <span class="c1"># Indices of the valid points (used to remove invalid points).</span>
+        <span class="n">point_indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">flatnonzero</span><span class="p">(</span><span class="n">valid_mask</span><span class="p">)</span>
+
+        <span class="n">rlonslats</span> <span class="o">=</span> <span class="n">lat_lon_points</span><span class="p">[</span><span class="n">point_indices</span><span class="p">]</span>
         <span class="n">rlons</span> <span class="o">=</span> <span class="n">rlonslats</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span>
         <span class="n">rlats</span> <span class="o">=</span> <span class="n">rlonslats</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span>
 
@@ -981,21 +1041,12 @@
         <span class="k">if</span> <span class="n">return_array</span><span class="p">:</span>
             <span class="n">return_tuple</span> <span class="o">+=</span> <span class="n">rlons</span><span class="p">,</span> <span class="n">rlats</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">reconstructed_points</span> <span class="o">=</span> <span class="n">Points</span><span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">plate_reconstruction</span><span class="p">,</span>
-                <span class="n">rlons</span><span class="p">,</span>
-                <span class="n">rlats</span><span class="p">,</span>
-                <span class="n">time</span><span class="o">=</span><span class="n">time</span><span class="p">,</span>
-                <span class="n">plate_id</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">plate_id</span><span class="p">[</span><span class="n">valid_mask</span><span class="p">],</span>  <span class="c1"># remove invalid points</span>
-                <span class="n">age</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">age</span><span class="p">[</span><span class="n">valid_mask</span><span class="p">],</span>  <span class="c1"># remove invalid points</span>
-                <span class="n">anchor_plate_id</span><span class="o">=</span><span class="n">anchor_plate_id</span><span class="p">,</span>
+            <span class="n">reconstructed_points</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_subset</span><span class="p">(</span>
+                <span class="n">point_indices</span><span class="p">,</span> <span class="n">rlons</span><span class="p">,</span> <span class="n">rlats</span><span class="p">,</span> <span class="n">time</span><span class="p">,</span> <span class="n">anchor_plate_id</span>
             <span class="p">)</span>
-            <span class="n">reconstructed_points</span><span class="o">.</span><span class="n">add_attributes</span><span class="p">(</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">copy</span><span class="p">())</span>
             <span class="n">return_tuple</span> <span class="o">+=</span> <span class="p">(</span><span class="n">reconstructed_points</span><span class="p">,)</span>
 
         <span class="k">if</span> <span class="n">return_point_indices</span><span class="p">:</span>
-            <span class="n">all_point_indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
-            <span class="n">point_indices</span> <span class="o">=</span> <span class="n">all_point_indices</span><span class="p">[</span><span class="n">valid_mask</span><span class="p">]</span>  <span class="c1"># remove invalid points</span>
             <span class="n">return_tuple</span> <span class="o">+=</span> <span class="p">(</span><span class="n">point_indices</span><span class="p">,)</span>
 
         <span class="c1"># Return tuple of objects (unless only a single object, eg, just a 'Points' object).</span>
@@ -1162,15 +1213,16 @@
                         <span class="n">rpoint</span><span class="o">.</span><span class="n">to_lat_lon</span><span class="p">()</span> <span class="k">for</span> <span class="n">rpoint</span> <span class="ow">in</span> <span class="n">reconstructed_points_sub</span>
                     <span class="p">]</span>
 
-        <span class="n">rlonslats</span> <span class="o">=</span> <span class="n">lat_lon_points</span><span class="p">[</span><span class="n">valid_mask</span><span class="p">]</span>  <span class="c1"># remove invalid points</span>
+        <span class="c1"># Indices of the valid points (used to remove invalid points).</span>
+        <span class="n">point_indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">flatnonzero</span><span class="p">(</span><span class="n">valid_mask</span><span class="p">)</span>
+
+        <span class="n">rlonslats</span> <span class="o">=</span> <span class="n">lat_lon_points</span><span class="p">[</span><span class="n">point_indices</span><span class="p">]</span>
         <span class="n">rlons</span> <span class="o">=</span> <span class="n">rlonslats</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span>
         <span class="n">rlats</span> <span class="o">=</span> <span class="n">rlonslats</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span>
 
         <span class="n">return_tuple</span> <span class="o">=</span> <span class="p">(</span><span class="n">rlons</span><span class="p">,</span> <span class="n">rlats</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">return_point_indices</span><span class="p">:</span>
-            <span class="n">all_point_indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
-            <span class="n">point_indices</span> <span class="o">=</span> <span class="n">all_point_indices</span><span class="p">[</span><span class="n">valid_mask</span><span class="p">]</span>  <span class="c1"># remove invalid points</span>
             <span class="n">return_tuple</span> <span class="o">+=</span> <span class="p">(</span><span class="n">point_indices</span><span class="p">,)</span>
 
         <span class="k">return</span> <span class="n">return_tuple</span></div>
@@ -1387,21 +1439,22 @@
                         <span class="n">rpoint</span><span class="o">.</span><span class="n">to_lat_lon</span><span class="p">()</span> <span class="k">for</span> <span class="n">rpoint</span> <span class="ow">in</span> <span class="n">reconstructed_points_sub</span>
                     <span class="p">]</span>
 
-        <span class="n">velocities</span> <span class="o">=</span> <span class="n">north_east_velocities</span><span class="p">[</span><span class="n">valid_mask</span><span class="p">]</span>  <span class="c1"># remove invalid points</span>
+        <span class="c1"># Indices of the valid points (used to remove invalid points).</span>
+        <span class="n">point_indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">flatnonzero</span><span class="p">(</span><span class="n">valid_mask</span><span class="p">)</span>
+
+        <span class="n">velocities</span> <span class="o">=</span> <span class="n">north_east_velocities</span><span class="p">[</span><span class="n">point_indices</span><span class="p">]</span>
         <span class="n">velocity_lons</span> <span class="o">=</span> <span class="n">velocities</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span>  <span class="c1"># east</span>
         <span class="n">velocity_lats</span> <span class="o">=</span> <span class="n">velocities</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span>  <span class="c1"># north</span>
 
         <span class="n">return_tuple</span> <span class="o">=</span> <span class="n">velocity_lons</span><span class="p">,</span> <span class="n">velocity_lats</span>
 
         <span class="k">if</span> <span class="n">return_reconstructed_points</span><span class="p">:</span>
-            <span class="n">rlonslats</span> <span class="o">=</span> <span class="n">lat_lon_points</span><span class="p">[</span><span class="n">valid_mask</span><span class="p">]</span>  <span class="c1"># remove invalid points</span>
+            <span class="n">rlonslats</span> <span class="o">=</span> <span class="n">lat_lon_points</span><span class="p">[</span><span class="n">point_indices</span><span class="p">]</span>
             <span class="n">rlons</span> <span class="o">=</span> <span class="n">rlonslats</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span>
             <span class="n">rlats</span> <span class="o">=</span> <span class="n">rlonslats</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span>
             <span class="n">return_tuple</span> <span class="o">+=</span> <span class="p">(</span><span class="n">rlons</span><span class="p">,</span> <span class="n">rlats</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">return_point_indices</span><span class="p">:</span>
-            <span class="n">all_point_indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
-            <span class="n">point_indices</span> <span class="o">=</span> <span class="n">all_point_indices</span><span class="p">[</span><span class="n">valid_mask</span><span class="p">]</span>  <span class="c1"># remove invalid points</span>
             <span class="n">return_tuple</span> <span class="o">+=</span> <span class="p">(</span><span class="n">point_indices</span><span class="p">,)</span>
 
         <span class="k">return</span> <span class="n">return_tuple</span></div>
@@ -1908,9 +1961,22 @@
         <span class="n">non_reference_plate</span><span class="o">=</span><span class="mi">701</span><span class="p">,</span>
         <span class="n">output_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">return_array</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">return_point_indices</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="p">):</span>
 <span class="w">        </span><span class="sd">"""Reconstruct the points to ``reconstruction_time``, then rotate them from one plate model reference frame</span>
 <span class="sd">        to another plate reconstruction model reference frame.</span>
+
+<span class="sd">        As with :meth:`reconstruct`, only those points that are reconstructable (See :ref:`Notes &lt;points-note&gt;`) and that</span>
+<span class="sd">        have ages greater than or equal to ``reconstruction_time`` are returned.</span>
+<span class="sd">        So the number of returned points can be less than ``self.size``. Use ``return_point_indices`` to find out</span>
+<span class="sd">        which points were returned.</span>
+
+<span class="sd">        What is returned depends on ``return_array`` and ``return_point_indices``:</span>
+
+<span class="sd">        * Both False: ``rotated_points`` (a single :class:`Points` object, not a tuple).</span>
+<span class="sd">        * Only ``return_point_indices`` True: ``(rotated_points, point_indices)``.</span>
+<span class="sd">        * Only ``return_array`` True: ``(rlons, rlats)``.</span>
+<span class="sd">        * Both True: ``(rlons, rlats, point_indices)``.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -1938,8 +2004,14 @@
 <span class="sd">        output_name : str, default None</span>
 <span class="sd">            Not yet implemented. Passing anything other than None raises ``NotImplementedError``.</span>
 <span class="sd">        return_array : bool, default=False</span>
-<span class="sd">            Return a 2-tuple ``(rlons, rlats)`` of longitude and latitude arrays (in that order),</span>
-<span class="sd">            rather than a :class:`Points` object.</span>
+<span class="sd">            Return longitude and latitude arrays, in that order, rather than a</span>
+<span class="sd">            :class:`Points` object. If ``return_point_indices`` is also True,</span>
+<span class="sd">            append the point indices to the returned tuple.</span>
+<span class="sd">        return_point_indices : bool, default=False</span>
+<span class="sd">            Return the indices of the points that are rotated.</span>
+<span class="sd">            Those points with an age less than ``reconstruction_time`` have not yet appeared at ``reconstruction_time``,</span>
+<span class="sd">            and therefore are not rotated.</span>
+<span class="sd">            These are indices into ``self.lons``, ``self.lats``, ``self.plate_id`` and ``self.age``.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
@@ -1947,6 +2019,10 @@
 <span class="sd">            If ``return_array`` is False, return the rotated points in a :class:`Points` object.</span>
 <span class="sd">        rlons, rlats : ndarray</span>
 <span class="sd">            If ``return_array`` is True, return the longitude and latitude coordinate arrays of the rotated points.</span>
+<span class="sd">        point_indices : ndarray</span>
+<span class="sd">            If ``return_point_indices`` is True, return the indices of the returned points (that are rotated).</span>
+<span class="sd">            This array is the same size as ``rlons`` and ``rlats`` (or size of ``rotated_points``).</span>
+<span class="sd">            These are indices into ``self.lons``, ``self.lats``, ``self.plate_id`` and ``self.age``.</span>
 <span class="sd">        """</span>
         <span class="k">if</span> <span class="n">output_name</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">"'output_name' parameter is not implemented"</span><span class="p">)</span>
@@ -1972,39 +2048,54 @@
         <span class="p">)</span>
         <span class="n">reference_frame_conversion_rotation</span> <span class="o">=</span> <span class="n">to_rotation</span> <span class="o">*</span> <span class="n">from_rotation</span><span class="o">.</span><span class="n">get_inverse</span><span class="p">()</span>
 
-        <span class="c1"># reconstruct points to reconstruction_time</span>
-        <span class="n">lons</span><span class="p">,</span> <span class="n">lats</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">reconstruct</span><span class="p">(</span>
+        <span class="c1"># Reconstruct points to reconstruction_time.</span>
+        <span class="c1">#</span>
+        <span class="c1"># Note: Only the valid points are reconstructed (see 'reconstruct()'), so we also need their indices</span>
+        <span class="c1">#       to keep the plate IDs and ages aligned with the rotated points.</span>
+        <span class="n">lons</span><span class="p">,</span> <span class="n">lats</span><span class="p">,</span> <span class="n">point_indices</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">reconstruct</span><span class="p">(</span>
             <span class="n">reconstruction_time</span><span class="p">,</span>
             <span class="n">anchor_plate_id</span><span class="o">=</span><span class="n">from_rotation_reference_plate</span><span class="p">,</span>
             <span class="n">return_array</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">return_point_indices</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
         <span class="p">)</span>  <span class="c1"># type: ignore</span>
 
-        <span class="c1"># convert FeatureCollection to MultiPointOnSphere</span>
-        <span class="n">input_points</span> <span class="o">=</span> <span class="n">_MultiPointOnSphere</span><span class="p">(</span>
-            <span class="p">(</span><span class="n">lat</span><span class="p">,</span> <span class="n">lon</span><span class="p">)</span> <span class="k">for</span> <span class="n">lon</span><span class="p">,</span> <span class="n">lat</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">lons</span><span class="p">,</span> <span class="n">lats</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
-        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">point_indices</span><span class="o">.</span><span class="n">size</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="c1"># Rotate the reconstructed points to the other reference frame.</span>
+            <span class="n">input_points</span> <span class="o">=</span> <span class="n">_MultiPointOnSphere</span><span class="p">(</span>
+                <span class="p">(</span><span class="n">lat</span><span class="p">,</span> <span class="n">lon</span><span class="p">)</span> <span class="k">for</span> <span class="n">lon</span><span class="p">,</span> <span class="n">lat</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">lons</span><span class="p">,</span> <span class="n">lats</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
+            <span class="p">)</span>
+            <span class="n">output_points</span> <span class="o">=</span> <span class="n">reference_frame_conversion_rotation</span> <span class="o">*</span> <span class="n">input_points</span>
 
-        <span class="c1"># Rotate grid nodes to the other reference frame</span>
-        <span class="n">output_points</span> <span class="o">=</span> <span class="n">reference_frame_conversion_rotation</span> <span class="o">*</span> <span class="n">input_points</span>
+            <span class="n">out_lat_lon</span> <span class="o">=</span> <span class="n">output_points</span><span class="o">.</span><span class="n">to_lat_lon_array</span><span class="p">()</span>
+            <span class="n">out_lon</span> <span class="o">=</span> <span class="n">out_lat_lon</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span>
+            <span class="n">out_lat</span> <span class="o">=</span> <span class="n">out_lat_lon</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># No points were reconstructed (and pyGPlates cannot create an empty multipoint).</span>
+            <span class="n">out_lon</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+            <span class="n">out_lat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
 
-        <span class="c1"># Assemble rotated points with grid values.</span>
-        <span class="n">out_lon</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty_like</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lons</span><span class="p">)</span>
-        <span class="n">out_lat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty_like</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lats</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">point</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">output_points</span><span class="p">):</span>
-            <span class="n">out_lat</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">out_lon</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">point</span><span class="o">.</span><span class="n">to_lat_lon</span><span class="p">()</span>
+        <span class="n">return_tuple</span> <span class="o">=</span> <span class="p">()</span>
 
         <span class="k">if</span> <span class="n">return_array</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">out_lon</span><span class="p">,</span> <span class="n">out_lat</span>
+            <span class="n">return_tuple</span> <span class="o">+=</span> <span class="n">out_lon</span><span class="p">,</span> <span class="n">out_lat</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">Points</span><span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">plate_reconstruction</span><span class="p">,</span>
+            <span class="n">rotated_points</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_subset</span><span class="p">(</span>
+                <span class="n">point_indices</span><span class="p">,</span>
                 <span class="n">out_lon</span><span class="p">,</span>
                 <span class="n">out_lat</span><span class="p">,</span>
-                <span class="n">time</span><span class="o">=</span><span class="n">reconstruction_time</span><span class="p">,</span>
-                <span class="n">plate_id</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">plate_id</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span>
-                <span class="n">age</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">age</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span>
-                <span class="n">anchor_plate_id</span><span class="o">=</span><span class="n">to_rotation_reference_plate</span><span class="p">,</span>
-            <span class="p">)</span></div>
+                <span class="n">reconstruction_time</span><span class="p">,</span>
+                <span class="n">to_rotation_reference_plate</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">return_tuple</span> <span class="o">+=</span> <span class="p">(</span><span class="n">rotated_points</span><span class="p">,)</span>
+
+        <span class="k">if</span> <span class="n">return_point_indices</span><span class="p">:</span>
+            <span class="n">return_tuple</span> <span class="o">+=</span> <span class="p">(</span><span class="n">point_indices</span><span class="p">,)</span>
+
+        <span class="c1"># Return tuple of objects (unless only a single object, eg, just a 'Points' object).</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">return_tuple</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">return_tuple</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">return_tuple</span></div>
 </div>
 
 </pre></div>

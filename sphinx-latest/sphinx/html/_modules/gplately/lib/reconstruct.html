@@ -401,8 +401,11 @@
         <span class="n">idx</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">feature</span><span class="o">.</span><span class="n">get_name</span><span class="p">())</span>
         <span class="n">r_lons</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">lon</span>
         <span class="n">r_lats</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">lat</span>
-    <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">assigned_point_features</span><span class="p">)):</span>
-        <span class="n">feature</span> <span class="o">=</span> <span class="n">assigned_point_features</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">feature</span> <span class="ow">in</span> <span class="n">assigned_point_features</span><span class="p">:</span>
+        <span class="c1"># Use the point index stored in the feature name (rather than the feature's position in the list)</span>
+        <span class="c1"># because 'pygplates.partition_into_plates()' does not preserve the order of the features</span>
+        <span class="c1"># (eg, the features that are not partitioned into any plate are placed last).</span>
+        <span class="n">idx</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">feature</span><span class="o">.</span><span class="n">get_name</span><span class="p">())</span>
         <span class="n">r_pids</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">feature</span><span class="o">.</span><span class="n">get_reconstruction_plate_id</span><span class="p">()</span>
         <span class="n">btime</span><span class="p">,</span> <span class="n">etime</span> <span class="o">=</span> <span class="n">feature</span><span class="o">.</span><span class="n">get_valid_time</span><span class="p">()</span>
         <span class="n">r_btimes</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">btime</span>
