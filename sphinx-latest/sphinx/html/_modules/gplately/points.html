@@ -852,6 +852,18 @@
 <span class="sd">        Only those points that are reconstructable (See :ref:`Notes &lt;points-note&gt;`) and that have ages greater than or equal</span>
 <span class="sd">        to ``time`` (ie, at points that exist at ``time``) are reconstructed.</span>
 
+<span class="sd">        What is returned depends on ``return_array`` and ``return_point_indices``:</span>
+
+<span class="sd">        * Both False: ``reconstructed_points`` (a single :class:`Points` object, not a tuple).</span>
+<span class="sd">        * Only ``return_point_indices`` True: ``(reconstructed_points, point_indices)``.</span>
+<span class="sd">        * Only ``return_array`` True: ``(rlons, rlats)``.</span>
+<span class="sd">        * Both True: ``(rlons, rlats, point_indices)``.</span>
+
+<span class="sd">        .. note::</span>
+
+<span class="sd">            Longitudes come before latitudes, following the GMT convention used throughout GPlately.</span>
+<span class="sd">            This is the opposite of pyGPlates, where ``pygplates.PointOnSphere.to_lat_lon()`` returns ``(lat, lon)``.</span>
+
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        time : float</span>
@@ -863,7 +875,9 @@
 <span class="sd">            (which is the anchor plate that the initial points at the initial time are relative to).</span>
 
 <span class="sd">        return_array : bool, default=False</span>
-<span class="sd">            Return a 2-tuple of ``numpy.ndarray``, rather than a :class:`Points` object.</span>
+<span class="sd">            Return longitude and latitude arrays, in that order, rather than a</span>
+<span class="sd">            :class:`Points` object. If ``return_point_indices`` is also True,</span>
+<span class="sd">            append the point indices to the returned tuple.</span>
 
 <span class="sd">        return_point_indices : bool, default=False</span>
 <span class="sd">            Return the indices of the points that are reconstructed.</span>
@@ -1895,8 +1909,8 @@
         <span class="n">output_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">return_array</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="p">):</span>
-<span class="w">        </span><span class="sd">"""Rotate a grid defined in one plate model reference frame within a :class:`Raster` object to another plate</span>
-<span class="sd">        reconstruction model reference frame.</span>
+<span class="w">        </span><span class="sd">"""Reconstruct the points to ``reconstruction_time``, then rotate them from one plate model reference frame</span>
+<span class="sd">        to another plate reconstruction model reference frame.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -1905,12 +1919,12 @@
 <span class="sd">        from_rotation_features_or_model : str/os.PathLike, list of str/os.PathLike, or instance of pygplates.RotationModel</span>
 <span class="sd">            A filename, or a list of filenames, or a pyGPlates</span>
 <span class="sd">            RotationModel object that defines the rotation model</span>
-<span class="sd">            that the input grid is currently associated with.</span>
+<span class="sd">            that the input points are currently associated with.</span>
 <span class="sd">            ``self.plate_reconstruction.rotation_model`` is default.</span>
 <span class="sd">        to_rotation_features_or_model : str/os.PathLike, list of str/os.PathLike, or instance of pygplates.RotationModel</span>
 <span class="sd">            A filename, or a list of filenames, or a pyGPlates</span>
 <span class="sd">            RotationModel object that defines the rotation model</span>
-<span class="sd">            that the input grid shall be rotated with.</span>
+<span class="sd">            that the input points shall be rotated with.</span>
 <span class="sd">            ``self.plate_reconstruction.rotation_model`` is default.</span>
 <span class="sd">        from_rotation_reference_plate : int, default = 0</span>
 <span class="sd">            The current reference plate for the plate model the points</span>
@@ -1922,12 +1936,17 @@
 <span class="sd">            An arbitrary placeholder reference frame with which</span>
 <span class="sd">            to define the "from" and "to" reference frames.</span>
 <span class="sd">        output_name : str, default None</span>
-<span class="sd">            If passed, the rotated points are saved as a gpml to this filename.</span>
+<span class="sd">            Not yet implemented. Passing anything other than None raises ``NotImplementedError``.</span>
+<span class="sd">        return_array : bool, default=False</span>
+<span class="sd">            Return a 2-tuple ``(rlons, rlats)`` of longitude and latitude arrays (in that order),</span>
+<span class="sd">            rather than a :class:`Points` object.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        Points</span>
-<span class="sd">            An instance of the :class:`Points` object containing the rotated points.</span>
+<span class="sd">        rotated_points : :class:`Points`</span>
+<span class="sd">            If ``return_array`` is False, return the rotated points in a :class:`Points` object.</span>
+<span class="sd">        rlons, rlats : ndarray</span>
+<span class="sd">            If ``return_array`` is True, return the longitude and latitude coordinate arrays of the rotated points.</span>
 <span class="sd">        """</span>
         <span class="k">if</span> <span class="n">output_name</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">"'output_name' parameter is not implemented"</span><span class="p">)</span>
