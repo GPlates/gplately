@@ -14,6 +14,7 @@
 #    with this program; if not, write to Free Software Foundation, Inc.,
 #    51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
+import copy as _copy
 import logging
 from typing import Union
 
@@ -477,6 +478,9 @@ class Points(object):
         # Create a collection of the point features.
         self.feature_collection = _FeatureCollection(self.features)
 
+        # Restore the point attributes on the (rebuilt) point features.
+        self._set_feature_attributes(self.attributes.keys())
+
         # Restore the unpicklable entries.
         #
         # This includes pygplates reconstructed feature geometries and resolved topological geometries.
@@ -596,7 +600,8 @@ class Points(object):
             self.age.copy(),
             anchor_plate_id=self.anchor_plate_id,
         )
-        gpts.add_attributes(**self.attributes.copy())
+        # Deep copy the attributes so the copy does not share attribute arrays/lists with this object.
+        gpts.add_attributes(**_copy.deepcopy(self.attributes))
 
         return gpts
 
@@ -665,13 +670,18 @@ class Points(object):
 
         if any(kwargs):
             # add these to the FeatureCollection
-            for f, feature in enumerate(self.feature_collection):
-                for key in keys:
-                    # extract value for each row in attribute
-                    val = self.attributes[key][f]
+            self._set_feature_attributes(keys)
 
-                    # set this attribute on the feature
-                    feature.set_shapefile_attribute(key, val)
+    def _set_feature_attributes(self, keys):
+        """Set the attributes with the specified keys (in :py:attr:`attributes`) on the point features.
+
+        The attribute values are matched to the point features by *position*
+        (eg, a pandas Series is not indexed by its labels).
+        """
+        for key in keys:
+            # Iterating over an attribute (list, tuple, numpy array, pandas Series, etc) is by position.
+            for feature, value in zip(self.feature_collection, self.attributes[key]):
+                feature.set_shapefile_attribute(key, value)
 
     def get_geopandas_dataframe(self):
         """Return a ``geopandas.GeoDataFrame`` object for the points.
@@ -739,6 +749,53 @@ class Points(object):
         if np.isscalar(self._time):
             return np.full(len(point_indices), self._time)
         return self._time[point_indices]  # type: ignore
+
+    def _attributes_subset(self, point_indices):
+        """Return a copy of :py:attr:`attributes` restricted to a subset of the points.
+
+        ``point_indices`` is an integer array of point indices (into ``self.lons``, ``self.lats``, etc),
+        so that each attribute stays aligned with the points kept (eg, the points that are reconstructed).
+
+        Each attribute is indexed by *position* and keeps its type: a numpy array, list, tuple or
+        pandas Series is returned as the same type. Any other sequence is returned as a numpy array.
+        """
+        attributes_subset = {}
+        for key, attribute in self.attributes.items():
+            if isinstance(attribute, np.ndarray):
+                attribute_subset = attribute[point_indices]
+            elif isinstance(attribute, list):
+                attribute_subset = [attribute[index] for index in point_indices]
+            elif isinstance(attribute, tuple):
+                attribute_subset = tuple(attribute[index] for index in point_indices)
+            elif hasattr(attribute, "iloc"):
+                # A pandas Series (index by position, not by label).
+                attribute_subset = attribute.iloc[point_indices]
+            else:
+                attribute_subset = np.asarray(attribute)[point_indices]
+            attributes_subset[key] = attribute_subset
+        return attributes_subset
+
+    def _subset(self, point_indices, lons, lats, time, anchor_plate_id):
+        """Return a new :class:`Points` containing a subset of the points at new locations.
+
+        ``point_indices`` is an integer array of point indices (into ``self.lons``, ``self.lats``, etc).
+        ``lons`` and ``lats`` are the new locations of those points (eg, reconstructed to ``time``,
+        relative to ``anchor_plate_id``), and so must be the same size as ``point_indices``.
+
+        All per-point data (plate IDs, ages and attributes) is restricted to the same subset of points,
+        so it stays aligned with ``lons`` and ``lats``.
+        """
+        points_subset = Points(
+            self.plate_reconstruction,
+            lons,
+            lats,
+            time=time,
+            plate_id=self.plate_id[point_indices],
+            age=self.age[point_indices],
+            anchor_plate_id=anchor_plate_id,
+        )
+        points_subset.add_attributes(**self._attributes_subset(point_indices))
+        return points_subset
 
     def reconstruct(
         self, time, anchor_plate_id=None, return_array=False, return_point_indices=False
@@ -868,7 +925,10 @@ class Points(object):
                     rpoint.to_lat_lon() for rpoint in reconstructed_points_sub
                 ]
 
-        rlonslats = lat_lon_points[valid_mask]  # remove invalid points
+        # Indices of the valid points (used to remove invalid points).
+        point_indices = np.flatnonzero(valid_mask)
+
+        rlonslats = lat_lon_points[point_indices]
         rlons = rlonslats[:, 1]
         rlats = rlonslats[:, 0]
 
@@ -877,21 +937,12 @@ class Points(object):
         if return_array:
             return_tuple += rlons, rlats
         else:
-            reconstructed_points = Points(
-                self.plate_reconstruction,
-                rlons,
-                rlats,
-                time=time,
-                plate_id=self.plate_id[valid_mask],  # remove invalid points
-                age=self.age[valid_mask],  # remove invalid points
-                anchor_plate_id=anchor_plate_id,
+            reconstructed_points = self._subset(
+                point_indices, rlons, rlats, time, anchor_plate_id
             )
-            reconstructed_points.add_attributes(**self.attributes.copy())
             return_tuple += (reconstructed_points,)
 
         if return_point_indices:
-            all_point_indices = np.arange(self.size, dtype=int)
-            point_indices = all_point_indices[valid_mask]  # remove invalid points
             return_tuple += (point_indices,)
 
         # Return tuple of objects (unless only a single object, eg, just a 'Points' object).
@@ -1055,15 +1106,16 @@ class Points(object):
                         rpoint.to_lat_lon() for rpoint in reconstructed_points_sub
                     ]
 
-        rlonslats = lat_lon_points[valid_mask]  # remove invalid points
+        # Indices of the valid points (used to remove invalid points).
+        point_indices = np.flatnonzero(valid_mask)
+
+        rlonslats = lat_lon_points[point_indices]
         rlons = rlonslats[:, 1]
         rlats = rlonslats[:, 0]
 
         return_tuple = (rlons, rlats)
 
         if return_point_indices:
-            all_point_indices = np.arange(self.size, dtype=int)
-            point_indices = all_point_indices[valid_mask]  # remove invalid points
             return_tuple += (point_indices,)
 
         return return_tuple
@@ -1277,21 +1329,22 @@ class Points(object):
                         rpoint.to_lat_lon() for rpoint in reconstructed_points_sub
                     ]
 
-        velocities = north_east_velocities[valid_mask]  # remove invalid points
+        # Indices of the valid points (used to remove invalid points).
+        point_indices = np.flatnonzero(valid_mask)
+
+        velocities = north_east_velocities[point_indices]
         velocity_lons = velocities[:, 1]  # east
         velocity_lats = velocities[:, 0]  # north
 
         return_tuple = velocity_lons, velocity_lats
 
         if return_reconstructed_points:
-            rlonslats = lat_lon_points[valid_mask]  # remove invalid points
+            rlonslats = lat_lon_points[point_indices]
             rlons = rlonslats[:, 1]
             rlats = rlonslats[:, 0]
             return_tuple += (rlons, rlats)
 
         if return_point_indices:
-            all_point_indices = np.arange(self.size, dtype=int)
-            point_indices = all_point_indices[valid_mask]  # remove invalid points
             return_tuple += (point_indices,)
 
         return return_tuple
@@ -1786,9 +1839,22 @@ class Points(object):
         non_reference_plate=701,
         output_name=None,
         return_array=False,
+        return_point_indices=False,
     ):
         """Reconstruct the points to ``reconstruction_time``, then rotate them from one plate model reference frame
         to another plate reconstruction model reference frame.
+
+        As with :meth:`reconstruct`, only those points that are reconstructable (See :ref:`Notes <points-note>`) and that
+        have ages greater than or equal to ``reconstruction_time`` are returned.
+        So the number of returned points can be less than ``self.size``. Use ``return_point_indices`` to find out
+        which points were returned.
+
+        What is returned depends on ``return_array`` and ``return_point_indices``:
+
+        * Both False: ``rotated_points`` (a single :class:`Points` object, not a tuple).
+        * Only ``return_point_indices`` True: ``(rotated_points, point_indices)``.
+        * Only ``return_array`` True: ``(rlons, rlats)``.
+        * Both True: ``(rlons, rlats, point_indices)``.
 
         Parameters
         ----------
@@ -1816,8 +1882,14 @@ class Points(object):
         output_name : str, default None
             Not yet implemented. Passing anything other than None raises ``NotImplementedError``.
         return_array : bool, default=False
-            Return a 2-tuple ``(rlons, rlats)`` of longitude and latitude arrays (in that order),
-            rather than a :class:`Points` object.
+            Return longitude and latitude arrays, in that order, rather than a
+            :class:`Points` object. If ``return_point_indices`` is also True,
+            append the point indices to the returned tuple.
+        return_point_indices : bool, default=False
+            Return the indices of the points that are rotated.
+            Those points with an age less than ``reconstruction_time`` have not yet appeared at ``reconstruction_time``,
+            and therefore are not rotated.
+            These are indices into ``self.lons``, ``self.lats``, ``self.plate_id`` and ``self.age``.
 
         Returns
         -------
@@ -1825,6 +1897,10 @@ class Points(object):
             If ``return_array`` is False, return the rotated points in a :class:`Points` object.
         rlons, rlats : ndarray
             If ``return_array`` is True, return the longitude and latitude coordinate arrays of the rotated points.
+        point_indices : ndarray
+            If ``return_point_indices`` is True, return the indices of the returned points (that are rotated).
+            This array is the same size as ``rlons`` and ``rlats`` (or size of ``rotated_points``).
+            These are indices into ``self.lons``, ``self.lats``, ``self.plate_id`` and ``self.age``.
         """
         if output_name is not None:
             raise NotImplementedError("'output_name' parameter is not implemented")
@@ -1850,36 +1926,51 @@ class Points(object):
         )
         reference_frame_conversion_rotation = to_rotation * from_rotation.get_inverse()
 
-        # reconstruct points to reconstruction_time
-        lons, lats = self.reconstruct(
+        # Reconstruct points to reconstruction_time.
+        #
+        # Note: Only the valid points are reconstructed (see 'reconstruct()'), so we also need their indices
+        #       to keep the plate IDs and ages aligned with the rotated points.
+        lons, lats, point_indices = self.reconstruct(
             reconstruction_time,
             anchor_plate_id=from_rotation_reference_plate,
             return_array=True,
+            return_point_indices=True,
         )  # type: ignore
 
-        # convert FeatureCollection to MultiPointOnSphere
-        input_points = _MultiPointOnSphere(
-            (lat, lon) for lon, lat in zip(lons, lats)  # type: ignore
-        )
+        if point_indices.size > 0:
+            # Rotate the reconstructed points to the other reference frame.
+            input_points = _MultiPointOnSphere(
+                (lat, lon) for lon, lat in zip(lons, lats)  # type: ignore
+            )
+            output_points = reference_frame_conversion_rotation * input_points
 
-        # Rotate grid nodes to the other reference frame
-        output_points = reference_frame_conversion_rotation * input_points
+            out_lat_lon = output_points.to_lat_lon_array()
+            out_lon = out_lat_lon[:, 1]
+            out_lat = out_lat_lon[:, 0]
+        else:
+            # No points were reconstructed (and pyGPlates cannot create an empty multipoint).
+            out_lon = np.empty(0)
+            out_lat = np.empty(0)
 
-        # Assemble rotated points with grid values.
-        out_lon = np.empty_like(self.lons)
-        out_lat = np.empty_like(self.lats)
-        for i, point in enumerate(output_points):
-            out_lat[i], out_lon[i] = point.to_lat_lon()
+        return_tuple = ()
 
         if return_array:
-            return out_lon, out_lat
+            return_tuple += out_lon, out_lat
         else:
-            return Points(
-                self.plate_reconstruction,
+            rotated_points = self._subset(
+                point_indices,
                 out_lon,
                 out_lat,
-                time=reconstruction_time,
-                plate_id=self.plate_id.copy(),
-                age=self.age.copy(),
-                anchor_plate_id=to_rotation_reference_plate,
+                reconstruction_time,
+                to_rotation_reference_plate,
             )
+            return_tuple += (rotated_points,)
+
+        if return_point_indices:
+            return_tuple += (point_indices,)
+
+        # Return tuple of objects (unless only a single object, eg, just a 'Points' object).
+        if len(return_tuple) == 1:
+            return return_tuple[0]
+        else:
+            return return_tuple

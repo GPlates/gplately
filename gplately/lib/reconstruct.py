@@ -304,8 +304,11 @@ def _get_reconstructed_data(
         idx = int(feature.get_name())
         r_lons[idx] = lon
         r_lats[idx] = lat
-    for idx in range(len(assigned_point_features)):
-        feature = assigned_point_features[idx]
+    for feature in assigned_point_features:
+        # Use the point index stored in the feature name (rather than the feature's position in the list)
+        # because 'pygplates.partition_into_plates()' does not preserve the order of the features
+        # (eg, the features that are not partitioned into any plate are placed last).
+        idx = int(feature.get_name())
         r_pids[idx] = feature.get_reconstruction_plate_id()
         btime, etime = feature.get_valid_time()
         r_btimes[idx] = btime

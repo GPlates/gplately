@@ -892,8 +892,10 @@ def test_plate_velocity(
 
 
 def test_point_attributes(gplately_points_object):
-    attr = np.arange(0, gplately_points_object.size)
-    gplately_points_object.add_attributes(FROMAGE=attr, TOAGE=attr)
+    # Use a copy so the (module-scoped) fixture is not modified for later tests.
+    gpts = gplately_points_object.copy()
+    attr = np.arange(0, gpts.size)
+    gpts.add_attributes(FROMAGE=attr, TOAGE=attr)
 
 
 def test_pickle_Points(gplately_points_object):
@@ -938,9 +940,22 @@ def test_pickle_Points(gplately_points_object):
         )
 
     # Test pickling of point attributes.
-    attr = np.arange(0, gplately_points_object.size)
-    gplately_points_object.add_attributes(FROMAGE=attr, TOAGE=attr)
-    pickle.loads(pickle.dumps(gplately_points_object))
+    # Use a copy so the (module-scoped) fixture is not modified for later tests.
+    gpts = gplately_points_object.copy()
+    attr = np.arange(0, gpts.size)
+    gpts.add_attributes(FROMAGE=attr, TOAGE=attr)
+    pickled_points = pickle.loads(pickle.dumps(gpts))
+    # The attributes should also be restored on the (rebuilt) point features (used when saving to gpml/shp).
+    for point_index, pickled_point_feature in enumerate(
+        pickled_points.feature_collection
+    ):
+        assert (
+            pickled_point_feature.get_shapefile_attribute("FROMAGE")
+            == attr[point_index]
+        )
+        assert (
+            pickled_point_feature.get_shapefile_attribute("TOAGE") == attr[point_index]
+        )
 
 
 def test_change_ancbor_plate(gplately_points_object):
@@ -1106,3 +1121,171 @@ def test_reconstruct_points_func():
     assert math.isclose(ret[0]["lons"][0], 95, abs_tol=0.001)
     assert math.isclose(ret[0]["lons"][1], 142, abs_tol=0.001)
     logger.info(ret)
+
+
+# DROPPED (INVALID) POINTS STAY ALIGNED
+#
+# Points that do not exist at the reconstruction time (age < time) are dropped by 'Points.reconstruct()'.
+# Anything else carried per point (attributes, plate IDs, ages) must be dropped along with them.
+
+
+def _points_with_a_young_point(plate_reconstruction):
+    lons = np.array([-60.0, 20.0, 140.0, 100.0])
+    lats = np.array([-20.0, 0.0, 35.0, -30.0])
+    plate_ids = np.array([201, 701, 801, 801])
+    # The second point (age 10 Ma) does not exist at the 50 Ma reconstruction time used below.
+    ages = np.array([200.0, 10.0, 200.0, 200.0])
+    return gplately.Points(
+        plate_reconstruction, lons, lats, plate_id=plate_ids, age=ages
+    )
+
+
+def test_reconstruct_attributes_with_dropped_points(
+    gplately_plate_reconstruction_object,
+):
+    import pandas as pd
+
+    gpts = _points_with_a_young_point(gplately_plate_reconstruction_object)
+    gpts.add_attributes(
+        name=np.array(["a", "b", "c", "d"]),  # numpy array attribute
+        value=[1, 2, 3, 4],  # list attribute
+        flag=(5, 6, 7, 8),  # tuple attribute
+        # pandas Series with a non-default index (must be indexed by position, not label)
+        series=pd.Series([10.0, 20.0, 30.0, 40.0], index=[3, 2, 1, 0]),
+    )
+
+    def feature_attributes(points, key):
+        return [
+            feature.get_shapefile_attribute(key)
+            for feature in points.feature_collection
+        ]
+
+    # The feature attributes (used when saving to gpml/shp) are matched to points by position.
+    assert feature_attributes(gpts, "series") == [10.0, 20.0, 30.0, 40.0]
+
+    reconstructed_points, point_indices = gpts.reconstruct(
+        50, return_point_indices=True
+    )
+    assert list(point_indices) == [0, 2, 3]
+    assert reconstructed_points.size == 3
+
+    # Each attribute keeps its type, and is restricted to the reconstructed points.
+    attributes = reconstructed_points.attributes
+    assert list(attributes["name"]) == ["a", "c", "d"]
+    assert attributes["value"] == [1, 3, 4]
+    assert attributes["flag"] == (5, 7, 8)
+    assert isinstance(attributes["series"], pd.Series)
+    assert list(attributes["series"]) == [10.0, 30.0, 40.0]
+
+    assert feature_attributes(reconstructed_points, "name") == ["a", "c", "d"]
+    assert feature_attributes(reconstructed_points, "value") == [1, 3, 4]
+    assert feature_attributes(reconstructed_points, "series") == [10.0, 30.0, 40.0]
+
+    # No points exist at 300 Ma.
+    reconstructed_points = gpts.reconstruct(300)
+    assert reconstructed_points.size == 0
+    assert reconstructed_points.attributes["value"] == []
+
+
+def test_copy_attributes_are_independent(gplately_plate_reconstruction_object):
+    gpts = _points_with_a_young_point(gplately_plate_reconstruction_object)
+    gpts.add_attributes(
+        name=np.array(["a", "b", "c", "d"]),
+        value=[1, 2, 3, 4],
+    )
+
+    gpts_copy = gpts.copy()
+    gpts_copy.attributes["name"][0] = "z"
+    gpts_copy.attributes["value"][0] = 100
+
+    assert list(gpts.attributes["name"]) == ["a", "b", "c", "d"]
+    assert gpts.attributes["value"] == [1, 2, 3, 4]
+
+
+def test_rotate_reference_frames_with_dropped_points(
+    gplately_plate_reconstruction_object,
+):
+    gpts = _points_with_a_young_point(gplately_plate_reconstruction_object)
+    gpts.add_attributes(name=np.array(["a", "b", "c", "d"]))
+    rotation_model = gplately_plate_reconstruction_object.rotation_model
+
+    rlons, rlats = gpts.reconstruct(50, return_array=True)
+
+    # Rotating to the same reference frame should give the reconstructed points.
+    rotated_points = gpts.rotate_reference_frames(
+        50, rotation_model, rotation_model, 0, 0
+    )
+    assert rotated_points.size == 3
+    assert np.allclose(rotated_points.lons, rlons)
+    assert np.allclose(rotated_points.lats, rlats)
+    assert list(rotated_points.plate_id) == [201, 801, 801]
+    assert list(rotated_points.age) == [200.0, 200.0, 200.0]
+    assert list(rotated_points.attributes["name"]) == ["a", "c", "d"]
+
+    rotated_lons, rotated_lats, point_indices = gpts.rotate_reference_frames(
+        50,
+        rotation_model,
+        rotation_model,
+        0,
+        101,
+        return_array=True,
+        return_point_indices=True,
+    )
+    assert rotated_lons.size == rotated_lats.size == 3
+    assert list(point_indices) == [0, 2, 3]
+
+    rotated_points, point_indices = gpts.rotate_reference_frames(
+        50, rotation_model, rotation_model, 0, 101, return_point_indices=True
+    )
+    assert rotated_points.size == 3
+    assert list(point_indices) == [0, 2, 3]
+
+    # No points exist at 300 Ma.
+    rotated_lons, rotated_lats = gpts.rotate_reference_frames(
+        300, rotation_model, rotation_model, 0, 101, return_array=True
+    )
+    assert rotated_lons.size == rotated_lats.size == 0
+    rotated_points = gpts.rotate_reference_frames(
+        300, rotation_model, rotation_model, 0, 101
+    )
+    assert rotated_points.size == 0
+    assert list(rotated_points.attributes["name"]) == []
+
+
+def test_reconstruct_points_with_unpartitioned_points(muller_2019_model):
+    # Continental polygons do not cover the globe, so some points are not partitioned into any polygon.
+    # 'pygplates.partition_into_plates()' moves those points to the end, which must not change which
+    # plate ID is returned for each point.
+    rotation_model = pygplates.RotationModel(muller_2019_model.get_rotation_model())
+    partitioning_polygons = pygplates.FeatureCollection()
+    for filename in muller_2019_model.get_layer("ContinentalPolygons"):
+        partitioning_polygons.add(pygplates.FeatureCollection(filename))
+
+    lons = np.linspace(-180, 175, 40)
+    lats = np.linspace(-70, 70, 40)
+    ret = gplately.reconstruct_points_with_model_files(
+        lons=lons.tolist(),
+        lats=lats.tolist(),
+        rotation_model=rotation_model,
+        static_polygons=partitioning_polygons,
+        times=0.0,
+    )
+
+    plate_partitioner = pygplates.PlatePartitioner(
+        partitioning_polygons, rotation_model
+    )
+    num_unpartitioned_points = 0
+    for index, (lon, lat) in enumerate(zip(lons, lats)):
+        partitioning_polygon = plate_partitioner.partition_point(
+            pygplates.PointOnSphere(lat, lon)
+        )
+        if partitioning_polygon:
+            expected_plate_id = (
+                partitioning_polygon.get_feature().get_reconstruction_plate_id()
+            )
+        else:
+            expected_plate_id = 0  # plate ID of a feature with no plate ID
+            num_unpartitioned_points += 1
+        assert ret[0]["pids"][index] == expected_plate_id
+    # Make sure the test actually exercises points that are not partitioned.
+    assert 0 < num_unpartitioned_points < len(lons)
