@@ -1289,3 +1289,253 @@ def test_reconstruct_points_with_unpartitioned_points(muller_2019_model):
         assert ret[0]["pids"][index] == expected_plate_id
     # Make sure the test actually exercises points that are not partitioned.
     assert 0 < num_unpartitioned_points < len(lons)
+
+
+# ROTATE REFERENCE FRAMES BETWEEN ROTATION MODELS
+#
+# The "other" rotation model is the Muller 2019 rotations plus a rotation of plate 0 relative to a new plate 99999.
+# So relative plate motions are the same as Muller 2019, and the "other" model's frame (relative to plate 99999)
+# differs from Muller 2019's frame (relative to plate 0) only by the rotation of plate 0 relative to plate 99999.
+# That means the expected results of converting between the two frames are exact.
+
+_OTHER_FRAME_PLATE = 99999  # not a plate ID in Muller 2019 (unlike 9999)
+
+
+def _other_frame_rotation_model(muller_2019_model):
+    plate_0_relative_to_other_frame = (
+        pygplates.Feature.create_total_reconstruction_sequence(
+            _OTHER_FRAME_PLATE,  # fixed plate
+            0,  # moving plate
+            pygplates.GpmlIrregularSampling(
+                [
+                    pygplates.GpmlTimeSample(
+                        pygplates.GpmlFiniteRotation(
+                            pygplates.FiniteRotation(
+                                pygplates.PointOnSphere(30.0, 40.0),
+                                np.radians(angle),
+                            )
+                        ),
+                        time,
+                    )
+                    for time, angle in ((0.0, 0.0), (100.0, 20.0), (600.0, 60.0))
+                ]
+            ),
+        )
+    )
+    rotation_features = [
+        pygplates.FeatureCollection(filename)
+        for filename in muller_2019_model.get_rotation_model()
+    ]
+    rotation_features.append(
+        pygplates.FeatureCollection([plate_0_relative_to_other_frame])
+    )
+    return pygplates.RotationModel(rotation_features)
+
+
+def _reconstruct_in_other_frame(gpts, other_rotation_model, time):
+    """Reconstruct the present-day locations of 'gpts' to 'time' in the other frame (relative to plate 99999)."""
+    present_day_lons, present_day_lats = gpts.reconstruct(0, return_array=True)
+    other_gpts = gplately.Points(
+        gplately.PlateReconstruction(other_rotation_model),
+        present_day_lons,
+        present_day_lats,
+        plate_id=gpts.plate_id,
+        age=gpts.age,
+    )
+    return other_gpts.reconstruct(
+        time,
+        anchor_plate_id=_OTHER_FRAME_PLATE,
+        return_array=True,
+        return_point_indices=True,
+    )
+
+
+def test_rotate_reference_frames_same_model(gplately_plate_reconstruction_object):
+    gpts = _points_with_a_young_point(gplately_plate_reconstruction_object)
+    rotation_model = gplately_plate_reconstruction_object.rotation_model
+
+    # Changing only the anchor plate (within the same model) is the same as reconstructing relative to that anchor.
+    rotated_points = gpts.rotate_reference_frames(
+        50, rotation_model, rotation_model, 0, 101
+    )
+    rlons, rlats = gpts.reconstruct(50, anchor_plate_id=101, return_array=True)
+    assert np.allclose(rotated_points.lons, rlons)
+    assert np.allclose(rotated_points.lats, rlats)
+    assert rotated_points.plate_reconstruction is gplately_plate_reconstruction_object
+    assert rotated_points.anchor_plate_id == 101
+
+
+def test_rotate_reference_frames_to_other_model(
+    gplately_plate_reconstruction_object, muller_2019_model
+):
+    gpts = _points_with_a_young_point(gplately_plate_reconstruction_object)
+    rotation_model = gplately_plate_reconstruction_object.rotation_model
+    other_rotation_model = _other_frame_rotation_model(muller_2019_model)
+
+    rotated_points, point_indices = gpts.rotate_reference_frames(
+        50,
+        rotation_model,
+        other_rotation_model,
+        0,
+        _OTHER_FRAME_PLATE,
+        return_point_indices=True,
+    )
+
+    expected_lons, expected_lats, expected_indices = _reconstruct_in_other_frame(
+        gpts, other_rotation_model, 50
+    )
+    assert list(point_indices) == list(expected_indices)
+    assert np.allclose(rotated_points.lons, expected_lons)
+    assert np.allclose(rotated_points.lats, expected_lats)
+
+    # The returned points use the "to" rotation model, relative to the "to" reference plate.
+    assert (
+        rotated_points.plate_reconstruction is not gplately_plate_reconstruction_object
+    )
+    assert rotated_points.anchor_plate_id == _OTHER_FRAME_PLATE
+    assert rotated_points.plate_reconstruction.rotation_model.get_rotation(
+        50, 701
+    ) == other_rotation_model.get_rotation(50, 701, anchor_plate_id=_OTHER_FRAME_PLATE)
+    # So reconstructing them back to present day gives the original present-day locations.
+    present_day_lons, present_day_lats = gpts.reconstruct(0, return_array=True)
+    rlons, rlats = rotated_points.reconstruct(0, return_array=True)
+    assert np.allclose(rlons, present_day_lons[point_indices])
+    assert np.allclose(rlats, present_day_lats[point_indices])
+
+
+def test_rotate_reference_frames_from_other_model(
+    gplately_plate_reconstruction_object, muller_2019_model
+):
+    gpts = _points_with_a_young_point(gplately_plate_reconstruction_object)
+    rotation_model = gplately_plate_reconstruction_object.rotation_model
+    other_rotation_model = _other_frame_rotation_model(muller_2019_model)
+
+    # Reconstructing in the other frame and converting back to our frame is the same as reconstructing in our frame.
+    rotated_lons, rotated_lats = gpts.rotate_reference_frames(
+        50,
+        other_rotation_model,
+        rotation_model,
+        _OTHER_FRAME_PLATE,
+        0,
+        return_array=True,
+    )
+    rlons, rlats = gpts.reconstruct(50, return_array=True)
+    assert np.allclose(rotated_lons, rlons)
+    assert np.allclose(rotated_lats, rlats)
+
+
+def test_rotate_reference_frames_with_initial_times(
+    gplately_plate_reconstruction_object, muller_2019_model
+):
+    # The points are first reconstructed from their initial time(s) to present day using our rotation model,
+    # so points defined at a non-zero initial time (or per-point initial times) give the same result.
+    gpts = _points_with_a_young_point(gplately_plate_reconstruction_object)
+    rotation_model = gplately_plate_reconstruction_object.rotation_model
+    other_rotation_model = _other_frame_rotation_model(muller_2019_model)
+
+    expected_lons, expected_lats = gpts.rotate_reference_frames(
+        50,
+        rotation_model,
+        other_rotation_model,
+        0,
+        _OTHER_FRAME_PLATE,
+        return_array=True,
+    )
+
+    # Points defined at 5 Ma (all the points exist at 5 Ma, including the young one).
+    lons_5, lats_5 = gpts.reconstruct(5, return_array=True)
+    gpts_5 = gplately.Points(
+        gplately_plate_reconstruction_object,
+        lons_5,
+        lats_5,
+        time=5,
+        plate_id=gpts.plate_id,
+        age=gpts.age,
+    )
+    # Per-point initial times (0 Ma and 5 Ma).
+    initial_times = np.array([0.0, 5.0, 0.0, 5.0])
+    gpts_mixed = gplately.Points(
+        gplately_plate_reconstruction_object,
+        np.where(initial_times == 0, gpts.lons, lons_5),
+        np.where(initial_times == 0, gpts.lats, lats_5),
+        time=initial_times,
+        plate_id=gpts.plate_id,
+        age=gpts.age,
+    )
+    for initial_gpts in (gpts_5, gpts_mixed):
+        rotated_lons, rotated_lats = initial_gpts.rotate_reference_frames(
+            50,
+            rotation_model,
+            other_rotation_model,
+            0,
+            _OTHER_FRAME_PLATE,
+            return_array=True,
+        )
+        assert np.allclose(rotated_lons, expected_lons)
+        assert np.allclose(rotated_lats, expected_lats)
+
+
+def test_rotate_reference_frames_missing_plate_ids(
+    gplately_plate_reconstruction_object, muller_2019_model, caplog
+):
+    import logging
+
+    rotation_model = gplately_plate_reconstruction_object.rotation_model
+    other_rotation_model = _other_frame_rotation_model(muller_2019_model)
+    # The second point has a plate ID that is in neither rotation model.
+    gpts = gplately.Points(
+        gplately_plate_reconstruction_object,
+        [140.0, 150.0],
+        [-30.0, -40.0],
+        plate_id=[801, 88888],
+    )
+
+    def rotate_reference_frames_warnings(*args, **kwargs):
+        caplog.clear()
+        # The "gplately" logger does not propagate to the root logger, so attach caplog's handler to it directly.
+        gplately_logger = logging.getLogger("gplately")
+        gplately_logger.addHandler(caplog.handler)
+        try:
+            gpts.rotate_reference_frames(50, *args, **kwargs)
+        finally:
+            gplately_logger.removeHandler(caplog.handler)
+        return [
+            record.getMessage()
+            for record in caplog.records
+            if "rotate_reference_frames" in record.getMessage()
+        ]
+
+    # Default rotation models and reference plates: no warning (consistent with 'reconstruct()').
+    assert rotate_reference_frames_warnings() == []
+
+    # A non-default "to" model: warns about the missing plate ID (needed for the returned Points).
+    warnings = rotate_reference_frames_warnings(
+        rotation_model, other_rotation_model, 0, _OTHER_FRAME_PLATE
+    )
+    assert len(warnings) == 1
+    assert "'to'" in warnings[0] and "88888" in warnings[0]
+    # ...but not when returning arrays (the "to" model is then only used for the non-reference plate).
+    warnings = rotate_reference_frames_warnings(
+        rotation_model,
+        other_rotation_model,
+        0,
+        _OTHER_FRAME_PLATE,
+        return_array=True,
+    )
+    assert warnings == []
+
+    # A non-default "from" model: warns about the missing plate ID (used to reconstruct the points).
+    warnings = rotate_reference_frames_warnings(
+        other_rotation_model,
+        rotation_model,
+        _OTHER_FRAME_PLATE,
+        0,
+        return_array=True,
+    )
+    assert len(warnings) == 1
+    assert "'from'" in warnings[0] and "88888" in warnings[0]
+
+    # An unknown reference plate (with the default model): warns about the frame (not each plate ID).
+    warnings = rotate_reference_frames_warnings(to_rotation_reference_plate=12345)
+    assert len(warnings) == 1
+    assert "'to'" in warnings[0] and "12345" in warnings[0]

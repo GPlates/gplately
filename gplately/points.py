@@ -775,18 +775,32 @@ class Points(object):
             attributes_subset[key] = attribute_subset
         return attributes_subset
 
-    def _subset(self, point_indices, lons, lats, time, anchor_plate_id):
+    def _subset(
+        self,
+        point_indices,
+        lons,
+        lats,
+        time,
+        anchor_plate_id,
+        plate_reconstruction=None,
+    ):
         """Return a new :class:`Points` containing a subset of the points at new locations.
 
         ``point_indices`` is an integer array of point indices (into ``self.lons``, ``self.lats``, etc).
         ``lons`` and ``lats`` are the new locations of those points (eg, reconstructed to ``time``,
         relative to ``anchor_plate_id``), and so must be the same size as ``point_indices``.
 
+        The new :class:`Points` uses ``plate_reconstruction`` (``self.plate_reconstruction`` if None),
+        which must be the plate reconstruction that ``lons`` and ``lats`` are in.
+
         All per-point data (plate IDs, ages and attributes) is restricted to the same subset of points,
         so it stays aligned with ``lons`` and ``lats``.
         """
+        if plate_reconstruction is None:
+            plate_reconstruction = self.plate_reconstruction
+
         points_subset = Points(
-            self.plate_reconstruction,
+            plate_reconstruction,
             lons,
             lats,
             time=time,
@@ -851,6 +865,50 @@ class Points(object):
         if anchor_plate_id is None:
             anchor_plate_id = self.anchor_plate_id
 
+        point_indices, rlons, rlats = self._reconstruct_valid_points(
+            time, self.plate_reconstruction.rotation_model, anchor_plate_id
+        )
+
+        return_tuple = ()
+
+        if return_array:
+            return_tuple += rlons, rlats
+        else:
+            reconstructed_points = self._subset(
+                point_indices, rlons, rlats, time, anchor_plate_id
+            )
+            return_tuple += (reconstructed_points,)
+
+        if return_point_indices:
+            return_tuple += (point_indices,)
+
+        # Return tuple of objects (unless only a single object, eg, just a 'Points' object).
+        if len(return_tuple) == 1:
+            return return_tuple[0]
+        else:
+            return return_tuple
+
+    def _reconstruct_valid_points(
+        self, time, present_to_time_rotation_model, present_to_time_anchor_plate_id
+    ):
+        """Reconstruct the valid points from their initial time(s) to ``time``.
+
+        Each point is reconstructed in two steps:
+
+        * from its initial time to present day, using ``self.plate_reconstruction.rotation_model``
+          and ``self.anchor_plate_id`` (the model and anchor plate that the initial points are defined in), then
+        * from present day to ``time``, using ``present_to_time_rotation_model``
+          and ``present_to_time_anchor_plate_id``.
+
+        Only those points that are reconstructable and that have ages greater than or equal to ``time`` are valid.
+
+        Returns
+        -------
+        point_indices : ndarray
+            Indices of the valid points (into ``self.lons``, ``self.lats``, ``self.plate_id`` and ``self.age``).
+        rlons, rlats : ndarray
+            The reconstructed longitudes and latitudes of the valid points.
+        """
         # Start with an empty array.
         lat_lon_points = np.empty((self.size, 2))
 
@@ -881,15 +939,13 @@ class Points(object):
             )
             unique_initial_times = np.unique(initial_times_for_group)
 
-            # Rotation from present day to 'time' (using the *requested* anchor plate ID).
+            # Rotation from present day to 'time' (using the *requested* rotation model and anchor plate ID).
             # This is independent of the initial time, so compute it once for this plate ID.
-            present_to_time_rotation = (
-                self.plate_reconstruction.rotation_model.get_rotation(
-                    to_time=time,
-                    moving_plate_id=plate_id,
-                    from_time=0,
-                    anchor_plate_id=anchor_plate_id,
-                )
+            present_to_time_rotation = present_to_time_rotation_model.get_rotation(
+                to_time=time,
+                moving_plate_id=plate_id,
+                from_time=0,
+                anchor_plate_id=present_to_time_anchor_plate_id,
             )
 
             for init_t in unique_initial_times:
@@ -902,8 +958,8 @@ class Points(object):
                 )
 
                 # First reconstruct the internal points from the initial time ('init_t') to present day using
-                # our internal anchor plate ID (the same anchor plate used in '__init__').
-                # Then reconstruct from present day to 'time' using the *requested* anchor plate ID.
+                # our internal rotation model and anchor plate ID (the same anchor plate used in '__init__').
+                # Then reconstruct from present day to 'time' using the *requested* rotation model and anchor plate ID.
                 #
                 # Note 'self.points' (and hence 'reconstructed_points_sub') are the locations at 'init_t'
                 #      (just like 'self.lons' and 'self.lats').
@@ -932,24 +988,7 @@ class Points(object):
         rlons = rlonslats[:, 1]
         rlats = rlonslats[:, 0]
 
-        return_tuple = ()
-
-        if return_array:
-            return_tuple += rlons, rlats
-        else:
-            reconstructed_points = self._subset(
-                point_indices, rlons, rlats, time, anchor_plate_id
-            )
-            return_tuple += (reconstructed_points,)
-
-        if return_point_indices:
-            return_tuple += (point_indices,)
-
-        # Return tuple of objects (unless only a single object, eg, just a 'Points' object).
-        if len(return_tuple) == 1:
-            return return_tuple[0]
-        else:
-            return return_tuple
+        return point_indices, rlons, rlats
 
     def reconstruct_to_birth_age(
         self, ages, anchor_plate_id=None, return_point_indices=False
@@ -1844,6 +1883,16 @@ class Points(object):
         """Reconstruct the points to ``reconstruction_time``, then rotate them from one plate model reference frame
         to another plate reconstruction model reference frame.
 
+        The points are first reconstructed from their initial time(s) to present day using ``self.plate_reconstruction``
+        (the plate reconstruction the initial points are defined in). They are then reconstructed from present day to
+        ``reconstruction_time`` using the "from" rotation model (relative to ``from_rotation_reference_plate``), and finally
+        rotated into the "to" reference frame (relative to ``to_rotation_reference_plate``) using the rotation that takes
+        ``non_reference_plate`` from the "from" frame to the "to" frame.
+
+        The "from" and "to" rotation models are assumed to use the same plate IDs as ``self.plate_reconstruction``.
+        If a non-default rotation model or reference plate is specified then a warning is logged for any plate IDs
+        that have no rotation at ``reconstruction_time`` (pyGPlates uses identity rotations for those, which gives wrong positions).
+
         As with :meth:`reconstruct`, only those points that are reconstructable (See :ref:`Notes <points-note>`) and that
         have ages greater than or equal to ``reconstruction_time`` are returned.
         So the number of returned points can be less than ``self.size``. Use ``return_point_indices`` to find out
@@ -1863,19 +1912,24 @@ class Points(object):
         from_rotation_features_or_model : str/os.PathLike, list of str/os.PathLike, or instance of pygplates.RotationModel
             A filename, or a list of filenames, or a pyGPlates
             RotationModel object that defines the rotation model
-            that the input points are currently associated with.
+            of the "from" reference frame. It is used to reconstruct the points from present day to ``reconstruction_time``.
             ``self.plate_reconstruction.rotation_model`` is default.
         to_rotation_features_or_model : str/os.PathLike, list of str/os.PathLike, or instance of pygplates.RotationModel
             A filename, or a list of filenames, or a pyGPlates
             RotationModel object that defines the rotation model
-            that the input points shall be rotated with.
+            of the "to" reference frame that the points are rotated into.
             ``self.plate_reconstruction.rotation_model`` is default.
+            If it is not ``self.plate_reconstruction.rotation_model`` then the returned :class:`Points` uses a new
+            :class:`PlateReconstruction` with this rotation model (and the topologies and static polygons of
+            ``self.plate_reconstruction``), with its anchor plate set to ``to_rotation_reference_plate``.
         from_rotation_reference_plate : int, default = 0
-            The current reference plate for the plate model the points
-            are defined in. Defaults to the anchor plate 0.
+            The reference plate of the "from" reference frame (the anchor plate that the points are reconstructed relative to).
+            Note that the default is plate 0, not ``self.anchor_plate_id``.
         to_rotation_reference_plate : int, default = 0
-            The desired reference plate for the plate model the points
-            to be rotated to. Defaults to the anchor plate 0.
+            The reference plate of the "to" reference frame (the anchor plate that the rotated points are relative to,
+            and the anchor plate of the returned :class:`Points`).
+            Note that the default is plate 0, not ``self.anchor_plate_id``. So, by default, the rotated points are relative to
+            plate 0 (even if ``self.anchor_plate_id`` is non-zero).
         non_reference_plate : int, default = 701
             An arbitrary placeholder reference frame with which
             to define the "from" and "to" reference frames.
@@ -1905,15 +1959,32 @@ class Points(object):
         if output_name is not None:
             raise NotImplementedError("'output_name' parameter is not implemented")
 
-        if from_rotation_features_or_model is None:
-            from_rotation_features_or_model = self.plate_reconstruction.rotation_model
-        if to_rotation_features_or_model is None:
-            to_rotation_features_or_model = self.plate_reconstruction.rotation_model
+        # The "from" and "to" rotation models default to our rotation model.
+        #
+        # Note: A model is considered specified (non-default) only if it's not our rotation model.
+        from_rotation_model_specified = (
+            from_rotation_features_or_model is not None
+            and from_rotation_features_or_model
+            is not self.plate_reconstruction.rotation_model
+        )
+        to_rotation_model_specified = (
+            to_rotation_features_or_model is not None
+            and to_rotation_features_or_model
+            is not self.plate_reconstruction.rotation_model
+        )
+        from_rotation_model = (
+            _RotationModel(from_rotation_features_or_model)
+            if from_rotation_model_specified
+            else self.plate_reconstruction.rotation_model
+        )
+        to_rotation_model = (
+            _RotationModel(to_rotation_features_or_model)
+            if to_rotation_model_specified
+            else self.plate_reconstruction.rotation_model
+        )
 
         # Create the pygplates.FiniteRotation that rotates
         # between the two reference frames.
-        from_rotation_model = _RotationModel(from_rotation_features_or_model)
-        to_rotation_model = _RotationModel(to_rotation_features_or_model)
         from_rotation = from_rotation_model.get_rotation(
             reconstruction_time,
             non_reference_plate,
@@ -1926,16 +1997,56 @@ class Points(object):
         )
         reference_frame_conversion_rotation = to_rotation * from_rotation.get_inverse()
 
-        # Reconstruct points to reconstruction_time.
+        # Reconstruct the points to 'reconstruction_time' in the "from" reference frame.
+        #
+        # The points are first reconstructed from their initial time(s) to present day using our rotation model
+        # (the model the initial points are defined in), and then from present day to 'reconstruction_time'
+        # using the "from" rotation model (relative to the "from" reference plate).
         #
         # Note: Only the valid points are reconstructed (see 'reconstruct()'), so we also need their indices
         #       to keep the plate IDs and ages aligned with the rotated points.
-        lons, lats, point_indices = self.reconstruct(
+        point_indices, lons, lats = self._reconstruct_valid_points(
             reconstruction_time,
-            anchor_plate_id=from_rotation_reference_plate,
-            return_array=True,
-            return_point_indices=True,
-        )  # type: ignore
+            from_rotation_model,
+            from_rotation_reference_plate,
+        )
+
+        # Warn about any plate IDs missing from the "from" or "to" rotation models
+        # (pyGPlates uses identity rotations for them, so the rotated positions would be wrong).
+        #
+        # This is only done for a non-default rotation model or reference/non-reference plate. Our own rotation model
+        # is used elsewhere (eg, 'reconstruct()') for the points' plate IDs without any warning.
+        frame_plates_specified = (
+            from_rotation_reference_plate != 0
+            or to_rotation_reference_plate != 0
+            or non_reference_plate != 701
+        )
+        point_plate_ids = np.unique(self.plate_id[point_indices])
+        # The "from" model reconstructs the points (to 'reconstruction_time').
+        self._warn_missing_rotations(
+            "from",
+            from_rotation_model,
+            reconstruction_time,
+            from_rotation_reference_plate,
+            non_reference_plate,
+            point_plate_ids if from_rotation_model_specified else None,
+            from_rotation_model_specified or frame_plates_specified,
+        )
+        # The "to" model is only used for the points' plate IDs when the returned 'Points' is created
+        # (since it reverse reconstructs the rotated points to present day using the "to" model).
+        self._warn_missing_rotations(
+            "to",
+            to_rotation_model,
+            reconstruction_time,
+            to_rotation_reference_plate,
+            non_reference_plate,
+            (
+                point_plate_ids
+                if to_rotation_model_specified and not return_array
+                else None
+            ),
+            to_rotation_model_specified or frame_plates_specified,
+        )
 
         if point_indices.size > 0:
             # Rotate the reconstructed points to the other reference frame.
@@ -1957,12 +2068,28 @@ class Points(object):
         if return_array:
             return_tuple += out_lon, out_lat
         else:
+            # The rotated points are in the "to" reference frame, so the returned 'Points' must use the "to" rotation model
+            # (eg, its constructor reverse reconstructs the rotated points to present day using it).
+            if to_rotation_model_specified:
+                # Keep our topologies and static polygons (assumes the "to" model uses the same plate IDs).
+                #
+                # Note: Using 'type()' avoids importing the 'reconstruction' module (and keeps any subclass).
+                rotated_plate_reconstruction = type(self.plate_reconstruction)(
+                    to_rotation_model,
+                    topology_features=self.plate_reconstruction.topology_features,
+                    static_polygons=self.plate_reconstruction.static_polygons,
+                    anchor_plate_id=to_rotation_reference_plate,
+                )
+            else:
+                rotated_plate_reconstruction = self.plate_reconstruction
+
             rotated_points = self._subset(
                 point_indices,
                 out_lon,
                 out_lat,
                 reconstruction_time,
                 to_rotation_reference_plate,
+                rotated_plate_reconstruction,
             )
             return_tuple += (rotated_points,)
 
@@ -1974,3 +2101,59 @@ class Points(object):
             return return_tuple[0]
         else:
             return return_tuple
+
+    @staticmethod
+    def _warn_missing_rotations(
+        model_name,
+        rotation_model,
+        time,
+        reference_plate,
+        non_reference_plate,
+        plate_ids,
+        check_frame,
+    ):
+        """Log a warning for plate IDs that have no rotation (relative to ``reference_plate``) at ``time``.
+
+        pyGPlates uses an identity rotation for a missing plate ID, which would silently give wrong positions.
+
+        If ``check_frame`` is True then ``non_reference_plate`` is checked (which also checks ``reference_plate``).
+        If ``plate_ids`` is not None then those plate IDs are checked (unless the frame check already failed,
+        in which case every plate ID would be missing and the frame warning is enough).
+        """
+
+        def has_rotation(plate_id):
+            return (
+                rotation_model.get_rotation(
+                    time,
+                    int(plate_id),
+                    anchor_plate_id=reference_plate,
+                    use_identity_for_missing_plate_ids=False,
+                )
+                is not None
+            )
+
+        if check_frame and not has_rotation(non_reference_plate):
+            logger.warning(
+                "rotate_reference_frames: the '%s' rotation model has no rotation for non-reference plate %d "
+                "relative to reference plate %d at %s Ma, so the rotated positions will be wrong.",
+                model_name,
+                non_reference_plate,
+                reference_plate,
+                time,
+            )
+            return
+
+        if plate_ids is not None:
+            missing_plate_ids = [
+                int(plate_id) for plate_id in plate_ids if not has_rotation(plate_id)
+            ]
+            if missing_plate_ids:
+                logger.warning(
+                    "rotate_reference_frames: the '%s' rotation model has no rotations for plate ID(s) %s "
+                    "relative to reference plate %d at %s Ma, so pyGPlates uses identity rotations "
+                    "and the positions of points with those plate IDs will be wrong.",
+                    model_name,
+                    missing_plate_ids,
+                    reference_plate,
+                    time,
+                )
