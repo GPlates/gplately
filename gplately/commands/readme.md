@@ -189,7 +189,33 @@ GPlately comes with a suite of useful command line tools. These tools are design
   Example:
 
   - `gplately subduction-convergence -r rotations.rot -m topologies.gpml -t 0 200 -i 1 -v 1 -d 0.5 -e xy -- convergence`
-    (calculate the convergence rates along subduction zones from 200Ma to 0Ma)
+    (calculate the convergence rates along subduction zones from 0 to 200 Ma)
+
+  The default method is `ptt`, retaining the existing CLI calculation. Select
+  `--method pygplates` to use `PlateReconstruction.tessellate_subduction_zones()`:
+
+  - `gplately sc --method pygplates -r rotations.rot -m topologies.gpml -t 0 1 -i 1 -v 1 -d 5 -g convergence.gpml -- convergence_modern`
+    (write modern-method results at 0 and 1 Ma, plus a GPML scalar coverage)
+
+  Both methods retain the existing argument names, aliases, inclusive time range,
+  and per-time filenames (`convergence_modern_0.00.xy`, for example). `-d` is in
+  degrees; `-k` is in kilometres, converted using the same equatorial Earth radius
+  as the existing CLI. `-a` sets the anchor plate and `-v` the velocity time interval
+  in Myr. The methods use different sampling/calculation approaches, so their
+  values and sampled points are not expected to match. Selecting the modern
+  method does not change the public PTT functions or add a ridge command.
+
+  Text output has the existing 10 base columns, with integer plate-ID tokens in
+  columns 9 and 10. Velocities are in cm/yr and coordinates, angles and arc lengths
+  in degrees. The seven `-x` optional groups add up to 13 columns in the existing
+  documented order, independent of argument order. `-g` retains the named scalar
+  coverages and per-time validity intervals. Empty times produce no text file;
+  the GPML file contains only nonempty times. These file contracts apply to both
+  methods; they do not imply equal numerical results.
+
+  The modern path requires finite time bounds, positive finite time/velocity
+  increments and a positive finite sampling distance. A time increment too small
+  to advance the floating-point reconstruction time is rejected.
 
 ### 🟢 **gpmdb**
 
