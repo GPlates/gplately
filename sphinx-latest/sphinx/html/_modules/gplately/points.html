@@ -877,18 +877,32 @@
             <span class="n">attributes_subset</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">attribute_subset</span>
         <span class="k">return</span> <span class="n">attributes_subset</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">_subset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">point_indices</span><span class="p">,</span> <span class="n">lons</span><span class="p">,</span> <span class="n">lats</span><span class="p">,</span> <span class="n">time</span><span class="p">,</span> <span class="n">anchor_plate_id</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_subset</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">point_indices</span><span class="p">,</span>
+        <span class="n">lons</span><span class="p">,</span>
+        <span class="n">lats</span><span class="p">,</span>
+        <span class="n">time</span><span class="p">,</span>
+        <span class="n">anchor_plate_id</span><span class="p">,</span>
+        <span class="n">plate_reconstruction</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
 <span class="w">        </span><span class="sd">"""Return a new :class:`Points` containing a subset of the points at new locations.</span>
 
 <span class="sd">        ``point_indices`` is an integer array of point indices (into ``self.lons``, ``self.lats``, etc).</span>
 <span class="sd">        ``lons`` and ``lats`` are the new locations of those points (eg, reconstructed to ``time``,</span>
 <span class="sd">        relative to ``anchor_plate_id``), and so must be the same size as ``point_indices``.</span>
 
+<span class="sd">        The new :class:`Points` uses ``plate_reconstruction`` (``self.plate_reconstruction`` if None),</span>
+<span class="sd">        which must be the plate reconstruction that ``lons`` and ``lats`` are in.</span>
+
 <span class="sd">        All per-point data (plate IDs, ages and attributes) is restricted to the same subset of points,</span>
 <span class="sd">        so it stays aligned with ``lons`` and ``lats``.</span>
 <span class="sd">        """</span>
+        <span class="k">if</span> <span class="n">plate_reconstruction</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">plate_reconstruction</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">plate_reconstruction</span>
+
         <span class="n">points_subset</span> <span class="o">=</span> <span class="n">Points</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">plate_reconstruction</span><span class="p">,</span>
+            <span class="n">plate_reconstruction</span><span class="p">,</span>
             <span class="n">lons</span><span class="p">,</span>
             <span class="n">lats</span><span class="p">,</span>
             <span class="n">time</span><span class="o">=</span><span class="n">time</span><span class="p">,</span>
@@ -955,6 +969,51 @@
         <span class="k">if</span> <span class="n">anchor_plate_id</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">anchor_plate_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">anchor_plate_id</span>
 
+        <span class="n">point_indices</span><span class="p">,</span> <span class="n">rlons</span><span class="p">,</span> <span class="n">rlats</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reconstruct_valid_points</span><span class="p">(</span>
+            <span class="n">time</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">plate_reconstruction</span><span class="o">.</span><span class="n">rotation_model</span><span class="p">,</span> <span class="n">anchor_plate_id</span>
+        <span class="p">)</span>
+
+        <span class="n">return_tuple</span> <span class="o">=</span> <span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">return_array</span><span class="p">:</span>
+            <span class="n">return_tuple</span> <span class="o">+=</span> <span class="n">rlons</span><span class="p">,</span> <span class="n">rlats</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">reconstructed_points</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_subset</span><span class="p">(</span>
+                <span class="n">point_indices</span><span class="p">,</span> <span class="n">rlons</span><span class="p">,</span> <span class="n">rlats</span><span class="p">,</span> <span class="n">time</span><span class="p">,</span> <span class="n">anchor_plate_id</span>
+            <span class="p">)</span>
+            <span class="n">return_tuple</span> <span class="o">+=</span> <span class="p">(</span><span class="n">reconstructed_points</span><span class="p">,)</span>
+
+        <span class="k">if</span> <span class="n">return_point_indices</span><span class="p">:</span>
+            <span class="n">return_tuple</span> <span class="o">+=</span> <span class="p">(</span><span class="n">point_indices</span><span class="p">,)</span>
+
+        <span class="c1"># Return tuple of objects (unless only a single object, eg, just a 'Points' object).</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">return_tuple</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">return_tuple</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">return_tuple</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_reconstruct_valid_points</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">time</span><span class="p">,</span> <span class="n">present_to_time_rotation_model</span><span class="p">,</span> <span class="n">present_to_time_anchor_plate_id</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Reconstruct the valid points from their initial time(s) to ``time``.</span>
+
+<span class="sd">        Each point is reconstructed in two steps:</span>
+
+<span class="sd">        * from its initial time to present day, using ``self.plate_reconstruction.rotation_model``</span>
+<span class="sd">          and ``self.anchor_plate_id`` (the model and anchor plate that the initial points are defined in), then</span>
+<span class="sd">        * from present day to ``time``, using ``present_to_time_rotation_model``</span>
+<span class="sd">          and ``present_to_time_anchor_plate_id``.</span>
+
+<span class="sd">        Only those points that are reconstructable and that have ages greater than or equal to ``time`` are valid.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        point_indices : ndarray</span>
+<span class="sd">            Indices of the valid points (into ``self.lons``, ``self.lats``, ``self.plate_id`` and ``self.age``).</span>
+<span class="sd">        rlons, rlats : ndarray</span>
+<span class="sd">            The reconstructed longitudes and latitudes of the valid points.</span>
+<span class="sd">        """</span>
         <span class="c1"># Start with an empty array.</span>
         <span class="n">lat_lon_points</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
 
@@ -985,15 +1044,13 @@
             <span class="p">)</span>
             <span class="n">unique_initial_times</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">initial_times_for_group</span><span class="p">)</span>
 
-            <span class="c1"># Rotation from present day to 'time' (using the *requested* anchor plate ID).</span>
+            <span class="c1"># Rotation from present day to 'time' (using the *requested* rotation model and anchor plate ID).</span>
             <span class="c1"># This is independent of the initial time, so compute it once for this plate ID.</span>
-            <span class="n">present_to_time_rotation</span> <span class="o">=</span> <span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">plate_reconstruction</span><span class="o">.</span><span class="n">rotation_model</span><span class="o">.</span><span class="n">get_rotation</span><span class="p">(</span>
-                    <span class="n">to_time</span><span class="o">=</span><span class="n">time</span><span class="p">,</span>
-                    <span class="n">moving_plate_id</span><span class="o">=</span><span class="n">plate_id</span><span class="p">,</span>
-                    <span class="n">from_time</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
-                    <span class="n">anchor_plate_id</span><span class="o">=</span><span class="n">anchor_plate_id</span><span class="p">,</span>
-                <span class="p">)</span>
+            <span class="n">present_to_time_rotation</span> <span class="o">=</span> <span class="n">present_to_time_rotation_model</span><span class="o">.</span><span class="n">get_rotation</span><span class="p">(</span>
+                <span class="n">to_time</span><span class="o">=</span><span class="n">time</span><span class="p">,</span>
+                <span class="n">moving_plate_id</span><span class="o">=</span><span class="n">plate_id</span><span class="p">,</span>
+                <span class="n">from_time</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                <span class="n">anchor_plate_id</span><span class="o">=</span><span class="n">present_to_time_anchor_plate_id</span><span class="p">,</span>
             <span class="p">)</span>
 
             <span class="k">for</span> <span class="n">init_t</span> <span class="ow">in</span> <span class="n">unique_initial_times</span><span class="p">:</span>
@@ -1006,8 +1063,8 @@
                 <span class="p">)</span>
 
                 <span class="c1"># First reconstruct the internal points from the initial time ('init_t') to present day using</span>
-                <span class="c1"># our internal anchor plate ID (the same anchor plate used in '__init__').</span>
-                <span class="c1"># Then reconstruct from present day to 'time' using the *requested* anchor plate ID.</span>
+                <span class="c1"># our internal rotation model and anchor plate ID (the same anchor plate used in '__init__').</span>
+                <span class="c1"># Then reconstruct from present day to 'time' using the *requested* rotation model and anchor plate ID.</span>
                 <span class="c1">#</span>
                 <span class="c1"># Note 'self.points' (and hence 'reconstructed_points_sub') are the locations at 'init_t'</span>
                 <span class="c1">#      (just like 'self.lons' and 'self.lats').</span>
@@ -1036,25 +1093,7 @@
         <span class="n">rlons</span> <span class="o">=</span> <span class="n">rlonslats</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span>
         <span class="n">rlats</span> <span class="o">=</span> <span class="n">rlonslats</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span>
 
-        <span class="n">return_tuple</span> <span class="o">=</span> <span class="p">()</span>
-
-        <span class="k">if</span> <span class="n">return_array</span><span class="p">:</span>
-            <span class="n">return_tuple</span> <span class="o">+=</span> <span class="n">rlons</span><span class="p">,</span> <span class="n">rlats</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">reconstructed_points</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_subset</span><span class="p">(</span>
-                <span class="n">point_indices</span><span class="p">,</span> <span class="n">rlons</span><span class="p">,</span> <span class="n">rlats</span><span class="p">,</span> <span class="n">time</span><span class="p">,</span> <span class="n">anchor_plate_id</span>
-            <span class="p">)</span>
-            <span class="n">return_tuple</span> <span class="o">+=</span> <span class="p">(</span><span class="n">reconstructed_points</span><span class="p">,)</span>
-
-        <span class="k">if</span> <span class="n">return_point_indices</span><span class="p">:</span>
-            <span class="n">return_tuple</span> <span class="o">+=</span> <span class="p">(</span><span class="n">point_indices</span><span class="p">,)</span>
-
-        <span class="c1"># Return tuple of objects (unless only a single object, eg, just a 'Points' object).</span>
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">return_tuple</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">return_tuple</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">return_tuple</span></div>
-
+        <span class="k">return</span> <span class="n">point_indices</span><span class="p">,</span> <span class="n">rlons</span><span class="p">,</span> <span class="n">rlats</span>
 
 <div class="viewcode-block" id="Points.reconstruct_to_birth_age">
 <a class="viewcode-back" href="../../generated/gplately.Points.html#gplately.Points.reconstruct_to_birth_age">[docs]</a>
@@ -1966,6 +2005,16 @@
 <span class="w">        </span><span class="sd">"""Reconstruct the points to ``reconstruction_time``, then rotate them from one plate model reference frame</span>
 <span class="sd">        to another plate reconstruction model reference frame.</span>
 
+<span class="sd">        The points are first reconstructed from their initial time(s) to present day using ``self.plate_reconstruction``</span>
+<span class="sd">        (the plate reconstruction the initial points are defined in). They are then reconstructed from present day to</span>
+<span class="sd">        ``reconstruction_time`` using the "from" rotation model (relative to ``from_rotation_reference_plate``), and finally</span>
+<span class="sd">        rotated into the "to" reference frame (relative to ``to_rotation_reference_plate``) using the rotation that takes</span>
+<span class="sd">        ``non_reference_plate`` from the "from" frame to the "to" frame.</span>
+
+<span class="sd">        The "from" and "to" rotation models are assumed to use the same plate IDs as ``self.plate_reconstruction``.</span>
+<span class="sd">        If a non-default rotation model or reference plate is specified then a warning is logged for any plate IDs</span>
+<span class="sd">        that have no rotation at ``reconstruction_time`` (pyGPlates uses identity rotations for those, which gives wrong positions).</span>
+
 <span class="sd">        As with :meth:`reconstruct`, only those points that are reconstructable (See :ref:`Notes &lt;points-note&gt;`) and that</span>
 <span class="sd">        have ages greater than or equal to ``reconstruction_time`` are returned.</span>
 <span class="sd">        So the number of returned points can be less than ``self.size``. Use ``return_point_indices`` to find out</span>
@@ -1985,19 +2034,29 @@
 <span class="sd">        from_rotation_features_or_model : str/os.PathLike, list of str/os.PathLike, or instance of pygplates.RotationModel</span>
 <span class="sd">            A filename, or a list of filenames, or a pyGPlates</span>
 <span class="sd">            RotationModel object that defines the rotation model</span>
-<span class="sd">            that the input points are currently associated with.</span>
+<span class="sd">            of the "from" reference frame. It is used to reconstruct the points from present day to ``reconstruction_time``.</span>
 <span class="sd">            ``self.plate_reconstruction.rotation_model`` is default.</span>
+<span class="sd">            Only None, or the ``self.plate_reconstruction.rotation_model`` object itself, counts as the default model.</span>
+<span class="sd">            An equivalent model (eg, the same rotation files) is treated as a different model.</span>
 <span class="sd">        to_rotation_features_or_model : str/os.PathLike, list of str/os.PathLike, or instance of pygplates.RotationModel</span>
 <span class="sd">            A filename, or a list of filenames, or a pyGPlates</span>
 <span class="sd">            RotationModel object that defines the rotation model</span>
-<span class="sd">            that the input points shall be rotated with.</span>
-<span class="sd">            ``self.plate_reconstruction.rotation_model`` is default.</span>
-<span class="sd">        from_rotation_reference_plate : int, default = 0</span>
-<span class="sd">            The current reference plate for the plate model the points</span>
-<span class="sd">            are defined in. Defaults to the anchor plate 0.</span>
-<span class="sd">        to_rotation_reference_plate : int, default = 0</span>
-<span class="sd">            The desired reference plate for the plate model the points</span>
-<span class="sd">            to be rotated to. Defaults to the anchor plate 0.</span>
+<span class="sd">            of the "to" reference frame that the points are rotated into.</span>
+<span class="sd">            ``self.plate_reconstruction.rotation_model`` is default (and, as with the "from" model, only None or that</span>
+<span class="sd">            object itself counts as the default model).</span>
+<span class="sd">            If it is not the default model then the returned :class:`Points` uses a new</span>
+<span class="sd">            :class:`PlateReconstruction` with this rotation model (and the topologies and static polygons of</span>
+<span class="sd">            ``self.plate_reconstruction``), with its anchor plate set to ``to_rotation_reference_plate``.</span>
+<span class="sd">            The plate model (:py:attr:`PlateReconstruction.plate_model`) of ``self.plate_reconstruction`` is not carried over,</span>
+<span class="sd">            since it describes the "from" model.</span>
+<span class="sd">        from_rotation_reference_plate : int or None, default = 0</span>
+<span class="sd">            The reference plate of the "from" reference frame (the anchor plate that the points are reconstructed relative to).</span>
+<span class="sd">            Note that the default is plate 0, not ``self.anchor_plate_id``. If None then ``self.anchor_plate_id`` is used.</span>
+<span class="sd">        to_rotation_reference_plate : int or None, default = 0</span>
+<span class="sd">            The reference plate of the "to" reference frame (the anchor plate that the rotated points are relative to,</span>
+<span class="sd">            and the anchor plate of the returned :class:`Points`).</span>
+<span class="sd">            Note that the default is plate 0, not ``self.anchor_plate_id``. So, by default, the rotated points are relative to</span>
+<span class="sd">            plate 0 (even if ``self.anchor_plate_id`` is non-zero). If None then ``self.anchor_plate_id`` is used.</span>
 <span class="sd">        non_reference_plate : int, default = 701</span>
 <span class="sd">            An arbitrary placeholder reference frame with which</span>
 <span class="sd">            to define the "from" and "to" reference frames.</span>
@@ -2027,15 +2086,41 @@
         <span class="k">if</span> <span class="n">output_name</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">"'output_name' parameter is not implemented"</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="n">from_rotation_features_or_model</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">from_rotation_features_or_model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">plate_reconstruction</span><span class="o">.</span><span class="n">rotation_model</span>
-        <span class="k">if</span> <span class="n">to_rotation_features_or_model</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">to_rotation_features_or_model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">plate_reconstruction</span><span class="o">.</span><span class="n">rotation_model</span>
+        <span class="c1"># A reference plate of None means our anchor plate</span>
+        <span class="c1"># (as it did when the points were reconstructed using 'reconstruct()').</span>
+        <span class="k">if</span> <span class="n">from_rotation_reference_plate</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">from_rotation_reference_plate</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">anchor_plate_id</span>
+        <span class="k">if</span> <span class="n">to_rotation_reference_plate</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">to_rotation_reference_plate</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">anchor_plate_id</span>
+
+        <span class="c1"># The "from" and "to" rotation models default to our rotation model.</span>
+        <span class="c1">#</span>
+        <span class="c1"># Note: A model is considered specified (non-default) only if it's not our rotation model.</span>
+        <span class="n">from_rotation_model_specified</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">from_rotation_features_or_model</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+            <span class="ow">and</span> <span class="n">from_rotation_features_or_model</span>
+            <span class="ow">is</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">plate_reconstruction</span><span class="o">.</span><span class="n">rotation_model</span>
+        <span class="p">)</span>
+        <span class="n">to_rotation_model_specified</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">to_rotation_features_or_model</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+            <span class="ow">and</span> <span class="n">to_rotation_features_or_model</span>
+            <span class="ow">is</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">plate_reconstruction</span><span class="o">.</span><span class="n">rotation_model</span>
+        <span class="p">)</span>
+        <span class="n">from_rotation_model</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">_RotationModel</span><span class="p">(</span><span class="n">from_rotation_features_or_model</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">from_rotation_model_specified</span>
+            <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">plate_reconstruction</span><span class="o">.</span><span class="n">rotation_model</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">to_rotation_model_specified</span><span class="p">:</span>
+            <span class="n">to_rotation_model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">plate_reconstruction</span><span class="o">.</span><span class="n">rotation_model</span>
+        <span class="k">elif</span> <span class="n">to_rotation_features_or_model</span> <span class="ow">is</span> <span class="n">from_rotation_features_or_model</span><span class="p">:</span>
+            <span class="c1"># Avoid loading the same rotation files again.</span>
+            <span class="n">to_rotation_model</span> <span class="o">=</span> <span class="n">from_rotation_model</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">to_rotation_model</span> <span class="o">=</span> <span class="n">_RotationModel</span><span class="p">(</span><span class="n">to_rotation_features_or_model</span><span class="p">)</span>
 
         <span class="c1"># Create the pygplates.FiniteRotation that rotates</span>
         <span class="c1"># between the two reference frames.</span>
-        <span class="n">from_rotation_model</span> <span class="o">=</span> <span class="n">_RotationModel</span><span class="p">(</span><span class="n">from_rotation_features_or_model</span><span class="p">)</span>
-        <span class="n">to_rotation_model</span> <span class="o">=</span> <span class="n">_RotationModel</span><span class="p">(</span><span class="n">to_rotation_features_or_model</span><span class="p">)</span>
         <span class="n">from_rotation</span> <span class="o">=</span> <span class="n">from_rotation_model</span><span class="o">.</span><span class="n">get_rotation</span><span class="p">(</span>
             <span class="n">reconstruction_time</span><span class="p">,</span>
             <span class="n">non_reference_plate</span><span class="p">,</span>
@@ -2048,16 +2133,56 @@
         <span class="p">)</span>
         <span class="n">reference_frame_conversion_rotation</span> <span class="o">=</span> <span class="n">to_rotation</span> <span class="o">*</span> <span class="n">from_rotation</span><span class="o">.</span><span class="n">get_inverse</span><span class="p">()</span>
 
-        <span class="c1"># Reconstruct points to reconstruction_time.</span>
+        <span class="c1"># Reconstruct the points to 'reconstruction_time' in the "from" reference frame.</span>
+        <span class="c1">#</span>
+        <span class="c1"># The points are first reconstructed from their initial time(s) to present day using our rotation model</span>
+        <span class="c1"># (the model the initial points are defined in), and then from present day to 'reconstruction_time'</span>
+        <span class="c1"># using the "from" rotation model (relative to the "from" reference plate).</span>
         <span class="c1">#</span>
         <span class="c1"># Note: Only the valid points are reconstructed (see 'reconstruct()'), so we also need their indices</span>
         <span class="c1">#       to keep the plate IDs and ages aligned with the rotated points.</span>
-        <span class="n">lons</span><span class="p">,</span> <span class="n">lats</span><span class="p">,</span> <span class="n">point_indices</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">reconstruct</span><span class="p">(</span>
+        <span class="n">point_indices</span><span class="p">,</span> <span class="n">lons</span><span class="p">,</span> <span class="n">lats</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reconstruct_valid_points</span><span class="p">(</span>
             <span class="n">reconstruction_time</span><span class="p">,</span>
-            <span class="n">anchor_plate_id</span><span class="o">=</span><span class="n">from_rotation_reference_plate</span><span class="p">,</span>
-            <span class="n">return_array</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-            <span class="n">return_point_indices</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-        <span class="p">)</span>  <span class="c1"># type: ignore</span>
+            <span class="n">from_rotation_model</span><span class="p">,</span>
+            <span class="n">from_rotation_reference_plate</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Warn about any plate IDs missing from the "from" or "to" rotation models</span>
+        <span class="c1"># (pyGPlates uses identity rotations for them, so the rotated positions would be wrong).</span>
+        <span class="c1">#</span>
+        <span class="c1"># This is only done for a non-default rotation model or reference/non-reference plate. Our own rotation model</span>
+        <span class="c1"># is used elsewhere (eg, 'reconstruct()') for the points' plate IDs without any warning.</span>
+        <span class="n">frame_plates_specified</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">from_rotation_reference_plate</span> <span class="o">!=</span> <span class="mi">0</span>
+            <span class="ow">or</span> <span class="n">to_rotation_reference_plate</span> <span class="o">!=</span> <span class="mi">0</span>
+            <span class="ow">or</span> <span class="n">non_reference_plate</span> <span class="o">!=</span> <span class="mi">701</span>
+        <span class="p">)</span>
+        <span class="n">point_plate_ids</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">plate_id</span><span class="p">[</span><span class="n">point_indices</span><span class="p">])</span>
+        <span class="c1"># The "from" model reconstructs the points (to 'reconstruction_time').</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_warn_missing_rotations</span><span class="p">(</span>
+            <span class="s2">"from"</span><span class="p">,</span>
+            <span class="n">from_rotation_model</span><span class="p">,</span>
+            <span class="n">reconstruction_time</span><span class="p">,</span>
+            <span class="n">from_rotation_reference_plate</span><span class="p">,</span>
+            <span class="n">non_reference_plate</span><span class="p">,</span>
+            <span class="n">point_plate_ids</span> <span class="k">if</span> <span class="n">from_rotation_model_specified</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">from_rotation_model_specified</span> <span class="ow">or</span> <span class="n">frame_plates_specified</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="c1"># The "to" model is only used for the points' plate IDs when the returned 'Points' is created</span>
+        <span class="c1"># (since it reverse reconstructs the rotated points to present day using the "to" model).</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_warn_missing_rotations</span><span class="p">(</span>
+            <span class="s2">"to"</span><span class="p">,</span>
+            <span class="n">to_rotation_model</span><span class="p">,</span>
+            <span class="n">reconstruction_time</span><span class="p">,</span>
+            <span class="n">to_rotation_reference_plate</span><span class="p">,</span>
+            <span class="n">non_reference_plate</span><span class="p">,</span>
+            <span class="p">(</span>
+                <span class="n">point_plate_ids</span>
+                <span class="k">if</span> <span class="n">to_rotation_model_specified</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">return_array</span>
+                <span class="k">else</span> <span class="kc">None</span>
+            <span class="p">),</span>
+            <span class="n">to_rotation_model_specified</span> <span class="ow">or</span> <span class="n">frame_plates_specified</span><span class="p">,</span>
+        <span class="p">)</span>
 
         <span class="k">if</span> <span class="n">point_indices</span><span class="o">.</span><span class="n">size</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
             <span class="c1"># Rotate the reconstructed points to the other reference frame.</span>
@@ -2079,12 +2204,28 @@
         <span class="k">if</span> <span class="n">return_array</span><span class="p">:</span>
             <span class="n">return_tuple</span> <span class="o">+=</span> <span class="n">out_lon</span><span class="p">,</span> <span class="n">out_lat</span>
         <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># The rotated points are in the "to" reference frame, so the returned 'Points' must use the "to" rotation model</span>
+            <span class="c1"># (eg, its constructor reverse reconstructs the rotated points to present day using it).</span>
+            <span class="k">if</span> <span class="n">to_rotation_model_specified</span><span class="p">:</span>
+                <span class="c1"># Keep our topologies and static polygons (assumes the "to" model uses the same plate IDs).</span>
+                <span class="c1">#</span>
+                <span class="c1"># Note: Using 'type()' avoids importing the 'reconstruction' module (and keeps any subclass).</span>
+                <span class="n">rotated_plate_reconstruction</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">plate_reconstruction</span><span class="p">)(</span>
+                    <span class="n">to_rotation_model</span><span class="p">,</span>
+                    <span class="n">topology_features</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">plate_reconstruction</span><span class="o">.</span><span class="n">topology_features</span><span class="p">,</span>
+                    <span class="n">static_polygons</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">plate_reconstruction</span><span class="o">.</span><span class="n">static_polygons</span><span class="p">,</span>
+                    <span class="n">anchor_plate_id</span><span class="o">=</span><span class="n">to_rotation_reference_plate</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">rotated_plate_reconstruction</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">plate_reconstruction</span>
+
             <span class="n">rotated_points</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_subset</span><span class="p">(</span>
                 <span class="n">point_indices</span><span class="p">,</span>
                 <span class="n">out_lon</span><span class="p">,</span>
                 <span class="n">out_lat</span><span class="p">,</span>
                 <span class="n">reconstruction_time</span><span class="p">,</span>
                 <span class="n">to_rotation_reference_plate</span><span class="p">,</span>
+                <span class="n">rotated_plate_reconstruction</span><span class="p">,</span>
             <span class="p">)</span>
             <span class="n">return_tuple</span> <span class="o">+=</span> <span class="p">(</span><span class="n">rotated_points</span><span class="p">,)</span>
 
@@ -2096,7 +2237,63 @@
             <span class="k">return</span> <span class="n">return_tuple</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">return_tuple</span></div>
-</div>
+
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_warn_missing_rotations</span><span class="p">(</span>
+        <span class="n">model_name</span><span class="p">,</span>
+        <span class="n">rotation_model</span><span class="p">,</span>
+        <span class="n">time</span><span class="p">,</span>
+        <span class="n">reference_plate</span><span class="p">,</span>
+        <span class="n">non_reference_plate</span><span class="p">,</span>
+        <span class="n">plate_ids</span><span class="p">,</span>
+        <span class="n">check_frame</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Log a warning for plate IDs that have no rotation (relative to ``reference_plate``) at ``time``.</span>
+
+<span class="sd">        pyGPlates uses an identity rotation for a missing plate ID, which would silently give wrong positions.</span>
+
+<span class="sd">        If ``check_frame`` is True then ``non_reference_plate`` is checked (which also checks ``reference_plate``).</span>
+<span class="sd">        If ``plate_ids`` is not None then those plate IDs are checked (unless the frame check already failed,</span>
+<span class="sd">        in which case every plate ID would be missing and the frame warning is enough).</span>
+<span class="sd">        """</span>
+
+        <span class="k">def</span><span class="w"> </span><span class="nf">has_rotation</span><span class="p">(</span><span class="n">plate_id</span><span class="p">):</span>
+            <span class="k">return</span> <span class="p">(</span>
+                <span class="n">rotation_model</span><span class="o">.</span><span class="n">get_rotation</span><span class="p">(</span>
+                    <span class="n">time</span><span class="p">,</span>
+                    <span class="nb">int</span><span class="p">(</span><span class="n">plate_id</span><span class="p">),</span>
+                    <span class="n">anchor_plate_id</span><span class="o">=</span><span class="n">reference_plate</span><span class="p">,</span>
+                    <span class="n">use_identity_for_missing_plate_ids</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+            <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">check_frame</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">has_rotation</span><span class="p">(</span><span class="n">non_reference_plate</span><span class="p">):</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                <span class="s2">"rotate_reference_frames: the '</span><span class="si">%s</span><span class="s2">' rotation model has no rotation for non-reference plate </span><span class="si">%s</span><span class="s2"> "</span>
+                <span class="s2">"relative to reference plate </span><span class="si">%s</span><span class="s2"> at </span><span class="si">%s</span><span class="s2"> Ma, so the rotated positions will be wrong."</span><span class="p">,</span>
+                <span class="n">model_name</span><span class="p">,</span>
+                <span class="n">non_reference_plate</span><span class="p">,</span>
+                <span class="n">reference_plate</span><span class="p">,</span>
+                <span class="n">time</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="k">return</span>
+
+        <span class="k">if</span> <span class="n">plate_ids</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">missing_plate_ids</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="nb">int</span><span class="p">(</span><span class="n">plate_id</span><span class="p">)</span> <span class="k">for</span> <span class="n">plate_id</span> <span class="ow">in</span> <span class="n">plate_ids</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">has_rotation</span><span class="p">(</span><span class="n">plate_id</span><span class="p">)</span>
+            <span class="p">]</span>
+            <span class="k">if</span> <span class="n">missing_plate_ids</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                    <span class="s2">"rotate_reference_frames: the '</span><span class="si">%s</span><span class="s2">' rotation model has no rotations for plate ID(s) </span><span class="si">%s</span><span class="s2"> "</span>
+                    <span class="s2">"relative to reference plate </span><span class="si">%s</span><span class="s2"> at </span><span class="si">%s</span><span class="s2"> Ma, so pyGPlates uses identity rotations "</span>
+                    <span class="s2">"and the positions of points with those plate IDs will be wrong."</span><span class="p">,</span>
+                    <span class="n">model_name</span><span class="p">,</span>
+                    <span class="n">missing_plate_ids</span><span class="p">,</span>
+                    <span class="n">reference_plate</span><span class="p">,</span>
+                    <span class="n">time</span><span class="p">,</span>
+                <span class="p">)</span></div>
 
 </pre></div>
 
