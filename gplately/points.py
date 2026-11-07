@@ -1914,22 +1914,27 @@ class Points(object):
             RotationModel object that defines the rotation model
             of the "from" reference frame. It is used to reconstruct the points from present day to ``reconstruction_time``.
             ``self.plate_reconstruction.rotation_model`` is default.
+            Only None, or the ``self.plate_reconstruction.rotation_model`` object itself, counts as the default model.
+            An equivalent model (eg, the same rotation files) is treated as a different model.
         to_rotation_features_or_model : str/os.PathLike, list of str/os.PathLike, or instance of pygplates.RotationModel
             A filename, or a list of filenames, or a pyGPlates
             RotationModel object that defines the rotation model
             of the "to" reference frame that the points are rotated into.
-            ``self.plate_reconstruction.rotation_model`` is default.
-            If it is not ``self.plate_reconstruction.rotation_model`` then the returned :class:`Points` uses a new
+            ``self.plate_reconstruction.rotation_model`` is default (and, as with the "from" model, only None or that
+            object itself counts as the default model).
+            If it is not the default model then the returned :class:`Points` uses a new
             :class:`PlateReconstruction` with this rotation model (and the topologies and static polygons of
             ``self.plate_reconstruction``), with its anchor plate set to ``to_rotation_reference_plate``.
-        from_rotation_reference_plate : int, default = 0
+            The plate model (:py:attr:`PlateReconstruction.plate_model`) of ``self.plate_reconstruction`` is not carried over,
+            since it describes the "from" model.
+        from_rotation_reference_plate : int or None, default = 0
             The reference plate of the "from" reference frame (the anchor plate that the points are reconstructed relative to).
-            Note that the default is plate 0, not ``self.anchor_plate_id``.
-        to_rotation_reference_plate : int, default = 0
+            Note that the default is plate 0, not ``self.anchor_plate_id``. If None then ``self.anchor_plate_id`` is used.
+        to_rotation_reference_plate : int or None, default = 0
             The reference plate of the "to" reference frame (the anchor plate that the rotated points are relative to,
             and the anchor plate of the returned :class:`Points`).
             Note that the default is plate 0, not ``self.anchor_plate_id``. So, by default, the rotated points are relative to
-            plate 0 (even if ``self.anchor_plate_id`` is non-zero).
+            plate 0 (even if ``self.anchor_plate_id`` is non-zero). If None then ``self.anchor_plate_id`` is used.
         non_reference_plate : int, default = 701
             An arbitrary placeholder reference frame with which
             to define the "from" and "to" reference frames.
@@ -1959,6 +1964,13 @@ class Points(object):
         if output_name is not None:
             raise NotImplementedError("'output_name' parameter is not implemented")
 
+        # A reference plate of None means our anchor plate
+        # (as it did when the points were reconstructed using 'reconstruct()').
+        if from_rotation_reference_plate is None:
+            from_rotation_reference_plate = self.anchor_plate_id
+        if to_rotation_reference_plate is None:
+            to_rotation_reference_plate = self.anchor_plate_id
+
         # The "from" and "to" rotation models default to our rotation model.
         #
         # Note: A model is considered specified (non-default) only if it's not our rotation model.
@@ -1977,11 +1989,13 @@ class Points(object):
             if from_rotation_model_specified
             else self.plate_reconstruction.rotation_model
         )
-        to_rotation_model = (
-            _RotationModel(to_rotation_features_or_model)
-            if to_rotation_model_specified
-            else self.plate_reconstruction.rotation_model
-        )
+        if not to_rotation_model_specified:
+            to_rotation_model = self.plate_reconstruction.rotation_model
+        elif to_rotation_features_or_model is from_rotation_features_or_model:
+            # Avoid loading the same rotation files again.
+            to_rotation_model = from_rotation_model
+        else:
+            to_rotation_model = _RotationModel(to_rotation_features_or_model)
 
         # Create the pygplates.FiniteRotation that rotates
         # between the two reference frames.
@@ -2134,8 +2148,8 @@ class Points(object):
 
         if check_frame and not has_rotation(non_reference_plate):
             logger.warning(
-                "rotate_reference_frames: the '%s' rotation model has no rotation for non-reference plate %d "
-                "relative to reference plate %d at %s Ma, so the rotated positions will be wrong.",
+                "rotate_reference_frames: the '%s' rotation model has no rotation for non-reference plate %s "
+                "relative to reference plate %s at %s Ma, so the rotated positions will be wrong.",
                 model_name,
                 non_reference_plate,
                 reference_plate,
@@ -2150,7 +2164,7 @@ class Points(object):
             if missing_plate_ids:
                 logger.warning(
                     "rotate_reference_frames: the '%s' rotation model has no rotations for plate ID(s) %s "
-                    "relative to reference plate %d at %s Ma, so pyGPlates uses identity rotations "
+                    "relative to reference plate %s at %s Ma, so pyGPlates uses identity rotations "
                     "and the positions of points with those plate IDs will be wrong.",
                     model_name,
                     missing_plate_ids,

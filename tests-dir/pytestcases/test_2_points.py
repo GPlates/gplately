@@ -1365,6 +1365,33 @@ def test_rotate_reference_frames_same_model(gplately_plate_reconstruction_object
     assert rotated_points.anchor_plate_id == 101
 
 
+def test_rotate_reference_frames_none_reference_plates(
+    gplately_plate_reconstruction_object,
+):
+    # Points relative to anchor plate 101 (the plate reconstruction's anchor plate is 0).
+    gpts_0 = _points_with_a_young_point(gplately_plate_reconstruction_object)
+    lons_101, lats_101 = gpts_0.reconstruct(0, anchor_plate_id=101, return_array=True)
+    gpts = gplately.Points(
+        gplately_plate_reconstruction_object,
+        lons_101,
+        lats_101,
+        plate_id=gpts_0.plate_id,
+        age=gpts_0.age,
+        anchor_plate_id=101,
+    )
+
+    # A reference plate of None means the points' anchor plate (101), not plate 0.
+    rotated_points = gpts.rotate_reference_frames(
+        50,
+        from_rotation_reference_plate=None,
+        to_rotation_reference_plate=None,
+    )
+    rlons, rlats = gpts.reconstruct(50, return_array=True)  # relative to plate 101
+    assert np.allclose(rotated_points.lons, rlons)
+    assert np.allclose(rotated_points.lats, rlats)
+    assert rotated_points.anchor_plate_id == 101
+
+
 def test_rotate_reference_frames_to_other_model(
     gplately_plate_reconstruction_object, muller_2019_model
 ):
