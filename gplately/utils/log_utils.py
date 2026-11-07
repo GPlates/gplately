@@ -62,7 +62,7 @@ def get_debug_level():
             return 1
         try:
             return int(os.environ["GPLATELY_DEBUG"])
-        except:
+        except ValueError:
             return 0
     else:
         return 0
