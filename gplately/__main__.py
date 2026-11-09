@@ -26,11 +26,14 @@ from gplately import __version__
 
 from .commands import (
     seafloor_grids,
+    continent_contouring,
     feature_filter_cmd,
     list_models,
+    paleobathymetry,
     regrid,
     reset_feature_type,
     rotate_grid,
+    sediment_thickness,
 )
 from .ptt import (
     cleanup_topologies,
@@ -132,6 +135,15 @@ def main():
 
     # add "rotate_grid" sub-command
     rotate_grid.add_parser(subparser)
+
+    # add "generate-distance-grids"/"generate-sediment-grids" sub-commands
+    sediment_thickness.add_parser(subparser)
+
+    # add "paleobathymetry" sub-command
+    paleobathymetry.add_parser(subparser)
+
+    # add "generate-passive-margins" sub-command
+    continent_contouring.add_parser(subparser)
 
     # add "fix crossovers" sub-command
     fix_crossovers_cmd = subparser.add_parser(
