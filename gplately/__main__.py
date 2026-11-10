@@ -31,6 +31,7 @@ from .commands import (
     regrid,
     reset_feature_type,
     rotate_grid,
+    subduction_convergence,
 )
 from .ptt import (
     cleanup_topologies,
@@ -42,7 +43,6 @@ from .ptt import (
     resolve_topologies,
     rotation_tools,
     separate_ridge_transform_segments,
-    subduction_convergence,
 )
 
 
@@ -219,15 +219,8 @@ def main():
         separate_ridge_transform_segments_cmd
     )
 
-    # add "subduction_convergence" sub-command
-    subduction_convergence_cmd = subparser.add_parser(
-        "subduction-convergence",
-        aliases=("sc",),
-        help="Find the convergence rates along trenches (subduction zones) over time.",
-        add_help=True,
-    )
-    _hide_alias(subparser, "subduction_convergence", subduction_convergence_cmd)
-    subduction_convergence.add_arguments(subduction_convergence_cmd)
+    # add "subduction convergence" sub-command
+    subduction_convergence.add_parser(subparser)
 
     # add "gpmdb" sub-command
     gpmdb_cmd = subparser.add_parser(
