@@ -280,11 +280,26 @@ subduction-convergence (sc)
 Find the convergence rates along trenches (subduction zones) over time. Also available as
 ``subduction_convergence``.
 
-👉 calculate the convergence rates along subduction zones from 200 Ma to 0 Ma
+By default this uses the same calculation as :py:meth:`gplately.PlateReconstruction.tessellate_subduction_zones`.
+Add ``--use-ptt`` to use the older PlateTectonicTools calculation instead.
+
+👉 calculate the convergence rates along subduction zones from 0 to 200 Ma
 
 .. code:: console
 
    $ gplately subduction-convergence -r rotations.rot -m topologies.gpml -t 0 200 -i 1 -v 1 -d 0.5 -e xy -- convergence
+
+👉 same, but only output points where the plates are converging
+
+.. code:: console
+
+   $ gplately sc -r rotations.rot -m topologies.gpml -t 0 200 --convergence-threshold 0 -- convergence
+
+👉 use the older PlateTectonicTools calculation
+
+.. code:: console
+
+   $ gplately sc -r rotations.rot -m topologies.gpml -t 0 200 --use-ptt -- convergence
 
 
 gpmdb

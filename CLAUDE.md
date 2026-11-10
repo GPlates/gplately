@@ -73,9 +73,9 @@ Everything lives under `gplately/`. `gplately/__init__.py` is the public API sur
 
 **Low-level reconstruction math** (`lib/`): `reconstruct.py` (point/velocity reconstruction functions used by `Points`), plus `rotation.py`, `icosahedron.py`, `isopolate.py`, `polyline.py`, `quaternions.py` — geometric/numerical primitives, not typically touched directly by end users.
 
-**PTT — PlateTectonicTools** (`ptt/`): a vendored/ported toolkit (topology resolution, subduction convergence, ridge spreading rate, rotation-file diagnostics, crossover fixing, etc.). Each module is both importable from Python and wired up as a `gplately` CLI subcommand in `__main__.py`.
+**PTT — PlateTectonicTools** (`ptt/`): a vendored/ported toolkit (topology resolution, subduction convergence, ridge spreading rate, rotation-file diagnostics, crossover fixing, etc.). Most modules are both importable from Python and wired up as a `gplately` CLI subcommand in `__main__.py`; the `subduction-convergence` subcommand is the exception (see `commands/` below).
 
-**CLI subcommands** (`commands/`): implementations for `gplately`-CLI-only subcommands (`feature_filter_cmd.py`, `list_models.py`, `regrid.py`, `reset_feature_type.py`, `rotate_grid.py`, `seafloor_grids.py`) that aren't part of `ptt/`. Each module exposes an `add_parser(subparser)` used by `__main__.py`.
+**CLI subcommands** (`commands/`): implementations for `gplately`-CLI-only subcommands (`feature_filter_cmd.py`, `list_models.py`, `regrid.py`, `reset_feature_type.py`, `rotate_grid.py`, `seafloor_grids.py`, `subduction_convergence.py`) that aren't part of `ptt/`. `subduction_convergence.py` reuses the PTT module's arguments and output writers, but calculates with `PlateReconstruction.tessellate_subduction_zones()` (`--use-ptt` selects the old PTT calculation). Each module exposes an `add_parser(subparser)` used by `__main__.py`.
 
 **Backward compatibility** (`deprecated/`): `gplately/__init__.py` registers these modules into `sys.modules` under old import paths (`gplately.mapping`, `gplately.pygplates`, `gplately.download`, `gplately.data`, `gplately.parallel`, `gplately.oceans`, `gplately.grids.oceans`) so pre-refactor import paths keep working. Registering in `sys.modules` makes `import x.y` work but not attribute access (`gplately.oceans`), which the package's module-level `__getattr__` provides; a deprecated class alias such as `SeafloorGrid` is also served from a `__getattr__` that warns. When renaming/moving public functionality, add a shim here rather than breaking old imports.
 
@@ -84,7 +84,7 @@ Everything lives under `gplately/`. `gplately/__init__.py` is the public API sur
 ## Testing layout
 
 `tests-dir/` (named to avoid clashing with Python packaging conventions, not `tests/`):
-- `pytestcases/` — the formal, CI-run suite. Files are numbered by feature area (`test_0_imports.py`, `test_1_reconstructions.py`, `test_2_points.py`, `test_3_plottopologies.py`, `test_4_rasters.py`, `test_5_seafloorgrid.py`, `test_6_geometry.py`, `test_7_models.py`, `test_8_feature_filter.py`). Shared fixtures (reconstruction/points/raster/seafloorgrid objects built from the Müller et al. 2019 model) live in `pytestcases/conftest.py`.
+- `pytestcases/` — the formal, CI-run suite. Files are numbered by feature area (`test_0_imports.py`, `test_1_reconstructions.py`, `test_2_points.py`, `test_3_plottopologies.py`, `test_4_rasters.py`, `test_5_seafloorgrid.py`, `test_6_geometry.py`, `test_7_models.py`, `test_8_feature_filter.py`, `test_9_cli.py`). Shared fixtures (reconstruction/points/raster/seafloorgrid objects built from the Müller et al. 2019 model) live in `pytestcases/conftest.py`.
 - `unittest/` — scripts needing human/visual verification; explicitly excluded from `pytest.ini`'s default run and not part of CI.
 - `debug_utils/` — ad hoc developer scripts for reproducing bugs/perf tuning; not a formal test suite.
 - `data/` — test data files.

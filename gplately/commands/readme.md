@@ -186,10 +186,18 @@ GPlately comes with a suite of useful command line tools. These tools are design
 
   Find the convergence rates along trenches (subduction zones) over time. Also available as `subduction_convergence`. Run `gplately subduction-convergence -h` to see the details of this subcommand.
 
-  Example:
+  By default this uses the same calculation as `PlateReconstruction.tessellate_subduction_zones()`. Add `--use-ptt` to use the older PlateTectonicTools calculation instead.
+
+  Examples:
 
   - `gplately subduction-convergence -r rotations.rot -m topologies.gpml -t 0 200 -i 1 -v 1 -d 0.5 -e xy -- convergence`
-    (calculate the convergence rates along subduction zones from 200Ma to 0Ma)
+    (calculate the convergence rates along subduction zones from 0 to 200 Ma)
+
+  - `gplately sc -r rotations.rot -m topologies.gpml -t 0 200 --convergence-threshold 0 -- convergence`
+    (same, but only output points where the plates are converging)
+
+  - `gplately sc -r rotations.rot -m topologies.gpml -t 0 200 --use-ptt -- convergence`
+    (use the older PlateTectonicTools calculation)
 
 ### 🟢 **gpmdb**
 
