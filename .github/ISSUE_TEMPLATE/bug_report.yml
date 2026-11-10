@@ -1,0 +1,36 @@
+name: Bug report
+description: Report something in GPlately that doesn't work as expected.
+labels: ["bug"]
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: What happened?
+      description: What did you expect to happen, and what happened instead? Include any error message and traceback.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: How to reproduce
+      description: A minimal code snippet or command, and the plate model or data files used (eg, a model name from `gplately list`).
+      render: python
+    validations:
+      required: true
+  - type: input
+    id: gplately-version
+    attributes:
+      label: GPlately version
+      description: Output of `gplately --version`.
+    validations:
+      required: true
+  - type: input
+    id: pygplates-version
+    attributes:
+      label: pyGPlates version
+      description: Output of `python -c "import pygplates; print(pygplates.__version__)"`.
+  - type: input
+    id: environment
+    attributes:
+      label: Operating system and Python version
+      placeholder: eg, Windows 11, Python 3.12, installed with conda
