@@ -301,6 +301,32 @@ Add ``--use-ptt`` to use the older PlateTectonicTools calculation instead.
 
    $ gplately sc -r rotations.rot -m topologies.gpml -t 0 200 --use-ptt -- convergence
 
+ridge-spreading-rate (rsr)
+--------------------------
+
+Find the spreading rates along mid-ocean ridges over time.
+
+By default this uses the same calculation as :py:meth:`gplately.PlateReconstruction.tessellate_mid_ocean_ridges`.
+Add ``--use-ptt`` to use the older PlateTectonicTools calculation instead.
+
+👉 calculate the spreading rates along mid-ocean ridges from 0 to 200 Ma, ignoring transform segments
+
+.. code:: console
+
+   $ gplately ridge-spreading-rate -r rotations.rot -m topologies.gpml -t 0 200 -i 1 -v 1 -d 0.5 -e xy -- spreading_rate
+
+👉 sample all plate boundaries where the plates are diverging, regardless of feature type
+
+.. code:: console
+
+   $ gplately rsr -r rotations.rot -m topologies.gpml -t 0 200 --all-plate-boundaries --include-transform-segments --divergence-threshold 0 -- diverging
+
+👉 use the older PlateTectonicTools calculation
+
+.. code:: console
+
+   $ gplately rsr -r rotations.rot -m topologies.gpml -t 0 200 --use-ptt -- spreading_rate
+
 
 gpmdb
 -----
