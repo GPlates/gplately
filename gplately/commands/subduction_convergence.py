@@ -187,11 +187,15 @@ def _run_subduction_convergence(args):
             )
 
             if args.output_gpml_filename:
-                coverage_features.append(
-                    ptt_subduction_convergence.create_coverage_feature_from_convergence_data(
-                        output_data, time, **output_parameters
-                    )
+                coverage_feature = ptt_subduction_convergence.create_coverage_feature_from_convergence_data(
+                    output_data, time, **output_parameters
                 )
+                # PTT makes the coverage valid for 0.5 My either side of 'time'. Instead make it appear from halfway
+                # to the previous time to halfway to the next time (so consecutive coverages neither overlap nor leave gaps).
+                coverage_feature.set_valid_time(
+                    time + args.time_increment / 2, time - args.time_increment / 2
+                )
+                coverage_features.append(coverage_feature)
 
         time += args.time_increment
 

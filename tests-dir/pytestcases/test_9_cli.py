@@ -320,3 +320,34 @@ def test_ridge_spreading_rate_threshold_requires_modern_method(
             "--",
             str(tmp_path / "spreading_rate"),
         )
+
+
+@pytest.mark.parametrize(
+    "subcommand", ["subduction-convergence", "ridge-spreading-rate"]
+)
+def test_coverage_valid_times_follow_time_increment(
+    monkeypatch, tmp_path, muller_2019_model, subcommand
+):
+    output_gpml = str(tmp_path / "coverages.gpml")
+    _run_gplately(
+        monkeypatch,
+        subcommand,
+        "-r",
+        *muller_2019_model.get_rotation_model(),
+        "-m",
+        *muller_2019_model.get_topologies(),
+        "-t",
+        "0",
+        "4",
+        "-i",
+        "2",
+        "-g",
+        output_gpml,
+        "--",
+        str(tmp_path / "output"),
+    )
+
+    # Consecutive coverages neither overlap nor leave gaps.
+    assert [
+        feature.get_valid_time() for feature in pygplates.FeatureCollection(output_gpml)
+    ] == [(1, -1), (3, 1), (5, 3)]

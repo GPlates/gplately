@@ -284,12 +284,15 @@ def add_parser(parser):
     )
 
 
-def _create_coverage_feature(ridge_data, time):
+def _create_coverage_feature(ridge_data, time, time_increment):
     """Create a feature with a coverage geometry containing the ridge spreading data at 'time'."""
     coverage_feature = pygplates.Feature()
 
-    # Make it only appear at 'time'.
-    coverage_feature.set_valid_time(time + 0.5, time - 0.5)
+    # Make it appear from halfway to the previous time to halfway to the next time
+    # (so that consecutive coverages neither overlap nor leave gaps).
+    coverage_feature.set_valid_time(
+        time + time_increment / 2, time - time_increment / 2
+    )
 
     coverage_geometry = pygplates.MultiPointOnSphere(
         (lat, lon) for lon, lat, *_ in ridge_data
@@ -374,7 +377,9 @@ def _run_ridge_spreading_rate(args):
                     output_file.write(" ".join(str(item) for item in row) + "\n")
 
             if args.output_gpml_filename:
-                coverage_features.append(_create_coverage_feature(output_data, time))
+                coverage_features.append(
+                    _create_coverage_feature(output_data, time, args.time_increment)
+                )
 
         time += args.time_increment
 
