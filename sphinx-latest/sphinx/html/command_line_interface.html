@@ -332,8 +332,18 @@ suit most cases (but not all cases).</p>
 <h2><a class="toc-backref" href="#id14" role="doc-backlink">subduction-convergence (sc)</a><a class="headerlink" href="#subduction-convergence-sc" title="Link to this heading"></a></h2>
 <p>Find the convergence rates along trenches (subduction zones) over time. Also available as
 <code class="docutils literal notranslate"><span class="pre">subduction_convergence</span></code>.</p>
-<p>👉 calculate the convergence rates along subduction zones from 200 Ma to 0 Ma</p>
+<p>By default this uses the same calculation as <a class="reference internal" href="generated/gplately.PlateReconstruction.html#gplately.PlateReconstruction.tessellate_subduction_zones" title="gplately.PlateReconstruction.tessellate_subduction_zones"><code class="xref py py-meth docutils literal notranslate"><span class="pre">gplately.PlateReconstruction.tessellate_subduction_zones()</span></code></a>.
+Add <code class="docutils literal notranslate"><span class="pre">--use-ptt</span></code> to use the older PlateTectonicTools calculation instead.</p>
+<p>👉 calculate the convergence rates along subduction zones from 0 to 200 Ma</p>
 <div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>gplately<span class="w"> </span>subduction-convergence<span class="w"> </span>-r<span class="w"> </span>rotations.rot<span class="w"> </span>-m<span class="w"> </span>topologies.gpml<span class="w"> </span>-t<span class="w"> </span><span class="m">0</span><span class="w"> </span><span class="m">200</span><span class="w"> </span>-i<span class="w"> </span><span class="m">1</span><span class="w"> </span>-v<span class="w"> </span><span class="m">1</span><span class="w"> </span>-d<span class="w"> </span><span class="m">0</span>.5<span class="w"> </span>-e<span class="w"> </span>xy<span class="w"> </span>--<span class="w"> </span>convergence
+</pre></div>
+</div>
+<p>👉 same, but only output points where the plates are converging</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>gplately<span class="w"> </span>sc<span class="w"> </span>-r<span class="w"> </span>rotations.rot<span class="w"> </span>-m<span class="w"> </span>topologies.gpml<span class="w"> </span>-t<span class="w"> </span><span class="m">0</span><span class="w"> </span><span class="m">200</span><span class="w"> </span>--convergence-threshold<span class="w"> </span><span class="m">0</span><span class="w"> </span>--<span class="w"> </span>convergence
+</pre></div>
+</div>
+<p>👉 use the older PlateTectonicTools calculation</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>gplately<span class="w"> </span>sc<span class="w"> </span>-r<span class="w"> </span>rotations.rot<span class="w"> </span>-m<span class="w"> </span>topologies.gpml<span class="w"> </span>-t<span class="w"> </span><span class="m">0</span><span class="w"> </span><span class="m">200</span><span class="w"> </span>--use-ptt<span class="w"> </span>--<span class="w"> </span>convergence
 </pre></div>
 </div>
 </section>
