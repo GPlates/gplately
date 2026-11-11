@@ -104,3 +104,6 @@ eprint = {https://rmets.onlinelibrary.wiley.com/doi/pdf/10.1002/gdj3.185},
 - [pygmt](https://www.pygmt.org/latest/)
 - [rioxarray](https://github.com/corteva/rioxarray)
 
+## Contributing
+
+Contributions are welcome. Please read [CONTRIBUTING.md](CONTRIBUTING.md) before opening a pull request; in particular, discuss non-trivial changes in an issue first.
