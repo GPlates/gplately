@@ -1660,15 +1660,21 @@ For example...
     """
 
 
-def add_arguments(parser: argparse.ArgumentParser):
-    """add command line argument parser"""
+def add_arguments(parser: argparse.ArgumentParser, require_input_files=True):
+    """add command line argument parser
+
+    If ``require_input_files`` is False then the rotation and topology files are optional
+    (eg, so the caller can provide them another way, such as from a plate model name).
+    """
 
     parser.formatter_class = argparse.RawDescriptionHelpFormatter
     parser.description = __description__
 
     parser.set_defaults(func=main)
 
-    rotation_filenames_group = parser.add_mutually_exclusive_group(required=True)
+    rotation_filenames_group = parser.add_mutually_exclusive_group(
+        required=require_input_files
+    )
     rotation_filenames_group.add_argument(
         "-r",
         "--rotation-filenames",
@@ -1685,7 +1691,9 @@ def add_arguments(parser: argparse.ArgumentParser):
         nargs="+",
         help=argparse.SUPPRESS,
     )
-    topology_filenames_group = parser.add_mutually_exclusive_group(required=True)
+    topology_filenames_group = parser.add_mutually_exclusive_group(
+        required=require_input_files
+    )
     topology_filenames_group.add_argument(
         "-m",
         "--topology-filenames",

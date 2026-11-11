@@ -24,6 +24,7 @@ import pygplates
 
 from gplately import __version__
 
+from .commands._plate_model_args import add_model_arguments
 from .commands import (
     seafloor_grids,
     feature_filter_cmd,
@@ -192,7 +193,9 @@ def main():
         add_help=True,
     )
     _hide_alias(subparser, "resolve_topologies", resolve_topologies_cmd)
-    resolve_topologies.add_arguments(resolve_topologies_cmd)
+    # The rotation and topology files can instead come from a plate model ('--model').
+    resolve_topologies.add_arguments(resolve_topologies_cmd, require_input_files=False)
+    add_model_arguments(resolve_topologies_cmd, resolve_topologies.main)
 
     # add "rotation_tools" sub-command
     rotation_tools_cmd = subparser.add_parser(

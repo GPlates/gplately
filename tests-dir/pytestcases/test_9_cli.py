@@ -351,3 +351,103 @@ def test_coverage_valid_times_follow_time_increment(
     assert [
         feature.get_valid_time() for feature in pygplates.FeatureCollection(output_gpml)
     ] == [(1, -1), (3, 1), (5, 3)]
+
+
+@pytest.mark.parametrize(
+    "subcommand, args",
+    [
+        # Use '--use-ptt' since its output order is the same between runs (see '_sort_rows').
+        ("subduction-convergence", ["-t", "0", "0", "--use-ptt", "-w"]),
+        ("ridge-spreading-rate", ["-t", "0", "0", "--use-ptt"]),
+        ("resolve-topologies", ["-t", "0"]),
+    ],
+)
+def test_model_option(monkeypatch, tmp_path, muller_2019_model, subcommand, args):
+    # Output from specifying the rotation and topology files...
+    files_dir = tmp_path / "files"
+    files_dir.mkdir()
+    _run_gplately(
+        monkeypatch,
+        subcommand,
+        "-r",
+        *muller_2019_model.get_rotation_model(),
+        "-m",
+        *muller_2019_model.get_topologies(),
+        *args,
+        "--",
+        str(files_dir / "output"),
+    )
+
+    # ...should be the same as from specifying the model (already downloaded by the fixture).
+    model_dir = tmp_path / "model"
+    model_dir.mkdir()
+    _run_gplately(
+        monkeypatch,
+        subcommand,
+        "--model",
+        "Muller2019",
+        "--model-repo",
+        muller_2019_model.data_dir,
+        *args,
+        "--",
+        str(model_dir / "output"),
+    )
+
+    # Compare the output files (ignoring GPlates layer files, which can contain file paths).
+    filenames = sorted(
+        path.name for path in files_dir.iterdir() if not path.name.endswith(".xml")
+    )
+    assert filenames
+    assert filenames == sorted(
+        path.name for path in model_dir.iterdir() if not path.name.endswith(".xml")
+    )
+    for filename in filenames:
+        if filename.endswith(".xy"):
+            assert (files_dir / filename).read_bytes() == (
+                model_dir / filename
+            ).read_bytes()
+        elif filename.endswith(".shp"):
+            # Resolved topologies get new feature IDs each run (and their order can differ),
+            # so compare the geometries.
+            assert _shapefile_geometries(files_dir / filename) == _shapefile_geometries(
+                model_dir / filename
+            )
+
+
+def _shapefile_geometries(filename):
+    return sorted(
+        tuple(geometry.to_lat_lon_list())
+        for feature in pygplates.FeatureCollection(str(filename))
+        for geometry in feature.get_all_geometries()
+    )
+
+
+@pytest.mark.parametrize(
+    "args",
+    [
+        # Both a model and files.
+        ["--model", "Muller2019", "-r", "rotations.rot"],
+        # Neither.
+        [],
+        # Only rotation files.
+        ["-r", "rotations.rot"],
+    ],
+)
+@pytest.mark.parametrize(
+    "subcommand",
+    ["subduction-convergence", "ridge-spreading-rate", "resolve-topologies"],
+)
+def test_model_option_usage_errors(monkeypatch, tmp_path, subcommand, args):
+    # Fails before reading any files (or downloading the model).
+    with pytest.raises(SystemExit) as exc_info:
+        _run_gplately(
+            monkeypatch,
+            subcommand,
+            *args,
+            "-t",
+            "0",
+            *(["0"] if subcommand != "resolve-topologies" else []),
+            "--",
+            str(tmp_path / "output"),
+        )
+    assert exc_info.value.code != 0

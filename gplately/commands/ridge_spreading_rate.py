@@ -23,6 +23,7 @@ import pygplates
 
 from ..ptt import separate_ridge_transform_segments
 from ..reconstruction import PlateReconstruction
+from ._plate_model_args import add_model_arguments
 
 DEFAULT_THRESHOLD_SAMPLING_DISTANCE_DEGREES = 0.5
 DEFAULT_TIME_RANGE_YOUNG_TIME = 0
@@ -124,14 +125,14 @@ def add_parser(parser):
         description=__description__,
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
-    cmd.set_defaults(func=_run_ridge_spreading_rate)
+    # The rotation and topology files can instead come from a plate model ('--model').
+    add_model_arguments(cmd, _run_ridge_spreading_rate)
 
     cmd.add_argument(
         "-r",
         "--rotation-filenames",
         dest="rotation_filenames",
         nargs="+",
-        required=True,
         metavar="rotation_filename",
         help="One or more rotation files.",
     )
@@ -140,7 +141,6 @@ def add_parser(parser):
         "--topology-filenames",
         dest="topology_filenames",
         nargs="+",
-        required=True,
         metavar="topology_filename",
         help="One or more topology files.",
     )
