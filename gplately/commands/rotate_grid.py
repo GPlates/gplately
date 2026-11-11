@@ -45,7 +45,7 @@ within each side.
 
 If the reconstruction time is not given explicitly with --time, the command
 tries to deduce it from the filename by looking for a number immediately
-followed by "Ma" (e.g. paleobathymetry_103Ma.nc → 103.0 Ma).
+followed by "Ma" (e.g. paleobathymetry_103Ma.nc -> 103.0 Ma).
 
 Example usage:
     - gplately rotate-grid input.nc output.nc --from-model Alfonso2024 --to-model Alfonso2024 --from-anchor 0 --to-anchor 701701 --time 100
