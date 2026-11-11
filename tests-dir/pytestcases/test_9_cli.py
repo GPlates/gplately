@@ -412,6 +412,9 @@ def test_model_option(monkeypatch, tmp_path, muller_2019_model, subcommand, args
             assert _shapefile_geometries(files_dir / filename) == _shapefile_geometries(
                 model_dir / filename
             )
+        else:
+            # The other shapefile components (attributes contain the new feature IDs).
+            assert filename.endswith((".dbf", ".shx", ".prj")), filename
 
 
 def _shapefile_geometries(filename):
@@ -431,6 +434,10 @@ def _shapefile_geometries(filename):
         [],
         # Only rotation files.
         ["-r", "rotations.rot"],
+        # Only topology files (eg, mistakenly using '-m' for a model name).
+        ["-m", "Muller2019"],
+        # A model folder without a model.
+        ["-r", "rotations.rot", "-m", "topologies.gpml", "--model-repo", "models"],
     ],
 )
 @pytest.mark.parametrize(
