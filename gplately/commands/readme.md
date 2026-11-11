@@ -18,6 +18,7 @@ GPlately comes with a suite of useful command line tools. These tools are design
 - [__rotation-tools (rots)__](#-rotation-tools-rots) -- calculate stage rotations  
 - [__separate-ridge-transform-segments (srts)__](#-separate-ridge-transform-segments-srts) -- pick out ridge and transform features
 - [__subduction-convergence (sc)__](#-subduction-convergence-sc) -- calculate the convergence rates along subduction zones
+- [__ridge-spreading-rate (rsr)__](#-ridge-spreading-rate-rsr) -- calculate the spreading rates along mid-ocean ridges
 - [__gpmdb__](#-gpmdb) -- download the paleomagnetic data and create GPlates-compatible VGP features
 - [__rotate-grid (rtg)__](#-rotate-grid-rtg) -- rotate a grid between plate-model reference frames
 
@@ -197,6 +198,23 @@ GPlately comes with a suite of useful command line tools. These tools are design
     (same, but only output points where the plates are converging)
 
   - `gplately sc -r rotations.rot -m topologies.gpml -t 0 200 --use-ptt -- convergence`
+    (use the older PlateTectonicTools calculation)
+
+### 🟢 **ridge-spreading-rate (rsr)**
+
+  Find the spreading rates along mid-ocean ridges over time. Run `gplately ridge-spreading-rate -h` to see the details of this subcommand.
+
+  By default this uses the same calculation as `PlateReconstruction.tessellate_mid_ocean_ridges()`. Add `--use-ptt` to use the older PlateTectonicTools calculation instead.
+
+  Examples:
+
+  - `gplately ridge-spreading-rate -r rotations.rot -m topologies.gpml -t 0 200 -i 1 -v 1 -d 0.5 -e xy -- spreading_rate`
+    (calculate the spreading rates along mid-ocean ridges from 0 to 200 Ma, ignoring transform segments)
+
+  - `gplately rsr -r rotations.rot -m topologies.gpml -t 0 200 --all-plate-boundaries --include-transform-segments --divergence-threshold 0 -- diverging`
+    (sample all plate boundaries where the plates are diverging, regardless of feature type)
+
+  - `gplately rsr -r rotations.rot -m topologies.gpml -t 0 200 --use-ptt -- spreading_rate`
     (use the older PlateTectonicTools calculation)
 
 ### 🟢 **gpmdb**

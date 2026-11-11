@@ -30,6 +30,7 @@ from .commands import (
     list_models,
     regrid,
     reset_feature_type,
+    ridge_spreading_rate,
     rotate_grid,
     subduction_convergence,
 )
@@ -221,6 +222,9 @@ def main():
 
     # add "subduction convergence" sub-command
     subduction_convergence.add_parser(subparser)
+
+    # add "ridge spreading rate" sub-command
+    ridge_spreading_rate.add_parser(subparser)
 
     # add "gpmdb" sub-command
     gpmdb_cmd = subparser.add_parser(

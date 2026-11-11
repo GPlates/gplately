@@ -178,3 +178,176 @@ def test_subduction_convergence_threshold_requires_modern_method(
             "--",
             str(tmp_path / "convergence"),
         )
+
+
+def _run_ridge_spreading_rate(
+    monkeypatch, rotation_files, topology_files, output_prefix, *args
+):
+    _run_gplately(
+        monkeypatch,
+        "ridge-spreading-rate",
+        "-r",
+        *rotation_files,
+        "-m",
+        *topology_files,
+        "-d",
+        "0.5",
+        *args,
+        "--",
+        output_prefix,
+    )
+
+
+@pytest.mark.parametrize("use_ptt", [False, True])
+def test_ridge_spreading_rate(monkeypatch, tmp_path, muller_2019_model, use_ptt):
+    rotation_files = muller_2019_model.get_rotation_model()
+    topology_files = muller_2019_model.get_topologies()
+    output_prefix = str(tmp_path / "spreading_rate")
+    output_gpml = str(tmp_path / "spreading_rate.gpml")
+
+    _run_ridge_spreading_rate(
+        monkeypatch,
+        rotation_files,
+        topology_files,
+        output_prefix,
+        "-t",
+        "0",
+        "1",
+        "-g",
+        output_gpml,
+        *(["--use-ptt"] if use_ptt else []),
+    )
+
+    plate_reconstruction = gplately.PlateReconstruction(rotation_files, topology_files)
+    coverage_features = list(pygplates.FeatureCollection(output_gpml))
+    assert len(coverage_features) == 2
+    for time, coverage_feature in zip((0, 1), coverage_features):
+        expected = plate_reconstruction.tessellate_mid_ocean_ridges(
+            time,
+            math.radians(0.5),
+            use_ptt=use_ptt,
+            output_obliquity_and_normal_and_left_right_plates=True,
+        )
+        assert len(expected) > 0
+
+        output_filename = f"{output_prefix}_{time:0.2f}.xy"
+        output_data = np.loadtxt(output_filename)
+        np.testing.assert_allclose(_sort_rows(output_data), _sort_rows(expected))
+
+        # Plate IDs should be written as integers.
+        with open(output_filename) as output_file:
+            for line in output_file:
+                for plate_id in line.split()[6:8]:
+                    assert plate_id == str(int(plate_id))
+
+        # The coverage has the same points and values as the output file.
+        assert coverage_feature.get_valid_time() == (time + 0.5, time - 0.5)
+        geometry, scalars = coverage_feature.get_geometry(
+            coverage_return=pygplates.CoverageReturn.geometry_and_scalars
+        )
+        np.testing.assert_allclose(
+            geometry.to_lat_lon_array(), output_data[:, [1, 0]], atol=1e-10
+        )
+        for column, name in enumerate(
+            [
+                "SpreadingVelocityMagnitude",
+                "SpreadingObliquityDegrees",
+                "SpreadingLengthDegrees",
+                "SpreadingNormalAzimuthDegrees",
+                "LeftPlateId",
+                "RightPlateId",
+            ],
+            start=2,
+        ):
+            np.testing.assert_allclose(
+                scalars[pygplates.ScalarType.create_gpml(name)], output_data[:, column]
+            )
+
+
+def test_ridge_spreading_rate_options(monkeypatch, tmp_path, muller_2019_model):
+    rotation_files = muller_2019_model.get_rotation_model()
+    topology_files = muller_2019_model.get_topologies()
+    output_prefix = str(tmp_path / "diverging")
+
+    # Find all diverging plate boundaries.
+    _run_ridge_spreading_rate(
+        monkeypatch,
+        rotation_files,
+        topology_files,
+        output_prefix,
+        "-t",
+        "0",
+        "0",
+        "--all-plate-boundaries",
+        "--include-transform-segments",
+        "--divergence-threshold",
+        "0",
+    )
+
+    expected = gplately.PlateReconstruction(
+        rotation_files, topology_files
+    ).tessellate_mid_ocean_ridges(
+        0,
+        math.radians(0.5),
+        spreading_feature_types=None,
+        transform_segment_deviation_in_radians=None,
+        divergence_threshold_in_cm_per_yr=0.0,
+        output_obliquity_and_normal_and_left_right_plates=True,
+    )
+    assert len(expected) > 0
+    np.testing.assert_allclose(
+        _sort_rows(np.loadtxt(f"{output_prefix}_0.00.xy")), _sort_rows(expected)
+    )
+
+
+@pytest.mark.parametrize("subcommand", ["ridge-spreading-rate", "rsr"])
+def test_ridge_spreading_rate_threshold_requires_modern_method(
+    monkeypatch, tmp_path, subcommand
+):
+    # Fails before reading any files, so they don't need to exist.
+    # Also checks each subcommand name runs the new command.
+    with pytest.raises(ValueError, match="--use-ptt"):
+        _run_gplately(
+            monkeypatch,
+            subcommand,
+            "-r",
+            "rotations.rot",
+            "-m",
+            "topologies.gpml",
+            "--use-ptt",
+            "--divergence-threshold",
+            "0",
+            "--",
+            str(tmp_path / "spreading_rate"),
+        )
+
+
+@pytest.mark.parametrize(
+    "subcommand", ["subduction-convergence", "ridge-spreading-rate"]
+)
+def test_coverage_valid_times_follow_time_increment(
+    monkeypatch, tmp_path, muller_2019_model, subcommand
+):
+    output_gpml = str(tmp_path / "coverages.gpml")
+    _run_gplately(
+        monkeypatch,
+        subcommand,
+        "-r",
+        *muller_2019_model.get_rotation_model(),
+        "-m",
+        *muller_2019_model.get_topologies(),
+        "-t",
+        "0",
+        "4",
+        "-i",
+        "2",
+        "-g",
+        output_gpml,
+        "--",
+        str(tmp_path / "output"),
+    )
+
+    # Consecutive coverages neither overlap nor leave gaps.
+    assert [
+        feature.get_valid_time() for feature in pygplates.FeatureCollection(output_gpml)
+    ] == [(1, -1), (3, 1), (5, 3)]
