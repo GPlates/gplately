@@ -34,6 +34,7 @@ from .. import (
     OutputScalarType,
 )
 from ..auxiliary import get_plate_reconstruction
+from ._plate_model_args import DEFAULT_MODEL_REPO
 
 _logger = logging.getLogger("gplately")
 
@@ -46,6 +47,7 @@ _logger = logging.getLogger("gplately")
 # when a --config file is used for everything else.
 _DEFAULTS = {
     "model_name": None,
+    "model_repo": DEFAULT_MODEL_REPO,
     "input_filenames": [],
     "rotation_filenames": [],
     "topology_filenames": [],
@@ -207,6 +209,13 @@ def add_parser(parser):
         metavar="model_name",
         help="reconstruction model name, this may suppress the INPUT_FILES, ROTATION_FILE, TOPOLOGY_FILE, and CONTINENTS_FILE arguments",
         dest="model_name",
+        default=argparse.SUPPRESS,
+    )
+    agegrid_cmd.add_argument(
+        "--model-repo",
+        metavar="DIR",
+        help=f"folder to download plate models to (only used with -m/--model); default: {DEFAULT_MODEL_REPO}",
+        dest="model_repo",
         default=argparse.SUPPRESS,
     )
     agegrid_cmd.add_argument(
@@ -432,7 +441,7 @@ def _run_topology_seafloor_gridding(
     initial_spreadrate: float = 75,
     file_collection: str = "",
     include_unmasked: bool = False,
-    plate_model_repo: str = "plate-model-repo",
+    plate_model_repo: str = DEFAULT_MODEL_REPO,
     resume_from_checkpoints: bool = False,
     use_continent_contouring: bool = False,
     anchor_plate_id: Union[int, None] = None,
@@ -449,7 +458,6 @@ def _run_topology_seafloor_gridding(
                 + f"Fix your command line and try again."
             )
         try:
-            # TODO: make "plate-model-repo" an optional parameter
             plate_model = PlateModelManager().get_model(
                 model_name, data_dir=plate_model_repo
             )
@@ -576,6 +584,7 @@ def _run_seafloor_gridding(args):
             resume_from_checkpoints=values["resume_from_checkpoints"],
             use_continent_contouring=values["use_continent_contouring"],
             anchor_plate_id=values["anchor_plate_id"],
+            plate_model_repo=values["model_repo"],
         )
 
     end = time.time()
@@ -681,7 +690,7 @@ def _get_rotation_topology_and_continent_files(values):
     model_name = values["model_name"]
     if model_name:
         plate_model = PlateModelManager().get_model(
-            model_name, data_dir="plate-model-repo"
+            model_name, data_dir=values["model_repo"]
         )
         if not plate_model:
             _logger.error(

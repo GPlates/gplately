@@ -6,6 +6,8 @@
     # https://gplates.github.io/gplately/latest/sphinx/html/plate_models.html
     # If the files have been explicitly specified, they may supersede `model_name`.
     model_name = "zahirovic2022"
+    # Folder to download the model to.
+    # model_repo = "plate-model-repo"
     
     times = [0, 50, 100, 150]
     ridges_filenames = "AgeGridInput/Global_EarthByte_GeeK07_Ridges.gpml"

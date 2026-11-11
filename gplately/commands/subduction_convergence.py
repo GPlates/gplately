@@ -22,6 +22,7 @@ import pygplates
 
 from ..ptt import subduction_convergence as ptt_subduction_convergence
 from ..reconstruction import PlateReconstruction
+from ._plate_model_args import add_model_arguments
 
 help_str = "Find the convergence rates along trenches (subduction zones) over time."
 
@@ -74,10 +75,11 @@ def add_parser(parser):
     parser._name_parser_map["subduction_convergence"] = cmd
 
     # The input, time range, sampling and output arguments are the same as PlateTectonicTools.
-    ptt_subduction_convergence.add_arguments(cmd)
+    # The rotation and topology files can instead come from a plate model ('--model').
+    ptt_subduction_convergence.add_arguments(cmd, require_input_files=False)
     # Replace the PTT description (that also sets the raw-description formatter).
     cmd.description = __description__
-    cmd.set_defaults(func=_run_subduction_convergence)
+    add_model_arguments(cmd, _run_subduction_convergence)
 
     # Only the PTT calculation produces topology warnings.
     # Look up the action by its option string so that a rename in PTT fails loudly.

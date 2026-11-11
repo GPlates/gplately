@@ -164,6 +164,11 @@ GPlately comes with a suite of useful command line tools. These tools are design
   - `gplately resolve-topologies -r rotations1.rot rotations2.rot -m topologies1.gpml topologies2.gpml -t 10`
     (resolve topologies at 10Ma)
 
+  - `gplately rt --model Muller2019 -t 10 -- topologies`
+    (resolve the topologies of the Muller2019 plate model at 10Ma)
+
+  Instead of `-r` and `-m`, `--model MODEL_NAME` uses the rotation and topology files of a plate model (see `gplately list`), downloading it if needed (to `--model-repo DIR`, which defaults to `plate-model-repo`).
+
 
 ### 🟢 **rotation-tools (rots)**
 
@@ -200,6 +205,11 @@ GPlately comes with a suite of useful command line tools. These tools are design
   - `gplately sc -r rotations.rot -m topologies.gpml -t 0 200 --use-ptt -- convergence`
     (use the older PlateTectonicTools calculation)
 
+  - `gplately sc --model Muller2019 -t 0 200 -- convergence`
+    (use the rotation and topology files of the Muller2019 plate model)
+
+  Instead of `-r` and `-m`, `--model MODEL_NAME` uses the rotation and topology files of a plate model (see `gplately list`), downloading it if needed (to `--model-repo DIR`, which defaults to `plate-model-repo`).
+
 ### 🟢 **ridge-spreading-rate (rsr)**
 
   Find the spreading rates along mid-ocean ridges over time. Run `gplately ridge-spreading-rate -h` to see the details of this subcommand.
@@ -216,6 +226,11 @@ GPlately comes with a suite of useful command line tools. These tools are design
 
   - `gplately rsr -r rotations.rot -m topologies.gpml -t 0 200 --use-ptt -- spreading_rate`
     (use the older PlateTectonicTools calculation)
+
+  - `gplately rsr --model Muller2019 -t 0 200 -- spreading_rate`
+    (use the rotation and topology files of the Muller2019 plate model)
+
+  Instead of `-r` and `-m`, `--model MODEL_NAME` uses the rotation and topology files of a plate model (see `gplately list`), downloading it if needed (to `--model-repo DIR`, which defaults to `plate-model-repo`).
 
 ### 🟢 **gpmdb**
 
