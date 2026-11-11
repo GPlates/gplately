@@ -28,6 +28,7 @@ from typing import List, Optional, Union
 from plate_model_manager import PlateModel, PlateModelManager  # type: ignore
 
 from ..raster import Raster
+from ._plate_model_args import DEFAULT_MODEL_REPO
 
 logger = logging.getLogger("gplately")
 
@@ -117,6 +118,14 @@ def add_parser(parser):
     )
 
     cmd.add_argument(
+        "--model-repo",
+        metavar="DIR",
+        help="folder to download plate models to (only used with --from-model/--to-model) "
+        f"(default: {DEFAULT_MODEL_REPO})",
+        dest="model_repo",
+        default=DEFAULT_MODEL_REPO,
+    )
+    cmd.add_argument(
         "--from-anchor",
         metavar="PLATE_ID",
         type=int,
@@ -188,7 +197,7 @@ def _time_from_filename(path: pathlib.Path) -> Optional[float]:
 
 
 def _get_rotation_files_for_model(
-    model_name: str, data_dir: str = "plate-model-repo"
+    model_name: str, data_dir: str = DEFAULT_MODEL_REPO
 ) -> List[str]:
     """Download (or locate from cache) and return rotation file paths for *model_name*."""
     try:
@@ -274,12 +283,16 @@ def _rotate_grid_cmd(args):
     # Resolve rotation file lists from model names (prime cache in main process
     # so parallel workers just do a fast local read).
     if args.from_model_name:
-        from_rotation = _get_rotation_files_for_model(args.from_model_name)
+        from_rotation = _get_rotation_files_for_model(
+            args.from_model_name, data_dir=args.model_repo
+        )
     else:
         from_rotation = args.from_rotation_files
 
     if args.to_model_name:
-        to_rotation = _get_rotation_files_for_model(args.to_model_name)
+        to_rotation = _get_rotation_files_for_model(
+            args.to_model_name, data_dir=args.model_repo
+        )
     else:
         to_rotation = args.to_rotation_files
 
