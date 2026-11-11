@@ -687,15 +687,21 @@
         <span class="p">)</span>
 
 
-<span class="k">def</span><span class="w"> </span><span class="nf">add_arguments</span><span class="p">(</span><span class="n">parser</span><span class="p">:</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">"""add command line argument parser"""</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">add_arguments</span><span class="p">(</span><span class="n">parser</span><span class="p">:</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">,</span> <span class="n">require_input_files</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""add command line argument parser</span>
+
+<span class="sd">    If ``require_input_files`` is False then the rotation and topology files are optional</span>
+<span class="sd">    (eg, so the caller can provide them another way, such as from a plate model name).</span>
+<span class="sd">    """</span>
 
     <span class="n">parser</span><span class="o">.</span><span class="n">formatter_class</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">RawDescriptionHelpFormatter</span>
     <span class="n">parser</span><span class="o">.</span><span class="n">description</span> <span class="o">=</span> <span class="n">__description__</span>
 
     <span class="n">parser</span><span class="o">.</span><span class="n">set_defaults</span><span class="p">(</span><span class="n">func</span><span class="o">=</span><span class="n">main</span><span class="p">)</span>
 
-    <span class="n">rotation_filenames_group</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">add_mutually_exclusive_group</span><span class="p">(</span><span class="n">required</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">rotation_filenames_group</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">add_mutually_exclusive_group</span><span class="p">(</span>
+        <span class="n">required</span><span class="o">=</span><span class="n">require_input_files</span>
+    <span class="p">)</span>
     <span class="n">rotation_filenames_group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
         <span class="s2">"-r"</span><span class="p">,</span>
         <span class="s2">"--rotation-filenames"</span><span class="p">,</span>
@@ -712,7 +718,9 @@
         <span class="n">nargs</span><span class="o">=</span><span class="s2">"+"</span><span class="p">,</span>
         <span class="n">help</span><span class="o">=</span><span class="n">argparse</span><span class="o">.</span><span class="n">SUPPRESS</span><span class="p">,</span>
     <span class="p">)</span>
-    <span class="n">topology_filenames_group</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">add_mutually_exclusive_group</span><span class="p">(</span><span class="n">required</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">topology_filenames_group</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">add_mutually_exclusive_group</span><span class="p">(</span>
+        <span class="n">required</span><span class="o">=</span><span class="n">require_input_files</span>
+    <span class="p">)</span>
     <span class="n">topology_filenames_group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
         <span class="s2">"-m"</span><span class="p">,</span>
         <span class="s2">"--topology-filenames"</span><span class="p">,</span>

@@ -241,6 +241,15 @@ Also available as ``resolve_topologies``.
 
    $ gplately resolve-topologies -r rotations1.rot rotations2.rot -m topologies1.gpml topologies2.gpml -t 10
 
+👉 resolve the topologies of the Muller2019 plate model at 10 Ma
+
+.. code:: console
+
+   $ gplately rt --model Muller2019 -t 10 -- topologies
+
+Instead of ``-r`` and ``-m``, ``--model MODEL_NAME`` uses the rotation and topology files of a plate model
+(see ``gplately list``), downloading it if needed (to ``--model-repo DIR``, which defaults to ``plate-model-repo``).
+
 rotation-tools (rots)
 ------------------------
 
@@ -301,6 +310,15 @@ Add ``--use-ptt`` to use the older PlateTectonicTools calculation instead.
 
    $ gplately sc -r rotations.rot -m topologies.gpml -t 0 200 --use-ptt -- convergence
 
+👉 use the rotation and topology files of the Muller2019 plate model
+
+.. code:: console
+
+   $ gplately sc --model Muller2019 -t 0 200 -- convergence
+
+Instead of ``-r`` and ``-m``, ``--model MODEL_NAME`` uses the rotation and topology files of a plate model
+(see ``gplately list``), downloading it if needed (to ``--model-repo DIR``, which defaults to ``plate-model-repo``).
+
 ridge-spreading-rate (rsr)
 --------------------------
 
@@ -326,6 +344,15 @@ Add ``--use-ptt`` to use the older PlateTectonicTools calculation instead.
 .. code:: console
 
    $ gplately rsr -r rotations.rot -m topologies.gpml -t 0 200 --use-ptt -- spreading_rate
+
+👉 use the rotation and topology files of the Muller2019 plate model
+
+.. code:: console
+
+   $ gplately rsr --model Muller2019 -t 0 200 -- spreading_rate
+
+Instead of ``-r`` and ``-m``, ``--model MODEL_NAME`` uses the rotation and topology files of a plate model
+(see ``gplately list``), downloading it if needed (to ``--model-repo DIR``, which defaults to ``plate-model-repo``).
 
 
 gpmdb
