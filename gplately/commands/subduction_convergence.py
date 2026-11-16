@@ -127,7 +127,11 @@ def _run_subduction_convergence(args):
         raise ValueError(
             f"The young time {young_time} is older (larger) than the old time {old_time}."
         )
-    if young_time < old_time and young_time + args.time_increment == young_time:
+    # Compare times the same way as the time loop (with pyGPlates' time tolerance).
+    if (
+        young_time < pygplates.GeoTimeInstant(old_time)
+        and young_time + args.time_increment == young_time
+    ):
         raise ValueError(
             f"The time increment {args.time_increment} is too small to advance the time from {young_time} Ma."
         )
@@ -216,7 +220,7 @@ def _run_subduction_convergence(args):
         if next_time == time:
             # The increment is too small to advance the time any further (eg, at very large times),
             # so stop rather than repeating the same time forever.
-            if time < old_time:
+            if time < pygplates.GeoTimeInstant(old_time):
                 raise ValueError(
                     f"The time increment {args.time_increment} is too small to advance the time from {time} Ma."
                 )

@@ -520,11 +520,13 @@ def test_non_finite_threshold(monkeypatch, tmp_path, subcommand, threshold_optio
         )
 
 
+# The old time is the same as the young time (exactly, or within pyGPlates' time tolerance).
+@pytest.mark.parametrize("old_time", ["10", "10.0000000000001"])
 @pytest.mark.parametrize(
     "subcommand", ["subduction-convergence", "ridge-spreading-rate"]
 )
 def test_tiny_increment_with_a_single_time(
-    monkeypatch, tmp_path, muller_2019_model, subcommand
+    monkeypatch, tmp_path, muller_2019_model, subcommand, old_time
 ):
     # Only one time is requested, so an increment too small to advance the time is fine.
     _run_gplately(
@@ -536,10 +538,38 @@ def test_tiny_increment_with_a_single_time(
         *muller_2019_model.get_topologies(),
         "-t",
         "10",
-        "10",
+        old_time,
         "-i",
         "1e-20",
         "--",
         str(tmp_path / "output"),
     )
     assert [path.name for path in tmp_path.iterdir()] == ["output_10.00.xy"]
+
+
+@pytest.mark.parametrize(
+    "threshold, time_young, time_old, time_increment",
+    [
+        (0.01, 0, math.inf, 1),
+        (0.01, 0, 1, math.nan),
+        (math.nan, 0, 1, 1),
+        # An increment too small to advance the time.
+        (0.01, 10, 11, 1e-20),
+    ],
+)
+def test_ptt_subduction_convergence_over_time_rejects(
+    tmp_path, threshold, time_young, time_old, time_increment
+):
+    # Fails before reading any files, so they don't need to exist.
+    with pytest.raises(ValueError):
+        ptt_subduction_convergence.subduction_convergence_over_time(
+            str(tmp_path / "output"),
+            "xy",
+            "rotations.rot",
+            "topologies.gpml",
+            threshold,
+            time_young,
+            time_old,
+            time_increment,
+        )
+    assert not list(tmp_path.iterdir())
