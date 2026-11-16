@@ -81,6 +81,15 @@ def add_parser(parser):
     cmd.description = __description__
     add_model_arguments(cmd, _run_subduction_convergence)
 
+    # Reject invalid numbers before '--model' can download or read any inputs.
+    run_with_model_arguments = cmd.get_default("func")
+
+    def run_with_validated_arguments(args):
+        _validate_numeric_arguments(args)
+        return run_with_model_arguments(args)
+
+    cmd.set_defaults(func=run_with_validated_arguments)
+
     # Only the PTT calculation produces topology warnings.
     # Look up the action by its option string so that a rename in PTT fails loudly.
     cmd._option_string_actions["--ignore-topology-warnings"].help = (
@@ -117,6 +126,37 @@ def add_parser(parser):
         help="Also sample deforming network boundaries that aren't plate boundaries. "
         "By default only plate boundaries are sampled.",
     )
+
+
+def _validate_numeric_arguments(args):
+    young_time, old_time = args.time_range
+    for name, value in (
+        ("young time", young_time),
+        ("old time", old_time),
+        ("time increment", args.time_increment),
+        ("velocity delta time", args.velocity_delta_time),
+        (
+            "threshold sampling distance in degrees",
+            args.threshold_sampling_distance_degrees,
+        ),
+        (
+            "threshold sampling distance in kilometres",
+            args.threshold_sampling_distance_kms,
+        ),
+        ("convergence threshold", args.convergence_threshold_in_cm_per_yr),
+    ):
+        if value is not None and not math.isfinite(value):
+            raise ValueError(f"The {name} must be finite.")
+
+    if (
+        young_time < old_time
+        and young_time + args.time_increment <= young_time
+        and young_time != pygplates.GeoTimeInstant(old_time)
+    ):
+        raise ValueError(
+            f"The time increment {args.time_increment} does not advance time "
+            f"at {young_time} Ma."
+        )
 
 
 def _run_subduction_convergence(args):
@@ -199,7 +239,16 @@ def _run_subduction_convergence(args):
                 )
                 coverage_features.append(coverage_feature)
 
-        time += args.time_increment
+        next_time = time + args.time_increment
+        if next_time <= time:
+            if time == pygplates.GeoTimeInstant(old_time):
+                break
+            raise ValueError(
+                f"The time increment {args.time_increment} does not advance time "
+                f"at {time} Ma. Output files for earlier times may already have "
+                "been written."
+            )
+        time = next_time
 
     if args.output_gpml_filename:
         pygplates.FeatureCollection(coverage_features).write(args.output_gpml_filename)
