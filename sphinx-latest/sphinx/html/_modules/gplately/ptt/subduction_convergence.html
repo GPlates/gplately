@@ -1228,10 +1228,26 @@
     <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">"""calculate subduction convergence over time"""</span>
-    <span class="k">if</span> <span class="n">time_increment</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+    <span class="c1"># Also reject NaN and infinity (eg, an infinite old time would never finish).</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">time_increment</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">math</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">time_increment</span><span class="p">)):</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-            <span class="s1">'The time increment "</span><span class="si">{0}</span><span class="s1">" is not positive and non-zero.'</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="s1">'The time increment "</span><span class="si">{0}</span><span class="s1">" is not positive, non-zero and finite.'</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
                 <span class="n">time_increment</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">time_young</span><span class="p">)</span> <span class="ow">and</span> <span class="n">math</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">time_old</span><span class="p">)):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s2">"The time range </span><span class="si">{0}</span><span class="s2"> to </span><span class="si">{1}</span><span class="s2"> is not finite."</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">time_young</span><span class="p">,</span> <span class="n">time_old</span><span class="p">)</span>
+        <span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span>
+        <span class="n">threshold_sampling_distance_radians</span> <span class="o">&gt;</span> <span class="mi">0</span>
+        <span class="ow">and</span> <span class="n">math</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">threshold_sampling_distance_radians</span><span class="p">)</span>
+    <span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s2">"The threshold sampling distance </span><span class="si">{0}</span><span class="s2"> radians is not positive and finite."</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">threshold_sampling_distance_radians</span>
             <span class="p">)</span>
         <span class="p">)</span>
 
@@ -1239,6 +1255,17 @@
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
             <span class="s2">"The young time </span><span class="si">{0}</span><span class="s2"> is older (larger) than the old time </span><span class="si">{1}</span><span class="s2">."</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
                 <span class="n">time_young</span><span class="p">,</span> <span class="n">time_old</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+
+    <span class="c1"># Compare times the same way as the time loop (with pyGPlates' time tolerance).</span>
+    <span class="k">if</span> <span class="p">(</span>
+        <span class="n">time_young</span> <span class="o">&lt;</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">GeoTimeInstant</span><span class="p">(</span><span class="n">time_old</span><span class="p">)</span>
+        <span class="ow">and</span> <span class="n">time_young</span> <span class="o">+</span> <span class="n">time_increment</span> <span class="o">==</span> <span class="n">time_young</span>
+    <span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s2">"The time increment </span><span class="si">{0}</span><span class="s2"> is too small to advance the time from </span><span class="si">{1}</span><span class="s2"> Ma."</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">time_increment</span><span class="p">,</span> <span class="n">time_young</span>
             <span class="p">)</span>
         <span class="p">)</span>
 
@@ -1285,7 +1312,18 @@
                 <span class="n">coverage_features</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">coverage_feature</span><span class="p">)</span>
 
         <span class="c1"># Increment the time further into the past.</span>
-        <span class="n">time</span> <span class="o">+=</span> <span class="n">time_increment</span>
+        <span class="n">next_time</span> <span class="o">=</span> <span class="n">time</span> <span class="o">+</span> <span class="n">time_increment</span>
+        <span class="k">if</span> <span class="n">next_time</span> <span class="o">==</span> <span class="n">time</span><span class="p">:</span>
+            <span class="c1"># The increment is too small to advance the time (eg, 1e-20),</span>
+            <span class="c1"># so stop rather than repeating the same time forever.</span>
+            <span class="k">if</span> <span class="n">time</span> <span class="o">&lt;</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">GeoTimeInstant</span><span class="p">(</span><span class="n">time_old</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="s2">"The time increment </span><span class="si">{0}</span><span class="s2"> is too small to advance the time from </span><span class="si">{1}</span><span class="s2"> Ma."</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                        <span class="n">time_increment</span><span class="p">,</span> <span class="n">time</span>
+                    <span class="p">)</span>
+                <span class="p">)</span>
+            <span class="k">break</span>
+        <span class="n">time</span> <span class="o">=</span> <span class="n">next_time</span>
 
     <span class="k">if</span> <span class="n">output_gpml_filename</span><span class="p">:</span>
         <span class="c1"># Write out all coverage features to a single GPML file.</span>
@@ -1868,8 +1906,11 @@
         <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentTypeError</span><span class="p">(</span><span class="s2">"</span><span class="si">%s</span><span class="s2"> is not a number"</span> <span class="o">%</span> <span class="n">value_string</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="n">value</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentTypeError</span><span class="p">(</span><span class="s2">"</span><span class="si">%g</span><span class="s2"> is not a positive number"</span> <span class="o">%</span> <span class="n">value</span><span class="p">)</span>
+        <span class="c1"># Also reject NaN and infinity.</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">value</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">math</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">value</span><span class="p">)):</span>
+            <span class="k">raise</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentTypeError</span><span class="p">(</span>
+                <span class="s2">"</span><span class="si">%g</span><span class="s2"> is not a positive (finite) number"</span> <span class="o">%</span> <span class="n">value</span>
+            <span class="p">)</span>
 
         <span class="k">return</span> <span class="n">value</span>
 
