@@ -121,13 +121,27 @@ def add_parser(parser):
 
 def _run_subduction_convergence(args):
     young_time, old_time = args.time_range
+    if not (math.isfinite(young_time) and math.isfinite(old_time)):
+        raise ValueError("The time range must be finite.")
     if young_time > old_time:
         raise ValueError(
             f"The young time {young_time} is older (larger) than the old time {old_time}."
         )
+    # Compare times the same way as the time loop (with pyGPlates' time tolerance).
+    if (
+        young_time < pygplates.GeoTimeInstant(old_time)
+        and young_time + args.time_increment == young_time
+    ):
+        raise ValueError(
+            f"The time increment {args.time_increment} is too small to advance the time from {young_time} Ma."
+        )
 
     if args.use_ptt and args.convergence_threshold_in_cm_per_yr is not None:
         raise ValueError("'--convergence-threshold' cannot be used with '--use-ptt'.")
+    if args.convergence_threshold_in_cm_per_yr is not None and not math.isfinite(
+        args.convergence_threshold_in_cm_per_yr
+    ):
+        raise ValueError("The convergence threshold must be finite.")
 
     if args.threshold_sampling_distance_degrees is not None:
         threshold_sampling_distance_radians = math.radians(
@@ -142,8 +156,11 @@ def _run_subduction_convergence(args):
         threshold_sampling_distance_radians = math.radians(
             ptt_subduction_convergence.DEFAULT_THRESHOLD_SAMPLING_DISTANCE_DEGREES
         )
-    if threshold_sampling_distance_radians <= 0:
-        raise ValueError("The threshold sampling distance must be positive.")
+    if not (
+        threshold_sampling_distance_radians > 0
+        and math.isfinite(threshold_sampling_distance_radians)
+    ):
+        raise ValueError("The threshold sampling distance must be positive and finite.")
 
     # Optional output parameters to append to each sample point.
     output_parameters = {}
@@ -199,7 +216,16 @@ def _run_subduction_convergence(args):
                 )
                 coverage_features.append(coverage_feature)
 
-        time += args.time_increment
+        next_time = time + args.time_increment
+        if next_time == time:
+            # The increment is too small to advance the time any further (eg, at very large times),
+            # so stop rather than repeating the same time forever.
+            if time < pygplates.GeoTimeInstant(old_time):
+                raise ValueError(
+                    f"The time increment {args.time_increment} is too small to advance the time from {time} Ma."
+                )
+            break
+        time = next_time
 
     if args.output_gpml_filename:
         pygplates.FeatureCollection(coverage_features).write(args.output_gpml_filename)

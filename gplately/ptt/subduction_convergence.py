@@ -1140,10 +1140,26 @@ def subduction_convergence_over_time(
     **kwargs,
 ):
     """calculate subduction convergence over time"""
-    if time_increment <= 0:
+    # Also reject NaN and infinity (eg, an infinite old time would never finish).
+    if not (time_increment > 0 and math.isfinite(time_increment)):
         raise ValueError(
-            'The time increment "{0}" is not positive and non-zero.'.format(
+            'The time increment "{0}" is not positive, non-zero and finite.'.format(
                 time_increment
+            )
+        )
+
+    if not (math.isfinite(time_young) and math.isfinite(time_old)):
+        raise ValueError(
+            "The time range {0} to {1} is not finite.".format(time_young, time_old)
+        )
+
+    if not (
+        threshold_sampling_distance_radians > 0
+        and math.isfinite(threshold_sampling_distance_radians)
+    ):
+        raise ValueError(
+            "The threshold sampling distance {0} radians is not positive and finite.".format(
+                threshold_sampling_distance_radians
             )
         )
 
@@ -1151,6 +1167,17 @@ def subduction_convergence_over_time(
         raise ValueError(
             "The young time {0} is older (larger) than the old time {1}.".format(
                 time_young, time_old
+            )
+        )
+
+    # Compare times the same way as the time loop (with pyGPlates' time tolerance).
+    if (
+        time_young < pygplates.GeoTimeInstant(time_old)
+        and time_young + time_increment == time_young
+    ):
+        raise ValueError(
+            "The time increment {0} is too small to advance the time from {1} Ma.".format(
+                time_increment, time_young
             )
         )
 
@@ -1197,7 +1224,18 @@ def subduction_convergence_over_time(
                 coverage_features.append(coverage_feature)
 
         # Increment the time further into the past.
-        time += time_increment
+        next_time = time + time_increment
+        if next_time == time:
+            # The increment is too small to advance the time (eg, 1e-20),
+            # so stop rather than repeating the same time forever.
+            if time < pygplates.GeoTimeInstant(time_old):
+                raise ValueError(
+                    "The time increment {0} is too small to advance the time from {1} Ma.".format(
+                        time_increment, time
+                    )
+                )
+            break
+        time = next_time
 
     if output_gpml_filename:
         # Write out all coverage features to a single GPML file.
@@ -1780,8 +1818,11 @@ def add_arguments(parser: argparse.ArgumentParser, require_input_files=True):
         except ValueError:
             raise argparse.ArgumentTypeError("%s is not a number" % value_string)
 
-        if value <= 0:
-            raise argparse.ArgumentTypeError("%g is not a positive number" % value)
+        # Also reject NaN and infinity.
+        if not (value > 0 and math.isfinite(value)):
+            raise argparse.ArgumentTypeError(
+                "%g is not a positive (finite) number" % value
+            )
 
         return value
 
