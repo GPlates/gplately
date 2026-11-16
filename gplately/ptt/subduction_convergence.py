@@ -1154,6 +1154,13 @@ def subduction_convergence_over_time(
             )
         )
 
+    if time_young < time_old and time_young + time_increment == time_young:
+        raise ValueError(
+            "The time increment {0} is too small to advance the time from {1} Ma.".format(
+                time_increment, time_young
+            )
+        )
+
     rotation_model = pygplates.RotationModel(rotation_filenames)
 
     # Read/parse the topological features once so we're not doing at each time iteration.
@@ -1197,7 +1204,18 @@ def subduction_convergence_over_time(
                 coverage_features.append(coverage_feature)
 
         # Increment the time further into the past.
-        time += time_increment
+        next_time = time + time_increment
+        if next_time == time:
+            # The increment is too small to advance the time (eg, 1e-20),
+            # so stop rather than repeating the same time forever.
+            if time < time_old:
+                raise ValueError(
+                    "The time increment {0} is too small to advance the time from {1} Ma.".format(
+                        time_increment, time
+                    )
+                )
+            break
+        time = next_time
 
     if output_gpml_filename:
         # Write out all coverage features to a single GPML file.
