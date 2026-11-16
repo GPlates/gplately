@@ -308,13 +308,23 @@ def _create_coverage_feature(ridge_data, time, time_increment):
 
 def _run_ridge_spreading_rate(args):
     young_time, old_time = args.time_range
+    if not (math.isfinite(young_time) and math.isfinite(old_time)):
+        raise ValueError("The time range must be finite.")
     if young_time > old_time:
         raise ValueError(
             f"The young time {young_time} is older (larger) than the old time {old_time}."
         )
+    if young_time < old_time and young_time + args.time_increment == young_time:
+        raise ValueError(
+            f"The time increment {args.time_increment} is too small to advance the time from {young_time} Ma."
+        )
 
     if args.use_ptt and args.divergence_threshold_in_cm_per_yr is not None:
         raise ValueError("'--divergence-threshold' cannot be used with '--use-ptt'.")
+    if args.divergence_threshold_in_cm_per_yr is not None and not math.isfinite(
+        args.divergence_threshold_in_cm_per_yr
+    ):
+        raise ValueError("The divergence threshold must be finite.")
 
     if args.threshold_sampling_distance_degrees is not None:
         threshold_sampling_distance_radians = math.radians(
@@ -381,7 +391,16 @@ def _run_ridge_spreading_rate(args):
                     _create_coverage_feature(output_data, time, args.time_increment)
                 )
 
-        time += args.time_increment
+        next_time = time + args.time_increment
+        if next_time == time:
+            # The increment is too small to advance the time any further (eg, at very large times),
+            # so stop rather than repeating the same time forever.
+            if time < old_time:
+                raise ValueError(
+                    f"The time increment {args.time_increment} is too small to advance the time from {time} Ma."
+                )
+            break
+        time = next_time
 
     if args.output_gpml_filename:
         pygplates.FeatureCollection(coverage_features).write(args.output_gpml_filename)

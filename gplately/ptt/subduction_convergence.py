@@ -1780,8 +1780,11 @@ def add_arguments(parser: argparse.ArgumentParser, require_input_files=True):
         except ValueError:
             raise argparse.ArgumentTypeError("%s is not a number" % value_string)
 
-        if value <= 0:
-            raise argparse.ArgumentTypeError("%g is not a positive number" % value)
+        # Also reject NaN and infinity.
+        if not (value > 0 and math.isfinite(value)):
+            raise argparse.ArgumentTypeError(
+                "%g is not a positive (finite) number" % value
+            )
 
         return value
 
