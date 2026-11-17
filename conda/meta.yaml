@@ -1,5 +1,10 @@
 {% set name = "gplately" %}
 {% set version = "2.0.0" %}
+# Python 3.12 or later, not conda-forge's default python_min: rasterio requires 3.12 from 1.5,
+# and its last build for 3.11 (1.4.4, December 2025) needs GDAL older than 3.13, which
+# pyGPlates 1.1 is built against. So with pyGPlates 1.1, an environment on 3.11 can't be solved.
+# (pip has no such limit: the pyGPlates wheels bundle their own GDAL.)
+{% set python_min = "3.12" %}
 
 package:
   name: {{ name|lower }}
@@ -15,10 +20,10 @@ build:
 
 requirements:
   host:
-    - python
+    - python {{ python_min }}
     - pip
   run:
-    - python
+    - python >={{ python_min }}
     - numpy >=1.16.0
     - scipy >=1.0.0
     - pygplates >= 1.0.0
@@ -41,6 +46,7 @@ test:
   requires:
     - pip
     - pytest
+    - python {{ python_min }}
 
 about:
   home: https://github.com/GPlates/gplately
