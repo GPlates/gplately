@@ -29,8 +29,7 @@ on:
         required: true
         type: choice
         options:
-          &supported_python_versions # Conda-forge currently supports Python >=3.10 ...
-          - "3.10"
+          &supported_python_versions # pyGPlates 1.1 on conda-forge supports Python >=3.11 ...
           - "3.11"
           - "3.12"
           - "3.13"
