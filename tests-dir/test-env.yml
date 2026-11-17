@@ -1,10 +1,10 @@
 name: test-env
 channels:
-  - conda-forge/label/pygplates_rc
   - conda-forge
   - defaults
 dependencies:
   - gplately
+  - pygplates>=1.1.0rc1
   - pytest
   - pyyaml
   - pygmt
