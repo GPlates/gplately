@@ -158,9 +158,9 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set up micromamba
-        uses: mamba-org/setup-micromamba@v1
+        uses: mamba-org/setup-micromamba@v2
         with:
-          micromamba-version: "1.5.8-0"
+          micromamba-version: "2.10.0-0"
           environment-file: conda/notebook-env.yml
           init-shell: bash
           cache-environment: true

@@ -142,9 +142,9 @@ jobs:
         run: echo "date=$(date +%Y-%m-%d)" >> "${GITHUB_OUTPUT}"
 
       - uses: actions/checkout@v4
-      - uses: mamba-org/setup-micromamba@v1
+      - uses: mamba-org/setup-micromamba@v2
         with:
-          micromamba-version: "1.5.8-0"
+          micromamba-version: "2.10.0-0"
           environment-file: tests-dir/test-env.yml
           create-args: >-
             python=${{ env.TEST_PYTHON_VERSION }}

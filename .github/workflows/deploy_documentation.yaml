@@ -22,9 +22,9 @@ jobs:
           # Full history + tags needed so setuptools-git-versioning can
           # compute the real version instead of falling back to 0.0.1.
           fetch-depth: 0
-      - uses: mamba-org/setup-micromamba@v1
+      - uses: mamba-org/setup-micromamba@v2
         with:
-          micromamba-version: "1.5.8-0"
+          micromamba-version: "2.10.0-0"
           environment-file: conda/doc-env.yml
           init-shell: >-
             bash
