@@ -29,9 +29,7 @@ on:
         required: true
         type: choice
         options:
-          &supported_python_versions # Conda-forge currently supports Python >=3.10 ...
-          - "3.10"
-          - "3.11"
+          &supported_python_versions # pyGPlates 1.1 with rasterio on conda-forge needs Python >=3.12 ...
           - "3.12"
           - "3.13"
           - "3.14"
