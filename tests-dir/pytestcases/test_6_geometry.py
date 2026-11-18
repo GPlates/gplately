@@ -365,3 +365,16 @@ def _get_circle(origin, radius, earth_radius=EARTH_RADIUS, n=N_POINTS):
         earth_radius,
     )
     return lons, lats
+
+
+# ========================================= <gplately.gpml> =========================================
+
+
+def test_gpml_features_of_wrong_type():
+    # pyGPlates raises 'pygplates.ArgumentError' (a TypeError) for something that isn't features,
+    # which gplately.gpml turns into a TypeError of its own. (If it doesn't catch the error, the
+    # message won't match.)
+    import gplately.gpml
+
+    with pytest.raises(TypeError, match="Invalid argument type"):
+        gplately.gpml.extract_feature("GPlates-id", [1])

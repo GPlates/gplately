@@ -439,13 +439,8 @@ def _parse_features_function_arguments(features):
         raise FileNotFoundError(
             "Could not find input file(s): `{}`".format(features)
         ) from e
-    except Exception as e:
-        if str(type(e)) == "<class 'Boost.Python.ArgumentError'>":
-            # This is the easiest way of catching Boost.Python.ArgumentError,
-            # since it cannot be directly imported into Python
-            raise TypeError("Invalid argument type: `{}`".format(type(features))) from e
-        else:
-            raise e
+    except pygplates.ArgumentError as e:
+        raise TypeError("Invalid argument type: `{}`".format(type(features))) from e
     return features
 
 

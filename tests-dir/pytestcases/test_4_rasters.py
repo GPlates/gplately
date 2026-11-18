@@ -480,3 +480,29 @@ def test_pow(graster):
     assert isinstance(2**graster, gplately.Raster)
     assert np.allclose(graster**other, data**2, equal_nan=True)
     assert np.allclose(other**graster, 2**data, equal_nan=True)
+
+
+# ========================================= <gplately.grids.rasterise> =========================================
+
+
+def test_rasterise_geometries_as_well_as_features():
+    # Given anything but features, 'rasterise' falls back to geometries when pyGPlates raises
+    # 'pygplates.ArgumentError'. Each form of the same polygon should rasterise to the same grid.
+    # (If 'rasterise' doesn't catch the error, the geometry and reconstructed geometry raise it.)
+    polygon = pygplates.PolygonOnSphere([(-10, -20), (-10, 20), (10, 20), (10, -20)])
+    feature = pygplates.Feature()
+    feature.set_geometry(polygon)
+    reconstructed = []
+    pygplates.reconstruct(
+        [feature], pygplates.RotationModel(pygplates.Feature()), reconstructed, 0.0
+    )
+    assert len(reconstructed) == 1
+
+    grids = [
+        gplately.grids.rasterise(features, key=1.0, shape=(91, 181))
+        for features in ([feature], [polygon], reconstructed)
+    ]
+    filled = np.isfinite(grids[0])
+    assert 0 < filled.sum() < filled.size
+    for grid in grids[1:]:
+        np.testing.assert_array_equal(np.isfinite(grid), filled)
