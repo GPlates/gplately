@@ -1305,10 +1305,9 @@ def rasterise(
     try:
         features = _FeaturesFunctionArgument(features).get_features()
         geometries = None
-    except Exception as err:
-        if not str(err).startswith("Python argument types in"):
-            # Not a Boost.Python.ArgumentError
-            raise err
+    except pygplates.ArgumentError:
+        # Not features (eg, geometries, or reconstructed geometries). Caught by its class, not its
+        # message: pyGPlates 1.1.0rc1 changed the message's first line, which this once checked.
         geometries = pygplates_to_shapely(
             features,
             tessellate_degrees=tessellate_degrees,
