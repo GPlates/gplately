@@ -6,3 +6,11 @@
 # Other dependencies are sourced from main channel.
 channel_sources:
   - conda-forge/label/pygplates_rc,conda-forge
+
+# Python 3.12 or later, rather than conda-forge's global python_min (overriding it here is how
+# CFEP-25 says to raise it for one recipe). rasterio requires 3.12 from 1.5, and its last build
+# for 3.11 (1.4.4, December 2025) needs GDAL older than 3.13, which pyGPlates 1.1 is built
+# against, so with pyGPlates 1.1 an environment on 3.11 can't be solved. (pip has no such limit:
+# the pyGPlates wheels bundle their own GDAL.)
+python_min:
+  - "3.12"
